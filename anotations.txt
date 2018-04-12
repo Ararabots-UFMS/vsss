@@ -1,0 +1,19 @@
+-camera calibration can be done with ArUco
+
+-less bits, the farther the camera can detect, but less possibilities to represent markers
+	- dictionary to describes and maps possibilities
+
+- white border space arround marker
+
+
+implementation pass:
+- declare a detector
+	- each frame detect and draw a list os all markers in frame
+		- show frame
+
+
+- set detection mode:
+	- slower but precise mode - normal mode - adaptative treshold
+	- faster but less precise mode - fast mode - convolution
+	- small markers, faster, videos - video fast mode
+
