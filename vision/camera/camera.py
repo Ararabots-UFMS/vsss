@@ -1,15 +1,45 @@
 import cv2
+import json
+import os
+import sys
+import numpy as np
 
 class Camera:
-    def __init__(self, device_id, camera_name, lens_correction):
+    def __init__(self, device_id, camera_name, lens_correction=True, load_params=True):
         self.id = device_id
         self.camera_name = camera_name
         self.lens_correction = lens_correction
+        self.capture = cv2.VideoCapture(self.id)
 
-    def set_frame():
-    	pass
+        if load_params:
+            self.load_params()
+            self.set_frame_size(self.frame_width, self.frame_height)
 
-    def load_params():
+    def read(self):
+        try:
+            ret, self.frame = self.capture.read()
+        except:
+            e = sys.exc_info()[0]
+            print "Erro: %s", e
+
+        if self.lens_correction:
+            return cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
+        else:
+            return self.frame
+        
+    def load_params(self):
     	""" Loads the parameters of the camera from a json file in /parameters according
     	to the camera_name """
-    	pass
+        params_file_name = "../../parameters/CAMERA_" + self.camera_name + ".json"
+        params_file = open(params_file_name, "r")
+        params = json.loads(params_file.read())
+        params_file.close()
+        self.mapx = np.asarray(params['matrix_x']).astype("float32")
+        self.mapy = np.asarray(params['matrix_y']).astype("float32")
+        self.frame_width = int(params['default_frame_width'])
+        self.frame_height = int(params['default_frame_height'])
+
+    def set_frame_size(self, width, height):
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    	
