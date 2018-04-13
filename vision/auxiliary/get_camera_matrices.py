@@ -9,11 +9,11 @@ import os
 sys.path.append('../camera')
 from camera import Camera
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
-H_CENTERS = 7
-V_CENTERS = 7
+H_CENTERS = 12
+V_CENTERS = 9
 
 def get_error(objp, imgpoints, rvecs, tvecs, mtx, dist):
     mean_error = 0
@@ -99,7 +99,7 @@ if __name__ == '__main__':
         cap = Camera(CAMERA_ID, "", False, False)
 
     while(True):
-        frame = cap.read()
+        u_frame = cap.read()
         if save != 'y':
             u_frame = cv2.remap(frame,mapx,mapy,cv2.INTER_LINEAR)    
         

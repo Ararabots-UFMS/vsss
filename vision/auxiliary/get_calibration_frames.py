@@ -7,9 +7,9 @@ import numpy as np
 import uuid
 import cv2
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_NAME = ""
-FRAME_SIZE = ()
+FRAME_SIZE = (1280, 720)
 
 if __name__ == '__main__':
     cap = Camera(CAMERA_ID, CAMERA_NAME, False, False)
