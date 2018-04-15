@@ -20,13 +20,13 @@ if __name__ == '__main__':
         frame = cap.read()
 
         cv2.imshow("get frames window", frame)
-
-        if cv2.waitKey(1) & 0xFF == ord(' '):
+        key = cv2.waitKey(1) & 0xFF
+        
+        if key == ord(' '):
             name = uuid.uuid4().hex + ".jpg"
             cv2.imwrite(name, frame)
             print "Frame saved"
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        elif key == ord('q'):
             print "Exiting"
             break
 
