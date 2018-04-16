@@ -6,19 +6,42 @@ import numpy as np
 import cv2
 import time
 
-CAMERA_ID = 1
-CAMERA_NAME = "ELP-USBFHD01M-SFV"
+# colors definitios
 RED     =   (0, 0, 255)
 GREEN   =   (0, 255, 0)
+BLUE    =   (255, 0, 0) 
+YELLOW  =   (0, 255, 255)
+
+# modes definitions
+NO_MODE     = -1
+ADD_MODE    = 0
+DELETE_MODE = 1
+EDIT_MODE   = 2
+
+CAMERA_ID = 1
+CAMERA_NAME = "ELP-USBFHD01M-SFV"
 RADIUS  =   3
+BAR_HEIGHT = 50
+MOUSE_LAST_STATE = None
 
+def get_status_bar(h, w, status):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    status_bar = np.zeros((h, w, 3), np.uint8)
 
-class CallBackParams:
-    def __init__(self):
-        self.frame = None
-        self.points = []
-        self.LBUTTONPRESSED = 0
-        self.dragging_point = []
+    if status == ADD_MODE:
+        text = "ADD POINT MODE"
+        color = GREEN
+    elif status == DELETE_MODE:
+        text = "DELETE POINT MODE"
+        color = RED
+    elif status == EDIT_MODE:
+        text = "EDIT POINT MODE"
+        color = YELLOW
+    elif status == NO_MODE:
+        text = "NO MODE SELECTED"
+        color = BLUE
+
+    return cv2.putText(status_bar, text, (0,30), font, 1, color, 2, cv2.LINE_AA)
 
 def inside_circle(points, pos, radius):
     i = 0
@@ -29,51 +52,62 @@ def inside_circle(points, pos, radius):
         i += 1
     return None
 
-def drawing(p):
-    # drawing
-    if len(p.points) <= 4:
-        for point in p.points:
-            cv2.circle(p.frame, point, RADIUS, RED, -1)
+def draw_components(img, pts):
+    if len(pts):
+        sorted_points = sort_clock_wise(pts)
 
-    if p.dragging_point != []:
-        cv2.circle(p.frame, p.dragging_point[0], RADIUS, GREEN, -1)         
-            
-    if len(p.points + p.dragging_point) == 4:
-        sorted_points = sort_clock_wise(p.points + p.dragging_point)
-        pts = sorted_points.reshape((-1, 1, 2))
-        frame = cv2.polylines(p.frame, [pts], True, GREEN)
+        for (i,pt) in enumerate(sorted_points):
+            cv2.circle(img, tuple(pt), RADIUS, RED, -1)
+            if i != 0:
+                segment = np.array([sorted_points[j], sorted_points[i]]).reshape((-1, 1, 2))
+                cv2.polylines(img, [segment], True, GREEN, 2)
+            j = i
 
-def onMouse(event, x, y, flags, p):
-    i = inside_circle(p.points, (x,y), RADIUS)
+        if len(pts):
+            segment = np.array([sorted_points[j], sorted_points[0]]).reshape((-1, 1, 2))
+            cv2.polylines(img, [segment], True, GREEN, 2)
+
+def onMouse_add_mode(event, x, y, flags, pts):
+    if event == cv2.EVENT_LBUTTONUP:
+        pts.append((x,y-BAR_HEIGHT))
+
+def onMouse_delete_mode(event, x, y, flags, pts):
+    i = inside_circle(pts, (x,y-BAR_HEIGHT), RADIUS)
+    if event == cv2.EVENT_LBUTTONUP:
+        if i != None:
+            del pts[i]
+
+def onMouse_edit_mode(event, x, y, flags, pts):
+    i = inside_circle(pts, (x,y-BAR_HEIGHT), 10*RADIUS)
+    global MOUSE_LAST_STATE # sorry
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        p.LBUTTONPRESSED = 1;
+        MOUSE_LAST_STATE = cv2.EVENT_LBUTTONDOWN
+    elif event == cv2.EVENT_LBUTTONUP:
+        MOUSE_LAST_STATE = cv2.EVENT_LBUTTONUP
 
-    if event == cv2.EVENT_LBUTTONUP:
-        p.LBUTTONPRESSED = 0;
-        p.dragging_point = []
-        if len(p.points) < 4 and i == None:
-            p.points.append((x,y))
-        elif i != None:
-            del p.points[i]
+    if event == cv2.EVENT_MOUSEMOVE and MOUSE_LAST_STATE == cv2.EVENT_LBUTTONDOWN and i != None:
+        pts[i] = (x,y-BAR_HEIGHT)
 
-    if event == cv2.EVENT_MOUSEMOVE and p.LBUTTONPRESSED:
-        i = inside_circle(p.points, (x,y), 15*RADIUS)
-        if i != None:
-            del p.points[i]
-        p.dragging_point = [(x,y)]
+def onMouse_no_mode(event, x, y, flags, pts):
+    pass
 
-def sort_clock_wise(points):
-    corners = np.asarray(points)
-    x_sorted = corners[np.argsort(corners[:, :1].reshape(4)), :]
+def sort_clock_wise(pts):
+    n = len(pts)
+    if n > 1:
+        points = np.asarray(pts).reshape(n, 2)
+        
+        points[:, 1:] = -points[:, 1:] 
+        tl_index = np.argsort(np.linalg.norm(points, axis=1))[0]
+        tl = points[tl_index]
+        d = points - tl
+        thetas = np.arctan2(d[:, 1:], d[:, :1]).reshape(n)
+        thetas[tl_index] = 10 # this way top left will always be the first
+        order =  np.argsort(-thetas)
 
-    left = x_sorted[:2, :]
-    right = x_sorted[2:, :]
-
-    (top_left, bottom_left) = left[np.argsort(left[:, 1:].reshape(2)), :]
-    (top_right, bottom_right) = right[np.argsort(right[:, 1:].reshape(2)), :]
-
-    return np.array([top_left, top_right, bottom_right, bottom_left])
+        points[:, 1:] = -points[:, 1:]
+        return points[order, ]
+    return pts
 
 def get_matrix_transform(pts):
     points = sort_clock_wise(pts)
@@ -96,43 +130,68 @@ def get_matrix_transform(pts):
     return cv2.getPerspectiveTransform(points.astype("float32"), dst), (final_width, final_height)
 
 if __name__ == '__main__':
+    print "-------------------------------------------"
+    print "A to enter Add point mode"
+    print "E to enter Edit point mode"
+    print "D to enter Delete point mode"
+    print "ESC to exit mode selection"
+    print "S to save"
+    print "Q to quit"
+    print "--------------------------------------------\n"
     # cap = Camera(CAMERA_ID, CAMERA_NAME)
+    points = []
     cap = cv2.VideoCapture(0)
-    p = CallBackParams()
-    cv2.namedWindow('visualizacao')
-    cv2.setMouseCallback('visualizacao', onMouse, p)
-    k = 0
+    ret, frame = cap.read()
+    
+
+    cv2.namedWindow('cropper')
+    mode = NO_MODE
+    warp = False
+    arena_countour = False
 
     while True:
-        ret, p.frame = cap.read()
-        key = cv2.waitKey(1) & 0xFF
+        ret, frame = cap.read()    
+        if warp:
+            frame = cv2.warpPerspective(frame, M, (size[0], size[1]))
 
-        if  key == ord('q'):
-            print "Exiting"
+        h,w = frame.shape[:2]
+
+        draw_components(frame, points)
+        status_bar = get_status_bar(BAR_HEIGHT, w, mode)
+        cv2.imshow('cropper', np.vstack([status_bar, frame]))
+
+        sort_clock_wise(points)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
             break
+        elif key == ord('a'):
+            mode = ADD_MODE
+            cv2.setMouseCallback('cropper', onMouse_add_mode, points)
+        elif key == ord('d'):
+            mode = DELETE_MODE
+            cv2.setMouseCallback('cropper', onMouse_delete_mode, points)
+        elif key == ord('e'):
+            mode = EDIT_MODE
+            cv2.setMouseCallback('cropper', onMouse_edit_mode, points)
         elif key == ord('s'):
-            if len(p.points) == 4:
-                print "Saving points"
-                k = 1
+            if warp:
+                arena_countour = True
                 break
             else:
-                print "Select at least 4 points"
+                if len(points) == 4:
+                    warp = True
+                    print "Calculating prespective transform"
+                    M, size = get_matrix_transform(points)
+                    points = []
+                    mode = NO_MODE
+                    print "Now draw the contours of the arena"
+                else:
+                    print "Select four points"
+        elif key == 27:
+            mode = NO_MODE
+            cv2.setMouseCallback('cropper', onMouse_no_mode, points)
 
-        drawing(p)
-        cv2.imshow('visualizacao', p.frame)
-    
     cv2.destroyAllWindows()
 
-    if k:
-        print "Calculating prespective transform"
-        M, size = get_matrix_transform(p.points)
-
-
-
-    while True:
-        ret, p.frame = cap.read()
-        nframe = cv2.warpPerspective(p.frame, M, (size[0], size[1]))
-        cv2.imshow('transformed', nframe)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+    print M, size
+    print points
