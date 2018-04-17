@@ -52,9 +52,12 @@ def inside_circle(points, pos, radius):
         i += 1
     return None
 
-def draw_components(img, pts):
+def draw_components(img, pts, sort=True):
     if len(pts):
-        sorted_points = sort_clock_wise(pts)
+        if sort:
+            sorted_points = sort_clock_wise(pts)
+        else:
+            sorted_points = pts
 
         for (i,pt) in enumerate(sorted_points):
             cv2.circle(img, tuple(pt), RADIUS, RED, -1)
@@ -146,21 +149,26 @@ if __name__ == '__main__':
 
     cv2.namedWindow('cropper')
     mode = NO_MODE
-    warp = False
+    warped = False
     arena_countour = False
 
     while True:
         ret, frame = cap.read()    
-        if warp:
+        
+        if warped:
             frame = cv2.warpPerspective(frame, M, (size[0], size[1]))
 
         h,w = frame.shape[:2]
 
-        draw_components(frame, points)
         status_bar = get_status_bar(BAR_HEIGHT, w, mode)
-        cv2.imshow('cropper', np.vstack([status_bar, frame]))
 
-        sort_clock_wise(points)
+        if not warped:
+            sort_clock_wise(points)
+            draw_components(frame, points)
+        else:
+            draw_components(frame, points, sort=False)
+
+        cv2.imshow('cropper', np.vstack([status_bar, frame]))
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
@@ -174,12 +182,12 @@ if __name__ == '__main__':
             mode = EDIT_MODE
             cv2.setMouseCallback('cropper', onMouse_edit_mode, points)
         elif key == ord('s'):
-            if warp:
+            if warped:
                 arena_countour = True
                 break
             else:
                 if len(points) == 4:
-                    warp = True
+                    warped = True
                     print "Calculating prespective transform"
                     M, size = get_matrix_transform(points)
                     points = []
