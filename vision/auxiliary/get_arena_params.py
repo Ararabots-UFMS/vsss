@@ -5,6 +5,8 @@ from camera import Camera
 import numpy as np
 import cv2
 import time
+import os
+import json
 
 # colors definitios
 RED     =   (0, 0, 255)
@@ -18,8 +20,9 @@ ADD_MODE    = 0
 DELETE_MODE = 1
 EDIT_MODE   = 2
 
-CAMERA_ID = 1
-CAMERA_NAME = "ELP-USBFHD01M-SFV"
+CAMERA_ID = 0
+CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+ARENA_PARAMS_PATH = ""
 RADIUS  =   3
 BAR_HEIGHT = 50
 MOUSE_LAST_STATE = None
@@ -41,7 +44,8 @@ def get_status_bar(h, w, status):
         text = "NO MODE SELECTED"
         color = BLUE
 
-    return cv2.putText(status_bar, text, (0,30), font, 1, color, 2, cv2.LINE_AA)
+    status_bar[:][:] = color
+    return cv2.putText(status_bar, text, (0,30), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
 
 def inside_circle(points, pos, radius):
     i = 0
@@ -55,7 +59,7 @@ def inside_circle(points, pos, radius):
 def draw_components(img, pts, sort=True):
     if len(pts):
         if sort:
-            sorted_points = sort_clock_wise(pts)
+            sorted_points = sort_clockwise(pts)
         else:
             sorted_points = pts
 
@@ -95,7 +99,7 @@ def onMouse_edit_mode(event, x, y, flags, pts):
 def onMouse_no_mode(event, x, y, flags, pts):
     pass
 
-def sort_clock_wise(pts):
+def sort_clockwise(pts):
     n = len(pts)
     if n > 1:
         points = np.asarray(pts).reshape(n, 2)
@@ -113,7 +117,7 @@ def sort_clock_wise(pts):
     return pts
 
 def get_matrix_transform(pts):
-    points = sort_clock_wise(pts)
+    points = sort_clockwise(pts)
     (tl, tr, br, bl) = points
 
     width_a = np.sqrt( (tl[0] - tr[0])**2 + (tl[1] - tr[1])**2 )
@@ -132,6 +136,14 @@ def get_matrix_transform(pts):
 
     return cv2.getPerspectiveTransform(points.astype("float32"), dst), (final_width, final_height)
 
+def save_params(matrix, vertices, path):
+    params = {}
+    params['warp_matrix'] = matrix.tolist()
+    params['arena_vertices'] = vertices
+    file = open(path, "w+")
+    json.dump(params, file)
+    file.close()
+
 if __name__ == '__main__':
     print "-------------------------------------------"
     print "A to enter Add point mode"
@@ -141,7 +153,7 @@ if __name__ == '__main__':
     print "S to save"
     print "Q to quit"
     print "--------------------------------------------\n"
-    # cap = Camera(CAMERA_ID, CAMERA_NAME)
+    # cap = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
     points = []
     cap = cv2.VideoCapture(0)
     ret, frame = cap.read()
@@ -163,7 +175,7 @@ if __name__ == '__main__':
         status_bar = get_status_bar(BAR_HEIGHT, w, mode)
 
         if not warped:
-            sort_clock_wise(points)
+            sort_clockwise(points)
             draw_components(frame, points)
         else:
             draw_components(frame, points, sort=False)
@@ -201,5 +213,9 @@ if __name__ == '__main__':
 
     cv2.destroyAllWindows()
 
-    print M, size
-    print points
+    if warped and arena_countour:
+        if ARENA_PARAMS_PATH == "":
+            ARENA_PARAMS_PATH = raw_input("Type the path where the parameters should be shaved (ex: ~/Documents/params.json): ")
+            ret = save_params(M, points, ARENA_PARAMS_PATH)
+            if ret:
+                print "Parameters saved!"
