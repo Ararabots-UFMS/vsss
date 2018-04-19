@@ -10,7 +10,7 @@ import sys
 #sys.path.append('../parameters')
 
 
-class vision():
+class Vision():
 
 
 	def __init__(self, camera, load_params=True):
