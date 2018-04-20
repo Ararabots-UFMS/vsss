@@ -1,4 +1,4 @@
-import Pid
+import PID
 import time
 import matplotlib.pyplot as plt
 import numpy as np
@@ -21,7 +21,7 @@ for i in range(1, END):
 
     # wait for the impulse and upgrade the feedback using the pid output
     if pid.target != 0:
-        print feedback, output
+        # print feedback, output
         feedback += output
 
     # impulse signal on pid.target
