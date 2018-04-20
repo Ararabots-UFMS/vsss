@@ -28,6 +28,9 @@ for i in range(1, END):
     if i>1:
         pid.target = 1
 
+    if i>30:
+        pid.target = -1
+
     # time sample 60hz 
     time.sleep(0.016)
 
@@ -50,7 +53,7 @@ plt.xlabel('time (s)')
 plt.ylabel('PID (PV)')
 plt.title('TEST PID')
 
-plt.ylim((0, 2))
+plt.ylim((-2, 2))
 
 plt.grid(True)
 plt.show()
