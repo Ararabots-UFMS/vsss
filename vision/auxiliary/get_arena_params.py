@@ -20,7 +20,7 @@ ADD_MODE    = 0
 DELETE_MODE = 1
 EDIT_MODE   = 2
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 ARENA_PARAMS_PATH = ""
 RADIUS  =   3
@@ -153,10 +153,9 @@ if __name__ == '__main__':
     print "S to save"
     print "Q to quit"
     print "--------------------------------------------\n"
-    # cap = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
+    cap = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
     points = []
-    cap = cv2.VideoCapture(0)
-    ret, frame = cap.read()
+    frame = cap.read()
     
 
     cv2.namedWindow('cropper')
@@ -165,7 +164,7 @@ if __name__ == '__main__':
     arena_countour = False
 
     while True:
-        ret, frame = cap.read()    
+        frame = cap.read()    
         
         if warped:
             frame = cv2.warpPerspective(frame, M, (size[0], size[1]))
