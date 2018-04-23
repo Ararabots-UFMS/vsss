@@ -5,13 +5,13 @@ import sys
 import numpy as np
 
 class Camera:
-    def __init__(self, device_id, params_file_name=None, lens_correction=True):
+    def __init__(self, device_id, params_file_name="", lens_correction=True):
         self.id = device_id
         self.lens_correction = lens_correction
         self.params_file_name = params_file_name
         self.capture = cv2.VideoCapture(self.id)
 
-        if self.params_file_name != None:
+        if self.params_file_name != "":
             self.load_params()
             self.set_frame_size(self.frame_width, self.frame_height)
 
@@ -22,17 +22,18 @@ class Camera:
             e = sys.exc_info()[0]
             print "Erro: %s", e
 
-        if self.lens_correction and self.params_file_name != None:
+        if self.lens_correction and self.params_file_name != "":
             return cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
         else:
             return self.frame
         
     def load_params(self):
-    	""" Loads the parameters of the camera from a json file in /parameters according
-    	to the camera_name """
+    	""" Loads the parameters of the camera from a json"""
         params_file = open(self.params_file_name, "r")
         params = json.loads(params_file.read())
         params_file.close()
+
+        """ mapx and mapy are the matrix with the lens correction map """
         self.mapx = np.asarray(params['matrix_x']).astype("float32")
         self.mapy = np.asarray(params['matrix_y']).astype("float32")
         self.frame_width = int(params['default_frame_width'])

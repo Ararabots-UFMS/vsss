@@ -162,7 +162,6 @@ if __name__ == '__main__':
     mode = NO_MODE
     warped = False
     arena_countour = False
-
     while True:
         frame = cap.read()    
         
@@ -209,7 +208,6 @@ if __name__ == '__main__':
         elif key == 27:
             mode = NO_MODE
             cv2.setMouseCallback('cropper', onMouse_no_mode, points)
-
     cv2.destroyAllWindows()
 
     if warped and arena_countour:
