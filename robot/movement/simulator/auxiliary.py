@@ -14,7 +14,6 @@ def angleBetween(v1, v2):
     aux = math.atan2(det, dot)
     if aux < 0:
         aux += 2*math.pi
-    print aux
     return aux  # atan2(y, x) or atan2(sin, cos)
 
 def rotate(origin, point, angle):
