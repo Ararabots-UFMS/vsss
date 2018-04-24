@@ -136,10 +136,11 @@ def get_matrix_transform(pts):
 
     return cv2.getPerspectiveTransform(points.astype("float32"), dst), (final_width, final_height)
 
-def save_params(matrix, vertices, path):
+def save_params(matrix, vertices, size, path):
     params = {}
     params['warp_matrix'] = matrix.tolist()
     params['arena_vertices'] = vertices
+    params['arena_size'] = (size[0], size[1])
     file = open(path, "w+")
     json.dump(params, file)
     file.close()
@@ -213,6 +214,7 @@ if __name__ == '__main__':
     if warped and arena_countour:
         if ARENA_PARAMS_PATH == "":
             ARENA_PARAMS_PATH = raw_input("Type the path where the parameters should be shaved (ex: ~/Documents/params.json): ")
-            ret = save_params(M, points, ARENA_PARAMS_PATH)
+            ret = save_params(M, points, size, ARENA_PARAMS_PATH)
             if ret:
+                print size
                 print "Parameters saved!"

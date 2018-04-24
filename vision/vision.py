@@ -1,6 +1,7 @@
 import cv2
 import json
 import numpy as np
+import time
 from camera.camera import Camera
 
 #colors
@@ -31,18 +32,16 @@ class Vision:
 
         self.arena_vertices = params['arena_vertices']
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
-        self.arena_size = (480, 640) # TODO: REMOVE ISSO AQUII
-        # self.arena_size = params['arena_size']
+        self.arena_size = (params['arena_size'][0], params['arena_size'][1])
 
     def warp_perspective(self):
         """ Takes the real world arena returned by camera and transforms it
             to a perfect retangle """
         self.arena_image = cv2.warpPerspective(self.raw_image, self.warp_matrix, self.arena_size)
-        self.arena_image = self.raw_image # TODO: remove isso aqui
 
     def get_mask(self):
         """ Creates the image where the mask will be stored """
-        _arena_mask = np.zeros((self.arena_size[0], self.arena_size[1], 3), np.uint8)
+        _arena_mask = np.zeros((self.arena_size[1], self.arena_size[0], 3), np.uint8)
 
         """ Here is drawn the arena shape with all pixles set to white color """
         cv2.fillConvexPoly(_arena_mask, np.asarray(self.arena_vertices), WHITE)
@@ -66,11 +65,18 @@ class Vision:
 
 if __name__ == "__main__":
 
-    camera = Camera(0, "")
+    camera = Camera(0, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json")
     v = Vision(camera, "../parameters/ARENA.json")
 
+    i = 0
+    t0 = time.time()
+    cv2.namedWindow('vision')
     while True: 
-        cv2.imshow('teste', v.get_frame())
+        arena = v.get_frame()
+        cv2.imshow('vision', arena)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+        i += 1
+        print "framerate:", i / (time.time() - t0)
