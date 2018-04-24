@@ -16,7 +16,13 @@ def angleBetween(v1, v2):
         aux += 2*math.pi
     return aux  # atan2(y, x) or atan2(sin, cos)
 
-def rotate(origin, point, angle):
+def rotateVector(x, angle):
+    """Rotate vector x anticlockwise around the origin by angle degrees, return angle in format [x, y]"""
+    y1 = math.cos(angle)*x[0] - math.sin(angle)*x[1]
+    y2 = math.sin(angle)*x[0] + math.cos(angle)*x[1]
+    return [y1, y2]
+
+def rotatePoint(origin, point, angle):
     """Rotate a point counterclockwise by a given angle around a given origin.
     The angle should be given in radians."""
     ox, oy = origin
