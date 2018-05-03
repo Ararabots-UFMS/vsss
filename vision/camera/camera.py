@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import numpy as np
+from threading import Thread
 
 class Camera:
     def __init__(self, device_id, params_file_name="", lens_correction=True):
@@ -10,6 +11,7 @@ class Camera:
         self.lens_correction = lens_correction
         self.params_file_name = params_file_name
         self.capture = cv2.VideoCapture(self.id)
+        self.frame = None
 
         if self.params_file_name != "":
             self.load_params()
@@ -23,9 +25,9 @@ class Camera:
             print "Erro: %s", e
 
         if self.lens_correction and self.params_file_name != "":
-            return cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
-        else:
-            return self.frame
+            self.frame = cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
+        
+        return self.frame
         
     def load_params(self):
     	""" Loads the parameters of the camera from a json"""

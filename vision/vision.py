@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import cv2
 import json
 import numpy as np
@@ -65,7 +66,7 @@ class Vision:
 
 if __name__ == "__main__":
 
-    camera = Camera(0, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json")
+    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json")
     v = Vision(camera, "../parameters/ARENA.json")
 
     i = 0
@@ -73,10 +74,10 @@ if __name__ == "__main__":
     cv2.namedWindow('vision')
     while True: 
         arena = v.get_frame()
-        cv2.imshow('vision', arena)
+        # cv2.imshow('vision', arena)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
         i += 1
-        print "framerate:", i / (time.time() - t0)
+    print "framerate:", i / (time.time() - t0)
