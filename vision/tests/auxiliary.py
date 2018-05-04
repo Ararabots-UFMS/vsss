@@ -1,14 +1,16 @@
 import numpy as np
 import math  
 
-def unitVector(vector):
-    """ Returns the unit vector of the vector.  """
+
+def unit_vector(vector):
+    """ Returns the unit vector of the vector """
     return vector / np.linalg.norm(vector)
 
-def angleBetween(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'"""
-    v1_u = unitVector(v1)
-    v2_u = unitVector(v2)
+
+def angle_between(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2' """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
     dot = v1_u[0]*v2_u[0] + v1_u[1]*v2_u[1]      # dot product
     det = v1_u[0]*v2_u[1] - v1_u[1]*v2_u[0]      # determinant
     aux = math.atan2(det, dot)
@@ -16,18 +18,21 @@ def angleBetween(v1, v2):
         aux += 2*math.pi
     return aux  # atan2(y, x) or atan2(sin, cos)
 
-def rotateVector(x, angle):
+def rotate_vector(x, angle):
     """Rotate vector x anticlockwise around the origin by angle degrees, return angle in format [x, y]"""
     y1 = math.cos(angle)*x[0] - math.sin(angle)*x[1]
     y2 = math.sin(angle)*x[0] + math.cos(angle)*x[1]
     return [y1, y2]
 
-def rotatePoint(origin, point, angle):
-    """Rotate a point counterclockwise by a given angle around a given origin.
-    The angle should be given in radians."""
-    ox, oy = origin
-    px, py = point
 
-    qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
-    qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
-    return (int(qx),int(qy))
+def unit_convert(input_unit):
+    """ Convert input data, in centimeters, read from ROS, for virtual field data, in pixels """
+    return (int(input_unit[0])*4,int(input_unit[1])*4)
+
+
+def position_from_origin(position_tuple):
+    """ calculate the pixel of the center of a robot from origin as reference """
+
+    origin = (80,600)
+
+    return (origin[0]+position_tuple[0],origin[1]-position_tuple[1])
