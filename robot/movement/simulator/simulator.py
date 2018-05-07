@@ -3,7 +3,8 @@ import math
 import numpy as np
 from auxiliary import *
 
-
+# minimum speed 44
+# max speed 255
 # arena size 520X600 
 
 # top-left
@@ -72,14 +73,18 @@ class Simulator():
         rect  = (pos, robotSize, angle)
         box = cv2.boxPoints(rect)
         box = np.int0(box)
-        # update robot position
-        self.robot = pos
-        # update wheels and robot vector
-        vec = unitVector(vec)
-        self.upVec(vec)
+        if self.arenaLimit(pos):
+            # update robot position
+            self.robot = pos
+            # update wheels and robot vector
+            vec = unitVector(vec)
+            self.upVec(vec)
         # draw contours and vec arrow
-        cv2.drawContours(self.img,[box], 0, (0, 255, 0), -1)
-        cv2.arrowedLine(self.img, self.robot, (int(self.robot[0]+32*vec[0]), int(self.robot[1]+32*vec[1])), (0,0,255), 2)
+        cv2.drawContours(self.img,[box], 0, (25, 25, 25), -1)
+        cv2.arrowedLine(self.img, (int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), (int(self.robot[0]+32*vec[0]), int(self.robot[1]+32*vec[1])), (0,0,255), 2)
+        cv2.circle(self.img,(int(self.robot[0]-6*vec[0]), int(self.robot[1]-6*vec[1])), 8, (0,255,255), -1)
+        cv2.circle(self.img,(int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), 4, (0,255,255), -1)
+        # cv2.circle(self.img,(int(self.robot[0]+9*vec[0]), int(self.robot[1]+8*vec[1])), 4, (0,255,255), -1)
 
     def drawBall(self, pos):
         """Draw ball at position pos"""
@@ -98,13 +103,16 @@ class Simulator():
         self.rightVec = self.robotVec
         self.leftVec = self.robotVec
 
-    def move(self, lspeed, rspeed):
+    def move(self, left, right):
         """Recive left wheel speed and right wheel speed and draw the robot in the img"""
+        lspeed = int(left*12.0/255.0)
+        rspeed = int(right*12.0/255.0)
+        print lspeed, rspeed
         maxv = max(lspeed, rspeed)
         # commum speed between the wheels
         difv = abs(abs(lspeed-rspeed)-maxv)
         self.robotVec = unitVector(self.robotVec)
-
+        print self.robotVec
         # resultant vector
         diff = abs(lspeed-rspeed)
         # angle in 1 frame
@@ -117,5 +125,14 @@ class Simulator():
         # clear robot position
         self.clearArea(self.robot)
         self.initArena()
+        print int(self.robot[0]+difv*self.robotVec[0]), int(self.robot[1]+difv*self.robotVec[1])
+        print self.robotVec[0]
         # draw robot
         self.drawRobot((int(self.robot[0]+difv*self.robotVec[0]), int(self.robot[1]+difv*self.robotVec[1])), auxVec)
+
+    def arenaLimit(self, pos):
+        if pos[0] > 684 or pos[0] < 116:
+            return False
+        if pos[1] < 56 or pos[1] > 544:
+            return False
+        return True

@@ -14,11 +14,11 @@ if __name__ == "__main__":
     # initialize arena
     sim.initArena()
     # initialize robot
-    sim.drawRobot((200,200), [-1,-1])
+    sim.drawRobot((200,200), [-1,0])
 
     # show img
     cv2.imshow('Goalkeeper Simulation',img)
-    key = cv2.waitKey(0)
+    key = cv2.waitKey(1)
     while 1:
         cv2.imshow('Goalkeeper Simulation',img)
 
@@ -28,6 +28,6 @@ if __name__ == "__main__":
             break
 
         # move function 
-        sim.move(5,5)
+        sim.move(80,44)
         # 60fps
         key = cv2.waitKey(16)
