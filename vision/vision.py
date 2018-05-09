@@ -73,11 +73,13 @@ if __name__ == "__main__":
     t0 = time.time()
     cv2.namedWindow('vision')
     while True: 
+        i += 1
         arena = v.get_frame()
         # cv2.imshow('vision', arena)
-
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-        i += 1
+    
     print "framerate:", i / (time.time() - t0)
+    cv2.destroyAllWindows()
+
+    

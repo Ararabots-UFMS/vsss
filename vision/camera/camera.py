@@ -3,7 +3,6 @@ import json
 import os
 import sys
 import numpy as np
-from threading import Thread
 
 class Camera:
     def __init__(self, device_id, params_file_name="", lens_correction=True):
