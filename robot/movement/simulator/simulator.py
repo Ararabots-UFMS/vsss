@@ -107,12 +107,10 @@ class Simulator():
         """Recive left wheel speed and right wheel speed and draw the robot in the img"""
         lspeed = int(left*12.0/255.0)
         rspeed = int(right*12.0/255.0)
-        print lspeed, rspeed
         maxv = max(lspeed, rspeed)
         # commum speed between the wheels
         difv = abs(abs(lspeed-rspeed)-maxv)
         self.robotVector = unitVector(self.robotVector)
-        print self.robotVector
         # resultant vector
         diff = abs(lspeed-rspeed)
         # angle in 1 frame
@@ -125,8 +123,6 @@ class Simulator():
         # clear robot position
         self.clearArea(self.robot)
         self.initArena()
-        print int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])
-        print self.robotVector[0]
         # draw robot
         self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
 

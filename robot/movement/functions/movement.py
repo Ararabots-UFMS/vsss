@@ -7,7 +7,7 @@ from auxiliary import angleBetween, distancePoints
 class Movement():
 
     def __init__(self, error):
-        self.pid = PID(kp=1.0, ki=0.0, kd=0.0)
+        self.pid = PID(kp=40.0, ki=0.0, kd=0.0)
         self.lastPos = np.array([0, 0])
         self.errorMargin = error
 
@@ -26,7 +26,7 @@ class Movement():
         diffAngle = angleBetween(robotVector, directionVector)
         correction = self.pid.update(diffAngle)
         if correction > 0: #correcao aplicada na roda X
-            return int(speed), int(speed-correction), False
-        return int(speed), int(speed-correction), False
+            return int(speed), int(speed+correction), False
+        return int(speed+correction), int(speed), False
 
 

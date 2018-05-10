@@ -11,7 +11,6 @@ import numpy as np
 if __name__ == "__main__":
     # window size
     img = np.zeros((600,800,3), np.uint8)
-
     # creating simulator
     sim = Simulator(img)
     # initialize arena
@@ -24,16 +23,18 @@ if __name__ == "__main__":
 
     # show img
     cv2.imshow('Goalkeeper Simulation',img)
+
     key = cv2.waitKey(1)
     while 1:
         cv2.imshow('Goalkeeper Simulation',img)
-
+        cv2.moveWindow('Goalkeeper Simulation', 400,0)
+        
         #End simulation
         if key == ord('q'):
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array([300, 300]), 100)
+        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball), 200)
         if not done:
             # move function 
             sim.move(leftSpeed,rightSpeed)
