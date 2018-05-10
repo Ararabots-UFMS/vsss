@@ -1,5 +1,8 @@
+import sys
+sys.path.append('../')
 from auxiliary import *
 from simulator import Simulator
+from functions.movement import Movement
 import cv2
 import math
 import time
@@ -14,7 +17,10 @@ if __name__ == "__main__":
     # initialize arena
     sim.initArena()
     # initialize robot
-    sim.drawRobot((200,200), [-1,0])
+    sim.drawRobot((200,200), [1,0])
+
+    # Classe de movimentacao
+    movement = Movement(10)
 
     # show img
     cv2.imshow('Goalkeeper Simulation',img)
@@ -27,7 +33,9 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        # move function 
-        sim.move(80,44)
+        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array([300, 300]), 100)
+        if not done:
+            # move function 
+            sim.move(leftSpeed,rightSpeed)
         # 60fps
         key = cv2.waitKey(16)

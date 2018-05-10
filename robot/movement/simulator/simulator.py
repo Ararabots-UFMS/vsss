@@ -66,7 +66,7 @@ class Simulator():
         cv2.drawContours(self.img,[box], 0, (0, 0, 0), -1)
 
     def drawRobot(self, pos, vec):
-        """Draw the robot in position pos with the robotVector iqual a vec"""
+        """Draw the robot in position pos with the robotVectortor iqual a vec"""
         # angle between vec and [1,0]
         angle = angleBetween([1,0], vec)*180/(math.pi)
         # get the robot contour
@@ -99,9 +99,9 @@ class Simulator():
 
     def upVec(self, vec):
         """Update robot and wheels vector"""
-        self.robotVec = vec
-        self.rightVec = self.robotVec
-        self.leftVec = self.robotVec
+        self.robotVector = vec
+        self.rightVec = self.robotVector
+        self.leftVec = self.robotVector
 
     def move(self, left, right):
         """Recive left wheel speed and right wheel speed and draw the robot in the img"""
@@ -111,24 +111,24 @@ class Simulator():
         maxv = max(lspeed, rspeed)
         # commum speed between the wheels
         difv = abs(abs(lspeed-rspeed)-maxv)
-        self.robotVec = unitVector(self.robotVec)
-        print self.robotVec
+        self.robotVector = unitVector(self.robotVector)
+        print self.robotVector
         # resultant vector
         diff = abs(lspeed-rspeed)
         # angle in 1 frame
         angle = math.atan2(diff, 32)
         # clockwise or anti clockwise
         if rspeed == max(lspeed, rspeed):    
-            auxVec = rotateVector(self.robotVec, angle)
+            auxVec = rotateVector(self.robotVector, angle)
         else:
-            auxVec = rotateVector(self.robotVec, -angle)
+            auxVec = rotateVector(self.robotVector, -angle)
         # clear robot position
         self.clearArea(self.robot)
         self.initArena()
-        print int(self.robot[0]+difv*self.robotVec[0]), int(self.robot[1]+difv*self.robotVec[1])
-        print self.robotVec[0]
+        print int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])
+        print self.robotVector[0]
         # draw robot
-        self.drawRobot((int(self.robot[0]+difv*self.robotVec[0]), int(self.robot[1]+difv*self.robotVec[1])), auxVec)
+        self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
 
     def arenaLimit(self, pos):
         if pos[0] > 684 or pos[0] < 116:

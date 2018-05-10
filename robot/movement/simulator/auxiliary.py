@@ -31,3 +31,6 @@ def rotatePoint(origin, point, angle):
     qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return (int(qx),int(qy))
+
+def distancePoints(a, b):
+    return ((a[0]-b[0])**2 + (a[1]-b[1])**2)**0.5
