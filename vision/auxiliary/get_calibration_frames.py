@@ -8,11 +8,11 @@ import uuid
 import cv2
 
 CAMERA_ID = 1
-CAMERA_NAME = ""
+PARAMS_FILE = ""
 FRAME_SIZE = (1280, 720)
 
 if __name__ == '__main__':
-    cap = Camera(CAMERA_ID, CAMERA_NAME, False, False)
+    cap = Camera(CAMERA_ID, PARAMS_FILE, False)
     if FRAME_SIZE != ():
         cap.set_frame_size(FRAME_SIZE[0], FRAME_SIZE[1])
 

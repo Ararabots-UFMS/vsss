@@ -12,7 +12,6 @@ from camera import Camera
 CAMERA_ID = 1
 CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
-SCALE_FACTOR = 1.0
 H_CENTERS = 12
 V_CENTERS = 9
 
@@ -41,10 +40,6 @@ if __name__ == '__main__':
     for fname in images:
         frame = cv2.imread(fname)
         
-        # scaling
-        (w,h) = frame.shape[:2]
-        frame = cv2.resize(frame, (int(SCALE_FACTOR * w), int(SCALE_FACTOR * h)), interpolation = cv2.INTER_LINEAR)
-
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Find the chessboard centers
         ret, corners = cv2.findChessboardCorners(gray, (H_CENTERS, V_CENTERS), None)
@@ -100,7 +95,7 @@ if __name__ == '__main__':
 
     print "Showing result, press q to exit"
     if save == 'y':
-        cap = Camera(CAMERA_ID, name)
+        cap = Camera(CAMERA_ID, "../../parameters/CAMERA_"+name+".json")
     else:
         cap = Camera(CAMERA_ID, "", False, False)
 
