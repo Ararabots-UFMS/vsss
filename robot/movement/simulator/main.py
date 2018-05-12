@@ -28,7 +28,7 @@ if __name__ == "__main__":
     while 1:
         cv2.imshow('Goalkeeper Simulation',img)
         cv2.moveWindow('Goalkeeper Simulation', 400,0)
-        
+
         #End simulation
         if key == ord('q'):
             cv2.destroyAllWindows()
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
         leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball), 200)
         if not done:
-            # move function 
+            # move function
             sim.move(leftSpeed,rightSpeed)
         # 60fps
         key = cv2.waitKey(16)
