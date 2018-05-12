@@ -27,8 +27,6 @@ RADIUS  =   3
 BAR_HEIGHT = 50
 MOUSE_LAST_STATE = None
 
-SCALE = 0.5
-
 def get_status_bar(h, w, status):
     font = cv2.FONT_HERSHEY_SIMPLEX
     status_bar = np.zeros((h, w, 3), np.uint8)
@@ -167,9 +165,6 @@ if __name__ == '__main__':
     arena_countour = False
     while True:
         frame = cap.read()
-        # resizing
-        h,w = frame.shape[:2]
-        frame = cv2.resize(frame, (int(SCALE * w), int(SCALE * h)))
         
         if warped:
             frame = cv2.warpPerspective(frame, M, (size[0], size[1]))

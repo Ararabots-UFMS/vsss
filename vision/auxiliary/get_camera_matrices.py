@@ -14,6 +14,8 @@ CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
 H_CENTERS = 12
 V_CENTERS = 9
+SCALE = 0.5
+
 
 def get_error(objp, imgpoints, rvecs, tvecs, mtx, dist):
     mean_error = 0
@@ -58,10 +60,11 @@ if __name__ == '__main__':
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1],None,None)
     h, w =  frame.shape[:2]
-    newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (w,h))
+    nh, nw = int(SCALE * h), int(SCALE * w)
+    newcameramtx, roi=cv2.getOptimalNewCameraMatrix(mtx, dist, (w,h), 1, (nw,nh))
 
     # get undistorion maps
-    mapx,mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx,( w,h), 5)
+    mapx,mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (nw,nh), 5)
 
     e = get_error(objp, imgpoints, rvecs, tvecs, mtx, dist)
     print "STD Error:", e

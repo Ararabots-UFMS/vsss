@@ -60,8 +60,6 @@ class Vision:
         """ Takes the raw imagem from the camera and applies the warp perspective transform
             and the mask """
         self.raw_image = camera.read()
-        (h,w) = self.raw_image.shape[:2]
-        self.raw_image = cv2.resize(self.raw_image, (int(0.5*w), int(0.5*h)))
         self.warp_perspective()
         self.set_dark_border()
         return self.arena_image
