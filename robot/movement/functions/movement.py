@@ -19,14 +19,24 @@ class Movement():
     def moveToPoint(self, robotPosition, robotVector, goalPosition, speed):
         if self.inGoal(robotPosition, goalPosition):
             return 0, 0, True
-
-        if any(self.lastPos != goalPosition):#TODO: talvez seja melhor o pid resolver isso
+        if any(self.lastPos != goalPosition):
             self.pid.reset()
         directionVector = goalPosition - robotPosition
-        diffAngle = angleBetween(robotVector, directionVector)
-        correction = self.pid.update(diffAngle)
-        if correction > 0: #correcao aplicada na roda X
-            return int(speed), int(speed+correction), False
+        return self.followVector(robotVector, directionVector, speed) 
+
+    def followVector(self, robotVector, goalVector, speed):         
+        diffAngle = angleBetween(robotVector, goalVector, ccw=False) 
+        correction = self.pid.update(diffAngle) 
+        if correction > 0: 
+            return int(speed), int(speed-correction), False 
         return int(speed+correction), int(speed), False
+
+    def spin(self, speed, ccw=True):
+        if ccw:
+            return int(-speed), int(speed), False
+        return int(speed), int(-speed), False
+
+    def headTo(self, robotVector, goalVector, speed):
+        pass
 
 

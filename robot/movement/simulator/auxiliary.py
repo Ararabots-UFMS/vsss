@@ -1,20 +1,18 @@
 import numpy as np
+import numpy.linalg as la
 import math  
 
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
 
-def angleBetween(v1, v2):
-    """ Returns the angle in radians between vectors 'v1' and 'v2'"""
-    v1_u = unitVector(v1)
-    v2_u = unitVector(v2)
-    dot = v1_u[0]*v2_u[0] + v1_u[1]*v2_u[1]      # dot product
-    det = v1_u[0]*v2_u[1] - v1_u[1]*v2_u[0]      # determinant
-    aux = math.atan2(det, dot)
-    if aux < 0:
-        aux += 2*math.pi
-    return aux  # atan2(y, x) or atan2(sin, cos)
+def angleBetween(v1, v2, ccw=True):
+    """ Returns the angle in radians between vectors 'v1' and 'v2' """
+    cosang = np.dot(v1, v2)
+    sinang = np.cross(v1, v2)
+    if ccw:
+        sinang = la.norm(np.cross(v1, v2))
+    return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
 
 def rotateVector(x, angle):
     """Rotate vector x anticlockwise around the origin by angle degrees, return angle in format [x, y]"""

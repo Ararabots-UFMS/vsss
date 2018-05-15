@@ -16,15 +16,16 @@ if __name__ == "__main__":
     # initialize arena
     sim.initArena()
     # initialize robot
-    sim.drawRobot((200,200), [1,0])
+    sim.drawRobot((400,400), [-1,1])
 
     # Classe de movimentacao
     movement = Movement(10)
 
     # show img
     cv2.imshow('Goalkeeper Simulation',img)
+    cv2.moveWindow('Goalkeeper Simulation', 400,0)
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(0)
     while 1:
         cv2.imshow('Goalkeeper Simulation',img)
         cv2.moveWindow('Goalkeeper Simulation', 400,0)
@@ -35,6 +36,7 @@ if __name__ == "__main__":
             break
 
         leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball), 200)
+
         if not done:
             # move function
             sim.move(leftSpeed,rightSpeed)
