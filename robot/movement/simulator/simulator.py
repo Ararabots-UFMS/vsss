@@ -127,6 +127,7 @@ class Simulator():
         self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
 
     def arenaLimit(self, pos):
+        """Define the arena limits"""
         if pos[0] > 684 or pos[0] < 116:
             return False
         if pos[1] < 56 or pos[1] > 544:
