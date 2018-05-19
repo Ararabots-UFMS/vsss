@@ -12,9 +12,15 @@ class Movement():
         self.lastPos = np.array([0, 0])
         self.errorMargin = error
 
-    def inGoal(self, robotPosition, goalPosition):
+    def inGoalPosition(self, robotPosition, goalPosition):
         """Verify if the robot is in goal position and return a boolean of the result"""
         if distancePoints(robotPosition, goalPosition) <= self.errorMargin:
+            return True
+        return False
+
+    def inGoalVector(self, robotVector, goalVector):
+        """Verify if the robot is in goal vector and return a boolean of the result"""
+        if abs(angleBetween(robotVector, goalVector, ccw=False)) <= 0.0349066: #2 degrees error
             return True
         return False
 
@@ -46,6 +52,14 @@ class Movement():
         return int(speed), int(-speed), False
 
     def headTo(self, robotVector, goalVector, speed):
-        pass
+        """Recives robot direction vector, goal vector and a speed. Return the left wheels speed,
+        right wheel speed and done. Robot vector and goal vector will be parallels vectors."""
+        diffAngle = angleBetween(robotVector, goalVector, ccw=False)
+        if self.inGoalVector(robotVector, goalVector):
+            return 0, 0, True
+        correction = self.pid.update(diffAngle)
+        if correction > 0:
+            return int(speed-correction), 0, False
+        return 0, int(speed+correction), False
 
 

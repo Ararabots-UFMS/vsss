@@ -35,7 +35,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball), 200)
+        leftSpeed, rightSpeed, done = movement.headTo(np.array(sim.robotVector), np.array(sim.ball) - np.array(sim.robot), 100)
 
         if not done:
             # move function
