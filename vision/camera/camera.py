@@ -1,10 +1,14 @@
+#!/usr/bin/python
+import sys
+sys.path.append('../../')
 import cv2
-import json
 import os
 import sys
 import numpy as np
 from threading import Thread
+from json_handler import JsonHandler
 
+# @author Wellington Castro <wellingtonvcastro@gmail.com>
 
 class Camera:
     def __init__(self, device_id, params_file_name="", lens_correction=True):
@@ -12,6 +16,7 @@ class Camera:
         self.lens_correction = lens_correction
         self.params_file_name = params_file_name
         self.capture = cv2.VideoCapture(self.id)
+        self.json_handler = JsonHandler()
         self.frame = None
 
         if self.params_file_name != "":
@@ -31,10 +36,8 @@ class Camera:
         return self.frame
         
     def load_params(self):
-    	""" Loads the parameters of the camera from a json"""
-        params_file = open(self.params_file_name, "r")
-        params = json.loads(params_file.read())
-        params_file.close()
+    	""" Loads the parameters of the camera from a json """
+        params = self.json_handler.read(self.params_file_name)
 
         """ mapx and mapy are the matrix with the lens correction map """
         self.mapx = np.asarray(params['matrix_x']).astype("float32")

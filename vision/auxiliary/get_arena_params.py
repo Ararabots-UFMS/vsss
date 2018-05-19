@@ -1,18 +1,14 @@
 import sys
-sys.path.append('../camera')
+sys.path.append('../')
+sys.path.append('../../')
 
-from camera import Camera
+from camera.camera import Camera
+import COLORS
 import numpy as np
 import cv2
 import time
 import os
-import json
-
-# colors definitios
-RED     =   (0, 0, 255)
-GREEN   =   (0, 255, 0)
-BLUE    =   (255, 0, 0) 
-YELLOW  =   (0, 255, 255)
+from json_handler import JsonHandler
 
 # modes definitions
 NO_MODE     = -1
@@ -33,16 +29,16 @@ def get_status_bar(h, w, status):
 
     if status == ADD_MODE:
         text = "ADD POINT MODE"
-        color = GREEN
+        color = COLORS.GREEN
     elif status == DELETE_MODE:
         text = "DELETE POINT MODE"
-        color = RED
+        color = COLORS.RED
     elif status == EDIT_MODE:
         text = "EDIT POINT MODE"
-        color = YELLOW
+        color = COLORS.YELLOW
     elif status == NO_MODE:
         text = "NO MODE SELECTED"
-        color = BLUE
+        color = COLORS.BLUE
 
     status_bar[:][:] = color
     return cv2.putText(status_bar, text, (0,30), font, 1, (0, 0, 0), 2, cv2.LINE_AA)
@@ -64,15 +60,15 @@ def draw_components(img, pts, sort=True):
             sorted_points = pts
 
         for (i,pt) in enumerate(sorted_points):
-            cv2.circle(img, tuple(pt), RADIUS, RED, -1)
+            cv2.circle(img, tuple(pt), RADIUS, COLORS.RED, -1)
             if i != 0:
                 segment = np.array([sorted_points[j], sorted_points[i]]).reshape((-1, 1, 2))
-                cv2.polylines(img, [segment], True, GREEN, 2)
+                cv2.polylines(img, [segment], True, COLORS.GREEN, 2)
             j = i
 
         if len(pts):
             segment = np.array([sorted_points[j], sorted_points[0]]).reshape((-1, 1, 2))
-            cv2.polylines(img, [segment], True, GREEN, 2)
+            cv2.polylines(img, [segment], True, COLORS.GREEN, 2)
 
 def onMouse_add_mode(event, x, y, flags, pts):
     if event == cv2.EVENT_LBUTTONUP:
@@ -141,9 +137,8 @@ def save_params(matrix, vertices, size, path):
     params['warp_matrix'] = matrix.tolist()
     params['arena_vertices'] = vertices
     params['arena_size'] = (size[0], size[1])
-    file = open(path, "w+")
-    json.dump(params, file)
-    file.close()
+    json_handler = JsonHandler()
+    return json_handler.write(params, path)
 
 if __name__ == '__main__':
     print "-------------------------------------------"
@@ -154,7 +149,7 @@ if __name__ == '__main__':
     print "S to save"
     print "Q to quit"
     print "--------------------------------------------\n"
-    cap = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
+    cap = Camera(0, CAMERA_PARAMS_PATH)
     points = []
     frame = cap.read()
     
@@ -216,5 +211,4 @@ if __name__ == '__main__':
             ARENA_PARAMS_PATH = raw_input("Type the path where the parameters should be shaved (ex: ~/Documents/params.json): ")
             ret = save_params(M, points, size, ARENA_PARAMS_PATH)
             if ret:
-                print size
                 print "Parameters saved!"
