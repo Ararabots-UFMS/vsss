@@ -6,3 +6,5 @@ robot/movement/simulator/\.hidden
 robot/movement/functions/\.hidden
 
 robot/movement/control/\.hidden
+
+\.idea/
