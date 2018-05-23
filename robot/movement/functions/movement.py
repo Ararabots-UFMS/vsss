@@ -28,7 +28,7 @@ class Movement():
         """Recives robot position, robot direction vector, goal position and a speed.
         Return the speed os the wheel to follow the vector (goal - robot)
         """
-        if self.inGoal(robotPosition, goalPosition):
+        if self.inGoalPosition(robotPosition, goalPosition):
             return 0, 0, True
         if any(self.lastPos != goalPosition):
             self.pid.reset()
