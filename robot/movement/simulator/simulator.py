@@ -1,6 +1,4 @@
 import cv2
-import math
-import numpy as np
 from auxiliary import *
 
 # minimum speed 44
@@ -80,7 +78,7 @@ class Simulator():
             vec = unitVector(vec)
             self.upVec(vec)
         # draw contours and vec arrow
-        cv2.drawContours(self.img,[box], 0, (25, 25, 25), -1)
+        cv2.drawContours(self.img, [box], 0, (25, 25, 25), -1)
         cv2.arrowedLine(self.img, (int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), (int(self.robot[0]+32*vec[0]), int(self.robot[1]+32*vec[1])), (0,0,255), 2)
         cv2.circle(self.img,(int(self.robot[0]-6*vec[0]), int(self.robot[1]-6*vec[1])), 8, (0,255,255), -1)
         cv2.circle(self.img,(int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), 4, (0,255,255), -1)
@@ -107,25 +105,37 @@ class Simulator():
         """Recive left wheel speed and right wheel speed and draw the robot in the img"""
         lspeed = int(left*12.0/255.0)
         rspeed = int(right*12.0/255.0)
-        maxv = max(lspeed, rspeed)
+
+        backwards = False
+        if lspeed < 0 and rspeed < 0:
+            backwards = True
+
+        maxv = maxAbs(lspeed, rspeed)
+
         # commum speed between the wheels
         difv = abs(abs(lspeed-rspeed)-maxv)
+
         self.robotVector = unitVector(self.robotVector)
         # resultant vector
         diff = abs(lspeed-rspeed)
         # angle in 1 frame
         angle = math.atan2(diff, 32)
-        # clockwise or anti clockwise
-        if rspeed == max(lspeed, rspeed):    
+
+        # counterclockwise
+        if (rspeed == maxAbs(lspeed, rspeed) and backwards == False) or (lspeed == maxAbs(lspeed, rspeed) and backwards == True):
             auxVec = rotateVector(self.robotVector, angle)
-        else:
+        else:#clockwise
             auxVec = rotateVector(self.robotVector, -angle)
+
         # clear robot position
         self.clearArea(self.robot)
         self.initArena()
-        # draw robot
-        self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
 
+        # draw robot
+        if not backwards:
+            self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
+        else:
+            self.drawRobot((int(self.robot[0] - difv * self.robotVector[1]), int(self.robot[1] - difv * self.robotVector[0])), auxVec)
     def arenaLimit(self, pos):
         """Define the arena limits"""
         if pos[0] > 684 or pos[0] < 116:

@@ -1,11 +1,8 @@
 import sys
 sys.path.append('../')
-from auxiliary import *
 from simulator import Simulator
 from functions.movement import Movement
 import cv2
-import math
-import time
 import numpy as np
 
 if __name__ == "__main__":
@@ -35,7 +32,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot) ,np.array(sim.robotVector), np.array(sim.ball), 200)
+        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot) ,np.array(sim.robotVector), np.array(sim.ball), -200)
 
         if not done:
             # move function
