@@ -107,7 +107,7 @@ class Simulator():
         rspeed = int(right*12.0/255.0)
 
         backwards = False
-        if lspeed < 0 and rspeed < 0:
+        if lspeed <= 0 and rspeed <= 0:
             backwards = True
 
         maxv = maxAbs(lspeed, rspeed)
@@ -121,11 +121,16 @@ class Simulator():
         # angle in 1 frame
         angle = math.atan2(diff, 32)
 
-        # counterclockwise
-        if (rspeed == maxAbs(lspeed, rspeed) and backwards == False) or (lspeed == maxAbs(lspeed, rspeed) and backwards == True):
-            auxVec = rotateVector(self.robotVector, angle)
-        else:#clockwise
-            auxVec = rotateVector(self.robotVector, -angle)
+        if backwards:
+            if abs(rspeed) == maxAbs(lspeed, rspeed):
+                auxVec = rotateVector(self.robotVector, angle)
+            else:
+                auxVec = rotateVector(self.robotVector, -angle)
+        else:
+            if rspeed == maxAbs(lspeed, rspeed):
+                auxVec = rotateVector(self.robotVector, -angle)
+            else:
+                auxVec = rotateVector(self.robotVector, angle)
 
         # clear robot position
         self.clearArea(self.robot)
@@ -135,7 +140,8 @@ class Simulator():
         if not backwards:
             self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)
         else:
-            self.drawRobot((int(self.robot[0] - difv * self.robotVector[1]), int(self.robot[1] - difv * self.robotVector[0])), auxVec)
+            self.drawRobot((int(self.robot[0]-difv*self.robotVector[0]), int(self.robot[1]-difv*self.robotVector[1])), auxVec)
+
     def arenaLimit(self, pos):
         """Define the arena limits"""
         if pos[0] > 684 or pos[0] < 116:
