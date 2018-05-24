@@ -81,4 +81,4 @@ if __name__ == '__main__':
 		yellow[1] = (yellow2,vecy2)
 		yellow[2] = (yellow3,vecy3)
 
-		virtual.pause(6)
+		virtual.pause(10)

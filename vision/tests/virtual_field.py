@@ -16,7 +16,7 @@ class Virtual_Field():
 		self.top_right = (680,80)
 		self.bottom_left = (80,600)
 		self.bottom_right = (680,600)
-		self.field_origin = self.bottom_left
+		self.field_origin = (40,600)
 		self.ball_radius = 7	# pixels
 		self.robot_side_size = 28	# pixels
 		self.colors = {	"blue":[255,0,0],
@@ -87,7 +87,7 @@ class Virtual_Field():
 		r7 = range(620,679)
 
 		if(ball_center[0] in r1 and ball_center[1] in r2):
-			cv.rectangle(self.field, (41,261), (79,419), self.colors["green"], -1)	 
+			cv.rectangle(self.field, (41,261), (79,419), self.colors["green"], -1) 
 		elif(ball_center[0] in r3 and ball_center[1] in r4):
 			cv.rectangle(self.field, (681,261), (719,419), self.colors["green"], -1)
 		elif(ball_center[0] in r5 and ball_center[1] in r6):
@@ -125,7 +125,7 @@ class Virtual_Field():
 
 			cv.drawContours(self.field, [n_contour], -1, color, -1)
 			cv.arrowedLine(self.field, center, (int(center[0]+3*vector[0]), int(center[1]+3*vector[1])), self.colors["red"], 2)
-			#cv.arrowedLine(self.field, self.field_origin, (int(center[0]), int(center[1])), self.colors["gray"], 1)
+			cv.arrowedLine(self.field, self.field_origin, (int(center[0]), int(center[1])), self.colors["gray"], 1)
 
 
 
