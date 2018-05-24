@@ -8,7 +8,7 @@ import numpy as np
 from threading import Thread
 from json_handler import JsonHandler
 
-# @author Wellington Castro <wellingtonvcastro@gmail.com>
+# @author Wellington Castro <wvmcastro>
 
 class Camera:
     def __init__(self, device_id, params_file_name="", lens_correction=True):

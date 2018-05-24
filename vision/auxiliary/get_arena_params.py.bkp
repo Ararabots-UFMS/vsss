@@ -23,6 +23,10 @@ RADIUS  =   3
 BAR_HEIGHT = 50
 MOUSE_LAST_STATE = None
 
+class params_setter:
+    def __init__():
+        pass
+        
 def get_status_bar(h, w, status):
     font = cv2.FONT_HERSHEY_SIMPLEX
     status_bar = np.zeros((h, w, 3), np.uint8)

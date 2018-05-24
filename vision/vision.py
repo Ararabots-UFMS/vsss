@@ -8,18 +8,14 @@ import time
 from sklearn.cluster import MiniBatchKMeans
 from camera.camera import Camera
 from json_handler import JsonHandler
+from params_setter import ParamsSetter
 
-# @author Wellington Castro <wellingtonvcastro@gmail.com>
+# @author Wellington Castro <wvmcastro>
 
 # MACROS
 NUM_CLUSTERS = 5
 HSV_MIN = np.array([])
 HSV_MAX = np.array([255,255,255])
-
-# TODO
-    # reload online parametros
-    # selecionar range hsv
-    # adicionar range hsv arena.json
 
 class Vision:
 
@@ -36,12 +32,13 @@ class Vision:
         self.mbc_kmeans = MiniBatchKMeans(n_clusters = cluster_cfg[0], max_iter = cluster_cfg[1],
                                          batch_size=cluster_cfg[2])
 
+        self.params_setter = ParamsSetter(camera, params_file_name)
+
         self.HSV_MAX = HSV_MAX
         self.HSV_MIN = HSV_MIN
 
         if self.params_file_name != "":
             self.load_params()
-            self.get_mask()
 
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""
@@ -50,6 +47,8 @@ class Vision:
         self.arena_vertices = params['arena_vertices']
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
         self.arena_size = (params['arena_size'][0], params['arena_size'][1])
+
+        self.get_mask()
 
     def warp_perspective(self):
         """ Takes the real world arena returned by camera and transforms it
@@ -76,8 +75,9 @@ class Vision:
         """ Takes the raw imagem from the camera and applies the warp perspective transform
             and the mask """
         self.raw_image = camera.read()
-        self.warp_perspective()
-        self.set_dark_border()
+        if(self.params_file_name != ""):
+            self.warp_perspective()
+            self.set_dark_border()
         return self.arena_image
 
 
@@ -101,8 +101,15 @@ if __name__ == "__main__":
         i += 1
         arena = v.get_frame()
         cv2.imshow('vision', arena)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        key = cv2.waitKey(1) & 0xFF
+
+        if key == ord('q'): # exit
             break
+        elif key == ord('c'): # open cropper
+            tc0 = time.time()
+            v.params_setter.run()
+            v.load_params()
+            t0 += tc0 - time.time()
     
     print "framerate:", i / (time.time() - t0)
     cv2.destroyAllWindows()
