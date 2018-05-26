@@ -100,7 +100,7 @@ class ParamsSetter:
             self.MOUSE_LAST_STATE = cv2.EVENT_LBUTTONUP
 
         if event == cv2.EVENT_MOUSEMOVE and self.MOUSE_LAST_STATE == cv2.EVENT_LBUTTONDOWN and i != None:
-            pts[i] = (x,y-BAR_HEIGHT)
+            pts[i] = (x,y-self.BAR_HEIGHT)
 
     def onMouse_no_mode(self, event, x, y, flags, pts):
         pass
@@ -154,18 +154,18 @@ class ParamsSetter:
         # Creates the trackbar
         cv2.createTrackbar('minV', window_name, 0, 255, self.nothing)
         
-        HSV_MAX = np.uint8([255, 255, 255])
-        hsv_min = np.uint8([0, 0, 0])
+        LAB_MAX = np.uint8([255, 255, 255])
+        lab_min = np.uint8([0, 0, 0])
 
         while True:
             # get the value
             v_threshold = cv2.getTrackbarPos('minV', window_name)
-            hsv_min[2] = v_threshold
+            lab_min[0] = v_threshold
 
-            _image = cv2.cvtColor(imageSrc, cv2.COLOR_BGR2HSV)
-            thsv = cv2.inRange(_image, hsv_min, HSV_MAX)
+            _image = cv2.cvtColor(imageSrc, cv2.COLOR_BGR2LAB)
+            thsv = cv2.inRange(_image, lab_min, LAB_MAX)
             _image = cv2.bitwise_and(_image, _image , mask=thsv)
-            thImage = cv2.cvtColor(_image, cv2.COLOR_HSV2BGR)
+            thImage = cv2.cvtColor(_image, cv2.COLOR_LAB2BGR)
 
             # the red pixels represent the pixels tath passed throw the threshold
             (h, w) = thImage.shape[:2]
@@ -175,13 +175,16 @@ class ParamsSetter:
             thImage = thImage.reshape((h, w, 3))
             # Show the result
             cv2.imshow(window_name, thImage)
-            if cv2.waitKey(1) & 0xFF == ord('s'):
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('s') or key == ord('q'):
                     break
 
         cv2.destroyWindow(window_name)
-
-        self.value_min = np.array([0,0,v_threshold])
-        return True
+        if key == ord('q'):
+            return False
+        else:
+            self.value_min = np.array([v_threshold,0,0])
+            return True
 
     def save_params(self):
         json_handler = JsonHandler()
@@ -215,8 +218,9 @@ class ParamsSetter:
         print "--------------------------------------------\n"
 
     def run(self):
-        cv2.namedWindow('cropper')
+        self.print_manual()
 
+        cv2.namedWindow('cropper')
         mode = self.NO_MODE
         warped = False
         arena_countour = False
