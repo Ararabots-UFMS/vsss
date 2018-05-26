@@ -2,7 +2,7 @@
 import json
 import sys
 
-# @author Wellington Castro <wellingtonvcastro@gmail.com>
+# @author Wellington Castro <wvmcastro>
 
 class JsonHandler:
     """ This class is made to both write and read from json files easier """
@@ -19,8 +19,7 @@ class JsonHandler:
             params_file.close()       
         except:
             e = sys.exc_info()[0]
-            print "Erro: ",
-            print str(file_name) + " nao existe!", e 
+            print "Error: ", e 
 
         return dictionary
 
