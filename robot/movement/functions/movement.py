@@ -39,10 +39,8 @@ class Movement():
         """Recives the robot vector, goal vector and a speed and return the speed
         of the wheels to follow the goal vector"""
         diffAngle = angleBetween(robotVector, goalVector, ccw=False) 
-        correction = self.pid.update(diffAngle) 
-        if correction > 0: 
-            return int(speed), int(speed-correction), False 
-        return int(speed+correction), int(speed), False
+        correction = self.pid.update(diffAngle)
+        return self.returnSpeed(speed, correction)
 
     def spin(self, speed, ccw=True):
         """Recives a speed and a boolean counterclockwise and return the left wheel speed,
@@ -58,8 +56,17 @@ class Movement():
         if self.inGoalVector(robotVector, goalVector):
             return 0, 0, True
         correction = self.pid.update(diffAngle)
-        if correction > 0:
-            return int(speed-correction), 0, False
-        return 0, int(speed+correction), False
+        if correction < 0:
+            return int(speed+correction), 0, False
+        return 0, int(speed-correction), False
 
-
+    def returnSpeed(self, speed, correction):
+        """Recives the robot speed and the PID correction, and return each wheel speed."""
+        if speed < 0: #backwards
+            if correction < 0:
+                return int(speed + correction), int(speed), False
+            return int(speed), int(speed - correction), False
+        else: #forward
+            if correction < 0:
+                return int(speed), int(speed + correction), False
+            return int(speed - correction), int(speed), False

@@ -19,13 +19,13 @@ if __name__ == "__main__":
     movement = Movement(10)
 
     # show img
-    cv2.imshow('Goalkeeper Simulation',img)
-    cv2.moveWindow('Goalkeeper Simulation', 400,0)
+    cv2.imshow('Robot Simulation',img)
+    cv2.moveWindow('Robot Simulation', 400,0)
 
     key = cv2.waitKey(0)
     while 1:
-        cv2.imshow('Goalkeeper Simulation',img)
-        cv2.moveWindow('Goalkeeper Simulation', 400,0)
+        cv2.imshow('Robot Simulation',img)
+        cv2.moveWindow('Robot Simulation', 400,0)
 
         #End simulation
         if key == ord('q'):
