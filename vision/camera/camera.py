@@ -1,12 +1,12 @@
 #!/usr/bin/python
 import sys
 sys.path.append('../../')
+
 import cv2
 import os
 import sys
 import numpy as np
-from threading import Thread
-from json_handler import JsonHandler
+from utils.json_handler import JsonHandler
 
 # @author Wellington Castro <wvmcastro>
 
