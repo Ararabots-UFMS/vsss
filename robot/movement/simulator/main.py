@@ -14,6 +14,8 @@ if __name__ == "__main__":
     sim.initArena()
     # initialize robot
     sim.drawRobot((200,200), [-1,1])
+    # initialize ball
+    sim.drawBall((500, 500))
 
     # Classe de movimentacao
     movement = Movement(10)
@@ -32,7 +34,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot) ,np.array(sim.robotVector), np.array(sim.ball), -200)
+        leftSpeed, rightSpeed, done = movement.moveToPoint(np.array(sim.robot) ,np.array(sim.robotVector), np.array(sim.ball), 200)
 
         if not done:
             # move function

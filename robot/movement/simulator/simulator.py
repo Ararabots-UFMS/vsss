@@ -82,10 +82,12 @@ class Simulator():
         cv2.arrowedLine(self.img, (int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), (int(self.robot[0]+32*vec[0]), int(self.robot[1]+32*vec[1])), (0,0,255), 2)
         cv2.circle(self.img,(int(self.robot[0]-6*vec[0]), int(self.robot[1]-6*vec[1])), 8, (0,255,255), -1)
         cv2.circle(self.img,(int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), 4, (0,255,255), -1)
-        # cv2.circle(self.img,(int(self.robot[0]+9*vec[0]), int(self.robot[1]+8*vec[1])), 4, (0,255,255), -1)
 
     def drawBall(self, pos):
         """Draw ball at position pos"""
+        # clear ball position
+        self.clearArea(self.ball)
+        self.initArena()
         self.ball = pos
         cv2.circle(self.img, self.ball, ballRadius, (31,136,246), -1)
 
@@ -93,7 +95,6 @@ class Simulator():
         """Initilize arena and ball"""
         self.drawArena()
         self.drawMarks()
-        self.drawBall((500,500))
 
     def upVec(self, vec):
         """Update robot and wheels vector"""
