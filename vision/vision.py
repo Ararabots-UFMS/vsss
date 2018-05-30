@@ -14,7 +14,6 @@ from vision_utils.params_setter import ParamsSetter
 
 
 class Vision:
-
     def __init__(self, camera, params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
         self.arena_vertices = []
         self.arena_size = ()
@@ -25,7 +24,7 @@ class Vision:
         self.raw_image = None
         self.warp_matrix = None
         self.json_handler = JsonHandler()
-        
+
         if method == "clustering":
             self.mbc_kmeans = MiniBatchKMeans(n_clusters = cluster_cfg[0], max_iter = cluster_cfg[1],
                                          batch_size=cluster_cfg[2])
@@ -56,9 +55,12 @@ class Vision:
 
         self.get_mask()
 
-    def load_colors_params(self):
-        """ Loads the colors thresholds from the json file """
-        colors_params = self.json_handler.read(self.colors_params_file)
+    def load_colors_params(self, colors_params=None):
+        """ Loads the colors thresholds from the json file or from a given
+            params dictionary """
+        if colors_params is None:
+            colors_params = self.json_handler.read(self.colors_params_file)
+
         self.yellow_min = np.asarray(colors_params['hsv_yellow_min']).astype("uint8")
         self.yellow_max = np.asarray(colors_params['hsv_yellow_max']).astype("uint8")
         self.blue_min = np.asarray(colors_params['hsv_blue_min']).astype("uint8")
@@ -118,8 +120,9 @@ class Vision:
         """ Substitute every sample by the centroid of the clustes that it belongs 
             now the image has only n_clusters colors """
         self.arena_image[indexes[:,0], indexes[:,1]] = self.mbc_kmeans.cluster_centers_.astype("uint8")[labels]
-    
+
     def color_seg_pipeline(self):
+        """ Wait until the color parameters are used """
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
         self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
@@ -144,26 +147,33 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json")
+    camera = Camera(0, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
     v = Vision(camera, arena_params, colors_params, method="color_segmentation")
 
     i = 0
     t0 = time.time()
-    cv2.namedWindow('vision')
+    cv2.namedWindow('control')
+    show = False
     while True: 
         i += 1
         arena = v.get_frame()
-        cv2.imshow('vision', arena)
-        cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         key = cv2.waitKey(1) & 0xFF
-
+        if show:
+            cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
+            cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if key == ord('q'): # exit
+            camera.stop()
             break
+        elif key == ord('s'): #show/hide
+            show = not show
+            if show == False:
+                cv2.destroyWindow("vision")
+                cv2.destroyWindow("segs")
         elif key == ord('c'): # open cropper
             tc0 = time.time()
             v.params_setter.run()
             v.load_params()
-            t0 += time.time() - tc0
+            t0 += time.time() - tc0            
     
     print "framerate:", i / (time.time() - t0)
     cv2.destroyAllWindows()
