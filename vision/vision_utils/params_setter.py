@@ -7,7 +7,7 @@ import numpy as np
 import cv2
 import time
 import os
-from json_handler import JsonHandler
+from utils.json_handler import JsonHandler
 
 CAMERA_ID = 0
 CAMERA_PARAMS_PATH = "../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
@@ -103,6 +103,7 @@ class ParamsSetter:
             pts[i] = (x,y-self.BAR_HEIGHT)
 
     def onMouse_no_mode(self, event, x, y, flags, pts):
+        print x,y
         pass
 
     def sort_clockwise(self, pts):
