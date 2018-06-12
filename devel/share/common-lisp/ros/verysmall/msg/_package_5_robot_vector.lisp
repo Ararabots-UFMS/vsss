@@ -1,0 +1,12 @@
+(cl:in-package verysmall-msg)
+(cl:export '(ROBOT_ANGLE_VECTOR_1-VAL
+          ROBOT_ANGLE_VECTOR_1
+          ROBOT_ANGLE_VECTOR_2-VAL
+          ROBOT_ANGLE_VECTOR_2
+          ROBOT_ANGLE_VECTOR_3-VAL
+          ROBOT_ANGLE_VECTOR_3
+          ROBOT_ANGLE_VECTOR_4-VAL
+          ROBOT_ANGLE_VECTOR_4
+          ROBOT_ANGLE_VECTOR_5-VAL
+          ROBOT_ANGLE_VECTOR_5
+))

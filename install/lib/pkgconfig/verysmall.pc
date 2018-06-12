@@ -1,0 +1,8 @@
+prefix=/home/marquesman/ararabots/install
+
+Name: verysmall
+Description: Description of verysmall
+Version: 0.0.0
+Cflags: -I/home/marquesman/ararabots/install/include
+Libs: -L/home/marquesman/ararabots/install/lib -lverysmall
+Requires: roscpp rospy std_msgs message_runtime

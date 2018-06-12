@@ -1,0 +1,2 @@
+set(verysmall_MESSAGE_FILES "/home/marquesman/ararabots/src/verysmall/msg/motor_speed.msg;/home/marquesman/ararabots/src/verysmall/msg/five_robot_pos.msg;/home/marquesman/ararabots/src/verysmall/msg/five_robot_vector.msg;/home/marquesman/ararabots/src/verysmall/msg/comunication_topic.msg;/home/marquesman/ararabots/src/verysmall/msg/game_topic.msg;/home/marquesman/ararabots/src/verysmall/msg/things_position.msg")
+set(verysmall_SERVICE_FILES "")
