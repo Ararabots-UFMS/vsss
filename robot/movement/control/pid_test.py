@@ -2,7 +2,6 @@ import PID
 import time
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.interpolate import spline
 
 pid = PID.PID(1.2, 1, 0.001, 1000.0, 1000.0, 0.0)
 

@@ -106,22 +106,17 @@ class Simulator():
         """Recive left wheel speed and right wheel speed and draw the robot in the img"""
         lspeed = int(left*12.0/255.0)
         rspeed = int(right*12.0/255.0)
-
         backwards = False
         if lspeed <= 0 and rspeed <= 0:
             backwards = True
-
         maxv = maxAbs(lspeed, rspeed)
-
         # commum speed between the wheels
         difv = abs(abs(lspeed-rspeed)-maxv)
-
         self.robotVector = unitVector(self.robotVector)
         # resultant vector
         diff = abs(lspeed-rspeed)
         # angle in 1 frame
         angle = math.atan2(diff, 32)
-
         if backwards:
             if abs(rspeed) == maxAbs(lspeed, rspeed):
                 auxVec = rotateVector(self.robotVector, angle)
@@ -136,7 +131,6 @@ class Simulator():
         # clear robot position
         self.clearArea(self.robot)
         self.initArena()
-
         # draw robot
         if not backwards:
             self.drawRobot((int(self.robot[0]+difv*self.robotVector[0]), int(self.robot[1]+difv*self.robotVector[1])), auxVec)

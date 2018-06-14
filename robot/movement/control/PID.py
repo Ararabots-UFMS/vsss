@@ -27,18 +27,23 @@ class PID:
 
 
     def setKp(self, num):
+        """set new Kp value"""
         self.kp = num
 
     def setKi(self, num):
+        """set new Ki value"""
         self.ki = num
 
     def setKd(self, num):
+        """set new Kd value"""
         self.kd = num
 
     def setTarget(self, num):
-        self.setTarget = setTarget
+        """Set new target value"""
+        self.setTarget = num
 
     def getConstants(self):
+        """Return the constant values"""
         return self.kp, self.ki, self.kd    	
 
     def update(self, value):
@@ -55,11 +60,11 @@ class PID:
 
         # Verify if integral value is greater than maxIntegral value
         if integral > self.maxIntegral:
-        	integral = self.maxIntegral
+            integral = self.maxIntegral
 
         # Verify if derivative value is greater than maxDerivative value
         if derivative > self.maxDerivative:
-        	derivative = self.maxDerivative
+            derivative = self.maxDerivative
 
         # Output value
         output = self.kp*proportional + self.ki*integral + self.kd*derivative
@@ -74,7 +79,7 @@ class PID:
 
     def reset(self):
         """Reset pid values"""
-    	self.derivative = 0.0
+        self.derivative = 0.0
         self.integral = 0.0
         self.error = 0.0
         self.lastTime = time.time()
