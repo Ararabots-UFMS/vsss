@@ -1,2 +1,0 @@
-verysmall
--DCATKIN_DEVEL_PREFIX=/home/marquesman/ararabots/devel -DCMAKE_INSTALL_PREFIX=/home/marquesman/ararabots/install -G Unix Makefiles
