@@ -53,7 +53,7 @@ class Vision:
         if 'value_min' in params and self.method == "clustering":
             self.lab_min = params['value_min']
 
-        self.get_mask()
+        self.create_mask()
 
     def load_colors_params(self, colors_params=None):
         """ Loads the colors thresholds from the json file or from a given
@@ -73,7 +73,7 @@ class Vision:
             to a perfect retangle """
         self.arena_image = cv2.warpPerspective(self.raw_image, self.warp_matrix, self.arena_size)
 
-    def get_mask(self):
+    def create_mask(self):
         """ Creates the image where the mask will be stored """
         _arena_mask = np.zeros((self.arena_size[1], self.arena_size[0], 3), np.uint8)
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(0, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
     v = Vision(camera, arena_params, colors_params, method="color_segmentation")
 
     i = 0
