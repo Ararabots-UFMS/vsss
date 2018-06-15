@@ -37,7 +37,7 @@ class Camera:
         sleep(1)
 
     def start(self):
-        """ starts the thread """
+        """ starts a separated thread to execute read() from OpenCV """
         self.thread_stopped = False
         self.semaphore = 0
         t = Thread(target=self.update, args=())
@@ -46,9 +46,12 @@ class Camera:
         return self
 
     def stop(self):
+        """ Stops the thread created by start() """
         if not self.thread_stopped:
             self.thread_stopped = True
 
+    """ Simple functions to implement some kind of semaphore to deal with the read and
+        write frame process """
     def semaphore_up(self):
         self.semaphore = 1
 
@@ -59,27 +62,27 @@ class Camera:
         return self.semaphore
 
     def update(self):
-        """ This function will run forever until stop() is called """
+        """ This is the target function for the thread, this will read from OpenCV forever 
+        until stop() is called """
         while not self.thread_stopped:
             """ Reads the next frame and apply correction it is on """
             ret, frame = self.capture.read()
             if ret == True:
                 if self.lens_correction == True:
                     frame = cv2.remap(frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
-                    self.semaphore_up()
-                    self.frame = frame
-                    self.semaphore_down()
-                else:
-                    self.semaphore_up()
-                    self.frame = frame
-                    self.semaphore_down()
+                self.semaphore_up()
+                self.frame = frame
+                self.semaphore_down()
 
     def threaded_read(self):
+        """ If the frame is being updated at the moment of reading it waits until
+            the update is done """
         while self.semaphore_isUp():
             pass
         return self.frame
 
     def non_threaded_read(self):
+        """ Read function for the non threaded version """
         try:
             ret, self.frame = self.capture.read()
         except:
