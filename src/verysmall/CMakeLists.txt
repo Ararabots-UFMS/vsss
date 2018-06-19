@@ -53,8 +53,8 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
  	FILES
 	motor_speed.msg
-	five_robot_pos.msg
-	five_robot_vector.msg
+	robot_pos.msg
+	robot_vector.msg
 	comunication_topic.msg
 	game_topic.msg
 	things_position.msg
