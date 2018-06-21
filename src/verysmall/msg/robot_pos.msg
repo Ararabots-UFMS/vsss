@@ -1,0 +1,1 @@
+uint32[2]    robot_pos
