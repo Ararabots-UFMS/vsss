@@ -24,14 +24,18 @@ class Vision:
         self.raw_image = None
         self.warp_matrix = None
         self.json_handler = JsonHandler()
+        self.pipeline = None
 
+        # Initialize the vitamins according to the chosen method
         if method == "clustering":
             self.mbc_kmeans = MiniBatchKMeans(n_clusters = cluster_cfg[0], max_iter = cluster_cfg[1],
                                          batch_size=cluster_cfg[2])
             self.LAB_MAX = ([255, 255, 255])
+            self.pipeline = self.cluster_pipeline
         elif method == "color_segmentation":
             self.colors_params_file = colors_params
             self.load_colors_params()
+            self.pipeline = self.color_seg_pipeline
         else:
             print "Method not recognized!"
 
@@ -107,7 +111,7 @@ class Vision:
         """ Select the interest pixels ie the colored ones that passed the threshold """
         indexes = np.argwhere(np.all(self.arena_image != (0,0,0), axis=2))
         samples = self.arena_image[indexes[:, 0], indexes[:, 1]]
-        
+
         """ Feeds the minibatch kmeans once every two seconds"""
         if self.i % 120 == 0:
             self.mbc_kmeans.fit(samples)
@@ -117,7 +121,7 @@ class Vision:
         """ Predicts the label of the cluster that each sample belongs """
         labels = self.mbc_kmeans.predict(samples)
 
-        """ Substitute every sample by the centroid of the clustes that it belongs 
+        """ Substitute every sample by the centroid of the clustes that it belongs
             now the image has only n_clusters colors """
         self.arena_image[indexes[:,0], indexes[:,1]] = self.mbc_kmeans.cluster_centers_.astype("uint8")[labels]
 
@@ -133,11 +137,8 @@ class Vision:
             and the mask """
         self.raw_image = camera.read()
         self.warp_perspective()
-        
-        if self.method == "clustering":
-            self.cluster_pipeline()
-        elif self.method  == "color_segmentation":
-            self.color_seg_pipeline()
+
+        self.pipeline()
 
         return self.arena_image
 
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     t0 = time.time()
     cv2.namedWindow('control')
     show = False
-    while True: 
+    while True:
         i += 1
         arena = v.get_frame()
         key = cv2.waitKey(1) & 0xFF
@@ -173,9 +174,7 @@ if __name__ == "__main__":
             tc0 = time.time()
             v.params_setter.run()
             v.load_params()
-            t0 += time.time() - tc0            
-    
+            t0 += time.time() - tc0
+
     print "framerate:", i / (time.time() - t0)
     cv2.destroyAllWindows()
-
-    

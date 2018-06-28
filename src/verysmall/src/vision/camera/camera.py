@@ -29,11 +29,11 @@ class Camera:
         if self.params_file_name != "":
             self.load_params()
             self.set_frame_size(self.frame_width, self.frame_height)
-        
+
         if threading == True:
             self.start()
-        
-        """ Give some time for the camera auto calibrate its sensors """    
+
+        """ Give some time for the camera auto calibrate its sensors """
         sleep(1)
 
     def start(self):
@@ -62,7 +62,7 @@ class Camera:
         return self.semaphore
 
     def update(self):
-        """ This is the target function for the thread, this will read from OpenCV forever 
+        """ This is the target function for the thread, this will read from OpenCV forever
         until stop() is called """
         while not self.thread_stopped:
             """ Reads the next frame and apply correction it is on """
@@ -91,7 +91,7 @@ class Camera:
 
         if self.lens_correction:
             self.frame = cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
-        
+
         return self.frame
 
     def read(self):
@@ -99,7 +99,7 @@ class Camera:
             return self.non_threaded_read()
         else:
             return self.threaded_read()
-        
+
     def load_params(self):
     	""" Loads the parameters of the camera from a json """
         params = self.json_handler.read(self.params_file_name)
