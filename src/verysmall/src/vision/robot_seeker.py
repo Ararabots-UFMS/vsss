@@ -1,7 +1,24 @@
 import numpy as np
 import cv2
+import time
 
-class Robot:
+import sys
+sys.path.append('../robot/movement')
+
+from auxiliary.auxiliary import unitVector
+
+# @author Wellington Castro <wvmcastro>
+
+# Sorry for these globals, but is good for code reading
+# Go Ararabots!
+
+AREA        = 0
+CENTER      = 1
+VERTICES    = 2
+
+class Things:
+    # This is an auxiliary class to hold the variables from the things identified
+    # by this hawk eye system
     def __init__(self):
         self.id = -1
 
@@ -17,6 +34,22 @@ class Robot:
         # Saves the time of the last update
         self.last_update = None
 
+    def update(self, id, pos, orientation):
+        last_up = None
+        now = time.time()
+
+        # Checkes if this is not the first update
+        if self.last_update != None:
+            # If it is not the first update, calculate the robot speed
+            self.speed = (pos - self.pos) / (now - self.last_update)
+
+        # Updates the robot's state variables
+        self.id = id
+        self.last_update = now
+        self.pos = pos
+        self.orientation = orientation
+
+
 class RobotSeeker:
     # https://docs.opencv.org/master/d9/d8b/tutorial_py_contours_hierarchy.html#gsc.tab=0
 
@@ -27,7 +60,6 @@ class RobotSeeker:
         # Takes a binary image as input and return its contours
         im2, cont, h = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         return cont
-
 
     def getKey(self, item):
         # Auxialiary function to sort some list of tuples
@@ -53,7 +85,7 @@ class RobotSeeker:
                 rect_vertices = cv2.boxPoints(rect)
 
                 # Saves to the rectangles list
-                rectangles.append( (area, rect[0], rect_vertices) )
+                rectangles.append( (area, np.asarray(rect[0]), np.array(rect_vertices) ))
 
         # Returns all the interest rectangles
         return rectangles
@@ -73,7 +105,7 @@ class RobotSeeker:
 
         return sorted_rectangles[n][0]
 
-    def find_robots(self, robots_list, rectangles, pos=True, direction=False, speed=False, homeTeam=False):
+    def find_robots(self, robots_list, rectangles, direction=False, homeTeam=False):
         # This function fills the robots_list with the info of each robot
         # If the homeTeam flag is True than it will indentify the home team robots too
 
@@ -110,23 +142,46 @@ class RobotSeeker:
 
         # Now we assume that each element in robots_rects represents a robot
         for i,r in enumerate(robots_rects):
+            _pos, _direction = None
 
-            if pos == True:
-                if homeTeam == True:
-                    # Calculates the centroind of the two rectangles
-                    # Area [0] and center [1]
-                    x = (r[0][0] * r[0][1][0] + r[1][0] * r[1][1][0]) / (r[0][0] + r[1][0])
-                    y = (r[0][0] * r[0][1][1] + r[1][0] * r[1][1][1]) / (r[0][0] + r[1][0])
-                else:
-                    x,y = r[1]
-
-                robots_list[i].pos = (x,y)
+            # Finds the position of the robots
+            if homeTeam == True:
+                # Calculates the centroind of the two rectangles
+                pos_xy = (r[0][AREA]*r[0][CENTER] + r[1][AREA]*r[1][CENTER]) / (r[0][AREA]+r[1][AREA])
+                id = 1
+            else:
+                pos_xy = r[CENTER]
+                id = -1
 
             if direction == True and homeTeam == True:
+                # Detects the direction that the robot is pointed
 
+                # Finds the index of the vertice of the large rectangle closest
+                # to the center of the small rectangle
+                origin_index = np.argmin( np.linalg.norm(r[0][VERTICES] - r[1][CENTER], axis=1) )
 
+                # Now with the origin of the direction vector we calculate the
+                # two possible direction, ie, the two edges of the big rectangle
+                # and choose the bigger
+                direct1 = r[0][VERTICES][(origin_index+1)%4] - r[0][VERTICES][origin_index]
+                direct2 = r[0][VERTICES][(origin_index+3)%4] - r[0][VERTICES][origin_index]
 
+                # Choose the _direction with the biggest norm
+                if np.linalg.norm(direct1) > np.linalg.norm(direct2):
+                    _direction = direct1
+                else:
+                    _direction = direct2
 
+            robots_list[i].update(id, pos, _direction)
+
+    def seek(self, img, things_list, direction=False, homeTeam=False):
+        # Implements the pipeline to find the robots in the field
+        # receives a binary image with the elements and a list of Things
+        # to store the data
+
+        cnt = self.get_contours(img)
+        rects = self.get_rectangles(cnt, area_threshold=None)
+        find_robots(things, rects, directione, homeTeam):
 
 if __name__ == '__main__':
-    pass
+    print unitVector(np.array([1,1]))

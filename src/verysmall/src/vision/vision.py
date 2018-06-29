@@ -10,10 +10,13 @@ from camera.camera import Camera
 from utils.json_handler import JsonHandler
 from vision_utils.params_setter import ParamsSetter
 
+# from robot_seeker import Things
+# from robot_seeker import RobotSeeker
 # @author Wellington Castro <wvmcastro>
 
 
 class Vision:
+    # home_color, home_robots, adv_robots
     def __init__(self, camera, params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
         self.arena_vertices = []
         self.arena_size = ()
@@ -25,6 +28,13 @@ class Vision:
         self.warp_matrix = None
         self.json_handler = JsonHandler()
         self.pipeline = None
+
+        # Creates the lists to the home team and the adversary
+        # self.homeTeam = [Things() for i in range(home_robots)]
+        # self.advTeam = [Things() for i in range(adv_robots)]
+        #
+        # # Instantiates the RobotSeeker object
+        # self.hawk_eye = RobotSeeker()
 
         # Initialize the vitamins according to the chosen method
         if method == "clustering":
@@ -128,6 +138,7 @@ class Vision:
     def color_seg_pipeline(self):
         """ Wait until the color parameters are used """
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+
         self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
@@ -139,6 +150,11 @@ class Vision:
         self.warp_perspective()
 
         self.pipeline()
+
+        """ After the self.pipeline() is executed, is expected that will be three images:
+            self.home_seg, self.adv_seg and self.ball_seg """
+        # blue team
+        # self.hawk_eye.seek()
 
         return self.arena_image
 
