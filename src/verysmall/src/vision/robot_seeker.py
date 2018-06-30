@@ -96,7 +96,7 @@ class RobotSeeker:
         # biggest rect from the set of small rectangles (I hope that it is clear, sorry)
 
         # Sort all the rectangles in relation with the area
-        sorted_rectangles = sorted(rectangles, key=getKey)
+        sorted_rectangles = sorted(rectangles, key=self.getKey)
 
         # Calculates the diff between the areas of consecutive rects
         diff = np.array( sorted_rectangles[1:][0] ) - np.array( sorted_rectangles[0:-1][0] )
@@ -105,11 +105,11 @@ class RobotSeeker:
 
         return sorted_rectangles[n][0]
 
-    def find_robots(self, robots_list, rectangles, direction=False, homeTeam=False):
+    def find_robots(self, robots_list, rectangles, direction=False, home_team=False):
         # This function fills the robots_list with the info of each robot
-        # If the homeTeam flag is True than it will indentify the home team robots too
+        # If the home_team flag is True than it will indentify the home team robots too
 
-        if homeTeam == True:
+        if home_team == True and len(rectangles) > 1:
             # Find the threshold that separates the big from small rectangles
             thresh = self.big_small_threshold(rectangles)
 
@@ -126,7 +126,6 @@ class RobotSeeker:
                     small_ones.append(rect)
 
             while(len(big_ones) > 0 and len(small_ones) > 0):
-
                 # Finds the closest small rectangle to the big one
                 dst = np.linalg.norm(np.array(small_ones[:][1]) - np.array(big_ones[0][1]))
                 small_index = np.argmin(dst)
@@ -145,7 +144,7 @@ class RobotSeeker:
             _pos, _direction = None
 
             # Finds the position of the robots
-            if homeTeam == True:
+            if home_team == True:
                 # Calculates the centroind of the two rectangles
                 pos_xy = (r[0][AREA]*r[0][CENTER] + r[1][AREA]*r[1][CENTER]) / (r[0][AREA]+r[1][AREA])
                 id = 1
@@ -153,7 +152,7 @@ class RobotSeeker:
                 pos_xy = r[CENTER]
                 id = -1
 
-            if direction == True and homeTeam == True:
+            if direction == True and home_team == True:
                 # Detects the direction that the robot is pointed
 
                 # Finds the index of the vertice of the large rectangle closest
@@ -174,14 +173,14 @@ class RobotSeeker:
 
             robots_list[i].update(id, pos, _direction)
 
-    def seek(self, img, things_list, direction=False, homeTeam=False):
+    def seek(self, img, things_list, direction=False, home_team=False):
         # Implements the pipeline to find the robots in the field
         # receives a binary image with the elements and a list of Things
         # to store the data
 
         cnt = self.get_contours(img)
         rects = self.get_rectangles(cnt, area_threshold=None)
-        find_robots(things, rects, directione, homeTeam):
+        self.find_robots(things_list, rects, direction, home_team)
 
 if __name__ == '__main__':
-    print unitVector(np.array([1,1]))
+    pass

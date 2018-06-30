@@ -10,31 +10,38 @@ from camera.camera import Camera
 from utils.json_handler import JsonHandler
 from vision_utils.params_setter import ParamsSetter
 
-# from robot_seeker import Things
-# from robot_seeker import RobotSeeker
+from robot_seeker import RobotSeeker
+from robot_seeker import Things
+
 # @author Wellington Castro <wvmcastro>
 
 
 class Vision:
-    # home_color, home_robots, adv_robots
-    def __init__(self, camera, params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
+
+    def __init__(self, camera, home_color, home_robots, adv_robots,
+        params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
+
+        self.json_handler = JsonHandler()
+        self.camera = camera
+        self.params_file_name = params_file_name
+        self.home_color = home_color
+        self.home_robots = home_robots
+        self.adv_robots = adv_robots
+
         self.arena_vertices = []
         self.arena_size = ()
         self.arena_image = None
         self.arena_mask = None
-        self.camera = camera
-        self.params_file_name = params_file_name
         self.raw_image = None
         self.warp_matrix = None
-        self.json_handler = JsonHandler()
         self.pipeline = None
 
         # Creates the lists to the home team and the adversary
-        # self.homeTeam = [Things() for i in range(home_robots)]
-        # self.advTeam = [Things() for i in range(adv_robots)]
-        #
-        # # Instantiates the RobotSeeker object
-        # self.hawk_eye = RobotSeeker()
+        self.home_team = [Things() for i in range(home_robots)]
+        self.adv_team = [Things() for i in range(adv_robots)]
+
+        # Instantiates the RobotSeeker object
+        self.hawk_eye = RobotSeeker()
 
         # Initialize the vitamins according to the chosen method
         if method == "clustering":
@@ -141,7 +148,17 @@ class Vision:
 
         self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
+
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
+
+    def attribute_teams(self):
+        if self.home_color == "blue":
+            self.home_seg = self.blue_seg
+            self.adv_seg = self.yellow_seg
+        else:
+            self.home_seg = self.yellow_seg
+            self.adv_seg = self.blue_seg
+
 
     def get_frame(self):
         """ Takes the raw imagem from the camera and applies the warp perspective transform
@@ -150,11 +167,12 @@ class Vision:
         self.warp_perspective()
 
         self.pipeline()
+        self.attribute_teams()
 
-        """ After the self.pipeline() is executed, is expected that will be three images:
+        """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
-        # blue team
-        # self.hawk_eye.seek()
+        self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=True)
+        self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=False)
 
         return self.arena_image
 
@@ -162,10 +180,16 @@ class Vision:
 
 if __name__ == "__main__":
 
+    home_color = "blue" # blue or yellow
+    home_robots = 3
+    adv_robots = 3
+
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
-    v = Vision(camera, arena_params, colors_params, method="color_segmentation")
+    camera = Camera(0, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
+
+    v = Vision(camera, home_color, home_robots, adv_robots,
+                arena_params, colors_params, method="color_segmentation")
 
     i = 0
     t0 = time.time()
