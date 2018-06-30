@@ -39,7 +39,7 @@ class Things:
         now = time.time()
 
         # Checkes if this is not the first update
-        if self.last_update != None:
+        if self.last_update != None and self.pos != None and pos != None:
             # If it is not the first update, calculate the robot speed
             self.speed = (pos - self.pos) / (now - self.last_update)
 
@@ -61,10 +61,6 @@ class RobotSeeker:
         im2, cont, h = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         return cont
 
-    def getKey(self, item):
-        # Auxialiary function to sort some list of tuples
-        return item[0]
-
     def get_rectangles(self, contours, area_threshold=None):
         # Gets the contours of the image and approximate then by a rectangle
         # outputs all the rectangles finded that satisfies the threshold if passed
@@ -85,7 +81,7 @@ class RobotSeeker:
                 rect_vertices = cv2.boxPoints(rect)
 
                 # Saves to the rectangles list
-                rectangles.append( (area, np.asarray(rect[0]), np.array(rect_vertices) ))
+                rectangles.append( (area, np.asarray(rect[0]), np.array(rect_vertices)) )
 
         # Returns all the interest rectangles
         return rectangles
@@ -95,15 +91,19 @@ class RobotSeeker:
         # rectangles finded by self.get_rectangles. The threshold is the value of the
         # biggest rect from the set of small rectangles (I hope that it is clear, sorry)
 
+        # Extracts the area of each tuple in rectangles
+        areas = [x[AREA] for x in rectangles]
+
         # Sort all the rectangles in relation with the area
-        sorted_rectangles = sorted(rectangles, key=self.getKey)
+        sorted_areas = sorted(areas)
 
         # Calculates the diff between the areas of consecutive rects
-        diff = np.array( sorted_rectangles[1:][0] ) - np.array( sorted_rectangles[0:-1][0] )
+
+        diff = np.array( sorted_areas[1:] ) - np.array( sorted_areas[0:-1] )
 
         n = np.argmax(diff)
 
-        return sorted_rectangles[n][0]
+        return areas[n]
 
     def find_robots(self, robots_list, rectangles, direction=False, home_team=False):
         # This function fills the robots_list with the info of each robot
@@ -127,11 +127,11 @@ class RobotSeeker:
 
             while(len(big_ones) > 0 and len(small_ones) > 0):
                 # Finds the closest small rectangle to the big one
-                dst = np.linalg.norm(np.array(small_ones[:][1]) - np.array(big_ones[0][1]))
+                dst = np.linalg.norm(np.array([ x[CENTER] for x in small_ones ]) - np.array(big_ones[0][CENTER]))
                 small_index = np.argmin(dst)
 
                 # Insert the pair in this Auxialiary list
-                robots_rects.append(big_ones[0], small_ones[small_index])
+                robots_rects.append((big_ones[0], small_ones[small_index]))
 
                 # Delete the exampples from the samples
                 del big_ones[0]
@@ -141,7 +141,7 @@ class RobotSeeker:
 
         # Now we assume that each element in robots_rects represents a robot
         for i,r in enumerate(robots_rects):
-            _pos, _direction = None
+            _pos, _direction = None, None
 
             # Finds the position of the robots
             if home_team == True:
@@ -171,7 +171,8 @@ class RobotSeeker:
                 else:
                     _direction = direct2
 
-            robots_list[i].update(id, pos, _direction)
+            if i < len(robots_list):
+                robots_list[i].update(id, _pos, _direction)
 
     def seek(self, img, things_list, direction=False, home_team=False):
         # Implements the pipeline to find the robots in the field
