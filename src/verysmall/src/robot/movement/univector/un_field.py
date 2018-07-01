@@ -1,9 +1,11 @@
  #!/usr/bin/python
-
+import sys
 import numpy as np
+sys.path.append('../')
 import math
 from math import pi
-from gauss import gaussian
+sys.path.append('../../../')
+from utils.math_utils import gaussian
 
 def angleWithX(p):
     i = np.array([1.0,0.0])
@@ -17,8 +19,6 @@ def wrap2pi(theta):
         return 2*pi + theta
     else:
         return theta
-
-
 
 class hyperbolicSpiral:
 
@@ -212,7 +212,7 @@ class univectorField:
         self.avdObsField.updateParam(self.K0)
         self.mv2GoalField.updateParams(self.KR, self.RADIUS)
 
-    def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
+    def getAngleVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
 
         # Just in case the user send lists
         robotPos = np.array(_robotPos)
@@ -255,3 +255,7 @@ class univectorField:
                 return g*diff + fi_tuf
             else: # if there is no obstacles
                 return fi_tuf
+
+    def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
+        angle = self.getAngleVec(_robotPos, _vRobot, _ball)
+        return [np.cos(angle), np.sin(angle)]

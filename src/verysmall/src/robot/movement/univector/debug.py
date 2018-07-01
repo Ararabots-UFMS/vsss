@@ -10,9 +10,6 @@ import cv2
 import math
 import time
 
-from un_field import avoidObstacle
-from un_field import move2Goal
-from un_field import angleWithX
 from un_field import univectorField
 
 
@@ -73,7 +70,7 @@ def drawField(img, univetField):
     for l in range(0, h, 3):
         for c in range(0, w, 3):
             pos = [c, -l]
-            theta = univetField.getVec(_robotPos=pos, _vRobot=[0,0])
+            theta = univetField.getAngleVec(_robotPos=pos, _vRobot=[0,0])
 
             v = np.array([np.cos(theta), np.sin(theta)])
 
@@ -100,7 +97,7 @@ def drawPath(img, start, end, univetField):
     t0 = time.time()
 
     while(np.linalg.norm(currentPos - end) >= beta):
-        theta = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
+        theta = univetField.getAngleVec(_robotPos=currentPos, _vRobot=[0,0])
         v = np.array([math.cos(theta), math.sin(theta)])
         newPos = currentPos + (alpha*v)
         _newPos = cm2pixel(newPos).astype(int)

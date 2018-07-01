@@ -2,7 +2,8 @@ import sys
 import numpy as np
 sys.path.append('../')
 from control.PID import PID
-from auxiliary import angleBetween, distancePoints
+sys.path.append('../../../')
+from utils.math_utils import angleBetween, distancePoints
 
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""

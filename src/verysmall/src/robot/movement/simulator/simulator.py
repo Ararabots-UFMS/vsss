@@ -1,5 +1,7 @@
 import cv2
-from auxiliary import *
+import sys
+sys.path.append('../../../')
+from utils.math_utils import *
 
 # minimum speed 44
 # max speed 255
