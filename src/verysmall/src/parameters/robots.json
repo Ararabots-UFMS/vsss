@@ -1,0 +1,33 @@
+{
+  "robot_1" : {
+    "active" : true,
+    "role" : "Atacante",
+    "bluetooth_mac_address" : "ciclope",
+    "body_id" : "1"
+
+  },
+  "robot_2" : {
+    "active" : false,
+    "role" : "Zagueiro",
+    "bluetooth_mac_address" : "robotop",
+    "body_id" : "2"
+  },
+    "robot_3" : {
+    "active" : true,
+    "role" : "Goleiro",
+    "bluetooth_mac_address" : "furia",
+    "body_id" : "3"
+  },
+    "robot_4" : {
+    "active" : false,
+    "role" : "Atacante",
+    "bluetooth_mac_address" : "muralha",
+    "body_id" : "4"
+  },
+    "robot_5" : {
+    "active" : false,
+    "role" : "Atacante",
+    "bluetooth_mac_address" : "rogerio",
+    "body_id" : "5"
+  }
+}

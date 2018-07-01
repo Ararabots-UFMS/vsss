@@ -4,8 +4,9 @@ import sys
 import os
 import virtual_field as vf
 import rospy
+from Queue import Queue
 from verysmall.msg import things_position
-from verysmall.msg import five_robot_pos, five_robot_vector
+from verysmall.msg import robot_pos, robot_vector
 
 
 def theCancelButtonCallback(ptr):
@@ -48,7 +49,7 @@ class WindowManager:
         # Create a new Buffered window
         self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
                                         self.proportion_width(95), self.proportion_height(90))
-        
+
         # Forces double buffering
         fl.Fl.visual(fl.FL_DOUBLE | fl.FL_INDEX)
 
@@ -63,6 +64,20 @@ class WindowManager:
         self.create_left_menu()
         self.create_arena()
 
+        # Queue of data from Topic Things position
+        self.data = Queue(maxsize=50)
+
+        # Shapes the size of the Queue
+        self.data.put(things_position(
+                [0, 0],
+                0.,
+                [robot_pos() for _ in range(5)],
+                [robot_vector() for _ in range(5)],
+                [robot_pos() for _ in range(5)],
+                [robot_vector() for _ in range(5)],
+                [0] * 10
+            ))
+
         # Ros node for reading the buffer
         rospy.Subscriber('things_position', things_position, self.read)
         rospy.init_node('virtual_field', anonymous=True)
@@ -76,12 +91,19 @@ class WindowManager:
         self.root.end()
         self.root.show(len(sys.argv), sys.argv)
 
+        self.RATE = 0.03  # 0.013#0.04
+        fl.Fl.add_timeout(self.RATE, self.redraw_field)
+        fl.Fl.run()
+
     def read(self, data):
-        self.data = data
+        # Inserts data in the Queue
+        self.data.put(data)
 
     def redraw_field(self):
-        self.virtual.plot_arena()
-        self.virtual.plot_ball(self.data.ball_pos)
+        data_item = self.data.get()  # Get the data
+        self.data.task_done()  # Finishes the get process
+        self.virtual.plot_arena()  # New arena image
+        self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
         self.arena.image = self.virtual.field
         self.arena.redraw()
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
@@ -274,7 +296,3 @@ class WindowManager:
 
 if __name__ == '__main__':
     window_manager = WindowManager()
-    #rospy.spin()
-    window_manager.RATE = 0.03#0.013#0.04
-    fl.Fl.add_timeout(window_manager.RATE, window_manager.redraw_field);
-    fl.Fl.run()
