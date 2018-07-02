@@ -171,8 +171,12 @@ class Vision:
 
         """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
-        # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=True)
+        self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=True)
         # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=False)
+        cv2.imshow("frame", self.home_seg)
+        for th in self.home_team:
+
+            print th.pos
 
         return self.arena_image
 
@@ -180,7 +184,7 @@ class Vision:
 
 if __name__ == "__main__":
 
-    home_color = "blue" # blue or yellow
+    home_color = "yellow" # blue or yellow
     home_robots = 3
     adv_robots = 3
 

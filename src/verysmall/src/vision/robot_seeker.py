@@ -142,10 +142,10 @@ class RobotSeeker:
         # Now we assume that each element in robots_rects represents a robot
         for i,r in enumerate(robots_rects):
             _pos, _direction = None, None
-
             # Finds the position of the robots
             if home_team == True:
                 # Calculates the centroind of the two rectangles
+                print r[0][AREA], r[0][CENTER], r[1][AREA], r[1][CENTER], r[0][AREA], r[1][AREA]
                 pos_xy = (r[0][AREA]*r[0][CENTER] + r[1][AREA]*r[1][CENTER]) / (r[0][AREA]+r[1][AREA])
                 id = 1
             else:
