@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import cv2.aruco as aruco
 import time
 
 import sys
@@ -54,6 +55,13 @@ class RobotSeeker:
     # https://docs.opencv.org/master/d9/d8b/tutorial_py_contours_hierarchy.html#gsc.tab=0
 
     def __init__(self):
+        self.is_aruco_started = False
+        self.aruco_dict = None
+        seld.aruco_params = None
+
+    def init_aruco(self):
+        self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+        seld.aruco_params = aruco.DetectorParameters_create()
         pass
 
     def get_contours(self, img):
@@ -173,6 +181,9 @@ class RobotSeeker:
 
             if i < len(robots_list):
                 robots_list[i].update(id, _pos, _direction)
+
+    def find aruco_robots(self, img, things):
+        pass
 
     def seek(self, img, things_list, direction=False, home_team=False):
         # Implements the pipeline to find the robots in the field
