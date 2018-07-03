@@ -171,12 +171,11 @@ class Vision:
 
         """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
-        self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=True)
-        # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=False)
-        cv2.imshow("frame", self.home_seg)
-        for th in self.home_team:
+        self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
+        # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
 
-            print th.pos
+        self.hawk_eye.debug(self.home_seg, self.home_team)
+        # self.hawk_eye.debug(self.adv_seg, self.adv_team)
 
         return self.arena_image
 
