@@ -174,7 +174,7 @@ class Vision:
         # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
         # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
 
-        self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_matrix)
+        self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
 
         # self.hawk_eye.debug(self.home_seg, self.home_team)
         # self.hawk_eye.debug(self.adv_seg, self.adv_team)

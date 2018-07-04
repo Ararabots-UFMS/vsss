@@ -114,7 +114,7 @@ class Camera:
 
         """ The matrix of the intrinsic parameters and the vector of distortion coefficients """
         self.camera_matrix = np.asarray(params['cam_matrix'])
-        self.dist_matrix = np.asarray(params['dist_matrix'])
+        self.dist_vector = np.asarray(params['dist_vector'])
 
     def set_frame_size(self, width, height):
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)

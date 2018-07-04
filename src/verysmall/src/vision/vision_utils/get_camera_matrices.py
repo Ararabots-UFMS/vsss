@@ -9,6 +9,8 @@ import os
 sys.path.append('../camera')
 from camera import Camera
 
+# @author Wellington Castro <wvmcastro>
+
 CAMERA_ID = 1
 CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
@@ -74,7 +76,9 @@ if __name__ == '__main__':
 
     if save == 'y':
         if CAMERA_NAME == "":
-            name = raw_input("Please insert camera name: ")
+            name = raw_input("Please insert camera name (default is ELP-USBFHD01M-SFV): ")
+            if name == "":
+                name = "ELP-USBFHD01M-SFV"
         else:
             name = CAMERA_NAME
         if FRAME_SIZE == ():
@@ -89,7 +93,7 @@ if __name__ == '__main__':
         params['matrix_x'] = mapx.tolist()
         params['matrix_y'] = mapy.tolist()
         params['cam_matrix'] = mtx.tolist()
-        params['dist_matrix'] = dist.tolist()
+        params['dist_vector'] = dist.tolist()
         params['default_frame_width'] = int(frame_width)
         params['default_frame_height'] = int(frame_height)
         file = open(file_name, "w+")

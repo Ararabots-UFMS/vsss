@@ -60,11 +60,13 @@ class RobotSeeker:
         self.aruco_params = None
         self.camera_matrix = None
         self.distortion_vector = None
+        self.numBits = 3
+        self.numMarkers = 6
 
     def init_aruco(self, cam_mtx, dist_vec):
         # Initializes the objects necessary to perform the detection of the aruco tags
         if not self.is_aruco_started:
-            self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+            self.aruco_dict = aruco.Dictionary_create(self.numMarkers, self.numBits)
             self.aruco_params = aruco.DetectorParameters_create()
             self.camera_matrix = cam_mtx
             self.distortion_vector = dist_vec
@@ -200,11 +202,19 @@ class RobotSeeker:
             self.init_aruco(cam_mtx, dist_vector)
 
         corners, ids, rejectedImgPoints = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
+
+        aux = np.zeros(img.shape+(3,))
+        aux[:,:,0], aux[:,:,1], aux[:,:,2] = 255*img, 255*img, 255*img
+        img = aux
+
         if np.any(ids != None):
+            # print ids.T
             # That means at least one Aruco marker was recognized
-            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners, 0.075, self.camera_matrix, self.distortion_vector)
-            img = aruco.drawAxis(img, self.camera_matrix, self.distortion_vector, rvec, tvec, 0.1)
-        # img = aruco.drawDetectedMarkers(img, corners)
+            for i in xrange(ids.size):
+                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], 0.075, self.camera_matrix, self.distortion_vector)
+                img = aruco.drawAxis(img, self.camera_matrix, self.distortion_vector, rvec, tvec, 0.1)
+
+        img = aruco.drawDetectedMarkers(img, corners)
         cv2.imshow("aruco", img)
 
     def seek(self, img, things_list, min_area_thresh=20, direction=False, home_team=False):
