@@ -9,7 +9,7 @@ class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
     def __init__(self, error):
-        self.pid = PID(kp=40.0, ki=0.0, kd=0.0)
+        self.pid = PID(kp=50.0, ki=0.0, kd=0.0)
         self.lastPos = np.array([0, 0])
         self.errorMargin = error
 

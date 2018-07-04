@@ -85,6 +85,13 @@ class Simulator():
         cv2.circle(self.img,(int(self.robot[0]-6*vec[0]), int(self.robot[1]-6*vec[1])), 8, (0,255,255), -1)
         cv2.circle(self.img,(int(self.robot[0]+12*vec[0]), int(self.robot[1]+12*vec[1])), 4, (0,255,255), -1)
 
+    def drawAdv(self, pos):
+        """Draw an adversary robot in position pos"""
+        rect = (pos, robotSize, 0)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        cv2.drawContours(self.img, [box], 0, (100, 25, 25), -1)
+
     def drawBall(self, pos):
         """Draw ball at position pos"""
         # clear ball position
@@ -146,3 +153,14 @@ class Simulator():
         if pos[1] < 56 or pos[1] > 544:
             return False
         return True
+
+    def throwBall(self, direction, speed):
+        """Throw ball in a direction with fixed speed"""
+        vec = unitVector(direction)
+        xSpeed, ySpeed = int(vec[0]*speed*12.0/255.0), int(vec[1]*speed*12.0/255.0)
+        newBallPos = (self.ball[0] + xSpeed, self.ball[1] + ySpeed)
+        # Avoid the ball to go out of the arena and hit the robot
+        if self.arenaLimit(newBallPos) and distancePoints(newBallPos, self.robot) > 35:
+            self.drawBall(newBallPos)
+            # avoid robot to be erased
+            self.drawRobot(self.robot, self.robotVector)
