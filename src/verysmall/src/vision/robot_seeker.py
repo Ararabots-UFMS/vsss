@@ -57,12 +57,19 @@ class RobotSeeker:
     def __init__(self):
         self.is_aruco_started = False
         self.aruco_dict = None
-        seld.aruco_params = None
+        self.aruco_params = None
+        self.camera_matrix = None
+        self.distortion_vector = None
 
-    def init_aruco(self):
-        self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
-        seld.aruco_params = aruco.DetectorParameters_create()
-        pass
+    def init_aruco(self, cam_mtx, dist_vec):
+        # Initializes the objects necessary to perform the detection of the aruco tags
+        if not self.is_aruco_started:
+            self.aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
+            self.aruco_params = aruco.DetectorParameters_create()
+            self.camera_matrix = cam_mtx
+            self.distortion_vector = dist_vec
+            self.is_aruco_started = True
+
 
     def get_contours(self, img):
         # Takes a binary image as input and return its contours
@@ -188,8 +195,17 @@ class RobotSeeker:
             if i < len(robots_list):
                 robots_list[i].update(id, pos_xy, _direction)
 
-    def find aruco_robots(self, img, things):
-        pass
+    def seek_aruco(self, img, things, cam_mtx=None, dist_vector=None):
+        if not self.is_aruco_started:
+            self.init_aruco(cam_mtx, dist_vector)
+
+        corners, ids, rejectedImgPoints = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
+        if np.any(ids != None):
+            # That means at least one Aruco marker was recognized
+            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners, 0.075, self.camera_matrix, self.distortion_vector)
+            img = aruco.drawAxis(img, self.camera_matrix, self.distortion_vector, rvec, tvec, 0.1)
+        # img = aruco.drawDetectedMarkers(img, corners)
+        cv2.imshow("aruco", img)
 
     def seek(self, img, things_list, min_area_thresh=20, direction=False, home_team=False):
         # Implements the pipeline to find the robots in the field

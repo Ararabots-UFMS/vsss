@@ -32,7 +32,7 @@ if __name__ == '__main__':
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((H_CENTERS * V_CENTERS,3), np.float32)
     objp[:,:2] = np.mgrid[0:H_CENTERS, 0:V_CENTERS].T.reshape(-1,2)
-    
+
     # Arrays to store object points and image points from all the images.
     objpoints = [] # 3d point in real world space
     imgpoints = [] # 2d points in image plane.
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     for fname in images:
         frame = cv2.imread(fname)
-        
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # Find the chessboard centers
         ret, corners = cv2.findChessboardCorners(gray, (H_CENTERS, V_CENTERS), None)
@@ -51,7 +51,7 @@ if __name__ == '__main__':
             cv2.cornerSubPix(gray, corners, (11,11), (-1,-1), criteria)
             imgpoints.append(corners)
             cv2.drawChessboardCorners(frame, (H_CENTERS, V_CENTERS), corners,ret)
-        
+
         cv2.imshow('window', frame)
         cv2.waitKey(100)
 
@@ -88,6 +88,8 @@ if __name__ == '__main__':
         params = {}
         params['matrix_x'] = mapx.tolist()
         params['matrix_y'] = mapy.tolist()
+        params['cam_matrix'] = mtx.tolist()
+        params['dist_matrix'] = dist.tolist()
         params['default_frame_width'] = int(frame_width)
         params['default_frame_height'] = int(frame_height)
         file = open(file_name, "w+")
@@ -105,8 +107,8 @@ if __name__ == '__main__':
     while(True):
         u_frame = cap.read()
         if save != 'y':
-            u_frame = cv2.remap(frame,mapx,mapy,cv2.INTER_LINEAR)    
-        
+            u_frame = cv2.remap(frame,mapx,mapy,cv2.INTER_LINEAR)
+
         cv2.imshow('Undistorted', u_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break

@@ -107,8 +107,14 @@ class Camera:
         """ mapx and mapy are the matrix with the lens correction map """
         self.mapx = np.asarray(params['matrix_x']).astype("float32")
         self.mapy = np.asarray(params['matrix_y']).astype("float32")
+
+        """ The frame width and height """
         self.frame_width = int(params['default_frame_width'])
         self.frame_height = int(params['default_frame_height'])
+
+        """ The matrix of the intrinsic parameters and the vector of distortion coefficients """
+        self.camera_matrix = np.asarray(params['cam_matrix'])
+        self.dist_matrix = np.asarray(params['dist_matrix'])
 
     def set_frame_size(self, width, height):
         self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
