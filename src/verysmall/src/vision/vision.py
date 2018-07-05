@@ -15,6 +15,7 @@ from robot_seeker import Things
 
 # @author Wellington Castro <wvmcastro>
 
+HEIGHT = 1
 
 class Vision:
 
@@ -36,12 +37,12 @@ class Vision:
         self.warp_matrix = None
         self.pipeline = None
 
+        self.origin = None
+        self.conversion_factor = None
+
         # Creates the lists to the home team and the adversary
         self.home_team = [Things() for i in range(home_robots)]
         self.adv_team = [Things() for i in range(adv_robots)]
-
-        # Instantiates the RobotSeeker object
-        self.hawk_eye = RobotSeeker()
 
         # Initialize the vitamins according to the chosen method
         if method == "clustering":
@@ -63,11 +64,35 @@ class Vision:
         if self.params_file_name != "":
             self.load_params()
 
+        self.virtual_to_real()
+
+        # Instantiates the RobotSeeker object
+        self.hawk_eye = RobotSeeker(field_origin=self.origin, conversion_factor=self.conversion_factor)
+
+    def virtual_to_real(self):
+        """ This function calculates de conversion factor between pixel to centimeters
+            and finds the (0,0) pos of the field in the image """
+
+        # for x
+        x = np.sort(self.arena_vertices[:,0])
+
+        # xo is the third smaller vertice element because the first two ones are
+        # the goal vertices
+        xo = x[2]
+
+        # the yo origin is the most bottom vertice
+        yo = np.sort(self.arena_vertices[:,1])[-1]
+
+        self.origin = np.array([xo, yo])
+
+        # now just calculate the pixel to cm factor
+        self.conversion_factor = 130.0 / self.arena_size[HEIGHT]
+
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""
         params = self.json_handler.read(self.params_file_name)
 
-        self.arena_vertices = params['arena_vertices']
+        self.arena_vertices = np.array(params['arena_vertices'])
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
         self.arena_size = (params['arena_size'][0], params['arena_size'][1])
 
@@ -169,12 +194,13 @@ class Vision:
         self.pipeline()
         self.attribute_teams()
 
+
         """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
+        self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
         # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
         # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
 
-        self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
 
         # self.hawk_eye.debug(self.home_seg, self.home_team)
         # self.hawk_eye.debug(self.adv_seg, self.adv_team)

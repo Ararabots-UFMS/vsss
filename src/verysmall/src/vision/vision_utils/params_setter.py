@@ -9,12 +9,12 @@ import time
 import os
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 0
-CAMERA_PARAMS_PATH = "../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
-ARENA_PARAMS_PATH = "../parameters/ARENA.json"
+CAMERA_ID = 1
+CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
 class ParamsSetter:
-    
+
     def __init__(self, cam, params_file):
         # modes definitions
         self.NO_MODE     = -1
@@ -83,7 +83,8 @@ class ParamsSetter:
 
     def onMouse_add_mode(self, event, x, y, flags, pts):
         if event == cv2.EVENT_LBUTTONUP:
-            pts.append((x,y-self.BAR_HEIGHT))
+            yt = y-self.BAR_HEIGHT
+            pts.append((x, yt))
 
     def onMouse_delete_mode(self, event, x, y, flags, pts):
         i = self.inside_circle(pts, (x,y-self.BAR_HEIGHT), self.RADIUS)
@@ -110,8 +111,8 @@ class ParamsSetter:
         n = len(pts)
         if n > 1:
             points = np.asarray(pts).reshape(n, 2)
-            
-            points[:, 1:] = -points[:, 1:] 
+
+            points[:, 1:] = -points[:, 1:]
             tl_index = np.argsort(np.linalg.norm(points, axis=1))[0]
             tl = points[tl_index]
             d = points - tl
@@ -151,10 +152,10 @@ class ParamsSetter:
         # Creates the window to see de threshold applied
         window_name = 'Cropper Value Adjust'
         cv2.namedWindow(window_name)
-        
+
         # Creates the trackbar
         cv2.createTrackbar('minV', window_name, 0, 255, self.nothing)
-        
+
         LAB_MAX = np.uint8([255, 255, 255])
         lab_min = np.uint8([0, 0, 0])
 
@@ -192,16 +193,17 @@ class ParamsSetter:
 
         if(self.params_file == ""):
             self.params_file = raw_input("Please insert params file name: ")
-            
+
         if os.path.isfile(self.params_file):
             params = json_handler.read(self.params_file)
         else:
-            params = dict()
+            params = {}
 
         if not (self.matrix_transform is None) and not (self.arena_size is None):
             params['warp_matrix'] = self.matrix_transform.tolist()
             params['arena_size'] = self.arena_size
         if self.vertices_points != []:
+            print "oi"
             params['arena_vertices'] = self.vertices_points
         if not(self.value_min is None):
             params['value_min'] = self.value_min.tolist()
@@ -270,15 +272,14 @@ class ParamsSetter:
                 mode = self.NO_MODE
                 cv2.setMouseCallback('cropper', self.onMouse_no_mode, points)
             elif key == ord('s') or (value_adjusted == True and value_saved == False):
-                print "oi"
                 if value_adjusted == True and value_saved == False:
                     self.save_params()
                     value_saved = True
                     print "Everything saved!"
                 else:
                     if warped == True:
-                        self.save_params()
                         self.vertices_points = points
+                        self.save_params()
                         print "Warp matrix and vertices saved!"
                     else:
                         if len(points) == 4:
@@ -296,8 +297,7 @@ class ParamsSetter:
 
 
 if __name__ == '__main__':
-    
+
     cam = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
     setter = ParamsSetter(cam, ARENA_PARAMS_PATH)
     setter.run()
-    

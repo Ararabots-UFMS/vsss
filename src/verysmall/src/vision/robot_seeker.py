@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import time
-
+import math
 import sys
 sys.path.append('../robot/movement')
 
@@ -54,14 +54,29 @@ class Things:
 class RobotSeeker:
     # https://docs.opencv.org/master/d9/d8b/tutorial_py_contours_hierarchy.html#gsc.tab=0
 
-    def __init__(self):
+    def __init__(self, field_origin, conversion_factor):
+        self.field_origin = field_origin
+        self.conversion_factor = conversion_factor
+        self.rad_to_degree_factor = 180.0/math.pi
+
         self.is_aruco_started = False
         self.aruco_dict = None
         self.aruco_params = None
         self.camera_matrix = None
         self.distortion_vector = None
+
+        # Hyper params to create the aruco markers dictionary
         self.numBits = 3
         self.numMarkers = 6
+
+    def pixel_to_real_world(self, pos):
+        # This function expects that pos is a 1D numpy array
+
+        pos = pos - self.field_origin
+        pos[1] *= -1
+
+        return pos * self.conversion_factor
+
 
     def init_aruco(self, cam_mtx, dist_vec):
         # Initializes the objects necessary to perform the detection of the aruco tags
@@ -192,30 +207,65 @@ class RobotSeeker:
                 else:
                     _direction = direct2
 
-                _direction = angleBetween(np.array([1,0]), _direction)
+                _direction = np.atan2(_direction[1], _direction[0])
 
             if i < len(robots_list):
                 robots_list[i].update(id, pos_xy, _direction)
 
-    def seek_aruco(self, img, things, cam_mtx=None, dist_vector=None):
+    def seek_aruco(self, img, things_list, cam_mtx=None, dist_vector=None, degree=False):
+        # If not started, starts the aruco seeker objects
         if not self.is_aruco_started:
             self.init_aruco(cam_mtx, dist_vector)
 
+        # Try to locate all markers in the img
         corners, ids, rejectedImgPoints = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
 
-        aux = np.zeros(img.shape+(3,))
-        aux[:,:,0], aux[:,:,1], aux[:,:,2] = 255*img, 255*img, 255*img
-        img = aux
-
         if np.any(ids != None):
-            # print ids.T
             # That means at least one Aruco marker was recognized
-            for i in xrange(ids.size):
-                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], 0.075, self.camera_matrix, self.distortion_vector)
-                img = aruco.drawAxis(img, self.camera_matrix, self.distortion_vector, rvec, tvec, 0.1)
 
-        img = aruco.drawDetectedMarkers(img, corners)
-        cv2.imshow("aruco", img)
+            # Reshapes the ids matrix to a ids vector for indexing simplicity
+            ids = ids.reshape(ids.shape[0] * ids.shape[1])
+
+            # Sort the ids vector, that way the same merker will be always in the
+            # same position in the things_list
+            sorted_ids = np.sort(ids)
+
+            i = 0
+            while(i < ids.size and i < len(things_list)):
+
+                # Finds the original index of the marker before sorting
+                index = np.argwhere(ids == sorted_ids[i])[0,0]
+
+                # Estimate the marker's pose
+                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[ index ], 0.075, self.camera_matrix, self.distortion_vector)
+
+                # Gets the marker state, ie: its center and x axis orientation
+                center, orientation = self.get_aruco_state(img, self.camera_matrix, self.distortion_vector, rvec, tvec, degree)
+
+                i += 1
+
+    def get_aruco_state(self, img, cam_mtx, dist_vector, rvec, tvec, degree=False):
+        # xyz base
+        x_axis = np.float32([[0,0,0],[1.0,0,0]]).reshape(-1,3)
+
+        # Do not know what is jac (sorry again). Imgpts are the start and end points
+        # of each vector of the base
+        imgpts, jac = cv2.projectPoints(x_axis, rvec, tvec, cam_mtx, dist_vector)
+
+        # takes the tail and nose of the orientation vector
+        t, n = imgpts[0][0], imgpts[1][0]
+
+        # calculates the orientation vector
+        orientation_vec = (n-t)
+        orientation_vec[1] *= -1
+        orientation_angle = math.atan2(orientation_vec[1], orientation_vec[0])
+
+        if degree == True:
+            orientation_angle *= self.rad_to_degree_factor
+
+        # returns the center of the aruco marker and its x axis orientation
+        return self.pixel_to_real_world(t), orientation_angle
+
 
     def seek(self, img, things_list, min_area_thresh=20, direction=False, home_team=False):
         # Implements the pipeline to find the robots in the field
