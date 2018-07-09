@@ -6,67 +6,91 @@ from univector.un_field import univectorField
 import cv2
 import numpy as np
 
+# define when use the mouse
+mouseMode = False
+
 # univector
 RADIUS = 3.48
 KR = 4.15
 K0 = 0.12
 DMIN = 3.48
-# LDELTA = 4.5
 LDELTA = 50
 
 robotInitPosition = (200, 200)
 ballInitPosition = (500, 500)
 advRobotPosition = (350, 350)
 
+# window size
+img = np.zeros((600,800,3), np.uint8)
+# creating simulator
+sim = Simulator(img)
+# initialize arena
+sim.initArena()
+# initialize robot
+sim.drawRobot(robotInitPosition, [-1,1])
+# initialize ball
+sim.drawBall(ballInitPosition)
+# initialize adversary robot
+sim.drawAdv(np.array(advRobotPosition))
+
+# movement class
+movement = Movement(10)
+
+# obstacles
+obstacle = np.array(advRobotPosition)
+vObstacle = np.array([0, 0])
+
+# creates the univector field
+univetField = univectorField()
+univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+univetField.updateBall(np.array(sim.ball))
+univetField.updateObstacles(obstacle, vObstacle)
+
+def updateBallPosition(event,x,y,flags,param):
+    if mouseMode:
+        sim.drawBall((x, y))
+
+def printInformation():
+    print "**********************************************"
+    print "         Initializing VSSS simulation         "
+    print "**********************************************"
+    print "Press any key to start:"
+    print "To draw the ball in mouse position use: m"
+    print "To exit the simulation press: q"
+
 if __name__ == "__main__":
-    # window size
-    img = np.zeros((600,800,3), np.uint8)
-    # creating simulator
-    sim = Simulator(img)
-    # initialize arena
-    sim.initArena()
-    # initialize robot
-    sim.drawRobot(robotInitPosition, [-1,1])
-    # initialize ball
-    sim.drawBall(ballInitPosition)
-    # initialize adversary robot
-    sim.drawAdv(np.array(advRobotPosition))
 
-    # Classe de movimentacao
-    movement = Movement(10)
-
-    # Obstacles
-    obstacle = np.array(advRobotPosition)
-    vObstacle = np.array([0, 0])
-
-    # Creates the univector field
-    univetField = univectorField()
-    univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
-    univetField.updateBall(np.array(sim.ball))
-    univetField.updateObstacles(obstacle, vObstacle)
-
-
+    printInformation()
     # show img
     cv2.imshow('Robot Simulation',img)
     cv2.moveWindow('Robot Simulation', 400,0)
 
+    # define mouseCallBack
+    cv2.setMouseCallback('Robot Simulation', updateBallPosition)
+
     key = cv2.waitKey(0)
     while 1:
+        # avoid to clear the adversary
+        sim.drawAdv(np.array(advRobotPosition))
+
         cv2.imshow('Robot Simulation',img)
         cv2.moveWindow('Robot Simulation', 400,0)
 
         vec = univetField.getVec(np.array(sim.robot), np.array([0,0]), np.array(sim.ball))
 
-        #End simulation
+        # use mouse
+        if key == ord('m'):
+            mouseMode = not mouseMode
+        # end simulation
         if key == ord('q'):
             cv2.destroyAllWindows()
             break
 
         leftSpeed, rightSpeed, done = movement.followVector(np.array(sim.robotVector) ,np.array(vec), 200)
-        sim.throwBall([-1, -2], 100)
 
         if not done:
             # move function
             sim.move(leftSpeed,rightSpeed)
+
         # 60fps
         key = cv2.waitKey(16)
