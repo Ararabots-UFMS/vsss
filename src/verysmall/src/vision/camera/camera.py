@@ -23,6 +23,10 @@ class Camera:
         self.json_handler = JsonHandler()
         self.frame = None
 
+        # This flag ensures that in threading mode the frame returned now is different
+        # of the frame returned by the previous read
+        self.last_state = 0
+
         """ Controls if the thread should run """
         self.thread_stopped = True
 
@@ -72,13 +76,15 @@ class Camera:
                     frame = cv2.remap(frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
                 self.semaphore_up()
                 self.frame = frame
+                self.last_state = 1
                 self.semaphore_down()
 
     def threaded_read(self):
         """ If the frame is being updated at the moment of reading it waits until
             the update is done """
-        while self.semaphore_isUp():
+        while self.semaphore_isUp() or self.last_state == 0:
             pass
+        self.last_state = 0
         return self.frame
 
     def non_threaded_read(self):

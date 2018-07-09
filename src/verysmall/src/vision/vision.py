@@ -201,7 +201,6 @@ class Vision:
         # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
         # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
 
-
         # self.hawk_eye.debug(self.home_seg, self.home_team)
         # self.hawk_eye.debug(self.adv_seg, self.adv_team)
 
@@ -217,7 +216,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
+    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")
