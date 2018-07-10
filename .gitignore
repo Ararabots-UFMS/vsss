@@ -1,5 +1,11 @@
 
 *.pyc
+.idea
+build/
+install/
+devel/
+
+src/venv/
 
 robot/movement/simulator/\.hidden
 
@@ -8,3 +14,5 @@ robot/movement/functions/\.hidden
 robot/movement/control/\.hidden
 
 \.idea/
+
+src/CMakeLists\.txt

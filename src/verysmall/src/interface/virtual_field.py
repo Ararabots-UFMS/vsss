@@ -115,30 +115,30 @@ class Virtual_Field():
 
         ball_center = position_from_origin(unit_convert(ball_center))
 
-        r1 = range(40, 80)
-        r2 = range(260, 420)
-        r3 = range(680, 720)
-        r4 = range(260, 420)
-        r5 = range(81, 140)
-        r6 = range(200, 480)
-        r7 = range(620, 679)
+        #r1 = range(40, 80)
+        #r2 = range(260, 420)
+        #r3 = range(680, 720)
+        #r4 = range(260, 420)
+        #r5 = range(81, 140)
+        #r6 = range(200, 480)
+        #r7 = range(620, 679)
 
-        if (ball_center[0] in r1 and ball_center[1] in r2):
-            cv.rectangle(self.field, (41, 261), (79, 419), self.colors["green"], -1)
-        elif (ball_center[0] in r3 and ball_center[1] in r4):
-            cv.rectangle(self.field, (681, 261), (719, 419), self.colors["green"], -1)
-        elif (ball_center[0] in r5 and ball_center[1] in r6):
-            cv.rectangle(self.field, (81, 201), (139, 479), self.colors["green"], -1)
-            cv.ellipse(self.field, (140, 340), (19, 39), 180.0, 270.0, 90.0, self.colors["green"], -1)
-        elif (ball_center[0] in r7 and ball_center[1] in r6):
-            cv.rectangle(self.field, (621, 201), (679, 479), self.colors["green"], -1)
-            cv.ellipse(self.field, (620, 340), (19, 39), 0.0, 90.0, 270.0, self.colors["green"], -1)
-        elif ((ball_center[0] - 620) ** 2 / 400 + (ball_center[1] - 340) ** 2 / 1600 < 1):
-            cv.rectangle(self.field, (621, 201), (679, 479), self.colors["green"], -1)
-            cv.ellipse(self.field, (620, 340), (19, 39), 0.0, 90.0, 270.0, self.colors["green"], -1)
-        elif ((ball_center[0] - 140) ** 2 / 400 + (ball_center[1] - 340) ** 2 / 1600 < 1):
-            cv.rectangle(self.field, (81, 201), (139, 479), self.colors["green"], -1)
-            cv.ellipse(self.field, (140, 340), (19, 39), 180.0, 270.0, 90.0, self.colors["green"], -1)
+        #if (ball_center[0] in r1 and ball_center[1] in r2):
+        #    cv.rectangle(self.field, (41, 261), (79, 419), self.colors["green"], -1)
+        #elif (ball_center[0] in r3 and ball_center[1] in r4):
+        #    cv.rectangle(self.field, (681, 261), (719, 419), self.colors["green"], -1)
+        #elif (ball_center[0] in r5 and ball_center[1] in r6):
+        #    cv.rectangle(self.field, (81, 201), (139, 479), self.colors["green"], -1)
+        #    cv.ellipse(self.field, (140, 340), (19, 39), 180.0, 270.0, 90.0, self.colors["green"], -1)
+        #elif (ball_center[0] in r7 and ball_center[1] in r6):
+        #    cv.rectangle(self.field, (621, 201), (679, 479), self.colors["green"], -1)
+        #    cv.ellipse(self.field, (620, 340), (19, 39), 0.0, 90.0, 270.0, self.colors["green"], -1)
+        #elif ((ball_center[0] - 620) ** 2 / 400 + (ball_center[1] - 340) ** 2 / 1600 < 1):
+        #    cv.rectangle(self.field, (621, 201), (679, 479), self.colors["green"], -1)
+        #    cv.ellipse(self.field, (620, 340), (19, 39), 0.0, 90.0, 270.0, self.colors["green"], -1)
+        #elif ((ball_center[0] - 140) ** 2 / 400 + (ball_center[1] - 340) ** 2 / 1600 < 1):
+        #    cv.rectangle(self.field, (81, 201), (139, 479), self.colors["green"], -1)
+        #    cv.ellipse(self.field, (140, 340), (19, 39), 180.0, 270.0, 90.0, self.colors["green"], -1)
 
         cv.circle(self.field, ball_center, self.ball_radius, self.colors["orange"], -1)
 

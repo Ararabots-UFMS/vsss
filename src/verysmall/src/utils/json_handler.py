@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import json
+import json, yaml
 import sys
 
 # @author Wellington Castro <wvmcastro>
@@ -10,16 +10,19 @@ class JsonHandler:
     def __init__(self):
         pass
 
-    def read(self, file_name):
+    def read(self, file_name, escape = False):
         """ Takes a json file name and return a dict object with its content """
         dictionary = dict()
         try:
             params_file = open(file_name, "r")
             dictionary = json.loads(params_file.read())
-            params_file.close()       
+            params_file.close()
         except:
             e = sys.exc_info()[0]
-            print "Error: ", e 
+            print "Error: ", e
+
+        if escape:
+            dictionary = yaml.safe_load(json.dumps(dictionary))
 
         return dictionary
 
