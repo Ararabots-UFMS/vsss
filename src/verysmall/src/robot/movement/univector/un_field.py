@@ -7,6 +7,9 @@ from math import pi
 sys.path.append('../../../')
 from utils.math_utils import gaussian
 
+LEFT = 0
+RIGHT = 1
+
 def angleWithX(p):
     i = np.array([1.0,0.0])
     theta = math.atan2(np.cross(i, p), np.dot(i, p))
@@ -88,11 +91,12 @@ class repulsive:
 
 class move2Goal:
 
-    def __init__(self, _Kr, _radius):
+    def __init__(self, _Kr, _radius, atack_goal=LEFT):
         self.Kr = _Kr
         self.radius = _radius
         self.hyperSpiral = hyperbolicSpiral(self.Kr, self.radius)
         self.origin = np.array([None, None])
+        self.atack_goal = atack_goal
 
     def updateParams(self, _KR, _RADIUS):
         self.Kr = _KR
@@ -119,17 +123,30 @@ class move2Goal:
         pl = np.array([x, yl])
         pr = np.array([x, yr])
 
+        # Este caso eh para quando o robo esta dentro do "circulo" da bola
         if -r <= y < r:
-            nhCCW = n_h(pl, cw=False)
-            nhCW = n_h(pr, cw=True)
+
+            if self.atack_goal == LEFT:
+                nh_pl = n_h(pl, cw=False)
+                nh_pr = n_h(pr, cw=True)
+            else:
+                nh_pl = n_h(pl, cw=True)
+                nh_pr = n_h(pr, cw=False)
+
             # Apesar de no artigo nao ser utilizado o modulo, quando utilizado
             # na implementacao o resultado foi mais condizente com o artigo
-            vec = ( abs(yl)*nhCCW + abs(yr)*nhCW ) / (2.0 * r)
+            vec = ( abs(yl)*nh_pl + abs(yr)*nh_pr ) / (2.0 * r)
             return wrap2pi(angleWithX(vec))
         elif y < -r:
-            return hyperSpiral.fi_h(pl, cw=True)
+            if self.atack_goal == LEFT:
+                return hyperSpiral.fi_h(pl, cw=True)
+            else:
+                return hyperSpiral.fi_h(pr, cw=False)
         else: #y >= r
-            return hyperSpiral.fi_h(pr, cw=False)
+            if self.atack_goal == LEFT:
+                return hyperSpiral.fi_h(pr, cw=False)
+            else:
+                return hyperSpiral.fi_h(pl, cw=True)
 
 class avoidObstacle:
     def __init__(self, _pObs, _vObs, _pRobot, _vRobot, _K0):
@@ -173,7 +190,7 @@ class avoidObstacle:
         self.vRobot = np.array(_vRobot)
 
 class univectorField:
-    def __init__(self):
+    def __init__(self, atack_goal=LEFT):
         self.obstacles = np.array([[None, None]])
         self.obstaclesSpeed = np.array([[None, None]])
         self.ballPos = np.array([None, None])
@@ -187,7 +204,7 @@ class univectorField:
         self.LDELTA = None
         # Subfields
         self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS)
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, atack_goal=atack_goal)
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
@@ -224,7 +241,7 @@ class univectorField:
         if all(ball != None):
             self.updateBall(ball)
 
-        closestCenter = np.array([None, None]) # array to store the closest center
+        closestCenter = np.array([None, None])  # array to store the closest center
         centers = []
         minDistance = self.DMIN + 1
 
@@ -236,8 +253,8 @@ class univectorField:
                 centers.append(center)
 
             centers = np.asarray(centers)
-            distVect = np.linalg.norm(np.subtract(centers, self.robotPos) , axis=1)
-            index = np.argmin(distVect) # index of closest center
+            distVect = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
+            index = np.argmin(distVect)  # index of closest center
             closestCenter = centers[index]
             minDistance = distVect[index]
 
@@ -252,8 +269,8 @@ class univectorField:
             if self.obstacles.size:
                 g = gaussian(minDistance - self.DMIN, self.LDELTA)
                 diff = wrap2pi(fi_auf - fi_tuf)
-                return g*diff + fi_tuf
-            else: # if there is no obstacles
+                return g * diff + fi_tuf
+            else:  # if there is no obstacles
                 return fi_tuf
 
     def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):

@@ -1,7 +1,5 @@
 #!usr/bin/python
 
-''' @author Wellington Castro <wvmcastro> '''
-
 # TODO: evaluate avoid obstacle field for multiple obstacles
 
 import numpy as np
@@ -12,9 +10,11 @@ import time
 
 from un_field import univectorField
 
+LEFT = 0
+RIGHT = 1
 
 SIMULATION = 0 # turn on simulation
-              # if you turn on the simulantion please make the directories: erros and erros/log
+              # if you turn on the simulantion please make the RIGHTectories: erros and erros/log
 EPOCH = 1 # how many simulations (min value is one)
 
 
@@ -70,20 +70,14 @@ def drawField(img, univetField):
     for l in range(0, h, 3):
         for c in range(0, w, 3):
             pos = [c, -l]
-            theta = univetField.getAngleVec(_robotPos=pos, _vRobot=[0,0])
+            theta = univetField.getVec(_robotPos=pos, _vRobot=[0,0])
 
             v = np.array([np.cos(theta), np.sin(theta)])
 
-            # print "origin, pos, vet"
-            # print univetField.mv2GoalField.origin, pos, v
-
-            # print [pos[0], -pos[1]], v
             s = cm2pixel(np.array([c, l]))
             new = cm2pixel(np.array(pos)) + 10*v
-            # print pos, v, pos + 12*v, "1"
-            new[1] = -new[1]
 
-            # print s, v, new, "2"
+            new[1] = -new[1]
             cv2.arrowedLine(img, tuple(np.int0(s)), tuple(np.int0(new)), (50,50,50), 1)
 
 def drawPath(img, start, end, univetField):
@@ -97,11 +91,11 @@ def drawPath(img, start, end, univetField):
     t0 = time.time()
 
     while(np.linalg.norm(currentPos - end) >= beta):
-        theta = univetField.getAngleVec(_robotPos=currentPos, _vRobot=[0,0])
+        theta = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
         v = np.array([math.cos(theta), math.sin(theta)])
         newPos = currentPos + (alpha*v)
         _newPos = cm2pixel(newPos).astype(int)
-        
+
         cv2.line(img, (_currentPos[0], -_currentPos[1]), (_newPos[0], -_newPos[1]), pathColor, 3)
 
         cv2.imshow('field', img)
@@ -139,12 +133,12 @@ if __name__ == "__main__":
         drawBall(imgField2, cm2pixel(ball))
 
         # Creates the univector field
-        univetField = univectorField()
+        univetField = univectorField(atack_goal=RIGHT)
         univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         univetField.updateBall(ball)
         univetField.updateObstacles(obstacle, vObstacle)
 
-        
+
         drawField(imgField2, univetField)
         ret, pos = drawPath(imgField2, robot, ball, univetField)
 
@@ -163,7 +157,7 @@ if __name__ == "__main__":
                 texto += "Robot: " + str(pos) + '\n'
                 arquivo.writelines(texto)
                 arquivo.close()
-            
+
             rep -= 1
             print "SIMULATION", i
             i += 1

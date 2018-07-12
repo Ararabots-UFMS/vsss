@@ -15,6 +15,8 @@ KR = 4.15
 K0 = 0.12
 DMIN = 3.48
 LDELTA = 50
+RIGHT = 1
+LEFT = 0
 
 robotInitPosition = (200, 200)
 ballInitPosition = (500, 500)
@@ -41,7 +43,7 @@ obstacle = np.array(advRobotPosition)
 vObstacle = np.array([0, 0])
 
 # creates the univector field
-univetField = univectorField()
+univetField = univectorField(atack_goal=RIGHT)
 univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 univetField.updateBall(np.array(sim.ball))
 univetField.updateObstacles(obstacle, vObstacle)
