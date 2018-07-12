@@ -6,7 +6,7 @@ class Client():
         self.robotId = robotId
         self.bluetoothId = bluetoothId
         self.port = port
-        self.sock = bluetooth.BluetoothSocket(bluetooth.L2CAP)
+        self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 
     def connect(self):
         self.sock.connect((self.bluetoothId, self.port))
