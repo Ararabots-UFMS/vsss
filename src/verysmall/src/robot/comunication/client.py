@@ -9,17 +9,17 @@ class Client():
         self.sock = bluetooth.BluetoothSocket(bluetooth.L2CAP)
 
     def connect(self):
-        sock.connect((self.bluetoothId, self.port))
+        self.sock.connect((self.bluetoothId, self.port))
 
     def sandPacket(self, direction, speedLeft, speedRight):
         packet = bytearray()
-        pecket.append(direction)
-        pecket.append(speedLeft)
-        pecket.append(speedRight)
-        sock.send(packet)
+        packet.append(direction)
+        packet.append(speedLeft)
+        packet.append(speedRight)
+        self.sock.send(packet)
 
     def closeSocket(self):
-        sock.close()
+        self.sock.close()
 
     def reconnect(self):
         pass
