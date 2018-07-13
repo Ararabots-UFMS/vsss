@@ -24,12 +24,12 @@ class CameraLoader:
             if return_type == 0:
                 self.camera_dev = -1, -1
             elif return_type == 1:
-                self.camera_dev = 1, int(self.controller.device)
+                self.camera_dev = 1, self.controller.device
             else:
                 self.camera_id['name'] = self.camera_list[self.controller.device]['name']
                 self.camera_id['vendor'] = self.camera_list[self.controller.device]['vendor']
                 self.camera_id['product'] = self.camera_list[self.controller.device]['product']
-                self.camera_dev = 2, self.controller.device
+                self.camera_dev = 2, int(self.controller.device)
         else:
             self.camera_dev = 2, search_index
 
