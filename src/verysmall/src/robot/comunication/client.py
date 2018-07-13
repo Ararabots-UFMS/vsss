@@ -1,4 +1,10 @@
 import bluetooth
+from ctypes import *
+
+DIRECTION = 0
+SPEED_L = 1
+SPEED_R = 2
+
 
 class Client():
 
@@ -11,12 +17,14 @@ class Client():
     def connect(self):
         self.sock.connect((self.bluetoothId, self.port))
 
-    def sandPacket(self, direction, speedLeft, speedRight):
-        packet = bytearray()
-        packet.append(direction)
-        packet.append(speedLeft)
-        packet.append(speedRight)
-        self.sock.send(packet)
+    def sandPacket(self, msg):
+        values = map(int, msg.split())
+
+        # DIRECTION values are in range 4 to 7
+        # SPEED values both are in range 0 to 255
+        self.sock.send(c_ubyte(values[DIRECTION]))
+        self.sock.send(c_ubyte(values[SPEED_L]))
+        self.sock.send(c_ubyte(values[SPEED_R]))
 
     def closeSocket(self):
         self.sock.close()
