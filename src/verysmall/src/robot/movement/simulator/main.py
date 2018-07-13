@@ -5,6 +5,17 @@ from functions.movement import Movement
 from univector.un_field import univectorField
 import cv2
 import numpy as np
+import random
+sys.path.append('../../')
+from utils.json_handler import JsonHandler
+
+pathPIDList = '../../../parameters/PID.json'
+
+ERROR = random.randint(0, 20)
+jsonHandler = JsonHandler()
+PIDLIST = jsonHandler.read(pathPIDList)
+ATTACKERPID = PIDLIST['attacker']
+
 
 # define when use the mouse
 mouseMode = False
@@ -34,9 +45,8 @@ sim.drawRobot(robotInitPosition, [-1,1])
 sim.drawBall(ballInitPosition)
 # initialize adversary robot
 sim.drawAdv(np.array(advRobotPosition))
-
 # movement class
-movement = Movement(10)
+movement = Movement(ATTACKERPID, 10)
 
 # obstacles
 obstacle = np.array(advRobotPosition)
@@ -48,9 +58,11 @@ univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 univetField.updateBall(np.array(sim.ball))
 univetField.updateObstacles(obstacle, vObstacle)
 
+
 def updateBallPosition(event,x,y,flags,param):
     if mouseMode:
         sim.drawBall((x, y))
+
 
 def printInformation():
     print "**********************************************"
@@ -59,6 +71,7 @@ def printInformation():
     print "Press any key to start:"
     print "To draw the ball in mouse position use: m"
     print "To exit the simulation press: q"
+
 
 if __name__ == "__main__":
 
@@ -92,7 +105,7 @@ if __name__ == "__main__":
 
         if not done:
             # move function
-            sim.move(leftSpeed,rightSpeed)
+            sim.move(leftSpeed+ERROR, rightSpeed)
 
         # 60fps
         key = cv2.waitKey(16)
