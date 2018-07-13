@@ -8,12 +8,13 @@ import time
 from sklearn.cluster import MiniBatchKMeans
 from camera.camera import Camera
 from utils.json_handler import JsonHandler
-from ROS.os_vision_publisher import RosVisionPublisher
+from ROS.ros_vision_publisher import RosVisionPublisher
 from vision_utils.params_setter import ParamsSetter
 
 
 from robot_seeker import RobotSeeker
 from robot_seeker import Things
+from ball_seeker import BallSeeker
 
 # @author Wellington Castro <wvmcastro>
 
@@ -77,6 +78,9 @@ class Vision:
 
         # Instantiates the RobotSeeker object
         self.hawk_eye = RobotSeeker(field_origin=self.origin, conversion_factor=self.conversion_factor)
+
+        # Ball Seeker object
+        self.ball_seeker = BallSeeker(field_origin=self.origin, conversion_factor=self.conversion_factor)
 
     def virtual_to_real(self):
         """ This function calculates de conversion factor between pixel to centimeters
@@ -206,6 +210,8 @@ class Vision:
         """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
         self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
+        self.ball_seeker.seek_ball(self.ball_seg, self.ball)
+        self.mercury.publish(self.get_message(ball=True, home_team=True))
         # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
         # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
 
@@ -223,13 +229,13 @@ class Vision:
         ball_speed = [0,0]
 
         # Home team info
-        home_team_pos = [5*[0,0]]
-        home_team_orientation = [5*0]
-        home_team_speed = [5*[0,0]]
+        home_team_pos = 6*[[0,0]]
+        home_team_orientation = 6*[0]
+        home_team_speed = 6*[[0,0]]
 
         # Adv team info
-        adv_team_pos = [5*[0,0]]
-        adv_team_speed = [5*[0,0]]
+        adv_team_pos = 6*[[0,0]]
+        adv_team_speed = 6*[[0,0]]
 
         if ball == True:
             ball_pos = self.ball.pos
@@ -248,7 +254,7 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
-        return ball_pos, ball_speed, home_team_pos, home_team_orientation,
+        return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
                 home_team_speed, adv_team_pos, adv_team_speed
 
 if __name__ == "__main__":
