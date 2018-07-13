@@ -1,5 +1,6 @@
 from utils.json_handler import JsonHandler
 from interface.Controller.MainWindowController import MainWindowController
+from utils.camera_loader import CameraLoader
 """
 Instantiates all the windows, robots, topics and services
 """
@@ -25,7 +26,9 @@ if __name__ == '__main__':
     # Load the database
     model = Model()
 
+    index = CameraLoader(model.game_opt['camera']).get_index()
+    print(index)
     # Create the GUI
-    controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt)
+    #controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt)
 
     model.save_params()
