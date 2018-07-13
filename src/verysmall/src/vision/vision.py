@@ -8,7 +8,9 @@ import time
 from sklearn.cluster import MiniBatchKMeans
 from camera.camera import Camera
 from utils.json_handler import JsonHandler
+from ROS.os_vision_publisher import RosVisionPublisher
 from vision_utils.params_setter import ParamsSetter
+
 
 from robot_seeker import RobotSeeker
 from robot_seeker import Things
@@ -21,6 +23,10 @@ class Vision:
 
     def __init__(self, camera, home_color, home_robots, adv_robots,
         params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
+
+        # This object will be responsible for publish the game state info
+        # at the bus
+        self.mercury = RosVisionPublisher()
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -43,6 +49,9 @@ class Vision:
         # Creates the lists to the home team and the adversary
         self.home_team = [Things() for i in range(home_robots)]
         self.adv_team = [Things() for i in range(adv_robots)]
+
+        # Object to store ball info
+        self.ball = Things()
 
         # Initialize the vitamins according to the chosen method
         if method == "clustering":
@@ -184,7 +193,6 @@ class Vision:
             self.home_seg = self.yellow_seg
             self.adv_seg = self.blue_seg
 
-
     def get_frame(self):
         """ Takes the raw imagem from the camera and applies the warp perspective transform
             and the mask """
@@ -206,7 +214,42 @@ class Vision:
 
         return self.arena_image
 
+    def get_message(self, ball=False, home_team=False, adv_team=False):
+        """ This function will return the message in the right format to be
+            published in the ROS vision bus """
 
+        # Ball info
+        ball_pos = [0,0]
+        ball_speed = [0,0]
+
+        # Home team info
+        home_team_pos = [5*[0,0]]
+        home_team_orientation = [5*0]
+        home_team_speed = [5*[0,0]]
+
+        # Adv team info
+        adv_team_pos = [5*[0,0]]
+        adv_team_speed = [5*[0,0]]
+
+        if ball == True:
+            ball_pos = self.ball.pos
+            ball_speed = self.ball.speed
+
+        if home_team == True:
+            for robot in self.home_team:
+                i = robot.id
+                home_team_pos[i] = robot.pos
+                home_team_orientation[i] = robot.orientation
+                home_team_speed[i] = robot.speed
+
+        if adv_team == True:
+            for robot in self.adv_team:
+                i = robot.id
+                adv_team_pos[i] = robot.pos
+                adv_team_speed[i] = robot.speed
+
+        return ball_pos, ball_speed, home_team_pos, home_team_orientation,
+                home_team_speed, adv_team_pos, adv_team_speed
 
 if __name__ == "__main__":
 
@@ -216,7 +259,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(1, "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")

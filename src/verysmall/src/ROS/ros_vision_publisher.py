@@ -6,7 +6,7 @@ from verysmall.msg import robot_pos, robot_vector
 from random import uniform
 
 
-class RosVision:
+class RosVisionPublisher:
     """This class can publish Vision messages on a Things Position Topic"""
     def __init__(self, isnode=False):
         if isnode:  # if this a separeted node
@@ -21,29 +21,30 @@ class RosVision:
         #    0.,
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
+        #    [home_robot_speed for _ in range(5)]    
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
-        #    [0] * 10
+
         # )
 
-    def publish(self, ball_pos, ball_vector, team_pos, team_vector, enemies_pos, enemies_vector, robot_speed):
+    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed, enemies_pos, enemies_speed):
         """
             This function publishes in the things position topic
 
             :param ball_pos: uint32[2]
-            :param ball_vector: float64[2]
+            :param ball_speed: float64[2]
             :param team_pos: five_robot_pos
-            :param team_vector: five_robot_vector
+            :param team_orientation: five_robot_vector
+            :param team_speed: [[vx1, vx2], ..., [vx5, vy5]]
             :param enemies_pos: five_robot_pos
-            :param enemies_vector: five_robot_vector
-            :param robot_speed: uint32[10]
+            :param enemies_orientation: five_robot_vector
             :return: returns nothing
         """
         msg = things_position(
-            ball_pos, ball_vector,
-            team_pos, team_vector,
-            enemies_pos, enemies_vector,
-            robot_speed
+            ball_pos, ball_speed,
+            team_pos, team_orient,
+            team_speed, enemies_pos,
+            enemies_speed
         )
         self.pub.publish(msg)
 

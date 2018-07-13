@@ -35,7 +35,7 @@ class Things:
         # Saves the time of the last update
         self.last_update = None
 
-    def update(self, id, pos, orientation):
+    def update(self, id, pos, orientation=None):
         last_up = None
         now = time.time()
 
@@ -86,7 +86,6 @@ class RobotSeeker:
             self.camera_matrix = cam_mtx
             self.distortion_vector = dist_vec
             self.is_aruco_started = True
-
 
     def get_contours(self, img):
         # Takes a binary image as input and return its contours
@@ -211,6 +210,8 @@ class RobotSeeker:
 
             if i < len(robots_list):
                 robots_list[i].update(id, pos_xy, _direction)
+            else:
+                break
 
     def seek_aruco(self, img, things_list, cam_mtx=None, dist_vector=None, degree=False):
         # If not started, starts the aruco seeker objects
@@ -223,11 +224,11 @@ class RobotSeeker:
         if np.any(ids != None):
             # That means at least one Aruco marker was recognized
 
-            # Reshapes the ids matrix to a ids vector for indexing simplicity
+            # Reshapes the ids matrix to an ids vector for indexing simplicity
             ids = ids.reshape(ids.shape[0] * ids.shape[1])
 
-            # Sort the ids vector, that way the same merker will be always in the
-            # same position in the things_list
+            # Sort the ids vector, that way the same marker will be always in the
+            # same pos in the things_list
             sorted_ids = np.sort(ids)
 
             i = 0
@@ -242,10 +243,13 @@ class RobotSeeker:
                 # Gets the marker state, ie: its center and x axis orientation
                 center, orientation = self.get_aruco_state(img, self.camera_matrix, self.distortion_vector, rvec, tvec, degree)
 
+                # Updates the aruco markers info
+                things_list[i].update(sorted_ids[i], center, orientation)
+
                 i += 1
 
     def get_aruco_state(self, img, cam_mtx, dist_vector, rvec, tvec, degree=False):
-        # xyz base
+        # x axis
         x_axis = np.float32([[0,0,0],[1.0,0,0]]).reshape(-1,3)
 
         # Do not know what is jac (sorry again). Imgpts are the start and end points
