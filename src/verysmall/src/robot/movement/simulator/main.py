@@ -21,10 +21,10 @@ ATTACKERPID = PIDLIST['attacker']
 mouseMode = False
 
 # univector
-RADIUS = 3.48
-KR = 4.15
+RADIUS = 3.48 # Distance from ball
+KR = 1
 K0 = 0.12
-DMIN = 3.48
+DMIN = 15
 LDELTA = 50
 RIGHT = 1
 LEFT = 0
