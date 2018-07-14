@@ -6,7 +6,7 @@ SPEED_L = 1
 SPEED_R = 2
 
 
-class Client():
+class Sender():
 
     def __init__ (self, robotId, bluetoothId, port):
         self.robotId = robotId
