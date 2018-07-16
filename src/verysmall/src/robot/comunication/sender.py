@@ -19,15 +19,18 @@ class Sender():
 
     def sandPacket(self, msg):
         values = map(int, msg.split())
-
-        # DIRECTION values are in range 4 to 7
-        # SPEED values both are in range 0 to 255
-        self.sock.send(c_ubyte(values[DIRECTION]))
-        self.sock.send(c_ubyte(values[SPEED_L]))
-        self.sock.send(c_ubyte(values[SPEED_R]))
+        if len(values) == 3:
+            # DIRECTION values are in range 4 to 7
+            # SPEED values both are in range 0 to 255
+            self.sock.send(c_ubyte(values[DIRECTION]))
+            self.sock.send(c_ubyte(values[SPEED_L]))
+            self.sock.send(c_ubyte(values[SPEED_R]))
+        else:
+            self.invalidPacket()
 
     def closeSocket(self):
         self.sock.close()
 
-    def reconnect(self):
-        pass
+    def invalidPacket(self):
+        # Stops the robot
+        self.sandPacket("4 0 0")

@@ -1,6 +1,17 @@
 from sender import Sender
-
-client = Sender(robotId=1, bluetoothId="20:15:04:09:70:80", port=0x1001)
+# initialize the client
+client = Sender(robotId=1, bluetoothId="20:15:04:09:77:68", port=0x1001)
+# connect the client
 client.connect()
-while 1:
-    client.sandPacket(1, 100, 100)
+
+for i in xrange(10):
+    client.sandPacket("4 100 100")
+
+client.sandPacket("4 100")
+
+for i in xrange(100):
+    client.sandPacket("4 100 100")
+    
+# stop the robot and close the socket
+client.sandPacket("4 0 0")
+client.closeSocket()
