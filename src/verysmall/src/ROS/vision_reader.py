@@ -8,7 +8,7 @@ class virtual_field():
 		rospy.Subscriber('things_position', things_position, self.read)
 		rospy.init_node('virtual_field', anonymous=True)
 
-		# uint32[2]		 	        	ball_pos
+		# uint32[2]		 	        		ball_pos
 		# float64[2]        				ball_vector
 		# verysmall/five_robot_pos       	team_pos
 		# verysmall/five_robot_vector    	team_vector

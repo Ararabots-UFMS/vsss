@@ -1,20 +1,24 @@
 #!/usr/bin/python
-import sys
-sys.path.append('../')
 import COLORS
 import cv2
 import numpy as np
-import time
+import rospy
 from sklearn.cluster import MiniBatchKMeans
-from camera.camera import Camera
-from utils.json_handler import JsonHandler
-from ROS.ros_vision_publisher import RosVisionPublisher
-from vision_utils.params_setter import ParamsSetter
-
+import sys
 
 from robot_seeker import RobotSeeker
 from robot_seeker import Things
 from ball_seeker import BallSeeker
+from vision_utils.params_setter import ParamsSetter
+from camera.camera import Camera
+
+# Top level imports
+import os
+old_path = sys.path[0]
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from ROS.ros_vision_publisher import RosVisionPublisher
+from utils.json_handler import JsonHandler
+sys.path[0] = old_path
 
 # @author Wellington Castro <wvmcastro>
 
@@ -27,7 +31,7 @@ class Vision:
 
         # This object will be responsible for publish the game state info
         # at the bus
-        self.mercury = RosVisionPublisher()
+        self.mercury = RosVisionPublisher(isnode= True)
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -237,7 +241,7 @@ class Vision:
         adv_team_speed = 6*[[0,0]]
 
         if ball:
-            ball_pos = self.ball.pos if isinstance(self.ball.pos, tuple) else [0,0]
+            ball_pos = tuple(self.ball.pos)
             ball_speed = self.ball.speed
 
         if home_team:
@@ -258,41 +262,18 @@ class Vision:
 
 if __name__ == "__main__":
 
+
+
     home_color = "yellow" # blue or yellow
     home_robots = 3
     adv_robots = 3
 
-    arena_params = "../parameters/ARENA.json"
-    colors_params = "../parameters/COLORS.json"
-    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    arena_params = root_path+"parameters/ARENA.json"
+    colors_params = root_path+"parameters/COLORS.json"
+    camera = Camera(sys.argv[1], root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")
 
-    i = 0
-    t0 = time.time()
-    cv2.namedWindow('control')
-    show = True
-    while True:
-        i += 1
+    while not rospy.is_shutdown():
         arena = v.get_frame()
-        key = cv2.waitKey(1) & 0xFF
-        if show:
-            cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
-            cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
-        if key == ord('q'): # exit
-            camera.stop()
-            break
-        elif key == ord('s'): #show/hide
-            show = not show
-            if show == False:
-                cv2.destroyWindow("vision")
-                cv2.destroyWindow("segs")
-        elif key == ord('c'): # open cropper
-            tc0 = time.time()
-            v.params_setter.run()
-            v.load_params()
-            t0 += time.time() - tc0
-
-    print "framerate:", i / (time.time() - t0)
-    cv2.destroyAllWindows()

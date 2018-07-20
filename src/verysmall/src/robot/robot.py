@@ -1,7 +1,6 @@
 import rospy
 from verysmall.msg import things_position, motor_speed
 
-
 class Robot():
     """docstring for Robot"""
 

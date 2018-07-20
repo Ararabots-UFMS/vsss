@@ -1,1 +1,1 @@
-uint32[2]    robot_pos
+float64[2]    robot_pos

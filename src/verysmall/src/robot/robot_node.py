@@ -3,6 +3,11 @@ import rospy
 import sys
 from verysmall.msg import things_position, motor_speed
 
+try:
+    from utils.json_handler import JsonHandler
+except ImportError:
+    sys.path[0] = sys.path[0] + '/../'
+    from utils.json_handler import JsonHandler
 
 class Robot():
     """docstring for Robot"""

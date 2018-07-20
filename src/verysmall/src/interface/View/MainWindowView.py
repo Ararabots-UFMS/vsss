@@ -2,12 +2,12 @@
 # -*- coding: latin-1 -*-
 import sys
 import fltk as fl
-import os
 from ..virtual_field import Virtual_Field
 import rospy
 from Queue import Queue
 from verysmall.msg import things_position
 from verysmall.msg import robot_pos, robot_vector
+
 
 class canvas(fl.Fl_Widget):
     def __init__(self, x, y, w, h, image):
@@ -50,7 +50,7 @@ class MainWindowView:
         self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
                                         self.proportion_width(95), self.proportion_height(90))
 
-        self.virtual = Virtual_Field(self.proportion_width(50), self.proportion_height(70))
+        self.virtual = Virtual_Field(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtual.plot_arena()
 
         self.root.label("ARARABOTS MANAGEMENT SYSTEM")
@@ -65,13 +65,13 @@ class MainWindowView:
 
         # Shapes the size of the Queue
         self.data.put(things_position(
-                [0, 0],
-                0.,
+                [0., 0.],
+                [0.,0.],
                 [robot_pos() for _ in range(5)],
                 [robot_vector() for _ in range(5)],
                 [robot_pos() for _ in range(5)],
                 [robot_vector() for _ in range(5)],
-                [0] * 10
+                [robot_pos() for _ in range(10)]
             ))
 
         # Ros node for reading the buffer
@@ -268,7 +268,9 @@ class MainWindowView:
         self.root.show(len(sys.argv), sys.argv)
 
         self.RATE = 0.03  # 0.013#0.04
+
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
+
         fl.Fl.run()
 
 if __name__ == '__main__':

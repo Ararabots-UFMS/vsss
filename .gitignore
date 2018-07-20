@@ -1,5 +1,6 @@
 
 *.pyc
+*.avi
 .idea
 build/
 install/

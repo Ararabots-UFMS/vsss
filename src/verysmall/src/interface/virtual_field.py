@@ -8,7 +8,7 @@ from auxiliary import *
 class Virtual_Field():
     """ class constructor """
 
-    def __init__(self, width=760, height=680):
+    def __init__(self, width=760, height=680, is_rgb = False):
         # 1 cm for 4 pixels
         self.width = width
         self.height = height
@@ -59,15 +59,24 @@ class Virtual_Field():
                                 self.proportion_height(84),
                                 self.proportion_height(88)]
 
-        self.colors = {"blue": [255, 0, 0],
-                       "orange": [0, 100, 255],
-                       "white": [255, 255, 255],
-                       "yellow": [0, 255, 255],
-                       "red": [0, 0, 255],
-                       "green": [0, 253, 116],
-                       "gray": [111, 111, 111]
-                       }
-
+        if is_rgb:
+            self.colors = {"blue": [0, 0, 255],
+                           "orange": [255, 100, 0],
+                           "white": [255, 255, 255],
+                           "yellow": [255, 255, 0],
+                           "red": [255, 0, 0],
+                           "green": [116, 253, 0],
+                           "gray": [111, 111, 111]
+                           }
+        else:
+            self.colors = {"blue": [255, 0, 0],
+                           "orange": [0, 100, 255],
+                           "white": [255, 255, 255],
+                           "yellow": [0, 255, 255],
+                           "red": [0, 0, 255],
+                           "green": [0, 253, 116],
+                           "gray": [111, 111, 111]
+                           }
     """system pause for n FPS"""
 
     def pause(self, n):

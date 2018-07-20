@@ -1,6 +1,5 @@
 from ..View.MainWindowView import MainWindowView
 import fltk as fl
-import rospy
 
 
 class MainWindowController():
