@@ -34,7 +34,7 @@ if __name__ == '__main__':
     # Load the database
     model = Model()
 
-    if RosUtils.topic_exists("things_position"):
+    if RosUtils.topic_exists("/things_position"):
         print "done"
         return_type, device_index = -1, -1
     else:
@@ -52,6 +52,7 @@ if __name__ == '__main__':
 
         # Launch Vision with another Topic
         arguments = str(device_index)
+        print arguments
         vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
                                    name='vision', args=arguments)
 

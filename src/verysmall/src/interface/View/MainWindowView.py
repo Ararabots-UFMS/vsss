@@ -61,7 +61,7 @@ class MainWindowView:
         self.create_arena()
 
         # Queue of data from Topic Things position
-        self.data = Queue(maxsize=5)
+        self.data = Queue(maxsize=60)
 
         # Shapes the size of the Queue
         self.data.put(things_position(
@@ -85,7 +85,9 @@ class MainWindowView:
     def read(self, data):
         # Inserts data in the Queue
         if not self.data.full():
-            self.data.put_nowait(data)
+            self.data.put(data)
+        else:
+            rospy.logfatal("cheia")
 
     def redraw_field(self):
         if not self.data.empty():
@@ -94,7 +96,7 @@ class MainWindowView:
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.arena.image = self.virtual.field
-        self.arena.redraw()
+            self.arena.redraw()
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
@@ -269,7 +271,7 @@ class MainWindowView:
         self.root.end()
         self.root.show(len(sys.argv), sys.argv)
 
-        self.RATE = 0.03  # 0.013#0.04
+        self.RATE = 0.006  # 0.013#0.04
 
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 

@@ -270,10 +270,11 @@ if __name__ == "__main__":
 
     arena_params = root_path+"parameters/ARENA.json"
     colors_params = root_path+"parameters/COLORS.json"
-    camera = Camera(sys.argv[1], root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera(int(sys.argv[1]), root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")
 
     while not rospy.is_shutdown():
         arena = v.get_frame()
+        key = cv2.waitKey(1) & 0xFF

@@ -27,7 +27,7 @@ class Vision:
 
         # This object will be responsible for publish the game state info
         # at the bus
-        self.mercury = RosVisionPublisher()
+        self.mercury = RosVisionPublisher(True)
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -264,7 +264,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera("/home/verysmall/Downloads/record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")
