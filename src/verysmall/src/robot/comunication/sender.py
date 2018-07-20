@@ -16,15 +16,21 @@ class Sender():
 
     def connect(self):
         """Connect to the robot"""
-        self.sock.connect((self.bluetoothId, self.port))
+        try:
+            self.sock.connect((self.bluetoothId, self.port))
+        except:
+            print "Connect error robot: ", self.robotId
 
     def sendPacket(self, leftWheel, rightWheel):
         """Recive the speed, get the first byte and then send the msg to the robot"""
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
-        self.sock.send(c_ubyte(directionByte))
-        self.sock.send(c_ubyte(left))
-        self.sock.send(c_ubyte(right))
+        try:
+            self.sock.send(c_ubyte(directionByte))
+            self.sock.send(c_ubyte(left))
+            self.sock.send(c_ubyte(right))
+        except:
+            print "Packet error robot: ", self.robotId
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""
