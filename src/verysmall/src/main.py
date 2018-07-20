@@ -47,8 +47,11 @@ if __name__ == '__main__':
         launch = roslaunch.scriptapi.ROSLaunch()
         launch.start()
 
+        #print(str(device_index))
+        #sys.exit(-1)
+
         # Launch Vision with another Topic
-        arguments = str('/home/marquesman/ararabots/src/verysmall/src/vision/record.avi')
+        arguments = str(device_index)
         vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
                                    name='vision', args=arguments)
 

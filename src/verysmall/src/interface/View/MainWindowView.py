@@ -84,14 +84,16 @@ class MainWindowView:
 
     def read(self, data):
         # Inserts data in the Queue
-        self.data.put(data)
+        if not self.data.full():
+            self.data.put_nowait(data)
 
     def redraw_field(self):
-        data_item = self.data.get()  # Get the data
-        self.data.task_done()  # Finishes the get process
-        self.virtual.plot_arena()  # New arena image
-        self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
-        self.arena.image = self.virtual.field
+        if not self.data.empty():
+            data_item = self.data.get()  # Get the data
+            self.data.task_done()  # Finishes the get process
+            self.virtual.plot_arena()  # New arena image
+            self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
+            self.arena.image = self.virtual.field
         self.arena.redraw()
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 

@@ -3,6 +3,7 @@
 from ..View.CameraSelectView import CameraSelectView
 import fltk as fl
 import sys
+from os import path
 
 class CameraSelectController:
 
@@ -39,6 +40,7 @@ class CameraSelectController:
         self.view.file_box.align(fl.FL_ALIGN_INSIDE|fl.FL_ALIGN_RIGHT)
         self.view.file_box.label(self.view.file_browser.value())
         self.device = self.view.file_browser.value()
+        self.camera_model['file'] = self.device
 
     def input_callback(self, ptr):
 
@@ -51,7 +53,7 @@ class CameraSelectController:
         else:
             if item == -2:
                 self.return_type = 0
-                self.device = None
+                #self.device = None
             else:
                 self.return_type = 2
                 self.device = self.choice_map[ptr.value()]
@@ -74,9 +76,16 @@ class CameraSelectController:
 
         self.update_list(self.camera_list)
 
-        self.view.file_browser_label.hide()
-        self.view.file_button.hide()
-        self.view.file_box.hide()
+        if path.isfile(self.camera_model['file']):
+            self.view.device_input.value(1)
+            self.return_type = 1
+            self.view.file_box.align(fl.FL_ALIGN_INSIDE | fl.FL_ALIGN_RIGHT | fl.FL_ALIGN_WRAP)
+            self.view.file_box.label(self.camera_model['file'])
+            self.device = self.camera_model['file']
+        else:
+            self.view.file_browser_label.hide()
+            self.view.file_button.hide()
+            self.view.file_box.hide()
 
         self.view.device_input.callback(self.input_callback)
         self.view.file_button.callback(self.browser_callback)
@@ -89,8 +98,4 @@ class CameraSelectController:
         self.view.ok_button.callback(self.button_callback)
         self.view.refresh_button.callback(self.button_callback)
 
-
         self.view.end()
-
-
-
