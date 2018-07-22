@@ -1,0 +1,3 @@
+<launch>
+  <node name="main" pkg="verysmall" type="main.py" />
+</launch>

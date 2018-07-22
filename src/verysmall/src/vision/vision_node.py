@@ -212,7 +212,7 @@ class Vision:
 
         """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
             self.home_seg, self.adv_seg and self.ball_seg """
-        self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
+        #self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
         self.ball_seeker.seek_ball(self.ball_seg, self.ball)
         self.send_message(ball=True, home_team=True)
         # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)

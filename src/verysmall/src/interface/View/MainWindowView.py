@@ -9,14 +9,13 @@ from verysmall.msg import things_position
 from verysmall.msg import robot_pos, robot_vector
 
 
-class canvas(fl.Fl_Widget):
-    def __init__(self, x, y, w, h, image):
-        fl.Fl_Widget.__init__(self, x, y, w, h, "canvas")
+class canvas(fl.Fl_Double_Window):
+    def __init__(self, x, y, w, h, l, image):
+        fl.Fl_Double_Window.__init__(self, x, y, w, h, l)
         self.image = image
 
     def draw(self):
-        w, h, x, y = self.w(), self.h(), self.x(), self.y()
-        fl.fl_draw_image(self.image.data, x, y, w, h, 3, 0)
+        fl.fl_draw_image(self.image.data, 0,0, self.w(), self.h(), 3, 0)
 
 
 class MainWindowView:
@@ -61,7 +60,7 @@ class MainWindowView:
         self.create_arena()
 
         # Queue of data from Topic Things position
-        self.data = Queue(maxsize=5)
+        self.data = Queue(maxsize=20)
 
         # Shapes the size of the Queue
         self.data.put(things_position(
@@ -86,6 +85,8 @@ class MainWindowView:
         # Inserts data in the Queue
         if not self.data.full():
             self.data.put_nowait(data)
+        else:
+            rospy.logfatal("Cheia")
 
     def redraw_field(self):
         if not self.data.empty():
@@ -94,13 +95,17 @@ class MainWindowView:
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.arena.image = self.virtual.field
-        self.arena.redraw()
+            self.arena.redraw()
+        else:
+            rospy.logfatal("Vazia")
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
         """Creates a top window, double buffered one"""
         self.arena = canvas(self.proportion_width(40), self.proportion_height(15),
-                            self.proportion_width(50), self.proportion_height(70), self.virtual.field)
+                            self.proportion_width(50), self.proportion_height(70), "D_Window",self.virtual.field)
+        self.arena.box(fl.FL_FLAT_BOX)
+        self.arena.end()
 
     def create_top_menu(self):
         """Creates the buttons and inputs for players"""
@@ -269,7 +274,7 @@ class MainWindowView:
         self.root.end()
         self.root.show(len(sys.argv), sys.argv)
 
-        self.RATE = 0.03  # 0.013#0.04
+        self.RATE = 0.013#0.04
 
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 

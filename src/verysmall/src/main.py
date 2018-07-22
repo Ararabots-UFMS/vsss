@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys
 from utils.json_handler import JsonHandler
 from interface.Controller.MainWindowController import MainWindowController
