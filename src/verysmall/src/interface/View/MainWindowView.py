@@ -98,6 +98,7 @@ class MainWindowView:
             self.arena.redraw()
         else:
             rospy.logfatal("Vazia")
+
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
