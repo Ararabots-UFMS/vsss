@@ -284,3 +284,5 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         arena = v.get_frame()
         key = cv2.waitKey(1) & 0xFF
+
+    v.camera.stop()

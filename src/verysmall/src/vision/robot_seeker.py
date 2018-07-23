@@ -38,7 +38,7 @@ class Things:
         now = time.time()
 
         # Checkes if this is not the first update
-        if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
+        if self.last_update is not None and np.all(self.pos is not None) and np.all(pos is not None):
             # If it is not the first update, calculate the robot speed
             self.speed = (pos - self.pos) / (now - self.last_update)
 

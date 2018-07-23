@@ -97,7 +97,8 @@ class MainWindowView:
             self.arena.image = self.virtual.field
             self.arena.redraw()
         else:
-            rospy.logfatal("Vazia")
+            pass
+            #rospy.logfatal("Vazia")
 
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 

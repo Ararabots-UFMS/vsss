@@ -12,11 +12,10 @@ except ImportError:
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, robot_id, robot_body, isAdversary=False):
-        print __file__
+    def __init__(self, robot_id, bluetooth_id, robot_body, isAdversary=False):
         # Parameters
         self.robot_id = robot_id
-        #self.bluetooth_id = bluetooth_id
+        self.bluetooth_id = bluetooth_id
         self.robot_body = robot_body
 
         # Receive from vision
@@ -37,13 +36,13 @@ class Robot():
         self.game_state = None
         self.role = None
 
-        self.pub = rospy.Publisher('robot_' + str(robot_id), motor_speed, queue_size=1)
-        rospy.Subscriber('things_position', things_position, self.read_topic)
+        self.pub = rospy.Publisher(robot_id, motor_speed, queue_size=1)
+        rospy.Subscriber('things_position', things_position, self.read_parameters)
 
     def run(self):
         print("Robo_" + str(self.robot_id) + ": Rodei principal")
 
-    def read_parameters(self):
+    def read_parameters(self, data):
         pass
 
     def read_topic(self, data):
@@ -80,6 +79,7 @@ class Robot():
 
 if __name__ == '__main__':
     # robot_id body_id node_name
-    rospy.init_node(sys.argv[3].split('=')[1])
-    Robot(int(sys.argv[1]), sys.argv[1])
+    rospy.init_node(sys.argv[1])
+    rospy.logfatal(sys.argv[1]+" - Online")
+    Robot(sys.argv[1], sys.argv[2], sys.argv[3])
     rospy.spin()

@@ -3,6 +3,7 @@ import sys
 from utils.json_handler import JsonHandler
 from interface.Controller.MainWindowController import MainWindowController
 from ROS.ros_utils import RosUtils
+from trainer import Trainer
 import rospy
 import roslaunch
 from utils.camera_loader import CameraLoader
@@ -36,7 +37,6 @@ if __name__ == '__main__':
     model = Model()
 
     if RosUtils.topic_exists("/things_position"):
-        print "done"
         return_type, device_index = -1, -1
     else:
         # Create the GUI
@@ -49,17 +49,16 @@ if __name__ == '__main__':
         launch = roslaunch.scriptapi.ROSLaunch()
         launch.start()
 
-        #print(str(device_index))
-        #sys.exit(-1)
-
         # Launch Vision with another Topic
         arguments = str(device_index)
-        print arguments
+
         vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
                                    name='vision', args=arguments)
 
         # launches the node and stores it in the given memory space
         vision_process = launch.launch(vision_node)
+
+    trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
 
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt)
 
