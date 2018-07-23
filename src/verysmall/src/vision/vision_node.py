@@ -270,7 +270,13 @@ if __name__ == "__main__":
 
     arena_params = root_path+"parameters/ARENA.json"
     colors_params = root_path+"parameters/COLORS.json"
-    camera = Camera(int(sys.argv[1]), root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+
+    try:
+        device = int(sys.argv[1])
+    except ValueError:
+        device = sys.argv[1]
+
+    camera = Camera(device, root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, home_color, home_robots, adv_robots,
                 arena_params, colors_params, method="color_segmentation")

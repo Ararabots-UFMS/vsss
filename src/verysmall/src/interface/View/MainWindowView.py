@@ -84,7 +84,7 @@ class MainWindowView:
     def read(self, data):
         # Inserts data in the Queue
         if not self.data.full():
-            self.data.put_nowait(data)
+            self.data.put(data) # Try put no wait next
         else:
             rospy.logfatal("Cheia")
 

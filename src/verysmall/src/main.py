@@ -42,6 +42,7 @@ if __name__ == '__main__':
         # Create the GUI
         # Search for the usb camera, if not present, the program ask to a substitute
         # be a file or another camera
+        
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
 
         # Create roslaunch from API
