@@ -108,7 +108,7 @@ class HawkEye:
 
         adv_centers = self.adv_team_seeker.seek(img)
 
-        if adv_centers != None and adv_centers.size:
+        if not(adv_centers is None) and adv_centers.size:
             for i in xrange(self.num_robots_adv_team):
                 pos = self.pixel_to_real_world(adv_centers[i, :])
                 robots_list[i].update(i, pos)

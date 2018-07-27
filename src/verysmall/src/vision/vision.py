@@ -7,7 +7,7 @@ import numpy as np
 import time
 from camera.camera import Camera
 from utils.json_handler import JsonHandler
-# from ROS.ros_vision_publisher import RosVisionPublisher
+from ROS.ros_vision_publisher import RosVisionPublisher
 from vision_utils.params_setter import ParamsSetter
 
 from seekers.things_seeker import HawkEye
@@ -24,7 +24,7 @@ class Vision:
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
-        # self.mercury = RosVisionPublisher()
+        self.mercury = RosVisionPublisher()
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -186,6 +186,7 @@ class Vision:
     def run(self):
 
         while not self.finish:
+
             self.t0 = time.time()
             while self.game_on:
                 self.raw_image = camera.read()
@@ -201,9 +202,9 @@ class Vision:
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
-                self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
+                self.hawk_eye.seek_adv_team(self.home_seg, self.adv_team)
 
-                self.hawk_eye.seek_ball(self.ball_seg, self.ball)
+                self.hawk_eye.seek_ball(self.adv_seg, self.ball)
 
                 self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
@@ -262,7 +263,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
+    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")
