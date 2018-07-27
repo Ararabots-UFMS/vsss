@@ -37,3 +37,6 @@ def distancePoints(a, b):
 def maxAbs(x, y):
     """Return the maximum absolute value"""
     return max(abs(x), abs(y))
+
+def gaussian(m, v):
+    return math.exp(-(m**2) / (2 * (v**2)))

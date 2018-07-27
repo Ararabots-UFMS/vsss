@@ -2,13 +2,14 @@ import sys
 import numpy as np
 sys.path.append('../')
 from control.PID import PID
-from auxiliary import angleBetween, distancePoints
+sys.path.append('../../../')
+from utils.math_utils import angleBetween, distancePoints
 
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, error):
-        self.pid = PID(kp=40.0, ki=0.0, kd=0.0)
+    def __init__(self, PIDList, error=10):
+        self.pid = PID(kp=PIDList[0], ki=PIDList[1], kd=PIDList[2])
         self.lastPos = np.array([0, 0])
         self.errorMargin = error
 
@@ -63,10 +64,6 @@ class Movement():
     def returnSpeed(self, speed, correction):
         """Recives the robot speed and the PID correction, and return each wheel speed."""
         if speed < 0: #backwards
-            if correction < 0:
-                return int(speed + correction), int(speed), False
-            return int(speed), int(speed - correction), False
+            return int(speed + correction), int(speed - correction), False
         else: #forward
-            if correction < 0:
-                return int(speed), int(speed + correction), False
-            return int(speed - correction), int(speed), False
+            return int(speed - correction), int(speed + correction), False
