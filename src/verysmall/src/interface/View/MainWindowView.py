@@ -108,8 +108,8 @@ class MainWindowView:
             #self.past_time = self.now_time
         #else:
         except IndexError:
+            rospy.logfatal("Vazia")
             pass
-            #rospy.logfatal("Vazia")
 
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
