@@ -1,16 +1,16 @@
 #!/usr/bin/python
+import rospy
+import sys
 import COLORS
 import cv2
 import numpy as np
-import rospy
-from sklearn.cluster import MiniBatchKMeans
-import sys
-
-from robot_seeker import RobotSeeker
-from robot_seeker import Things
-from ball_seeker import BallSeeker
-from vision_utils.params_setter import ParamsSetter
+import time
 from camera.camera import Camera
+from threading import Thread
+from vision_utils.params_setter import ParamsSetter
+
+from seekers.things_seeker import HawkEye
+from seekers.things_seeker import Things
 
 # Top level imports
 import os
@@ -24,14 +24,19 @@ sys.path[0] = old_path
 
 HEIGHT = 1
 
+
 class Vision:
 
-    def __init__(self, camera, home_color, home_robots, adv_robots,
-        params_file_name="", colors_params = "", method="", cluster_cfg=(5, 100, 500)):
+    def __init__(self, camera, adv_robots, home_color, home_robots,
+    home_tag="aruco", params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
         # at the bus
-        self.mercury = RosVisionPublisher(isnode= True)
+        self.mercury = RosVisionPublisher(True)
+
+        # This object will be responsible for publish the game state info
+        # at the bus. Mercury is the gods messenger
+        self.mercury = RosVisionPublisher()
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -39,6 +44,7 @@ class Vision:
         self.home_color = home_color
         self.home_robots = home_robots
         self.adv_robots = adv_robots
+        self.home_tag = home_tag
 
         self.arena_vertices = []
         self.arena_size = ()
@@ -47,24 +53,26 @@ class Vision:
         self.raw_image = None
         self.warp_matrix = None
         self.pipeline = None
+        self.fps = None
+        self.t0 = None
+
+        self.computed_frames = 0
 
         self.origin = None
         self.conversion_factor = None
+        self.game_on = False
+
+        self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.home_team = [Things() for i in range(home_robots)]
-        self.adv_team = [Things() for i in range(adv_robots)]
+        self.home_team = home_robots * [Things()]
+        self.adv_team = adv_robots * [Things()]
 
         # Object to store ball info
         self.ball = Things()
 
         # Initialize the vitamins according to the chosen method
-        if method == "clustering":
-            self.mbc_kmeans = MiniBatchKMeans(n_clusters = cluster_cfg[0], max_iter = cluster_cfg[1],
-                                         batch_size=cluster_cfg[2])
-            self.LAB_MAX = ([255, 255, 255])
-            self.pipeline = self.cluster_pipeline
-        elif method == "color_segmentation":
+        if method == "color_segmentation":
             self.colors_params_file = colors_params
             self.load_colors_params()
             self.pipeline = self.color_seg_pipeline
@@ -72,21 +80,36 @@ class Vision:
             print "Method not recognized!"
 
         self.params_setter = ParamsSetter(camera, params_file_name)
-        self.i = 0 # gambito
-        self.method = method
 
         if self.params_file_name != "":
             self.load_params()
 
-        self.virtual_to_real()
+        self.set_origin_and_factor()
 
-        # Instantiates the RobotSeeker object
-        self.hawk_eye = RobotSeeker(field_origin=self.origin, conversion_factor=self.conversion_factor)
+        # Gets a initialization frame
+        self.raw_image = camera.read()
+        self.warp_perspective()
 
-        # Ball Seeker object
-        self.ball_seeker = BallSeeker(field_origin=self.origin, conversion_factor=self.conversion_factor)
+        # The hawk eye object will be responsible to locate and identify all
+        # objects at the field
+        hawk_eye_extra_params = []
+        if self.home_tag == "aruco":
+            hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
-    def virtual_to_real(self):
+        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
+        self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+
+
+    def start(self):
+        self.game_on = True
+
+    def pause(self):
+        self.game_on = False
+
+    def update_fps(self):
+        self.fps = self.computed_frames / (time.time() - t0)
+
+    def set_origin_and_factor(self):
         """ This function calculates de conversion factor between pixel to centimeters
             and finds the (0,0) pos of the field in the image """
 
@@ -112,9 +135,6 @@ class Vision:
         self.arena_vertices = np.array(params['arena_vertices'])
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
         self.arena_size = (params['arena_size'][0], params['arena_size'][1])
-
-        if 'value_min' in params and self.method == "clustering":
-            self.lab_min = params['value_min']
 
         self.create_mask()
 
@@ -158,32 +178,6 @@ class Vision:
         temp_value_mask = cv2.inRange(img, np.array(lower), np.array(upper))
         return temp_value_mask
 
-    def cluster_pipeline(self):
-        """ Implements all the stepes required to segment color bases in a clustering approach
-            with the pixels in the LAB color space """
-        self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2LAB)
-
-        """ Gets rid of bad pixles, ie: pixels out the field and most dark pixels """
-        mask1 = self.get_filter(self.arena_image, self.lab_min, self.LAB_MAX)
-        self.arena_image = cv2.bitwise_and(self.arena_image, self.arena_image, mask=np.bitwise_and(mask1, self.arena_mask))
-
-        """ Select the interest pixels ie the colored ones that passed the threshold """
-        indexes = np.argwhere(np.all(self.arena_image != (0,0,0), axis=2))
-        samples = self.arena_image[indexes[:, 0], indexes[:, 1]]
-
-        """ Feeds the minibatch kmeans once every two seconds"""
-        if self.i % 120 == 0:
-            self.mbc_kmeans.fit(samples)
-
-        self.i = self.i + 1
-
-        """ Predicts the label of the cluster that each sample belongs """
-        labels = self.mbc_kmeans.predict(samples)
-
-        """ Substitute every sample by the centroid of the clustes that it belongs
-            now the image has only n_clusters colors """
-        self.arena_image[indexes[:,0], indexes[:,1]] = self.mbc_kmeans.cluster_centers_.astype("uint8")[labels]
-
     def color_seg_pipeline(self):
         """ Wait until the color parameters are used """
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
@@ -201,29 +195,39 @@ class Vision:
             self.home_seg = self.yellow_seg
             self.adv_seg = self.blue_seg
 
-    def get_frame(self):
-        """ Takes the raw imagem from the camera and applies the warp perspective transform
-            and the mask """
-        self.raw_image = self.camera.read()
-        self.warp_perspective()
+    def run(self):
 
-        self.pipeline()
-        self.attribute_teams()
+        while not self.finish:
 
-        """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
-            self.home_seg, self.adv_seg and self.ball_seg """
-        #self.hawk_eye.seek_aruco(255-self.home_seg, self.home_team, self.camera.camera_matrix, self.camera.dist_vector)
-        self.ball_seeker.seek_ball(self.ball_seg, self.ball)
-        self.send_message(ball=True, home_team=True)
-        # self.hawk_eye.seek(self.home_seg, self.home_team, direction=True, home_team=False)
-        # self.hawk_eye.seek(self.adv_seg, self.adv_team, direction=False, home_team=True)
+            self.t0 = time.time()
+            while self.game_on:
+                self.raw_image = camera.read()
 
-        # self.hawk_eye.debug(self.home_seg, self.home_team)
-        # self.hawk_eye.debug(self.adv_seg, self.adv_team)
+                """ Takes the raw imagem from the camera and applies the warp perspective transform """
+                self.warp_perspective()
 
-        return self.arena_image
+                """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
+                    self.home_seg, self.adv_seg and self.ball_seg """
+                self.pipeline()
 
-    def send_message(self, ball=False, home_team=False, adv_team=False):
+                self.attribute_teams()
+
+                self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
+
+                self.hawk_eye.seek_adv_team(self.home_seg, self.adv_team)
+
+                self.hawk_eye.seek_ball(self.adv_seg, self.ball)
+
+                self.mercury.publish(*(self.get_message(ball=True, home_team=True, adv_team=False)))
+
+                self.computed_frames += 1
+
+                #self.update_fps()
+
+        self.camera.stop()
+        self.camera.capture.release()
+
+    def get_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
@@ -240,33 +244,37 @@ class Vision:
         adv_team_pos = 6*[[0,0]]
         adv_team_speed = 6*[[0,0]]
 
-        if ball:
-            ball_pos = tuple(self.ball.pos)
+        if ball == True:
+            ball_pos = self.ball.pos
             ball_speed = self.ball.speed
 
-        if home_team:
+        if home_team == True:
             for robot in self.home_team:
                 i = robot.id
                 home_team_pos[i] = robot.pos
                 home_team_orientation[i] = robot.orientation
                 home_team_speed[i] = robot.speed
 
-        if adv_team:
+        if adv_team == True:
             for robot in self.adv_team:
                 i = robot.id
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
-        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,\
-                             home_team_speed, adv_team_pos, adv_team_speed)
+        return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
+                home_team_speed, adv_team_pos, adv_team_speed
+
+    def on_exit(self):
+        #self.camera.stop()
+        self.finish = True
 
 if __name__ == "__main__":
 
-
-
-    home_color = "yellow" # blue or yellow
+    home_color = "yellow"  # blue or yellow
     home_robots = 3
     adv_robots = 3
+    home_tag = "aruco"
+
     frame_hater = int(1/60*1000)
 
     arena_params = root_path+"parameters/ARENA.json"
@@ -279,11 +287,15 @@ if __name__ == "__main__":
 
     camera = Camera(device, root_path+"parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
-    v = Vision(camera, home_color, home_robots, adv_robots,
-                arena_params, colors_params, method="color_segmentation")
+    v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
+               arena_params, colors_params, method="color_segmentation")
+    v.game_on = True
 
-    while not rospy.is_shutdown():
-        arena = v.get_frame()
-        key = cv2.waitKey(frame_hater) & 0xFF
+    t = Thread(target=v.run, args=())
+    t.daemon = True
+    t.start()
 
-    v.camera.stop()
+    rospy.on_shutdown(v.on_exit)
+
+    rospy.spin()
+

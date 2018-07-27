@@ -46,11 +46,21 @@ class RosVisionPublisher:
             team_speed, enemies_pos,
             enemies_speed
         )
+        rospy.logfatal(ball_pos)
+        msg = things_position(ball_pos,
+            ball_speed[0],
+            [robot_pos() for _ in range(5)],
+            [robot_vector() for _ in range(5)],
+            [robot_pos() for _ in range(5)],
+            [robot_vector() for _ in range(5)],
+            [robot_pos() for _ in range(10)]
+        )
+
         self.pub.publish(msg)
 
 
 if __name__ == '__main__':
     try:
-        RosVision()
+        RosVisionPublisher()
     except rospy.ROSInterruptException:
         pass
