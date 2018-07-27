@@ -1,7 +1,6 @@
 from ..View.MainWindowView import MainWindowView
 import fltk as fl
 
-
 class MainWindowController():
     def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt):
         # Lets create the view of our controller shall we

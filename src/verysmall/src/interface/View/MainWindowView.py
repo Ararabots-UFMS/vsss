@@ -4,7 +4,9 @@ import sys
 import fltk as fl
 from ..virtual_field import Virtual_Field
 import rospy
+import time
 from Queue import Queue
+from collections import deque
 from verysmall.msg import things_position
 from verysmall.msg import robot_pos, robot_vector
 
@@ -46,7 +48,7 @@ class MainWindowView:
         fl.Fl.visual(fl.FL_DOUBLE | fl.FL_INDEX)
 
         # Create a new Buffered window
-        self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
+        self.root = fl.Fl_Window(self.proportion_width(2.5), self.proportion_height(5),
                                         self.proportion_width(95), self.proportion_height(90))
 
         self.virtual = Virtual_Field(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
@@ -60,10 +62,8 @@ class MainWindowView:
         self.create_arena()
 
         # Queue of data from Topic Things position
-        self.data = Queue(maxsize=20)
-
-        # Shapes the size of the Queue
-        self.data.put(things_position(
+        #self.data = Queue(maxsize=10)
+        msg = things_position(
                 [0., 0.],
                 [0.,0.],
                 [robot_pos() for _ in range(5)],
@@ -71,32 +71,43 @@ class MainWindowView:
                 [robot_pos() for _ in range(5)],
                 [robot_vector() for _ in range(5)],
                 [robot_pos() for _ in range(10)]
-            ))
+            )
+        self.data = deque(
+        # Shapes the size of the Queue
+        #self.data.put(
+            [msg,msg])
 
         # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read)
+        rospy.Subscriber('things_position', things_position, self.read, queue_size=30)
         rospy.init_node('virtual_field', anonymous=True)
-
+        self.past_time = time.time()
         # Define colors
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
 
     def read(self, data):
         # Inserts data in the Queue
-        if not self.data.full():
-            self.data.put(data) # Try put no wait next
-        else:
-            rospy.logfatal("Cheia")
+        #if not self.data.full():
+        
+        self.data.append(data)# Try put no wait next
+        #else:
+        #    rospy.logfatal("Cheia")
 
     def redraw_field(self):
-        if not self.data.empty():
-            data_item = self.data.get()  # Get the data
-            self.data.task_done()  # Finishes the get process
+        #if not self.data.empty():
+        try:
+            data_item = self.data.popleft()  # Get the data
+            #rospy.logfatal(len(self.data))
+            #self.data.task_done()  # Finishes the get process
+            #self.now_time = time.time()
+            #rospy.logfatal(self.now_time - self.past_time)
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.arena.image = self.virtual.field
             self.arena.redraw()
-        else:
+            #self.past_time = self.now_time
+        #else:
+        except IndexError:
             pass
             #rospy.logfatal("Vazia")
 
@@ -274,7 +285,7 @@ class MainWindowView:
         # Show main window
         self.root.clear_visible_focus()
         self.root.end()
-        self.root.show(len(sys.argv), sys.argv)
+        self.root.show()
 
         self.RATE = 0.013#0.04
 

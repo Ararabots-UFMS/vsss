@@ -12,7 +12,7 @@ class RosVisionPublisher:
         if isnode:  # if this a separeted node
             rospy.init_node('vision', anonymous=True)
         # else is only a publisher
-        self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
+        self.pub = rospy.Publisher('things_position', things_position, queue_size=30)
 
         # example of how to use the virtual_field class
         # Example of publishing a message

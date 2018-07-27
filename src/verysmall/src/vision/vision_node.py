@@ -267,6 +267,7 @@ if __name__ == "__main__":
     home_color = "yellow" # blue or yellow
     home_robots = 3
     adv_robots = 3
+    frame_hater = int(1/60*1000)
 
     arena_params = root_path+"parameters/ARENA.json"
     colors_params = root_path+"parameters/COLORS.json"
@@ -283,6 +284,6 @@ if __name__ == "__main__":
 
     while not rospy.is_shutdown():
         arena = v.get_frame()
-        key = cv2.waitKey(1) & 0xFF
+        key = cv2.waitKey(frame_hater) & 0xFF
 
     v.camera.stop()

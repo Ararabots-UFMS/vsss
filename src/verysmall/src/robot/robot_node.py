@@ -15,6 +15,7 @@ class Robot():
     def __init__(self, robot_id, bluetooth_id, robot_body, isAdversary=False):
         # Parameters
         self.robot_id = robot_id
+        self.robot_id_integer = int(self.robot_id.split("_")[1]) - 1
         self.bluetooth_id = bluetooth_id
         self.robot_body = robot_body
 
@@ -36,18 +37,18 @@ class Robot():
         self.game_state = None
         self.role = None
 
-        self.pub = rospy.Publisher(robot_id, motor_speed, queue_size=1)
-        rospy.Subscriber('things_position', things_position, self.read_parameters)
+        #self.pub = rospy.Publisher(robot_id, motor_speed, queue_size=1)
+        rospy.Subscriber('things_position', things_position, self.read_topic)
 
     def run(self):
         print("Robo_" + str(self.robot_id) + ": Rodei principal")
 
-    def read_parameters(self, data):
+    def read_parameters(self):
         pass
 
     def read_topic(self, data):
-        self.position = data.team_pos[self.robot_id]
-        self.vector = data.team_vector[self.robot_id]
+        self.position = data.team_pos[self.robot_id_integer]
+        self.vector = data.team_vector[self.robot_id_integer]
         self.ball_position = data.ball_pos
         self.team_vector = data.team_pos
         self.team_position = data.team_vector
