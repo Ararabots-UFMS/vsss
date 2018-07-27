@@ -17,3 +17,7 @@ robot/movement/control/\.hidden
 \.idea/
 
 src/CMakeLists\.txt
+
+*.avi
+
+*.json

@@ -12,7 +12,7 @@ class RosVisionPublisher:
         if isnode:  # if this a separeted node
             rospy.init_node('vision', anonymous=True)
         # else is only a publisher
-        self.pub = rospy.Publisher('things_position', things_position, queue_size=30)
+        self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
 
         # example of how to use the virtual_field class
         # Example of publishing a message
@@ -21,9 +21,9 @@ class RosVisionPublisher:
         #    0.,
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
+        #    [home_robot_speed for _ in range(5)]    
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
-        #    [home_robot_speed for _ in range(5)]
 
         # )
 
@@ -35,26 +35,22 @@ class RosVisionPublisher:
             :param ball_speed: float64[2]
             :param team_pos: five_robot_pos
             :param team_orientation: five_robot_vector
+            :param team_speed: [[vx1, vx2], ..., [vx5, vy5]]
             :param enemies_pos: five_robot_pos
             :param enemies_orientation: five_robot_vector
-            :param team_speed: [[vx1, vx2], ..., [vx5, vy5]]
             :return: returns nothing
         """
         msg = things_position(
-            ball_pos,
-            ball_speed[0],
-            [robot_pos() for _ in range(5)],
-            [robot_vector() for _ in range(5)],
-            [robot_pos() for _ in range(5)],
-            [robot_vector() for _ in range(5)],
-            [robot_pos() for _ in range(10)]
+            ball_pos, ball_speed,
+            team_pos, team_orient,
+            team_speed, enemies_pos,
+            enemies_speed
         )
         self.pub.publish(msg)
-        #self.pub.publish(msg)
 
 
 if __name__ == '__main__':
     try:
-        RosVisionPublisher()
+        RosVision()
     except rospy.ROSInterruptException:
         pass
