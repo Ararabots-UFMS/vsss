@@ -58,7 +58,7 @@ if __name__ == '__main__':
         # launches the node and stores it in the given memory space
         vision_process = launch.launch(vision_node)
 
-    #trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
+    trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
 
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt)
 
