@@ -210,7 +210,7 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.adv_seg, self.ball)
 
-                self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
+                self.send_message(ball=True, home_team=True, adv_team=False)
 
                 self.computed_frames += 1
 
@@ -219,7 +219,7 @@ class Vision:
         self.camera.stop()
         self.camera.capture.release()
 
-    def get_message(self, ball=False, home_team=False, adv_team=False):
+    def send_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
@@ -253,8 +253,8 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
-        return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
-                home_team_speed, adv_team_pos, adv_team_speed
+        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
+                             home_team_speed, adv_team_pos, adv_team_speed)
 
 if __name__ == "__main__":
     from threading import Thread
@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")

@@ -91,7 +91,7 @@ class MainWindowView:
         
         self.data.append(data)# Try put no wait next
         #else:
-        #    rospy.logfatal("Cheia")
+        #rospy.logfatal(data.ball_pos)
 
     def redraw_field(self):
         #if not self.data.empty():
@@ -103,13 +103,14 @@ class MainWindowView:
             #rospy.logfatal(self.now_time - self.past_time)
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
+            self.virtual.plot_robots(data_item.team_pos, data_item.team_vector, self.virtual.colors["yellow"])
             self.arena.image = self.virtual.field
             self.arena.redraw()
             #self.past_time = self.now_time
         #else:
         except IndexError:
-            rospy.logfatal("Vazia")
-            pass
+            self.arena.redraw()
+            #rospy.logfatal("Vazia")
 
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 

@@ -1,5 +1,5 @@
 float64[2]		 	        	ball_pos
-float64        				ball_angle_vector
+float64[2]        				ball_speed_vector
 verysmall/robot_pos[5]       	team_pos
 verysmall/robot_vector[5]    	team_vector
 verysmall/robot_pos[5]       	enemies_pos

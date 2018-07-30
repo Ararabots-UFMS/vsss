@@ -1,6 +1,7 @@
 import cv2 as cv
 import math
 import numpy as np
+import rospy
 import time
 from auxiliary import *
 
@@ -77,9 +78,9 @@ class Virtual_Field():
                            "green": [0, 253, 116],
                            "gray": [111, 111, 111]
                            }
-    """system pause for n FPS"""
 
     def pause(self, n):
+        """system pause for n FPS"""
         time.sleep(1.0 / n)
 
     """plots all arena contours and inner lines"""
@@ -153,15 +154,16 @@ class Virtual_Field():
 
     """plots all contours from all robots of a designed color given as parameter"""
 
-    def plot_robots(self, robot_list, color, origin_vector=False):
+    def plot_robots(self, robot_list, robot_vector, color, origin_vector=False):
 
-        for robot in robot_list:
-
-            vector = robot[1]
-            center = position_from_origin(unit_convert(robot[0]))
-
-            angle = angle_between([1, 0], vector) * 180 / (math.pi)
-
+        robot_index = 0
+        robot_list_length = len(robot_list)
+        while robot_index < robot_list_length:
+            vector = robot_vector[robot_index].robot_angle_vector
+            center = position_from_origin(unit_convert(robot_list[robot_index].robot_pos))
+            robot_index = robot_index + 1
+            #angle = angle_between([1, 0], vector) * 180 / (math.pi)
+            angle = 0
             contour = (center, (self.robot_side_size, self.robot_side_size), angle)
 
             n_contour = cv.boxPoints(contour)
@@ -170,12 +172,13 @@ class Virtual_Field():
             cv.drawContours(self.field, [n_contour], -1, color, -1)
 
             # direction vectors
-            cv.arrowedLine(self.field, center, (int(center[0] + 3 * vector[0]), int(center[1] + 3 * vector[1])),
-                           self.colors["red"], 2)
+            #cv.arrowedLine(self.field, center, (int(center[0] + 3 * vector[0]), int(center[1] + 3 * vector[1])),
+            #               self.colors["red"], 2)
 
             # vector from field origin
-            if (origin_vector):
-                cv.arrowedLine(self.field, self.field_origin, (int(center[0]), int(center[1])), self.colors["gray"], 1)
+            #if (origin_vector):
+            #    cv.arrowedLine(self.field, self.field_origin, (int(center[0]), int(center[1])), self.colors["gray"], 1)
+
 
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
