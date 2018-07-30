@@ -1,24 +1,17 @@
-#!/usr/bin/python
+import sys
+sys.path.append('../')
 
+from camera.camera import Camera
 import COLORS
 import numpy as np
 import cv2
-
-# Top level imports
+import time
 import os
-import sys
-old_path = sys.path[0]
-sys.path[0] = os.environ['ROS_ARARA_ROOT']+"src/"
-
-from vision.camera.camera import Camera
 from utils.json_handler import JsonHandler
 
 CAMERA_ID = 1
-CAMERA_PARAMS_PATH = sys.path[0]+"parameters/CAMERA_ELP-USBFHD01M-SFV.json"
-ARENA_PARAMS_PATH = sys.path[0]+"parameters/ARENA.json"
-
-sys.path[0] = old_path
-
+CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
 class ParamsSetter:
 

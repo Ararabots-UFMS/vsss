@@ -31,12 +31,8 @@ class Vision:
     home_tag="aruco", params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
-        # at the bus
-        self.mercury = RosVisionPublisher(True)
-
-        # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
-        self.mercury = RosVisionPublisher()
+        self.mercury = RosVisionPublisher(True)
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -65,8 +61,8 @@ class Vision:
         self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.home_team = home_robots * [Things()]
-        self.adv_team = adv_robots * [Things()]
+        self.home_team = [Things() for _ in xrange(home_robots)]
+        self.adv_team =[Things() for _ in xrange(adv_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -98,6 +94,7 @@ class Vision:
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
         self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+
 
     def start(self):
         self.game_on = True

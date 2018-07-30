@@ -1,18 +1,14 @@
 #!/usr/bin/python
 import sys
+sys.path.append('../../')
+
 import cv2
+import os
+import sys
 import numpy as np
 from threading import Thread
 from time import sleep
-
-
-# Top level imports
-import os
-old_path = sys.path[0]
-sys.path[0] = os.environ['ROS_ARARA_ROOT']+"src/"
 from utils.json_handler import JsonHandler
-sys.path[0] = old_path
-
 
 # @author Wellington Castro <wvmcastro>
 # The threading code is highly inspired by Adrian Rosebrock approach
@@ -60,7 +56,6 @@ class Camera:
 
     """ Simple functions to implement some kind of semaphore to deal with the read and
         write frame process """
-
     def semaphore_up(self):
         self.semaphore = 1
 
@@ -112,7 +107,7 @@ class Camera:
             return self.threaded_read()
 
     def load_params(self):
-        """ Loads the parameters of the camera from a json """
+    	""" Loads the parameters of the camera from a json """
         params = self.json_handler.read(self.params_file_name)
 
         """ mapx and mapy are the matrix with the lens correction map """

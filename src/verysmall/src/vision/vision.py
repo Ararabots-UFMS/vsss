@@ -23,10 +23,6 @@ class Vision:
     home_tag="aruco", params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
-        # at the bus
-        self.mercury = RosVisionPublisher(True)
-
-        # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
         self.mercury = RosVisionPublisher()
 
@@ -57,8 +53,8 @@ class Vision:
         self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.home_team = home_robots * [Things()]
-        self.adv_team = adv_robots * [Things()]
+        self.home_team = [Things() for _ in xrange(home_robots)]
+        self.adv_team =[Things() for _ in xrange(adv_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -97,6 +93,10 @@ class Vision:
 
     def pause(self):
         self.game_on = False
+
+    def stop(self):
+        self.pause()
+        self.finish = True
 
     def update_fps(self):
         self.fps = self.computed_frames / (time.time() - t0)
@@ -206,11 +206,11 @@ class Vision:
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
-                self.hawk_eye.seek_adv_team(self.home_seg, self.adv_team)
+                self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
-                self.hawk_eye.seek_ball(self.adv_seg, self.ball)
+                self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
-                self.send_message(ball=True, home_team=True, adv_team=False)
+                self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
                 self.computed_frames += 1
 
@@ -219,7 +219,7 @@ class Vision:
         self.camera.stop()
         self.camera.capture.release()
 
-    def send_message(self, ball=False, home_team=False, adv_team=False):
+    def get_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
@@ -253,8 +253,8 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
-        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
-                             home_team_speed, adv_team_pos, adv_team_speed)
+        return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
+                home_team_speed, adv_team_pos, adv_team_speed
 
 if __name__ == "__main__":
     from threading import Thread
@@ -267,7 +267,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")
@@ -289,6 +289,7 @@ if __name__ == "__main__":
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             # cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if key == ord('q'): # exit
+            v.pause()
             v.finish = True
             break
         elif key == ord('s'): #show/hide

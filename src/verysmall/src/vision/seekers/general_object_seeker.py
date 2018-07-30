@@ -96,7 +96,7 @@ class GeneralObjSeeker:
 
                 # If it is the first time the obj is detected.
                 # Calculates its size
-                if  self.obj_size is None:
+                if  self.obj_size == None:
                     # Rect is a list that has the [(x,y)center, (width, height), angle of rotation]
                     rect = cv2.minAreaRect(cnt)
                     self.obj_size = max(rect[1][0], rect[1][1])
@@ -104,7 +104,7 @@ class GeneralObjSeeker:
         return np.array([c_x, c_y])
 
     def seek(self, img):
-        if np.all(self.last_pos) and np.all(self.speed):
+        if np.all(self.last_pos != None) and np.all(self.speed != None):
             origin, region = self.get_search_region(img)
         else:
             self.update_time()
@@ -114,7 +114,7 @@ class GeneralObjSeeker:
 
         pos = self.get_obj_pos(region)
 
-        if np.all(pos):
+        if np.all(pos != None):
             pos += origin
             self.update_state(pos)
         else:
