@@ -85,8 +85,10 @@ class RosVisionPublisher:
         )
 
 
-
-        self.pub.publish(msg)
+        try:
+            self.pub.publish(msg)
+        except rospy.ROSException:
+            pass
 
 
 if __name__ == '__main__':

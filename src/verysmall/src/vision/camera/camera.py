@@ -8,7 +8,12 @@ import sys
 import numpy as np
 from threading import Thread
 from time import sleep
+
+# Top level imports
+old_path = sys.path[0]
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
 from utils.json_handler import JsonHandler
+sys.path[0] = old_path
 
 # @author Wellington Castro <wvmcastro>
 # The threading code is highly inspired by Adrian Rosebrock approach
