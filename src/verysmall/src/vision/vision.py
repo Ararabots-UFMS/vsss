@@ -228,13 +228,13 @@ class Vision:
         ball_speed = [0,0]
 
         # Home team info
-        home_team_pos = 6*[[0,0]]
-        home_team_orientation = 6*[0]
-        home_team_speed = 6*[[0,0]]
+        home_team_pos = [ [0,0] for _ in xrange(6)]
+        home_team_orientation = [ 0 for _ in xrange(6)]
+        home_team_speed = [[0,0] for _ in xrange(6)]
 
         # Adv team info
-        adv_team_pos = 6*[[0,0]]
-        adv_team_speed = 6*[[0,0]]
+        adv_team_pos = [ [0,0] for _ in xrange(6)]
+        adv_team_speed = [ [0,0] for _ in xrange(6)]
 
         if ball == True:
             ball_pos = self.ball.pos
