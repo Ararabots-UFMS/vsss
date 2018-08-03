@@ -45,19 +45,19 @@ class RosVisionPublisher:
         """
 
         msg = things_position(
-            ball_pos if all(ball_pos) else [.0, .0],
-            ball_speed if all(ball_speed) else [.0, .0],
+            tuple(ball_pos if all(ball_pos) else [.0, .0]),
+            tuple(ball_speed if all(ball_speed) else [.0, .0]),
             [robot_pos(tuple(team_pos[0]) if all(team_pos[0]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[1]) if all(team_pos[1]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[2]) if all(team_pos[2]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[3]) if all(team_pos[3]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[4]) if all(team_pos[4]) else self.empty_robot_pos)
              ],
-            [robot_vector(team_orient[0]) if team_orient[0] else .0,
-             team_orient[1] if team_orient[1] else self.empty_robot_vector,
-             team_orient[2] if team_orient[2] else self.empty_robot_vector,
-             team_orient[3] if team_orient[3] else self.empty_robot_vector,
-             team_orient[4] if team_orient[4] else self.empty_robot_vector
+            [robot_vector(team_orient[0] if team_orient[0] else self.empty_robot_vector),
+             robot_vector(team_orient[1] if team_orient[1] else self.empty_robot_vector),
+             robot_vector(team_orient[2] if team_orient[2] else self.empty_robot_vector),
+             robot_vector(team_orient[3] if team_orient[3] else self.empty_robot_vector),
+             robot_vector(team_orient[4] if team_orient[4] else self.empty_robot_vector)
              ],
             [robot_pos(tuple(enemies_pos[0]) if all(enemies_pos[0]) else self.empty_robot_pos),
              robot_pos(tuple(enemies_pos[1]) if all(enemies_pos[1]) else self.empty_robot_pos),
@@ -87,8 +87,9 @@ class RosVisionPublisher:
 
         try:
             self.pub.publish(msg)
-        except rospy.ROSException:
-            pass
+        except rospy.ROSException as e:
+            rospy.logfatal(e)
+            rospy.logfatal(msg)
 
 
 if __name__ == '__main__':

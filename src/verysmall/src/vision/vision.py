@@ -213,6 +213,7 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
                 self.get_message(ball=True, home_team=True, adv_team=False)
+                self.send_message(ball=True, home_team=True, adv_team=False)
                 #self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
                 self.computed_frames += 1
@@ -221,6 +222,44 @@ class Vision:
 
         self.camera.stop()
         self.camera.capture.release()
+
+    def send_message(self, ball=False, home_team=False, adv_team=False):
+        """ This function will return the message in the right format to be
+            published in the ROS vision bus """
+
+        # Ball info
+        ball_pos = [0, 0]
+        ball_speed = [0, 0]
+
+        # Home team info
+        home_team_pos = [[0, 0] for _ in xrange(6)]
+        home_team_orientation = [0 for _ in xrange(6)]
+        home_team_speed = [[0, 0] for _ in xrange(6)]
+
+        # Adv team info
+        adv_team_pos = [[0, 0] for _ in xrange(6)]
+        adv_team_speed = [[0, 0] for _ in xrange(6)]
+
+        if ball:
+            ball_pos = self.ball.pos
+            ball_speed = self.ball.speed
+
+        if home_team:
+            for robot in self.home_team:
+                i = robot.id
+                home_team_pos[i] = robot.pos
+
+                home_team_orientation[i] = robot.orientation
+                home_team_speed[i] = robot.speed
+
+        if adv_team:
+            for robot in self.adv_team:
+                i = robot.id
+                adv_team_pos[i] = robot.pos
+                adv_team_speed[i] = robot.speed
+
+        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
+                             home_team_speed, adv_team_pos, adv_team_speed)
 
     def get_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be

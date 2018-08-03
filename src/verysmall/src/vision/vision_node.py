@@ -211,7 +211,7 @@ class Vision:
                 self.pipeline()
 
                 self.attribute_teams()
-                cv2.imshow('vision', 255-self.home_seg)
+                #cv2.imshow('vision', 255-self.home_seg)
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     arena_params = root_path+"parameters/ARENA.json"
     colors_params = root_path+"parameters/COLORS.json"
 
-    cv2.namedWindow('vision')
+    #cv2.namedWindow('vision')
 
     try:
         device = int(sys.argv[1])
@@ -298,5 +298,5 @@ if __name__ == "__main__":
     rospy.on_shutdown(v.stop)
 
     rospy.spin()
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
