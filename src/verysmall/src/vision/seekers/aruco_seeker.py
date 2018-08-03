@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import rospy
 import cv2.aruco as aruco
 import math
 
@@ -59,6 +60,7 @@ class ArucoSeeker:
             # That means at least one Aruco marker was recognized
 
             # Reshapes the ids matrix to an ids vector for indexing simplicity
+            print(ids)
             ids = ids.reshape(ids.shape[0] * ids.shape[1])
 
             # Sort the ids vector, that way the same marker will be always in the

@@ -4,6 +4,7 @@ sys.path.append('../')
 import COLORS
 import cv2
 import numpy as np
+import rospy
 import time
 from camera.camera import Camera
 from utils.json_handler import JsonHandler
@@ -24,7 +25,7 @@ class Vision:
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
-        self.mercury = RosVisionPublisher()
+        self.mercury = RosVisionPublisher(True)
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -203,14 +204,16 @@ class Vision:
                 self.pipeline()
 
                 self.attribute_teams()
+                
+                #cv2.imshow('aruco',255-self.home_seg)
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
-
-                self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
+                self.get_message(ball=True, home_team=True, adv_team=False)
+                #self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
                 self.computed_frames += 1
 
@@ -253,6 +256,8 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
+
+        #rospy.logfatal(home_team_pos)
         return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
                 home_team_speed, adv_team_pos, adv_team_speed
 
@@ -267,7 +272,7 @@ if __name__ == "__main__":
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
-    camera = Camera("record.avi", "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")
@@ -286,7 +291,7 @@ if __name__ == "__main__":
         arena = v.arena_image
         key = cv2.waitKey(1) & 0xFF
         if show:
-            cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
+            cv2.imshow('vision', 255-v.home_seg )#cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             # cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if key == ord('q'): # exit
             v.pause()

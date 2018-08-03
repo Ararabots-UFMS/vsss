@@ -211,13 +211,13 @@ class Vision:
                 self.pipeline()
 
                 self.attribute_teams()
-
+                cv2.imshow('vision', 255-self.home_seg)
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
-
+                
                 self.send_message(ball=True, home_team=True, adv_team=False)
 
                 self.computed_frames += 1
@@ -236,13 +236,13 @@ class Vision:
         ball_speed = [0,0]
 
         # Home team info
-        home_team_pos = 5*[[0,0]]
-        home_team_orientation = 5*[0]
-        home_team_speed = 5*[[0,0]]
+        home_team_pos = [ [0,0] for _ in xrange(6)]
+        home_team_orientation = [ 0 for _ in xrange(6)]
+        home_team_speed = [[0,0] for _ in xrange(6)]
 
         # Adv team info
-        adv_team_pos = 5*[[0,0]]
-        adv_team_speed = 5*[[0,0]]
+        adv_team_pos = [ [0,0] for _ in xrange(6)]
+        adv_team_speed = [ [0,0] for _ in xrange(6)]
 
         if ball:
             ball_pos = self.ball.pos
@@ -252,6 +252,7 @@ class Vision:
             for robot in self.home_team:
                 i = robot.id
                 home_team_pos[i] = robot.pos
+                
                 home_team_orientation[i] = robot.orientation
                 home_team_speed[i] = robot.speed
 
@@ -277,6 +278,8 @@ if __name__ == "__main__":
     arena_params = root_path+"parameters/ARENA.json"
     colors_params = root_path+"parameters/COLORS.json"
 
+    cv2.namedWindow('vision')
+
     try:
         device = int(sys.argv[1])
     except ValueError:
@@ -295,4 +298,5 @@ if __name__ == "__main__":
     rospy.on_shutdown(v.stop)
 
     rospy.spin()
+    cv2.destroyAllWindows()
 
