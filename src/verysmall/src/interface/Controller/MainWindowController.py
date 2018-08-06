@@ -1,5 +1,11 @@
 from ..View.MainWindowView import MainWindowView
 import fltk as fl
+import sys
+import os
+old_path = sys.path[0]
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from ROS.ros_game_publisher import RosGamePublisher
+sys.path[0] = old_path
 
 class MainWindowController():
     def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt):
@@ -21,6 +27,9 @@ class MainWindowController():
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
         self.assigned_robot_text = ["Jogador "+str(x) for x in range(1, 6)]
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
+
+        # Creates the game topic
+        self.pub = RosGamePublisher()
 
         # For each Robot, this loop covers all the inputs
         for num in range(self.view.n_robots):
@@ -115,7 +124,7 @@ class MainWindowController():
             if ptr.id == 4:
                 print("Jogar regular")
             elif ptr.id == 0:
-                print("Free Ball")
+                print("Free Ball: " + self.faster_hash[int(self.assigned_robot_indexes[1])])
             elif ptr.id == 1:
                 print("Penalty")
             elif ptr.id == 2:

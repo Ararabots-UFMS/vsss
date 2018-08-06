@@ -89,9 +89,7 @@ class MainWindowView:
         # Inserts data in the Queue
         #if not self.data.full():
         
-        self.data.append(data)# Try put no wait next
-        #else:
-        #rospy.logfatal(data.ball_pos)
+        self.data.append(data)
 
     def redraw_field(self):
         #if not self.data.empty():

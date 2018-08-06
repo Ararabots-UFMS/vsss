@@ -7,7 +7,8 @@ class RosUtils:
 
     @staticmethod
     def topic_exists(topic):
-        for current_topic in get_published_topics():
-            if current_topic == topic:
-                return True
+        for owner_topics in get_published_topics():
+            for current_topic in owner_topics:
+                if current_topic == topic:
+                    return True
         return False

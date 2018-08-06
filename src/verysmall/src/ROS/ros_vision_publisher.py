@@ -53,7 +53,6 @@ class RosVisionPublisher:
              robot_pos(tuple(team_pos[3]) if all(team_pos[3]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[4]) if all(team_pos[4]) else self.empty_robot_pos)
              ],
-            #[robot_vector() for _ in range(5)],
             [robot_vector(team_orient[0]) if team_orient[0] else self.empty_robot_vector,
              robot_vector(team_orient[1]) if team_orient[1] else self.empty_robot_vector,
              robot_vector(team_orient[2]) if team_orient[2] else self.empty_robot_vector,
