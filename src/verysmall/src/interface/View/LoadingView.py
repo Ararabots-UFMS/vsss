@@ -17,6 +17,8 @@ class CameraSelectView:
         self.height = self.root.h()
 
         self.root.border(0)
+        fl.Fl.background(23, 23, 23)
+        self.root.labelcolor(fl.FL_WHITE)
 
     def end(self):
         self.root.end()

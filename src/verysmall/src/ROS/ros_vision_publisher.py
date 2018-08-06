@@ -53,11 +53,12 @@ class RosVisionPublisher:
              robot_pos(tuple(team_pos[3]) if all(team_pos[3]) else self.empty_robot_pos),
              robot_pos(tuple(team_pos[4]) if all(team_pos[4]) else self.empty_robot_pos)
              ],
-            [robot_vector(team_orient[0] if team_orient[0] else self.empty_robot_vector),
-             robot_vector(team_orient[1] if team_orient[1] else self.empty_robot_vector),
-             robot_vector(team_orient[2] if team_orient[2] else self.empty_robot_vector),
-             robot_vector(team_orient[3] if team_orient[3] else self.empty_robot_vector),
-             robot_vector(team_orient[4] if team_orient[4] else self.empty_robot_vector)
+            #[robot_vector() for _ in range(5)],
+            [robot_vector(team_orient[0]) if team_orient[0] else self.empty_robot_vector,
+             robot_vector(team_orient[1]) if team_orient[1] else self.empty_robot_vector,
+             robot_vector(team_orient[2]) if team_orient[2] else self.empty_robot_vector,
+             robot_vector(team_orient[3]) if team_orient[3] else self.empty_robot_vector,
+             robot_vector(team_orient[4]) if team_orient[4] else self.empty_robot_vector
              ],
             [robot_pos(tuple(enemies_pos[0]) if all(enemies_pos[0]) else self.empty_robot_pos),
              robot_pos(tuple(enemies_pos[1]) if all(enemies_pos[1]) else self.empty_robot_pos),
@@ -89,7 +90,6 @@ class RosVisionPublisher:
             self.pub.publish(msg)
         except rospy.ROSException as e:
             rospy.logfatal(e)
-            rospy.logfatal(msg)
 
 
 if __name__ == '__main__':
