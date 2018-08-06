@@ -78,7 +78,7 @@ class MainWindowView:
             [msg,msg])
 
         # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read, queue_size=30)
+        rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
         rospy.init_node('virtual_field', anonymous=True)
         self.past_time = time.time()
         # Define colors
@@ -96,7 +96,7 @@ class MainWindowView:
     def redraw_field(self):
         #if not self.data.empty():
         try:
-            data_item = self.data.popleft()  # Get the data
+            self.data_item = data_item = self.data.popleft()  # Get the data
             #rospy.logfatal(len(self.data))
             #self.data.task_done()  # Finishes the get process
             #self.now_time = time.time()
@@ -104,13 +104,15 @@ class MainWindowView:
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.virtual.plot_robots(data_item.team_pos, data_item.team_vector, self.virtual.colors["yellow"])
+            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_vector, self.virtual.colors["blue"])
             self.arena.image = self.virtual.field
             self.arena.redraw()
             #self.past_time = self.now_time
         #else:
         except IndexError:
-            self.arena.redraw()
-            #rospy.logfatal("Vazia")
+            #print("vazia")
+            rospy.loginfo("vazia")
+            #self.arena.redraw()
 
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 

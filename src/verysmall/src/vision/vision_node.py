@@ -218,7 +218,7 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
                 
-                self.send_message(ball=True, home_team=True, adv_team=False)
+                self.send_message(ball=True, home_team=True, adv_team=True)
 
                 self.computed_frames += 1
 
@@ -262,6 +262,7 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
+
         self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
                              home_team_speed, adv_team_pos, adv_team_speed)
 
@@ -269,7 +270,7 @@ class Vision:
 if __name__ == "__main__":
 
     home_color = "yellow"  # blue or yellow
-    home_robots = 3
+    home_robots = 5
     adv_robots = 3
     home_tag = "aruco"
 

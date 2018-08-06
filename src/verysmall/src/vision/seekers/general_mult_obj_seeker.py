@@ -2,14 +2,13 @@ import numpy as np
 import cv2
 from sklearn.cluster import KMeans
 
-
 # @author Wellington Castro <wvmcastro>
 
 class GeneralMultObjSeeker:
 
     def __init__(self, num_objects):
         self.num_objects = num_objects
-        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=10,
+        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=50,
         precompute_distances=True, n_jobs=1)
 
         self.objects = None
@@ -30,6 +29,7 @@ class GeneralMultObjSeeker:
                     self.kmeans.fit(cnts_array)
                 else:
                     self.kmeans.fit(cnts_array)
-                    self.objects = self.kmeans.cluster_centers_
+
+                self.objects = self.kmeans.cluster_centers_
 
         return self.objects

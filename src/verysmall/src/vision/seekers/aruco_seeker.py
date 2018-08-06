@@ -54,7 +54,7 @@ class ArucoSeeker:
 
         # Try to locate all markers in the img
         corners, ids, rejectedImgPoints = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
-        print(self.aruco_dict)
+
         identified_markers = []
 
         if np.any(ids != None):

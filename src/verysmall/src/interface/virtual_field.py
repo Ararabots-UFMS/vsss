@@ -159,12 +159,12 @@ class Virtual_Field():
         robot_index = 0
         robot_list_length = len(robot_list)
         while robot_index < robot_list_length:
-            vector = robot_vector[robot_index].robot_angle_vector
+            angle = robot_vector[robot_index].robot_angle_vector
             center = position_from_origin(unit_convert(robot_list[robot_index].robot_pos))
             robot_index = robot_index + 1
             #angle = angle_between([1, 0], vector) * 180 / (math.pi)
-            angle = int(vector ) * 180 / (math.pi)
-            contour = (center, (self.robot_side_size, self.robot_side_size), angle)
+            #angle = vector * 180 / (math.pi)
+            contour = (center, (self.robot_side_size, self.robot_side_size), angle* 180 / (math.pi))
 
             n_contour = cv.boxPoints(contour)
             n_contour = np.int0(n_contour)
@@ -173,8 +173,8 @@ class Virtual_Field():
 
             # direction vectors
             cv.arrowedLine(self.field, center,
-                           (int(center[0] + math.cos(angle)*self.robot_side_size - math.sin(angle)*self.robot_side_size),
-                            int(center[1] + math.sin(angle)*self.robot_side_size + math.cos(angle)*self.robot_side_size)
+                           (int(center[0] + math.cos(angle)*self.robot_side_size ),
+                            int(center[1] + math.sin(angle)*self.robot_side_size )
                             ), self.colors["red"], 2)
 
             # vector from field origin

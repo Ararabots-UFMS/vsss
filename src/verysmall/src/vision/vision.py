@@ -213,7 +213,7 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
                 self.get_message(ball=True, home_team=True, adv_team=False)
-                self.send_message(ball=True, home_team=True, adv_team=False)
+                self.send_message(ball=True, home_team=True, adv_team=True)
                 #self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
                 self.computed_frames += 1
@@ -256,7 +256,7 @@ class Vision:
             for robot in self.adv_team:
                 i = robot.id
                 adv_team_pos[i] = robot.pos
-                adv_team_speed[i] = robot.speed
+                adv_team_speed[i] = robot.speedros
 
         self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
                              home_team_speed, adv_team_pos, adv_team_speed)
@@ -305,8 +305,8 @@ if __name__ == "__main__":
 
 
     home_color = "yellow" # blue or yellow
-    home_robots = 3
-    adv_robots = 3
+    home_robots = 5
+    adv_robots = 1
     home_tag = "aruco"
 
     arena_params = "../parameters/ARENA.json"
@@ -330,7 +330,7 @@ if __name__ == "__main__":
         arena = v.arena_image
         key = cv2.waitKey(1) & 0xFF
         if show:
-            cv2.imshow('vision', 255-v.home_seg )#cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
+            cv2.imshow('vision', v.adv_seg)#cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             # cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if key == ord('q'): # exit
             v.pause()
