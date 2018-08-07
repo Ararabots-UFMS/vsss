@@ -2,9 +2,12 @@ from ..View.MainWindowView import MainWindowView
 import fltk as fl
 import sys
 import os
+from verysmall.srv import vision_command
+
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
 from ROS.ros_game_publisher import RosGamePublisher
+from rospy import ServiceException,ServiceProxy, wait_for_service
 sys.path[0] = old_path
 
 class MainWindowController():
@@ -30,6 +33,9 @@ class MainWindowController():
 
         # Creates the game topic
         self.pub = RosGamePublisher()
+
+        # Variable for storing proxy
+        self.vision_proxy = None
 
         # For each Robot, this loop covers all the inputs
         for num in range(self.view.n_robots):
@@ -76,6 +82,7 @@ class MainWindowController():
             self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
+            self.view.top_menu.callback(self.top_menu_choice)
 
         # A loop for the assigned robot actions
         for num in range(3):
@@ -100,6 +107,28 @@ class MainWindowController():
         self.view.play_button.callback(self.action_button_clicked)
 
         self.view.end()
+
+    def send_vision_operation(self, operation):
+        """Sends a service request to vision node
+            :param operation : uint8
+
+            :return: returns nothing
+        """
+        wait_for_service('vision_command')
+        try:
+            self.vision_proxy(operation)
+        except ServiceException as exc:
+            print("Service did not process request: " + str(exc))
+
+    def register_mac_service(self):
+        """Creates a proxy for communicating with service
+            :return: returns nothing
+        """
+        wait_for_service('vision_command')
+        self.vision_proxy = ServiceProxy('vision_command', vision_command)
+
+    def top_menu_choice(self, ptr):
+        print(ptr.value())
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()

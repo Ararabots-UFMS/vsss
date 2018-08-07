@@ -11,6 +11,7 @@ from vision_utils.params_setter import ParamsSetter
 
 from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
+from verysmall.srv import vision_command
 
 # Top level imports
 import os
@@ -33,6 +34,9 @@ class Vision:
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
         self.mercury = RosVisionPublisher(True)
+
+        # Creates the service responsible for vision modes and operations
+        self.service = rospy.Service('vision_command', vision_command, self.manage_operation)
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -59,6 +63,9 @@ class Vision:
         self.game_on = False
 
         self.finish = False
+
+        # Has to show image?
+        self.show = False
 
         # Creates the lists to the home team and the adversary
         self.home_team = [Things() for _ in xrange(home_robots)]
@@ -93,8 +100,22 @@ class Vision:
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
-        self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+                                self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
+    def manage_operation(self, req):
+        success = True
+        if req.operation == 1:  # Show the image for debugging
+            self.show = not self.show
+            if not self.show:
+                cv2.destroyWindow("vision")
+
+        elif req.operation == 2:  # Cropper
+            v.params_setter.run()
+            v.load_params()
+
+        else:
+            rospy.logfatal((req))
+        return success
 
     def start(self):
         self.game_on = True
@@ -211,7 +232,7 @@ class Vision:
                 self.pipeline()
 
                 self.attribute_teams()
-                #cv2.imshow('vision', 255-self.home_seg)
+
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
@@ -222,7 +243,8 @@ class Vision:
 
                 self.computed_frames += 1
 
-                #self.update_fps()
+                if self.show:
+                    cv2.imshow('vision', self.adv_seg)
 
         self.camera.stop()
         self.camera.capture.release()
@@ -271,7 +293,7 @@ if __name__ == "__main__":
 
     home_color = "yellow"  # blue or yellow
     home_robots = 5
-    adv_robots = 3
+    adv_robots = 1
     home_tag = "aruco"
 
     frame_hater = int(1/60*1000)
