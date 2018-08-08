@@ -2,10 +2,13 @@ from ..View.MainWindowView import MainWindowView
 import fltk as fl
 import sys
 import os
-from verysmall.srv import vision_command
+
 
 old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']
+from verysmall.srv import vision_command
+
+sys.path[0] +="src/"
 from ROS.ros_game_publisher import RosGamePublisher
 from rospy import ServiceException,ServiceProxy, wait_for_service
 sys.path[0] = old_path
@@ -36,6 +39,7 @@ class MainWindowController():
 
         # Variable for storing proxy
         self.vision_proxy = None
+        self.register_mac_service()
 
         # For each Robot, this loop covers all the inputs
         for num in range(self.view.n_robots):
@@ -128,7 +132,7 @@ class MainWindowController():
         self.vision_proxy = ServiceProxy('vision_command', vision_command)
 
     def top_menu_choice(self, ptr):
-        print(ptr.value())
+        self.send_vision_operation(int(ptr.value()))
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()

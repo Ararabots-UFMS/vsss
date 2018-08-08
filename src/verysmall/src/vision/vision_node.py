@@ -110,8 +110,8 @@ class Vision:
                 cv2.destroyWindow("vision")
 
         elif req.operation == 2:  # Cropper
-            v.params_setter.run()
-            v.load_params()
+            self.params_setter.run()
+            self.load_params()
 
         else:
             rospy.logfatal((req))
@@ -244,7 +244,7 @@ class Vision:
                 self.computed_frames += 1
 
                 if self.show:
-                    cv2.imshow('vision', self.adv_seg)
+                    cv2.imshow('vision', self.raw_image)
 
         self.camera.stop()
         self.camera.capture.release()
