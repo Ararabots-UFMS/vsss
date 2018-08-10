@@ -12,10 +12,33 @@ class RosGamePublisher:
             rospy.init_node('game', anonymous=True)
         # else is only a publisher
         self.pub = rospy.Publisher('game_topic', game_topic, queue_size=1)
+        # uint8        game_state
+        # uint8[5]     robot_roles
+        # uint8        penalty_robot
+        # uint8        freeball_robot
+        # uint8        meta_robot
+        self.msg = game_topic()
+        self.msg.robot_roles = '00000'
 
-    def publish(self, game_state, robot_roles, penalty_robot, freeball_robot, meta_robot):
+    def set_game_state(self, _game_state):
+        self.msg.game_state = _game_state
+
+    def set_robot_role(self, robot_id, role):
+        #rospy.logfatal(self.msg.robot_roles)
+        self.msg.robot_roles = self.msg.robot_roles[:robot_id] + str(role+1) + self.msg.robot_roles[robot_id+1:]
+
+    def set_penalty_robot(self, _penalty_robot):
+        self.msg.penalty_robot = _penalty_robot
+
+    def set_freeball_robot(self, _freeball_robot):
+        self.msg.freeball_robot = _freeball_robot
+
+    def set_meta_robot(self, _meta_robot):
+        self.msg.meta_robot = _meta_robot
+
+    def set_message(self, game_state, robot_roles, penalty_robot, freeball_robot, meta_robot):
         """
-            This function publishes in the game topic
+            This function sets the publisher message
             :param game_state: uint8
             :param robot_roles: uint8[5]
             :param penalty_robot: uint8
@@ -25,7 +48,7 @@ class RosGamePublisher:
             :return: returns nothing
         """
 
-        msg = game_topic(
+        self.msg = game_topic(
             game_state,
             robot_roles,
             penalty_robot,
@@ -33,8 +56,14 @@ class RosGamePublisher:
             meta_robot
         )
 
+    def publish(self):
+        """
+        This function publishes in the game topic
+
+        :return: returns nothing
+        """
         try:
-            self.pub.publish(msg)
+            self.pub.publish(self.msg)
         except rospy.ROSException as e:
             rospy.logfatal(e)
 

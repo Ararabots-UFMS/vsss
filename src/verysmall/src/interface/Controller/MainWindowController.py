@@ -2,7 +2,7 @@ from ..View.MainWindowView import MainWindowView
 import fltk as fl
 import sys
 import os
-
+from verysmall.msg import game_topic
 
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']
@@ -14,7 +14,7 @@ from rospy import ServiceException,ServiceProxy, wait_for_service
 sys.path[0] = old_path
 
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _trainer):
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
 
@@ -24,9 +24,12 @@ class MainWindowController():
         self.robot_roles = _robot_roles
         self.game_opt = _game_opt
 
+        # The trainer object class control the active and the activities of robots
+        self.trainer = _trainer
+
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
-        self.robot_roles_keys = self.robot_roles.keys()
+        self.robot_roles_keys = sorted(self.robot_roles.keys())
         self.robot_bluetooth_keys = self.robot_bluetooth.keys()
 
         # Fast access array to use a dict as an simple array
@@ -138,9 +141,12 @@ class MainWindowController():
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
     def radio_choice(self, ptr):
+        self.trainer.set_robot_active(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
+        self.pub.set_robot_role(ptr.id, ptr.value())
+        self.pub.publish()
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):
@@ -148,6 +154,9 @@ class MainWindowController():
 
     def action_button_clicked(self, ptr):
         if self.view.play_button.playing:
+            self.pub.set_game_state(0)  # Sets the game state to stopped
+            self.pub.publish()
+
             for button in self.view.action_buttons:
                 button.activate()
             ptr.color(fl.FL_DARK_GREEN)
@@ -155,15 +164,21 @@ class MainWindowController():
             self.view.play_button.playing = False
         else:
             if ptr.id == 4:
+                self.pub.set_game_state(1)  # Sets the game state to normal play
                 print("Jogar regular")
             elif ptr.id == 0:
-                print("Free Ball: " + self.faster_hash[int(self.assigned_robot_indexes[1])])
+                self.pub.set_game_state(2)
+                print("Free Ball")
             elif ptr.id == 1:
+                self.pub.set_game_state(3)
                 print("Penalty")
             elif ptr.id == 2:
+                self.pub.set_game_state(4)
                 print("Meta")
             else:
                 print("que")
+
+            self.pub.publish()
 
             for button in self.view.action_buttons:
                 button.deactivate()

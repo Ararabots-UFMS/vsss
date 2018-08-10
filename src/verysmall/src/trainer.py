@@ -16,6 +16,9 @@ class Trainer:
         self.robot_roles = _robot_roles
         self.game_opt = _game_opt
 
+        # Fast access array to use a dict as an simple array
+        self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
+
         if _launcher is None:
             # Create roslaunch from API
             self.launcher = roslaunch.scriptapi.ROSLaunch()
@@ -25,6 +28,7 @@ class Trainer:
 
         # Allocate robots process
         self.player_process = {}
+        self.player_nodes = {}
 
         # Doing loops for creating the robot nodes
         for robot in self.robot_params.keys():
@@ -36,5 +40,31 @@ class Trainer:
             node = roslaunch.core.Node('verysmall', 'robot_node.py',
                                        name=robot,
                                        args=variables)
-            # launches the node and stores it in the given memory space
-            self.player_process[robot] = self.launcher.launch(node)
+
+            # Lets store the node for future alterations
+            self.player_nodes[robot] = node
+
+            if self.robot_params[robot]['active']:
+                # launches the node and stores it in the given memory space
+                self.player_process[robot] = self.launcher.launch(node)
+            else:
+                self.player_process[robot] = None
+
+    def set_robot_active(self, robot_id, should_be_active):
+        robot_name = self.faster_hash[robot_id]
+
+        if should_be_active:  # This robot should be active
+            if self.player_process[robot_name] is None:  # Missing the process
+                self.player_process[robot_name] = self.launcher.launch(self.player_nodes[robot_name])
+            elif not self.player_process[robot_name].is_alive():  # Must start process first
+                self.player_process[robot_name].start()
+            else:  # Do nothing if process is ok
+                pass
+        else:  # I dont want you anymore
+            if self.player_process[robot_name] is None:
+                pass  # Do nothing since is already dead
+            elif not self.player_process[robot_name].is_alive():
+                self.player_process[robot_name] = None
+            else:  # Process is alive and well, so lets kill him >:D
+                self.player_process[robot_name].stop()
+                self.player_process[robot_name] = None
