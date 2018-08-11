@@ -150,6 +150,7 @@ class MainWindowController():
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):
+        self.trainer.set_robot_bluetooth(ptr.id)
         self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()]
 
     def action_button_clicked(self, ptr):

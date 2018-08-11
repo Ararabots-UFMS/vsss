@@ -50,6 +50,20 @@ class Trainer:
             else:
                 self.player_process[robot] = None
 
+    def set_robot_bluetooth(self, robot_id):
+        robot = self.faster_hash[robot_id]
+
+        # arguments for the node
+        bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
+        variables = robot + ' ' + self.robot_bluetooth[bluetooth_number] + " " + self.robot_params[robot]['body_id']
+        self.player_nodes[robot].args = variables
+
+        if self.player_process[robot] is None:
+            pass
+        else:  # We need to restart the node :<
+            self.player_process[robot].stop()
+            self.player_process[robot] = self.launcher.launch(self.player_nodes[robot])
+
     def set_robot_active(self, robot_id, should_be_active):
         robot_name = self.faster_hash[robot_id]
 
