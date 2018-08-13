@@ -1,7 +1,8 @@
 #!/usr/bin/python
-import sys
+# -*- coding: latin-1 -*-
 from utils.json_handler import JsonHandler
 from interface.Controller.MainWindowController import MainWindowController
+from interface.Controller.LoadingController import LoadingController
 from ROS.ros_utils import RosUtils
 from trainer import Trainer
 import rospy
@@ -39,6 +40,8 @@ if __name__ == '__main__':
     # Create roslaunch from API
     launch = roslaunch.scriptapi.ROSLaunch()
     launch.start()
+
+    LoadingController()
 
     if RosUtils.topic_exists("/things_position"):
         return_type, device_index = -1, -1

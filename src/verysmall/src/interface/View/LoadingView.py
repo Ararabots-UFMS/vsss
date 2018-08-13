@@ -2,8 +2,13 @@
 # -*- coding: latin-1 -*-
 
 import fltk as fl
+from ImageCreator import ImageCreator
+from os import path, environ
+import time
 
-class CameraSelectView:
+
+
+class LoadingView:
 
     def __init__(self):
 
@@ -19,7 +24,28 @@ class CameraSelectView:
         self.root.border(0)
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
-        self.label = fl.Fl_Box(self.proportion_width(30),self.proportion_height(5),self.proportion_width(70),
+
+        logo_width = self.proportion_width(28)
+        logo_heigth = self.proportion_height(90)
+        self.logo = fl.Fl_Box(self.proportion_width(1),self.proportion_height(5), logo_width, logo_heigth)
+
+        root_path = environ['ROS_ARARA_ROOT']
+
+        logo_file = root_path+"src/interface/Assets/Cache/arara_"+str(logo_width)+"_"+str(logo_heigth)+".png"
+        if path.exists(logo_file):
+            self.logo_image = fl.Fl_PNG_Image(logo_file)
+            self.logo.image(self.logo_image)
+        else:
+            ImageCreator(logo_width, logo_heigth)
+            if path.exists(logo_file):
+                self.logo_image = fl.Fl_PNG_Image(logo_file)
+                self.logo.image(self.logo_image)
+            else:
+                print logo_file
+                print "nope"
+                self.logo_image = None
+
+        self.label = fl.Fl_Box(self.proportion_width(31),self.proportion_height(5),self.proportion_width(68),
                                self.proportion_height(90),"Carregando Assets")
 
         self.label.box(fl.FL_FLAT_BOX)
@@ -35,9 +61,14 @@ class CameraSelectView:
                             "Carregando Assets",
                             "Carregando..."]
 
-    def end(self):
         self.root.end()
         self.root.show()
+
+        while (1):
+            time.sleep(1)
+            fl.Fl.check()
+
+        #fl.Fl.run()
 
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
@@ -47,17 +78,34 @@ class CameraSelectView:
         """Returns the X value for the designed horizontal screen proportion"""
         return int(self.width * proportion / 100)
 
+    def set_and_show(self, label_text):
+        self.label.label(label_text)
+        #if not self.root.visible():
+        self.root.show()
+
+    def run(self):
+        while (self.alive):
+            time.sleep(0.1)
+            fl.Fl.check()
+
+    def close(self):
+        self.root.hide()
+
     def set_label(self):
         self.label.label(self.labels_text[self.label_position])
         self.label_position =(self.label_position+1)%5
         fl.Fl.add_timeout(c.RATE, c.set_label)
 
+
+
 if __name__ == '__main__':
-    c = CameraSelectView()
-    c.end()
+    c = LoadingView()
+    #c.end()
 
     c.RATE = 1.5
 
     fl.Fl.add_timeout(c.RATE, c.set_label)
 
-    fl.Fl.run()
+    while(1):
+        fl.Fl.check()
+    #fl.Fl.run()
