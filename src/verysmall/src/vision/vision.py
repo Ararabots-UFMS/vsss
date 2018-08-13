@@ -7,16 +7,24 @@ import numpy as np
 import rospy
 import time
 from camera.camera import Camera
-from utils.json_handler import JsonHandler
-from ROS.ros_vision_publisher import RosVisionPublisher
 from vision_utils.params_setter import ParamsSetter
 
 from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
+from verysmall.srv import vision_command
+
+# Top level imports
+import os
+old_path = sys.path[0]
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from utils.json_handler import JsonHandler
+from ROS.ros_vision_publisher import RosVisionPublisher
+sys.path[0] = old_path
 
 # @author Wellington Castro <wvmcastro>
 
 HEIGHT = 1
+
 
 class Vision:
 
@@ -26,6 +34,12 @@ class Vision:
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
         self.mercury = RosVisionPublisher(True)
+
+        # Creates the service responsible for vision modes and operations
+        self.service = rospy.Service('vision_command', vision_command, self.manage_operation)
+
+        # Has to show image?
+        self.show = False
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -86,8 +100,22 @@ class Vision:
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
-        self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+                                self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
+    def manage_operation(self, req):
+        success = True
+        if req.operation == 1:  # Show the image for debugging
+            self.show = not self.show
+            if not self.show:
+                cv2.destroyWindow("vision")
+
+        elif req.operation == 2:  # Cropper
+            self.params_setter.run()
+            self.load_params()
+
+        else:
+            rospy.logfatal((req))
+        return success
 
     def start(self):
         self.game_on = True
@@ -100,7 +128,7 @@ class Vision:
         self.finish = True
 
     def update_fps(self):
-        self.fps = self.computed_frames / (time.time() - t0)
+        self.fps = self.computed_frames / (time.time() - self.t0)
 
     def set_origin_and_factor(self):
         """ This function calculates de conversion factor between pixel to centimeters
@@ -194,7 +222,7 @@ class Vision:
 
             self.t0 = time.time()
             while self.game_on:
-                self.raw_image = camera.read()
+                self.raw_image = self.camera.read()
 
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
@@ -212,9 +240,8 @@ class Vision:
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
-                self.get_message(ball=True, home_team=True, adv_team=False)
+
                 self.send_message(ball=True, home_team=True, adv_team=True)
-                #self.mercury.publish(self.get_message(ball=True, home_team=True, adv_team=False))
 
                 self.computed_frames += 1
 
@@ -228,17 +255,17 @@ class Vision:
             published in the ROS vision bus """
 
         # Ball info
-        ball_pos = [0, 0]
-        ball_speed = [0, 0]
+        ball_pos = [0,0]
+        ball_speed = [0,0]
 
         # Home team info
-        home_team_pos = [[0, 0] for _ in xrange(6)]
-        home_team_orientation = [0 for _ in xrange(6)]
-        home_team_speed = [[0, 0] for _ in xrange(6)]
+        home_team_pos = [ [0,0] for _ in xrange(6)]
+        home_team_orientation = [ 0 for _ in xrange(6)]
+        home_team_speed = [[0,0] for _ in xrange(6)]
 
         # Adv team info
-        adv_team_pos = [[0, 0] for _ in xrange(6)]
-        adv_team_speed = [[0, 0] for _ in xrange(6)]
+        adv_team_pos = [ [0,0] for _ in xrange(6)]
+        adv_team_speed = [ [0,0] for _ in xrange(6)]
 
         if ball:
             ball_pos = self.ball.pos
@@ -256,7 +283,7 @@ class Vision:
             for robot in self.adv_team:
                 i = robot.id
                 adv_team_pos[i] = robot.pos
-                adv_team_speed[i] = robot.speedros
+                adv_team_speed[i] = robot.speed
 
         self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
                              home_team_speed, adv_team_pos, adv_team_speed)

@@ -5,12 +5,15 @@ import fltk as fl
 from ImageCreator import ImageCreator
 from os import path, environ
 import time
+from threading import Thread
 
 
-
-class LoadingView:
+class LoadingView(Thread):
 
     def __init__(self):
+        Thread.__init__(self)
+        # Feio
+        self.DoRun = True
 
         # Get the usable screen proportions
         self.width = fl.Fl.w()
@@ -64,12 +67,6 @@ class LoadingView:
         self.root.end()
         self.root.show()
 
-        while (1):
-            time.sleep(1)
-            fl.Fl.check()
-
-        #fl.Fl.run()
-
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
         return int(self.height * proportion / 100)
@@ -83,11 +80,6 @@ class LoadingView:
         #if not self.root.visible():
         self.root.show()
 
-    def run(self):
-        while (self.alive):
-            time.sleep(0.1)
-            fl.Fl.check()
-
     def close(self):
         self.root.hide()
 
@@ -96,6 +88,11 @@ class LoadingView:
         self.label_position =(self.label_position+1)%5
         fl.Fl.add_timeout(c.RATE, c.set_label)
 
+    def run(self):
+        while self.DoRun:
+            time.sleep(0.1)
+            fl.Fl.check()
+        self.root.hide()
 
 
 if __name__ == '__main__':

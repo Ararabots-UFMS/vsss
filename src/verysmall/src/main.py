@@ -41,7 +41,8 @@ if __name__ == '__main__':
     launch = roslaunch.scriptapi.ROSLaunch()
     launch.start()
 
-    LoadingController()
+    lc = LoadingController()
+    lc.start()
 
     if RosUtils.topic_exists("/things_position"):
         return_type, device_index = -1, -1
@@ -50,8 +51,9 @@ if __name__ == '__main__':
         # Create the GUI
         # Search for the usb camera, if not present, the program ask to a substitute
         # be a file or another camera
+        lc.stop()
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
-
+        lc.start()
         # Launch Vision with another Topic
         arguments = str(device_index)
 
@@ -63,11 +65,12 @@ if __name__ == '__main__':
         vision_owner = True
 
     trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
-
+    lc.stop()
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
                                       trainer)
-
+    lc.start()
     if vision_owner:
         vision_process.stop()
 
     model.save_params()
+    lc.stop()
