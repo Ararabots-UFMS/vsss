@@ -10,7 +10,7 @@ from threading import Thread
 
 class LoadingView(Thread):
 
-    def __init__(self):
+    def __init__(self, label_text = "Carregando Assets" ):
         Thread.__init__(self)
         # Feio
         self.DoRun = True
@@ -49,7 +49,7 @@ class LoadingView(Thread):
                 self.logo_image = None
 
         self.label = fl.Fl_Box(self.proportion_width(31),self.proportion_height(5),self.proportion_width(68),
-                               self.proportion_height(90),"Carregando Assets")
+                               self.proportion_height(90),label_text)
 
         self.label.box(fl.FL_FLAT_BOX)
         self.label.align(fl.FL_ALIGN_INSIDE + fl.FL_ALIGN_LEFT +fl.FL_ALIGN_WRAP)
@@ -90,8 +90,8 @@ class LoadingView(Thread):
 
     def run(self):
         while self.DoRun:
-            time.sleep(0.1)
             fl.Fl.check()
+            time.sleep(0.1)
         self.root.hide()
 
 

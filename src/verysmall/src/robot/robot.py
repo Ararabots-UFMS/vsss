@@ -1,13 +1,20 @@
 import rospy
-from verysmall.msg import things_position, motor_speed
+import sys
+from verysmall.msg import things_position, motor_speed,game_topic
+
+try:
+    from utils.json_handler import JsonHandler
+except ImportError:
+    sys.path[0] = sys.path[0] + '/../'
+    from utils.json_handler import JsonHandler
 
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, robot_id, bluetooth_id, robot_body, isActive=True, isAdversary=False):
-        print __file__
+    def __init__(self, robot_id, bluetooth_id, robot_body, isAdversary=False):
         # Parameters
         self.robot_id = robot_id
+        self.robot_id_integer = int(self.robot_id.split("_")[1]) - 1
         self.bluetooth_id = bluetooth_id
         self.robot_body = robot_body
 
@@ -26,25 +33,57 @@ class Robot():
 
         # Receive from game topic
         self.behaviour_type = None
-        self.game_state = None
+        self.game_state = 0
         self.role = None
+        self.penalty_robot = None
+        self.freeball_robot = None
+        self.meta_robot = None
 
-        self.pub = rospy.Publisher('robot_' + str(robot_id), things_position, queue_size=1)
+        rospy.Subscriber('things_position', things_position, self.read_topic)
 
-        if isActive:
-            rospy.Subscriber('things_position', things_position, self.read_topic)
+        rospy.Subscriber('game_topic', game_topic, self.read_game_topic)
 
-    # rospy.init_node('robot_'+str(robot_id))
+        self.changed_game_state = True
+        self.game_state_string = ["Stopped",
+                                  "Normal Play",
+                                  "Freeball",
+                                  "Penaly",
+                                  "Meta"]
 
     def run(self):
-        print("Robo_" + str(self.robot_id) + ": Rodei principal")
+
+        if self.game_state == 0:  # Stopped
+            pass
+        elif self.game_state == 1:  # Normal Play
+            pass
+        elif self.game_state == 2:  # Freeball
+            pass
+        elif self.game_state == 3:  # Penaly
+            pass
+        elif self.game_state == 4:  # Meta
+            pass
+        else:  # I really really really Dont Know
+            print("wut")
+
+        if self.changed_game_state:
+            rospy.logfatal("Robo_" + self.robot_id + ": Run("+self.game_state_string[self.game_state]+")")
+            self.changed_game_state = False
 
     def read_parameters(self):
         pass
 
+    def read_game_topic(self, data):
+        self.game_state = data.game_state
+        self.penalty_robot = data.penalty_robot
+        self.freeball_robot = data.freeball_robot
+        self.meta_robot = data.meta_robot
+        self.role = data.robot_roles[self.robot_id_integer]
+        #rospy.logfatal(sys.argv[1] + " - " + str(self.game_state) + " - " + str(self.role))
+        self.changed_game_state = True
+
     def read_topic(self, data):
-        self.position = data.team_pos[self.robot_id]
-        self.vector = data.team_vector[self.robot_id]
+        self.position = data.team_pos[self.robot_id_integer]
+        self.vector = data.team_vector[self.robot_id_integer]
         self.ball_position = data.ball_pos
         self.team_vector = data.team_pos
         self.team_position = data.team_vector

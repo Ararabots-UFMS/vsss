@@ -42,7 +42,7 @@ if __name__ == '__main__':
     launch.start()
 
     lc = LoadingController()
-    lc.start()
+    lc.start("Carregando Assets")
 
     if RosUtils.topic_exists("/things_position"):
         return_type, device_index = -1, -1
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         # be a file or another camera
         lc.stop()
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
-        lc.start()
+        lc.start("Carregando nó da visão")
         # Launch Vision with another Topic
         arguments = str(device_index)
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     lc.stop()
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
                                       trainer)
-    lc.start()
+    lc.start("Salvando banco de dados")
     if vision_owner:
         vision_process.stop()
 

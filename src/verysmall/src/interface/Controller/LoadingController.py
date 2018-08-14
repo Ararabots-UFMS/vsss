@@ -6,8 +6,8 @@ class LoadingController:
     def __init__(self):
         self.load_thread = None
 
-    def start(self):
-        self.load_thread = LoadingView()
+    def start(self, label_text = "Carregando Assets"):
+        self.load_thread = LoadingView(label_text)
         self.load_thread.start()
 
     def stop(self):
