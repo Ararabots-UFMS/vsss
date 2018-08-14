@@ -1,7 +1,7 @@
 import rospy
 import sys
 from verysmall.msg import things_position, motor_speed,game_topic
-
+from comunication.sender import Sender
 try:
     from utils.json_handler import JsonHandler
 except ImportError:
@@ -38,6 +38,10 @@ class Robot():
         self.penalty_robot = None
         self.freeball_robot = None
         self.meta_robot = None
+
+        # Open bluetooth socket
+        self.bluetooth_sender = Sender(self.robot_id_integer, self.bluetooth_id)
+        self.bluetooth_sender.connect()
 
         rospy.Subscriber('things_position', things_position, self.read_topic)
 
@@ -111,3 +115,6 @@ class Robot():
 
     def debug(self):
         pass
+
+    def bluetooth_detach(self):
+        self.bluetooth_sender.closeSocket()
