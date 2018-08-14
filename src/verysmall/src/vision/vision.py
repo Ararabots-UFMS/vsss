@@ -11,6 +11,8 @@ from vision_utils.params_setter import ParamsSetter
 
 from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
+
+from verysmall.msg import game_topic
 from verysmall.srv import vision_command
 
 # Top level imports
@@ -36,10 +38,15 @@ class Vision:
         self.mercury = RosVisionPublisher(True)
 
         # Creates the service responsible for vision modes and operations
-        self.service = rospy.Service('vision_command', vision_command, self.manage_operation)
+        self.service = rospy.Service('vision_command', vision_command, self.vision_management)
+
+        # Subscribes to the game topic
+        rospy.Subscriber('game_topic', game_topic, self.on_game_state_change)
 
         # Has to show image?
         self.show = False
+
+        self.game_state = None
 
         self.json_handler = JsonHandler()
         self.camera = camera
@@ -102,7 +109,7 @@ class Vision:
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
-    def manage_operation(self, req):
+    def vision_management(self, req):
         success = True
         if req.operation == 1:  # Show the image for debugging
             self.show = not self.show
@@ -116,6 +123,13 @@ class Vision:
         else:
             rospy.logfatal((req))
         return success
+
+    def on_game_state_change(self, data):
+        self.game_state = data.game_state
+        if self.game_state:
+            self.start()
+        else:  # stopped
+            self.pause()
 
     def start(self):
         self.game_on = True
@@ -232,8 +246,6 @@ class Vision:
                 self.pipeline()
 
                 self.attribute_teams()
-                
-                #cv2.imshow('aruco',255-self.home_seg)
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
@@ -322,8 +334,6 @@ class Vision:
                 adv_team_pos[i] = robot.pos
                 adv_team_speed[i] = robot.speed
 
-
-        #rospy.logfatal(home_team_pos)
         return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
                 home_team_speed, adv_team_pos, adv_team_speed
 

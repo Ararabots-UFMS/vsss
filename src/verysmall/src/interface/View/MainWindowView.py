@@ -102,7 +102,7 @@ class MainWindowView:
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.virtual.plot_robots(data_item.team_pos, data_item.team_vector, self.virtual.colors["yellow"])
-            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_vector, self.virtual.colors["blue"])
+            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_vector, self.virtual.colors["blue"], is_away=True)
             self.arena.image = self.virtual.field
             self.arena.redraw()
             #self.past_time = self.now_time

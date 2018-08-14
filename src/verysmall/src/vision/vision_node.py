@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
                arena_params, colors_params, method="color_segmentation")
-    v.game_on = True
+    #v.game_on = True
 
     t = Thread(target=v.run, args=())
     t.daemon = True

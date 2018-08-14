@@ -25,14 +25,12 @@ def rotate_vector(x, angle):
     return [y1, y2]
 
 
-def unit_convert(input_unit):
+def unit_convert(input_unit, whidth_conv, height_conv):
     """ Convert input data, in centimeters, read from ROS, for virtual field data, in pixels """
-    return (int(input_unit[0])*4,int(input_unit[1])*4)
+    return (int(input_unit[0]*whidth_conv),int(input_unit[1]*height_conv))
 
 
-def position_from_origin(position_tuple):
+def position_from_origin(position_tuple, origin):
     """ calculate the pixel of the center of a robot from origin as reference """
 
-    origin = (80,600)
-
-    return (origin[0]+position_tuple[0],origin[1]-position_tuple[1])
+    return (origin[0]+position_tuple[0],(origin[1]-position_tuple[1]))
