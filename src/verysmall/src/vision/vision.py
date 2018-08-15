@@ -13,7 +13,6 @@ from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
 
 from verysmall.msg import game_topic
-from verysmall.srv import vision_command
 
 # Top level imports
 import os
@@ -37,14 +36,8 @@ class Vision:
         # at the bus. Mercury is the gods messenger
         self.mercury = RosVisionPublisher(True)
 
-        # Creates the service responsible for vision modes and operations
-        self.service = rospy.Service('vision_command', vision_command, self.vision_management)
-
         # Subscribes to the game topic
         rospy.Subscriber('game_topic', game_topic, self.on_game_state_change)
-
-        # Has to show image?
-        self.show = False
 
         self.game_state = None
 
@@ -108,21 +101,6 @@ class Vision:
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
-
-    def vision_management(self, req):
-        success = True
-        if req.operation == 1:  # Show the image for debugging
-            self.show = not self.show
-            if not self.show:
-                cv2.destroyWindow("vision")
-
-        elif req.operation == 2:  # Cropper
-            self.params_setter.run()
-            self.load_params()
-
-        else:
-            rospy.logfatal((req))
-        return success
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
