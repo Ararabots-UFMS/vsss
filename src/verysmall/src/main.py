@@ -12,9 +12,11 @@ from utils.camera_loader import CameraLoader
 Instantiates all the windows, robots, topics and services
 """
 
+#TODO separar classe model
 
 class Model():
     """The model class for loading and saving json files"""
+
 
     def __init__(self):
         self.json_handler = JsonHandler()
@@ -23,8 +25,6 @@ class Model():
         self.robot_bluetooth = self.json_handler.read("parameters/bluetooth.json", escape=True)
         self.robot_roles = self.json_handler.read("parameters/roles.json", escape=True)
         self.game_opt = self.json_handler.read("parameters/game.json", escape=True)
-        self.arena_params = "../parameters/ARENA.json"
-        self.colors_params = "../parameters/COLORS.json"
 
     def save_params(self):
         self.json_handler.write(self.robot_params, "parameters/robots.json")

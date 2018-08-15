@@ -30,6 +30,8 @@ class Trainer:
         self.player_process = {}
         self.player_nodes = {}
 
+        #TODO: Criar funcao para instanciar robos
+
         # Doing loops for creating the robot nodes
         for robot in self.robot_params.keys():
             # arguments for the node
