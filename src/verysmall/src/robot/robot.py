@@ -59,7 +59,7 @@ class Robot():
         if self.game_state == 0:  # Stopped
             pass
         elif self.game_state == 1:  # Normal Play
-            pass
+            self.bluetooth_sender.sendPacket(100, 100)
         elif self.game_state == 2:  # Freeball
             pass
         elif self.game_state == 3:  # Penaly
@@ -94,21 +94,6 @@ class Robot():
         self.enemies_vector = data.enemies_vector
         self.enemies_position = data.enemies_pos
         self.run()
-
-    def go_to(self):
-        pass
-
-    def follow_vector(self):
-        pass
-
-    def head_to(self):
-        pass
-
-    def spin(self):
-        pass
-
-    def compute_univector_field(self):
-        pass
 
     def send_control(self):
         pass
