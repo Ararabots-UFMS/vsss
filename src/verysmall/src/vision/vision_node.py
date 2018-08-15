@@ -48,17 +48,7 @@ class VisionNode:
 
     def vision_management(self, req):
         success = True
-        if req.operation == 1:  # Show the image for debugging
-            self.show = not self.show
-            if not self.show:
-                cv2.destroyWindow("vision")
-
-        elif req.operation == 2:  # Cropper
-            self.vision.params_setter.run()
-            self.vision.load_params()
-
-        else:
-            rospy.logfatal((req))
+        self.state_changed = req.operation
         return success
 
 
@@ -70,9 +60,20 @@ if __name__ == "__main__":
     while not rospy.is_shutdown():
         if vision_node.show:
             cv2.imshow('vision', vision_node.vision.adv_seg)
-        if vision_node.state_changed:
-            pass  # Process requisition
+            cv2.waitKey(1) & 0xFF
+        if vision_node.state_changed:  # Process requisition
+            if vision_node.state_changed == 1:
+                vision_node.show = not vision_node.show
+                if not vision_node.show:
+                    cv2.destroyWindow("vision")
+                vision_node.state_changed = 0
+
+            elif vision_node.state_changed == 2:
+                vision_node.vision.params_setter.run()
+                vision_node.vision.load_params()
+                vision_node.state_changed = 0
         rate.sleep()
 
     vision_node.vision.stop()
+    cv2.destroyAllWindows()
 
