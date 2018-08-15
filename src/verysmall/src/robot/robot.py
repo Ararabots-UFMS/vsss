@@ -117,4 +117,5 @@ class Robot():
         pass
 
     def bluetooth_detach(self):
-        self.bluetooth_sender.closeSocket()
+        if self.bluetooth_sender is not None:
+            self.bluetooth_sender.closeSocket()
