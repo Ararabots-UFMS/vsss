@@ -13,9 +13,10 @@ class Robot():
 
     def __init__(self, robot_id, bluetooth_id, robot_body, isAdversary=False):
         # Parameters
+        #TODO: trocar variavel para robot_name
         self.robot_id = robot_id
         self.robot_id_integer = int(self.robot_id.split("_")[1]) - 1
-        self.bluetooth_id = bluetooth_id
+        self.bluetooth_id = bluetooth_id # Mac address TODO: mudar o nome para mac_address
         self.robot_body = robot_body
 
         # Receive from vision
@@ -74,6 +75,7 @@ class Robot():
             self.changed_game_state = False
 
     def read_parameters(self):
+        #TODO: ler parametros do robot na funcao init
         pass
 
     def read_game_topic(self, data):
@@ -82,21 +84,18 @@ class Robot():
         self.freeball_robot = data.freeball_robot
         self.meta_robot = data.meta_robot
         self.role = data.robot_roles[self.robot_id_integer]
-        #rospy.logfatal(sys.argv[1] + " - " + str(self.game_state) + " - " + str(self.role))
         self.changed_game_state = True
 
     def read_topic(self, data):
         self.position = data.team_pos[self.robot_id_integer]
-        self.vector = data.team_vector[self.robot_id_integer]
+        self.vector = data.team_orientation[self.robot_id_integer]
         self.ball_position = data.ball_pos
-        self.team_vector = data.team_pos
-        self.team_position = data.team_vector
-        self.enemies_vector = data.enemies_vector
+        self.team_pos = data.team_pos
+        self.team_orientation = data.team_orientation
+        self.team_speed = data.team_speed
         self.enemies_position = data.enemies_pos
+        self.enemies_speed = data.enemies_speed
         self.run()
-
-    def send_control(self):
-        pass
 
     def debug(self):
         pass

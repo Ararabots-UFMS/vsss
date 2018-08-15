@@ -52,8 +52,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
  	FILES
+	twofloat64.msg
 	motor_speed.msg
-	robot_pos.msg
 	robot_vector.msg
 	comunication_topic.msg
 	game_topic.msg

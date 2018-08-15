@@ -1,7 +1,7 @@
-float64[2]		 	        	ball_pos
-float64[2]        				ball_speed_vector
-verysmall/robot_pos[5]       	team_pos
-verysmall/robot_vector[5]    	team_vector
-verysmall/robot_pos[5]       	enemies_pos
-verysmall/robot_vector[5]   	enemies_vector
-verysmall/robot_pos[10]         robot_speed
+twofloat64		 	        	ball_pos
+twofloat64           				ball_speed
+verysmall/twofloat64[5]       	team_pos
+float64[5]    	    team_orientation
+verysmall/twofloat64[5]       	team_speed
+verysmall/twofloat64[5]       	enemies_pos
+verysmall/twofloat64[10]          enemies_speed

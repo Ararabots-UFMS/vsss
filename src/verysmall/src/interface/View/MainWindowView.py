@@ -8,7 +8,7 @@ import time
 from Queue import Queue
 from collections import deque
 from verysmall.msg import things_position
-from verysmall.msg import robot_pos, robot_vector
+from verysmall.msg import twofloat64, robot_vector
 
 
 class canvas(fl.Fl_Double_Window):
@@ -19,7 +19,7 @@ class canvas(fl.Fl_Double_Window):
     def draw(self):
         fl.fl_draw_image(self.image.data, 0,0, self.w(), self.h(), 3, 0)
 
-
+#TODO: Renomear virtual para virtual field
 class MainWindowView:
     """Creates the visual for the main window and uses the MainWindowController to handle callbacks"""
 
@@ -50,7 +50,8 @@ class MainWindowView:
         # Create a new Buffered window
         self.root = fl.Fl_Window(self.proportion_width(2.5), self.proportion_height(5),
                                         self.proportion_width(95), self.proportion_height(90))
-
+        #TODO: Diminuir campo virtual para abrir space para os numeros da tag
+        #TODO: Criar dropdown para as tags
         self.virtual = Virtual_Field(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtual.plot_arena()
 
@@ -66,11 +67,11 @@ class MainWindowView:
         msg = things_position(
                 [0., 0.],
                 [0.,0.],
-                [robot_pos() for _ in range(5)],
-                [robot_vector() for _ in range(5)],
-                [robot_pos() for _ in range(5)],
-                [robot_vector() for _ in range(5)],
-                [robot_pos() for _ in range(10)]
+                [twofloat64() for _ in range(5)],
+                [.0 for _ in range(5)],
+                [twofloat64() for _ in range(5)],
+                [twofloat64() for _ in range(5)],
+                [twofloat64() for _ in range(10)]
             )
         self.data = deque(
         # Shapes the size of the Queue
@@ -101,7 +102,7 @@ class MainWindowView:
             #rospy.logfatal(self.now_time - self.past_time)
             self.virtual.plot_arena()  # New arena image
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
-            self.virtual.plot_robots(data_item.team_pos, data_item.team_vector, self.virtual.colors["yellow"])
+            self.virtual.plot_robots(data_item.team_pos, data_item.team_orientation, self.virtual.colors["yellow"])
             self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_vector, self.virtual.colors["blue"], is_away=True)
             self.arena.image = self.virtual.field
             self.arena.redraw()

@@ -84,3 +84,11 @@ class Trainer:
             else:  # Process is alive and well, so lets kill him >:D
                 self.player_process[robot_name].stop()
                 self.player_process[robot_name] = None
+
+    #TODO: Tirar set_robot_role do publisher e adiciona-lo aqui
+
+    #TODO: Passar arquivo de trainer para propria pasta coach. bem como o nome da classe
+
+    #TODO: Definir run aqui e importala de outro arquivo
+
+    #TODO: Criar pasta para estrategias, paralelo a robot na raiz
