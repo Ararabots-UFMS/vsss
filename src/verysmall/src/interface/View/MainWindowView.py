@@ -65,13 +65,15 @@ class MainWindowView:
         # Queue of data from Topic Things position
         #self.data = Queue(maxsize=10)
         msg = things_position(
-                [0., 0.],
-                [0.,0.],
+                twofloat64(),
+                twofloat64(),
                 [twofloat64() for _ in range(5)],
                 [.0 for _ in range(5)],
                 [twofloat64() for _ in range(5)],
+
                 [twofloat64() for _ in range(5)],
-                [twofloat64() for _ in range(10)]
+                [.0 for _ in range(5)],
+                [twofloat64() for _ in range(5)]
             )
         self.data = deque(
         # Shapes the size of the Queue
@@ -101,9 +103,10 @@ class MainWindowView:
             #self.now_time = time.time()
             #rospy.logfatal(self.now_time - self.past_time)
             self.virtual.plot_arena()  # New arena image
+
             self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
             self.virtual.plot_robots(data_item.team_pos, data_item.team_orientation, self.virtual.colors["yellow"])
-            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_vector, self.virtual.colors["blue"], is_away=True)
+            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_orientation, self.virtual.colors["blue"], is_away=True)
             self.arena.image = self.virtual.field
             self.arena.redraw()
             #self.past_time = self.now_time

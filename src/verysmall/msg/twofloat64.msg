@@ -1,1 +1,2 @@
-float64[2]    twofloat64
+float64     x
+float64     y

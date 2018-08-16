@@ -27,7 +27,7 @@ def rotate_vector(x, angle):
 
 def unit_convert(input_unit, whidth_conv, height_conv):
     """ Convert input data, in centimeters, read from ROS, for virtual field data, in pixels """
-    return (int(input_unit[0]*whidth_conv),int(input_unit[1]*height_conv))
+    return (int(input_unit.x*whidth_conv),int(input_unit.y*height_conv))
 
 
 def position_from_origin(position_tuple, origin):

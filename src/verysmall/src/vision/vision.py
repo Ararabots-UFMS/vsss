@@ -255,6 +255,7 @@ class Vision:
 
         # Adv team info
         adv_team_pos = [ [0,0] for _ in xrange(6)]
+        enemies_orientation = [0 for _ in xrange(6)]
         adv_team_speed = [ [0,0] for _ in xrange(6)]
 
         if ball:
@@ -276,7 +277,7 @@ class Vision:
                 adv_team_speed[i] = robot.speed
 
         self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
-                             home_team_speed, adv_team_pos, adv_team_speed)
+                             home_team_speed, adv_team_pos, enemies_orientation, adv_team_speed)
 
     def get_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be

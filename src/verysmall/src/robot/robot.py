@@ -87,13 +87,15 @@ class Robot():
         self.changed_game_state = True
 
     def read_topic(self, data):
-        self.position = data.team_pos[self.robot_id_integer]
-        self.vector = data.team_orientation[self.robot_id_integer]
         self.ball_position = data.ball_pos
+        self.ball_speed = data.ball_speed
+        self.position = data.team_pos[self.robot_id_integer]
+        self.orientation = data.team_orientation[self.robot_id_integer]
         self.team_pos = data.team_pos
         self.team_orientation = data.team_orientation
         self.team_speed = data.team_speed
         self.enemies_position = data.enemies_pos
+        self.enemies_orientation = data.enemies_orientation
         self.enemies_speed = data.enemies_speed
         self.run()
 

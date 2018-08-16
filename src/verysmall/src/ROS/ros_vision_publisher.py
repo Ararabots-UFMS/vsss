@@ -30,7 +30,7 @@ class RosVisionPublisher:
 
         # )
 
-    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed, enemies_pos, enemies_speed):
+    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed, enemies_pos, enemies_orientation, enemies_speed):
         """
             This function publishes in the things position topic
 
@@ -40,47 +40,53 @@ class RosVisionPublisher:
             :param team_orient: float64[5]
             :param team_speed: 2float64[5]
             :param enemies_pos: 2float64[5]
+            :param enemies_orient: 2float64[5]
             :param enemies_speed: 2float64[5]
             :return: returns nothing
         """
 
         msg = things_position(
-            twofloat64(ball_pos if all(ball_pos) else [.0, .0]),
-            twofloat64(ball_speed if all(ball_speed) else [.0, .0]),
-            [twofloat64(tuple(team_pos[0]) if all(team_pos[0]) else self.empty_robot_pos),
-             twofloat64(tuple(team_pos[1]) if all(team_pos[1]) else self.empty_robot_pos),
-             twofloat64(tuple(team_pos[2]) if all(team_pos[2]) else self.empty_robot_pos),
-             twofloat64(tuple(team_pos[3]) if all(team_pos[3]) else self.empty_robot_pos),
-             twofloat64(tuple(team_pos[4]) if all(team_pos[4]) else self.empty_robot_pos)
+            twofloat64(ball_pos[0], ball_pos[1]),
+            twofloat64(ball_speed[0], ball_speed[1]),
+            [twofloat64(team_pos[0][0], team_pos[0][1]),
+             twofloat64(team_pos[1][0], team_pos[1][1]),
+             twofloat64(team_pos[2][0], team_pos[2][1]),
+             twofloat64(team_pos[3][0], team_pos[3][1]),
+             twofloat64(team_pos[4][0], team_pos[4][1])
              ],
-            [(team_orient[0]) if team_orient[0] else self.empty_robot_vector,
-             (team_orient[1]) if team_orient[1] else self.empty_robot_vector,
-             (team_orient[2]) if team_orient[2] else self.empty_robot_vector,
-             (team_orient[3]) if team_orient[3] else self.empty_robot_vector,
-             (team_orient[4]) if team_orient[4] else self.empty_robot_vector
+            [team_orient[0] if team_orient[0] else self.empty_robot_vector,
+             team_orient[1] if team_orient[1] else self.empty_robot_vector,
+             team_orient[2] if team_orient[2] else self.empty_robot_vector,
+             team_orient[3] if team_orient[3] else self.empty_robot_vector,
+             team_orient[4] if team_orient[4] else self.empty_robot_vector
              ],
             [
-            twofloat64(tuple(team_speed[0]) if all(team_speed[0]) else self.empty_robot_pos),
-            twofloat64(tuple(team_speed[1]) if all(team_speed[1]) else self.empty_robot_pos),
-            twofloat64(tuple(team_speed[2]) if all(team_speed[2]) else self.empty_robot_pos),
-            twofloat64(tuple(team_speed[3]) if all(team_speed[3]) else self.empty_robot_pos),
-            twofloat64(tuple(team_speed[4]) if all(team_speed[4]) else self.empty_robot_pos),
+                twofloat64(team_speed[0][0], team_speed[0][1]),
+                twofloat64(team_speed[1][0], team_speed[1][1]),
+                twofloat64(team_speed[2][0], team_speed[2][1]),
+                twofloat64(team_speed[3][0], team_speed[3][1]),
+                twofloat64(team_speed[4][0], team_speed[4][1]),
             ],
-            [twofloat64(tuple(enemies_pos[0]) if all(enemies_pos[0]) else self.empty_robot_pos),
-             twofloat64(tuple(enemies_pos[1]) if all(enemies_pos[1]) else self.empty_robot_pos),
-             twofloat64(tuple(enemies_pos[2]) if all(enemies_pos[2]) else self.empty_robot_pos),
-             twofloat64(tuple(enemies_pos[3]) if all(enemies_pos[3]) else self.empty_robot_pos),
-             twofloat64(tuple(enemies_pos[4]) if all(enemies_pos[4]) else self.empty_robot_pos)
+            [twofloat64(enemies_pos[0][0], enemies_pos[0][1]),
+             twofloat64(enemies_pos[1][0], enemies_pos[1][1]),
+             twofloat64(enemies_pos[2][0], enemies_pos[2][1]),
+             twofloat64(enemies_pos[3][0], enemies_pos[3][1]),
+             twofloat64(enemies_pos[4][0], enemies_pos[4][1])
+             ],
+            [enemies_orientation[0] if enemies_orientation[0] else self.empty_robot_vector,
+             enemies_orientation[1] if enemies_orientation[1] else self.empty_robot_vector,
+             enemies_orientation[2] if enemies_orientation[2] else self.empty_robot_vector,
+             enemies_orientation[3] if enemies_orientation[3] else self.empty_robot_vector,
+             enemies_orientation[4] if enemies_orientation[4] else self.empty_robot_vector
              ],
             [
-            twofloat64(tuple(enemies_speed[0]) if all(enemies_speed[0]) else  self.empty_robot_pos),
-            twofloat64(tuple(enemies_speed[1]) if all(enemies_speed[1]) else  self.empty_robot_pos),
-            twofloat64(tuple(enemies_speed[2]) if all(enemies_speed[2]) else  self.empty_robot_pos),
-            twofloat64(tuple(enemies_speed[3]) if all(enemies_speed[3]) else  self.empty_robot_pos),
-            twofloat64(tuple(enemies_speed[4]) if all(enemies_speed[4]) else  self.empty_robot_pos)
-             ]
+                twofloat64(enemies_speed[0][0], enemies_speed[0][1]),
+                twofloat64(enemies_speed[1][0], enemies_speed[1][1]),
+                twofloat64(enemies_speed[2][0], enemies_speed[2][1]),
+                twofloat64(enemies_speed[3][0], enemies_speed[3][1]),
+                twofloat64(enemies_speed[4][0], enemies_speed[4][1])
+            ]
         )
-
 
         try:
             self.pub.publish(msg)

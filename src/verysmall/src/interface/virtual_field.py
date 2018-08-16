@@ -163,7 +163,7 @@ class Virtual_Field():
 
     def plot_ball(self, ball_center):
 
-        validate = ball_center
+        validate = [ball_center.x,ball_center.y]
 
         ball_center = unit_convert(ball_center, self.width_conv, self.height_conv)
         ball_center = position_from_origin(ball_center, self.field_origin)
@@ -195,10 +195,8 @@ class Virtual_Field():
 
         cv.circle(self.field, ball_center, self.ball_radius, self.colors["orange"], -1)
 
-    """plots all contours from all robots of a designed color given as parameter"""
-
     def plot_robots(self, robot_list, robot_vector, color, is_away=False):
-
+        """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
 
@@ -206,7 +204,7 @@ class Virtual_Field():
 
             if is_away:
                 center = position_from_origin(
-                    unit_convert(robot_list[index].robot_pos, self.width_conv, self.height_conv), self.field_origin)
+                    unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                 cv.circle(self.field, center, self.away_team_radius, color, -1)
                 cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
 
@@ -214,7 +212,7 @@ class Virtual_Field():
             else:
                 angle = robot_vector[index]
                 center = position_from_origin(
-                    unit_convert(robot_list[index].twofloat64, self.width_conv, self.height_conv), self.field_origin)
+                    unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                 contour = (center, (self.robot_side_size, self.robot_side_size), -angle * self.angle_conversion_factor)
                 n_contour = cv.boxPoints(contour)
                 n_contour = np.int0(n_contour)
