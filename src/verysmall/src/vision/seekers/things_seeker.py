@@ -11,8 +11,9 @@ from general_mult_obj_seeker import GeneralMultObjSeeker
 
 # Sorry for these globals, but is good for code reading
 # Go Ararabots!
-POS = 0
-ANGLE = 1
+ID = 0
+POS = 1
+ANGLE = 2
 
 class Things:
     # This is an auxiliary class to hold the variables from the things identified
@@ -90,8 +91,9 @@ class HawkEye:
         robots = self.home_team_seeker.seek(img, degree=False)
 
         for i in xrange(len(robots)):
+            id = robots[i][ID]
             pos = self.pixel_to_real_world(robots[i][POS])
-            robots_list[i].update(i, pos, orientation=robots[i][ANGLE])
+            robots_list[id].update(id, pos, orientation=robots[i][ANGLE])
 
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to

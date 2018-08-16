@@ -81,7 +81,7 @@ class ArucoSeeker:
                 # Gets the marker state, ie: its center and x axis orientation
                 center, orientation = self.get_aruco_state(img, rvec, tvec, degree)
 
-                identified_markers.append([center, orientation])
+                identified_markers.append([sorted_ids[i], center, orientation])
 
                 i += 1
 
