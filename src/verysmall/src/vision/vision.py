@@ -36,6 +36,23 @@ class Vision:
         # at the bus. Mercury is the gods messenger
         self.mercury = RosVisionPublisher(True)
 
+        # Lists used to unpack the info from Things objects and publish those
+        # infos in the vision topic
+
+        # Ball info
+        self.ball_pos = [0,0]
+        self.ball_speed = [0,0]
+
+        # Home team info
+        self.home_team_pos = [ [0,0] for _ in xrange(6)]
+        self.home_team_orientation = [ 0 for _ in xrange(6)]
+        self.home_team_speed = [[0,0] for _ in xrange(6)]
+
+        # Adv team info
+        self.adv_team_pos = [ [0,0] for _ in xrange(6)]
+        self.adv_team_speed = [ [0,0] for _ in xrange(6)]
+        self.adv_team_orientation = [ 0 for _ in xrange(6)]
+
         # Subscribes to the game topic
         rospy.Subscriber('game_topic', game_topic, self.on_game_state_change)
 
@@ -240,51 +257,42 @@ class Vision:
         self.camera.stop()
         self.camera.capture.release()
 
+    def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
+        """ Auxiliary  function created to not duplify code in the send_message
+            function"""
+        for thing in things:
+            # The id of the thing will be its index in the lists
+            id = thing.id if thing.id >= 0 else 0
+            positions_list[id] = thing.pos
+            orientations_list[id] = thing.orientation
+            speeds_list[id] = thing.speed
+
     def send_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
-        # Ball info
-        ball_pos = [0,0]
-        ball_speed = [0,0]
-
-        # Home team info
-        home_team_pos = [ [0,0] for _ in xrange(6)]
-        home_team_orientation = [ 0 for _ in xrange(6)]
-        home_team_speed = [[0,0] for _ in xrange(6)]
-
-        # Adv team info
-        adv_team_pos = [ [0,0] for _ in xrange(6)]
-        adv_team_speed = [ [0,0] for _ in xrange(6)]
-
         if ball:
-            ball_pos = self.ball.pos
-            ball_speed = self.ball.speed
+            self.unpack_things_to_lists([self.ball], [self.ball_pos], [[]], [self.ball_speed])
 
         if home_team:
-            for robot in self.home_team:
-                i = robot.id
-                home_team_pos[i] = robot.pos
-
-                home_team_orientation[i] = robot.orientation
-                home_team_speed[i] = robot.speed
+            self.unpack_things_to_lists(self.home_team, self.home_team_pos,
+            self.home_team_orientation, self.home_team_speed)
 
         if adv_team:
-            for robot in self.adv_team:
-                i = robot.id
-                adv_team_pos[i] = robot.pos
-                adv_team_speed[i] = robot.speed
+            self.unpack_things_to_lists(self.adv_team, self.adv_team_pos,
+            self.adv_team_orientation, self.adv_team_speed)
 
-        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
-                             home_team_speed, adv_team_pos, adv_team_speed)
+        self.mercury.publish(self.ball_pos, self.ball_speed, self.home_team_pos,
+        self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
+        self.adv_team_orientation, self.adv_team_speed)
 
     def get_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
         # Ball info
-        ball_pos = [0,0]
-        ball_speed = [0,0]
+        ball_pos = [[0,0]]
+        ball_speed = [[0,0]]
 
         # Home team info
         home_team_pos = [ [0,0] for _ in xrange(6)]
