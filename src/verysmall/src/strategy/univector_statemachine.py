@@ -14,5 +14,5 @@ class AttackerWithUnivector(StateMachine):
 
     action = univector.to(univector)
 
-    def on_action(self):
-        return movement.spin(200)
+    def on_action(self, robotPosition, robotVector, obstaclesPosition, obstaclesSpeed,  ballPosition):
+        return movement.doUnivector(200, robotPosition, robotVector, obstaclesPosition, [[0,0]]*len(obstaclesPosition), ballPosition)

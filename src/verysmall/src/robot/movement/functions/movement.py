@@ -6,14 +6,33 @@ sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from utils.math_utils import angleBetween, distancePoints
 sys.path[0]+="robot/movement/"
 from control.PID import PID
+from univector.un_field import univectorField
+
+# univector
+RADIUS = 3.48 # Distance from ball
+KR = 1
+K0 = 0.12
+DMIN = 15
+LDELTA = 50
+RIGHT = 1
+LEFT = 0
 
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, PIDList, error=10):
+    def __init__(self, PIDList, error=10, attack_side=RIGHT):
         self.pid = PID(kp=PIDList[0], ki=PIDList[1], kd=PIDList[2])
         self.lastPos = np.array([0, 0])
         self.errorMargin = error
+        self.attack_side = attack_side
+        self.univetField = univectorField(atack_goal=RIGHT)
+        self.univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+
+    def doUnivector(self, speed, robotPosition, robotVector, obstaclesPosition, obstaclesSpeed, ballPosition):
+        self.univetField.updateObstacles(np.array([0, 0]), np.array([0, 0]))
+        # TODO: arrumar a velocidade do robo
+        vec = self.univetField.getVec(np.array(robotPosition), np.array([0, 0]), np.array(ballPosition))
+        return self.followVector(np.array(robotVector), np.array(vec), speed)
 
     def inGoalPosition(self, robotPosition, goalPosition):
         """Verify if the robot is in goal position and return a boolean of the result"""
@@ -69,3 +88,4 @@ class Movement():
             return int(speed + correction), int(speed - correction), False
         else: #forward
             return int(speed - correction), int(speed + correction), False
+
