@@ -24,13 +24,14 @@ class RosVisionPublisher:
         #    0.,
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
-        #    [home_robot_speed for _ in range(5)]    
+        #    [home_robot_speed for _ in range(5)]
         #    [robot_pos() for _ in range(5)],
         #    [robot_vector() for _ in range(5)],
 
         # )
 
     def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed, enemies_pos, enemies_orientation, enemies_speed):
+
         """
             This function publishes in the things position topic
 
@@ -44,7 +45,7 @@ class RosVisionPublisher:
             :param enemies_speed: 2float64[5]
             :return: returns nothing
         """
-
+        rospy.logfatal(ball_pos)
         msg = things_position(
             twofloat64(ball_pos[0], ball_pos[1]),
             twofloat64(ball_speed[0], ball_speed[1]),
