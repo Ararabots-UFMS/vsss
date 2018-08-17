@@ -40,8 +40,8 @@ class Vision:
         # infos in the vision topic
 
         # Ball info
-        self.ball_pos = [0,0]
-        self.ball_speed = [0,0]
+        self.ball_pos = [[0,0]]
+        self.ball_speed = [[0,0]]
 
         # Home team info
         self.home_team_pos = [ [0,0] for _ in xrange(6)]
@@ -271,101 +271,24 @@ class Vision:
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
-# <<<<<<< HEAD
-        # Ball info
-        ball_pos = [0,0]
-        ball_speed = [0,0]
+        if ball:
+            self.unpack_things_to_lists([self.ball], self.ball_pos, [[]], self.ball_speed)
 
-        # Home team info
-        home_team_pos = [ [0,0] for _ in xrange(6)]
-        home_team_orientation = [ 0 for _ in xrange(6)]
-        home_team_speed = [[0,0] for _ in xrange(6)]
+        if home_team:
+            self.unpack_things_to_lists(self.home_team, self.home_team_pos,
+                                        self.home_team_orientation, self.home_team_speed)
 
-        # Adv team info
-        adv_team_pos = [ [0,0] for _ in xrange(6)]
-        enemies_orientation = [0 for _ in xrange(6)]
-        adv_team_speed = [ [0,0] for _ in xrange(6)]
+        if adv_team:
+            self.unpack_things_to_lists(self.adv_team, self.adv_team_pos,
+                                        self.adv_team_orientation, self.adv_team_speed)
 
-        if ball == True:
-            ball_pos = self.ball.pos
-            ball_speed = self.ball.speed
+        self.mercury.publish(self.ball_pos[0], self.ball_speed[0], self.home_team_pos,
+                             self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
+                             self.adv_team_orientation, self.adv_team_speed)
 
-        if home_team == True:
-            for robot in self.home_team:
-                i = robot.id
-                home_team_pos[i] = robot.pos
-                home_team_orientation[i] = robot.orientation
-                home_team_speed[i] = robot.speed
-
-        if adv_team == True:
-            for robot in self.adv_team:
-                i = robot.id
-                adv_team_pos[i] = robot.pos
-                enemies_orientation[i] = robot.orientation
-                adv_team_speed[i] = robot.speed
-
-# =======
-# >>>>>>> 773dc7d86facb94c018cec1492bd7c5c1add5962
-        # if ball:
-        #     self.unpack_things_to_lists([self.ball], [self.ball_pos], [[]], [self.ball_speed])
-
-        # if home_team:
-        #     self.unpack_things_to_lists(self.home_team, self.home_team_pos,
-        #     self.home_team_orientation, self.home_team_speed)
-
-        # if adv_team:
-        #     self.unpack_things_to_lists(self.adv_team, self.adv_team_pos,
-        #     self.adv_team_orientation, self.adv_team_speed)
-
-# <<<<<<< HEAD
-        self.mercury.publish(ball_pos, ball_speed, home_team_pos, home_team_orientation,
-                             home_team_speed, adv_team_pos, enemies_orientation, adv_team_speed)
-# =======
-#         self.mercury.publish(self.ball_pos, self.ball_speed, self.home_team_pos,
-#         self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
-#         self.adv_team_orientation, self.adv_team_speed)
-# >>>>>>> 773dc7d86facb94c018cec1492bd7c5c1add5962
-
-    def get_message(self, ball=False, home_team=False, adv_team=False):
-        """ This function will return the message in the right format to be
-            published in the ROS vision bus """
-
-        # Ball info
-        ball_pos = [[0,0]]
-        ball_speed = [[0,0]]
-
-        # Home team info
-        home_team_pos = [ [0,0] for _ in xrange(6)]
-        home_team_orientation = [ 0 for _ in xrange(6)]
-        home_team_speed = [[0,0] for _ in xrange(6)]
-
-        # Adv team info
-        adv_team_pos = [ [0,0] for _ in xrange(6)]
-        adv_team_speed = [ [0,0] for _ in xrange(6)]
-
-        if ball == True:
-            ball_pos = self.ball.pos
-            ball_speed = self.ball.speed
-
-        if home_team == True:
-            for robot in self.home_team:
-                i = robot.id
-                home_team_pos[i] = robot.pos
-                home_team_orientation[i] = robot.orientation
-                home_team_speed[i] = robot.speed
-
-        if adv_team == True:
-            for robot in self.adv_team:
-                i = robot.id
-                adv_team_pos[i] = robot.pos
-                adv_team_speed[i] = robot.speed
-
-        return ball_pos, ball_speed, home_team_pos, home_team_orientation,\
-                home_team_speed, adv_team_pos, adv_team_speed
 
 if __name__ == "__main__":
     from threading import Thread
-
 
     home_color = "yellow" # blue or yellow
     home_robots = 5

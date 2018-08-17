@@ -45,7 +45,7 @@ class RosVisionPublisher:
             :param enemies_speed: 2float64[5]
             :return: returns nothing
         """
-        rospy.logfatal(ball_pos)
+        #rospy.logfatal(ball_pos)
         msg = things_position(
             twofloat64(ball_pos[0], ball_pos[1]),
             twofloat64(ball_speed[0], ball_speed[1]),
