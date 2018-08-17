@@ -3,11 +3,11 @@ import sys
 import time
 from verysmall.msg import things_position, motor_speed,game_topic
 from comunication.sender import Sender
-try:
-    from utils.json_handler import JsonHandler
-except ImportError:
-    sys.path[0] = sys.path[0] + '/../'
-    from utils.json_handler import JsonHandler
+import os
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+from strategy.univector_statemachine import AttackerWithUnivector
+from utils.json_handler import JsonHandler
+
 
 class Robot():
     """docstring for Robot"""
@@ -55,11 +55,14 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
+        self.state_machine = AttackerWithUnivector()
+
     def run(self):
         if self.game_state == 0:  # Stopped
             self.bluetooth_sender.sendPacket(0, 0)
         elif self.game_state == 1:  # Normal Play
-            self.bluetooth_sender.sendPacket(200, 200)
+            left, right, _ = self.state_machine.action()
+            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
             pass
         elif self.game_state == 3:  # Penaly

@@ -1,9 +1,11 @@
+#!/usr/bin/python
 import sys
+import os
 import numpy as np
-sys.path.append('../')
-from control.PID import PID
-sys.path.append('../../../')
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from utils.math_utils import angleBetween, distancePoints
+sys.path[0]+="robot/movement/"
+from control.PID import PID
 
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
