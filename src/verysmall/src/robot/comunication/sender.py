@@ -45,9 +45,9 @@ class Sender():
 
     def closeSocket(self):
         """Close the socket"""
+        self.sendPacket(0, 0)
         self.sock.close()
 
     def normalizeWheels(self, leftWheel, rightWheel):
         """Normalize speed to 255"""
-        return 255 if abs(leftWheel) > 255 else abs(leftWheel), 255 if abs(rightWheel) > 255 else abs(rightWheel) 
-        
+        return 255 if abs(leftWheel) > 255 else abs(leftWheel), 255 if abs(rightWheel) > 255 else abs(rightWheel)

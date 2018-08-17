@@ -19,7 +19,6 @@ class canvas(fl.Fl_Double_Window):
     def draw(self):
         fl.fl_draw_image(self.image.data, 0,0, self.w(), self.h(), 3, 0)
 
-#TODO: Renomear virtual para virtual field
 class MainWindowView:
     """Creates the visual for the main window and uses the MainWindowController to handle callbacks"""
 
@@ -52,8 +51,8 @@ class MainWindowView:
                                         self.proportion_width(95), self.proportion_height(90))
         #TODO: Diminuir campo virtual para abrir space para os numeros da tag
         #TODO: Criar dropdown para as tags
-        self.virtual = Virtual_Field(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
-        self.virtual.plot_arena()
+        self.virtual_field = Virtual_Field(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
+        self.virtual_field.plot_arena()
 
         self.root.label("ARARABOTS MANAGEMENT SYSTEM")
 
@@ -102,12 +101,12 @@ class MainWindowView:
             #self.data.task_done()  # Finishes the get process
             #self.now_time = time.time()
             #rospy.logfatal(self.now_time - self.past_time)
-            self.virtual.plot_arena()  # New arena image
+            self.virtual_field.plot_arena()  # New arena image
 
-            self.virtual.plot_ball(data_item.ball_pos)  # Plot the ball
-            self.virtual.plot_robots(data_item.team_pos, data_item.team_orientation, self.virtual.colors["yellow"])
-            self.virtual.plot_robots(data_item.enemies_pos, data_item.enemies_orientation, self.virtual.colors["blue"], is_away=True)
-            self.arena.image = self.virtual.field
+            self.virtual_field.plot_ball(data_item.ball_pos)  # Plot the ball
+            self.virtual_field.plot_robots(data_item.team_pos, data_item.team_orientation, self.virtual_field.colors["yellow"])
+            self.virtual_field.plot_robots(data_item.enemies_pos, data_item.enemies_orientation, self.virtual_field.colors["blue"], is_away=True)
+            self.arena.image = self.virtual_field.field
             self.arena.redraw()
             #self.past_time = self.now_time
         #else:
@@ -121,7 +120,7 @@ class MainWindowView:
     def create_arena(self):
         """Creates a top window, double buffered one"""
         self.arena = canvas(self.proportion_width(40), self.proportion_height(15),
-                            self.proportion_width(50), self.proportion_height(70), "D_Window",self.virtual.field)
+                            self.proportion_width(50), self.proportion_height(70), "D_Window",self.virtual_field.field)
         self.arena.box(fl.FL_FLAT_BOX)
         self.arena.end()
 

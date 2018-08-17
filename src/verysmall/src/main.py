@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
 from utils.json_handler import JsonHandler
+from utils.model import Model
 from interface.Controller.MainWindowController import MainWindowController
 from interface.Controller.LoadingController import LoadingController
 from ROS.ros_utils import RosUtils
@@ -11,25 +12,6 @@ from utils.camera_loader import CameraLoader
 """
 Instantiates all the windows, robots, topics and services
 """
-
-#TODO separar classe model
-
-class Model():
-    """The model class for loading and saving json files"""
-
-
-    def __init__(self):
-        self.json_handler = JsonHandler()
-        self.robot_params = self.json_handler.read("parameters/robots.json", escape=True)
-        self.robot_pid = self.json_handler.read("parameters/robots_pid.json", escape=True)
-        self.robot_bluetooth = self.json_handler.read("parameters/bluetooth.json", escape=True)
-        self.robot_roles = self.json_handler.read("parameters/roles.json", escape=True)
-        self.game_opt = self.json_handler.read("parameters/game.json", escape=True)
-
-    def save_params(self):
-        self.json_handler.write(self.robot_params, "parameters/robots.json")
-        self.json_handler.write(self.game_opt, "parameters/game.json")
-
 
 if __name__ == '__main__':
     rospy.init_node('virtual_field', anonymous=True)

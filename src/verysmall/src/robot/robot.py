@@ -1,5 +1,6 @@
 import rospy
 import sys
+import time
 from verysmall.msg import things_position, motor_speed,game_topic
 from comunication.sender import Sender
 try:
@@ -11,12 +12,11 @@ except ImportError:
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, robot_id, bluetooth_id, robot_body, isAdversary=False):
+    def __init__(self, robot_name, mac_address, robot_body, isAdversary=False):
         # Parameters
-        #TODO: trocar variavel para robot_name
-        self.robot_id = robot_id
-        self.robot_id_integer = int(self.robot_id.split("_")[1]) - 1
-        self.bluetooth_id = bluetooth_id # Mac address TODO: mudar o nome para mac_address
+        self.robot_name = robot_name
+        self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
+        self.mac_address = mac_address # Mac address
         self.robot_body = robot_body
 
         # Receive from vision
@@ -41,7 +41,7 @@ class Robot():
         self.meta_robot = None
 
         # Open bluetooth socket
-        self.bluetooth_sender = Sender(self.robot_id_integer, self.bluetooth_id)
+        self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
         self.bluetooth_sender.connect()
 
         rospy.Subscriber('things_position', things_position, self.read_topic)
@@ -56,11 +56,10 @@ class Robot():
                                   "Meta"]
 
     def run(self):
-
         if self.game_state == 0:  # Stopped
-            pass
+            self.bluetooth_sender.sendPacket(0, 0)
         elif self.game_state == 1:  # Normal Play
-            self.bluetooth_sender.sendPacket(100, 100)
+            self.bluetooth_sender.sendPacket(200, 200)
         elif self.game_state == 2:  # Freeball
             pass
         elif self.game_state == 3:  # Penaly
@@ -71,7 +70,7 @@ class Robot():
             print("wut")
 
         if self.changed_game_state:
-            rospy.logfatal("Robo_" + self.robot_id + ": Run("+self.game_state_string[self.game_state]+")")
+            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+")")
             self.changed_game_state = False
 
     def read_parameters(self):
