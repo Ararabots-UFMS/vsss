@@ -20,49 +20,49 @@ LEFT = 0
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, PIDList, error=10, attack_side=RIGHT):
-        self.pid = PID(kp=PIDList[0], ki=PIDList[1], kd=PIDList[2])
-        self.lastPos = np.array([0, 0])
-        self.errorMargin = error
+    def __init__(self, PID_list, error=10, attack_side=RIGHT):
+        self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
+        self.last_pos = np.array([0, 0])
+        self.error_margin = error
         self.attack_side = attack_side
-        self.univetField = univectorField(atack_goal=RIGHT)
-        self.univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univet_field = univectorField(atack_goal=RIGHT)
+        self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 
-    def doUnivector(self, speed, robotPosition, robotVector, obstaclesPosition, obstaclesSpeed, ballPosition):
-        self.univetField.updateObstacles(np.array([0, 0]), np.array([0, 0]))
-        # TODO: arrumar a velocidade do robo
-        vec = self.univetField.getVec(np.array(robotPosition), np.array([0, 0]), np.array(ballPosition))
-        return self.followVector(np.array(robotVector), np.array(vec), speed)
+    def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
+        """Recive players positions and speed and return the speed to follow univector"""
+        self.univet_field.updateObstacles(np.array(obstacle_position, np.array(obstacle_speed)))
+        vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        return self.follow_vector(np.array(robot_vector), np.array(vec), speed)
 
-    def inGoalPosition(self, robotPosition, goalPosition):
+    def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result"""
-        if distancePoints(robotPosition, goalPosition) <= self.errorMargin:
+        if distancePoints(robot_position, goal_position) <= self.error_margin:
             return True
         return False
 
-    def inGoalVector(self, robotVector, goalVector):
+    def in_goal_vector(self, robot_vector, goal_vector):
         """Verify if the robot is in goal vector and return a boolean of the result"""
-        if abs(angleBetween(robotVector, goalVector, ccw=False)) <= 0.0349066: #2 degrees error
+        if abs(angleBetween(robot_vector, goal_vector, ccw=False)) <= 0.0349066: #2 degrees error
             return True
         return False
 
-    def moveToPoint(self, robotPosition, robotVector, goalPosition, speed):
+    def move_to_point(self, robot_position, robot_vector, goal_position, speed):
         """Recives robot position, robot direction vector, goal position and a speed.
         Return the speed os the wheel to follow the vector (goal - robot)
         """
-        if self.inGoalPosition(robotPosition, goalPosition):
+        if self.in_goal_position(robot_position, goal_position):
             return 0, 0, True
-        if any(self.lastPos != goalPosition):
+        if any(self.last_pos != goal_position):
             self.pid.reset()
-        directionVector = goalPosition - robotPosition
-        return self.followVector(robotVector, directionVector, speed) 
+        direction_vector = goal_position - robot_position
+        return self.follow_vector(robot_vector, direction_vector, speed) 
 
-    def followVector(self, robotVector, goalVector, speed):
+    def follow_vector(self, robot_vector, goal_vector, speed):
         """Recives the robot vector, goal vector and a speed and return the speed
         of the wheels to follow the goal vector"""
-        diffAngle = angleBetween(robotVector, goalVector, ccw=False) 
-        correction = self.pid.update(diffAngle)
-        return self.returnSpeed(speed, correction)
+        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False) 
+        correction = self.pid.update(diff_angle)
+        return self.return_speed(speed, correction)
 
     def spin(self, speed, ccw=True):
         """Recives a speed and a boolean counterclockwise and return the left wheel speed,
@@ -71,18 +71,18 @@ class Movement():
             return int(-speed), int(speed), False
         return int(speed), int(-speed), False
 
-    def headTo(self, robotVector, goalVector, speed):
+    def head_to(self, robot_vector, goal_vector, speed):
         """Recives robot direction vector, goal vector and a speed. Return the left wheels speed,
         right wheel speed and done. Robot vector and goal vector will be parallels vectors."""
-        diffAngle = angleBetween(robotVector, goalVector, ccw=False)
-        if self.inGoalVector(robotVector, goalVector):
+        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True
-        correction = self.pid.update(diffAngle)
+        correction = self.pid.update(diff_angle)
         if correction < 0:
             return int(speed+correction), 0, False
         return 0, int(speed-correction), False
 
-    def returnSpeed(self, speed, correction):
+    def return_speed(self, speed, correction):
         """Recives the robot speed and the PID correction, and return each wheel speed."""
         if speed < 0: #backwards
             return int(speed + correction), int(speed - correction), False

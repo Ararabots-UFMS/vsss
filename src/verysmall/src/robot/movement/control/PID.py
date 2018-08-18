@@ -4,15 +4,15 @@ import time
 
 class PID:
 
-    def __init__(self, kp=1.0, ki=0.0, kd=0.0, maxIntegral=1000.0, maxDerivative=1000.0, target=0.0):
+    def __init__(self, kp=1.0, ki=0.0, kd=0.0, max_integral=1000.0, max_derivative=1000.0, target=0.0):
         # Constants 
         self.kp = kp
         self.ki = ki
         self.kd = kd
 
         # Max integral and derivative value
-        self.maxIntegral = maxIntegral 
-        self.maxDerivative = maxDerivative
+        self.max_integral = max_integral 
+        self.max_derivative = max_derivative
 
         # Derivative e integral value
         self.derivative = 0.0
@@ -23,26 +23,26 @@ class PID:
         self.error = 0.0
 
         # Initialize time sample 
-        self.lastTime = time.time()
+        self.last_time = time.time()
 
 
-    def setKp(self, num):
+    def set_kp(self, num):
         """set new Kp value"""
         self.kp = num
 
-    def setKi(self, num):
+    def set_ki(self, num):
         """set new Ki value"""
         self.ki = num
 
-    def setKd(self, num):
+    def set_kd(self, num):
         """set new Kd value"""
         self.kd = num
 
-    def setTarget(self, num):
+    def set_target(self, num):
         """Set new target value"""
-        self.setTarget = num
+        self.set_target = num
 
-    def getConstants(self):
+    def get_constants(self):
         """Return the constant values"""
         return self.kp, self.ki, self.kd    	
 
@@ -50,21 +50,21 @@ class PID:
         """Update the error value and return as float"""
         error = self.target - value
 
-        timerAux = time.time()
-        deltaTime = timerAux - self.lastTime
+        timer_aux = time.time()
+        delta_time = timer_aux - self.last_time
 
         # Calculating pid values
         proportional = error
-        integral = self.integral + (self.error*deltaTime)
-        derivative = (error - self.error)/deltaTime
+        integral = self.integral + (self.error*delta_time)
+        derivative = (error - self.error)/delta_time
 
-        # Verify if integral value is greater than maxIntegral value
-        if integral > self.maxIntegral:
-            integral = self.maxIntegral
+        # Verify if integral value is greater than max_integral value
+        if integral > self.max_integral:
+            integral = self.max_integral
 
-        # Verify if derivative value is greater than maxDerivative value
-        if derivative > self.maxDerivative:
-            derivative = self.maxDerivative
+        # Verify if derivative value is greater than max_derivative value
+        if derivative > self.max_derivative:
+            derivative = self.max_derivative
 
         # Output value
         output = self.kp*proportional + self.ki*integral + self.kd*derivative
@@ -73,7 +73,7 @@ class PID:
         self.integral = integral
         self.derivative = derivative
         self.error = error
-        self.lastTime = timerAux
+        self.last_time = timer_aux
 
         return output
 
@@ -82,4 +82,4 @@ class PID:
         self.derivative = 0.0
         self.integral = 0.0
         self.error = 0.0
-        self.lastTime = time.time()
+        self.last_time = time.time()
