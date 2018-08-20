@@ -118,9 +118,12 @@ class GeneralObjSeeker:
             pos += origin
             self.update_state(pos)
         else:
-            # This will reset the obj seeker state
-            self.last_pos = None
-            self.last_time = None
-            self.obj_size = None
+            self.reset()
 
         return self.last_pos
+
+    def reset(self):
+        self.last_pos = None
+        self.last_time = None
+        self.obj_size = None
+        self.obj_speed = None

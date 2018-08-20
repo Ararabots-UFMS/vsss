@@ -41,6 +41,8 @@ class Things:
         if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
             # If it is not the first update, calculate the robot speed
             self.speed = (pos - self.pos) / (now - self.last_update)
+        else:
+            self.speed = 0
 
         # Updates the robot's state variables
         self.id = id
@@ -51,6 +53,8 @@ class Things:
     def reset(self):
         self.pos = np.array([None, None])
         self.last_update = None
+        self.speed = None
+        self.orientation = None
 
 class HawkEye:
     """ This class will be responsible of locate and identify all objects present
@@ -115,6 +119,10 @@ class HawkEye:
                 pos = self.pixel_to_real_world(adv_centers[i, :])
                 robots_list[i].update(i, pos)
 
+    def reset(self):
+        self.home_team_seeker.reset()
+        self.adv_team_seeker.reset()
+        self.ball_seeker.reset()
 
 if __name__ == '__main__':
     pass

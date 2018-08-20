@@ -122,9 +122,7 @@ class Vision:
     def on_game_state_change(self, data):
         self.game_state = data.game_state
         if self.game_state:
-            self.start()
-        else:  # stopped
-            self.pause()
+            self.hawk_eye.reset()
 
     def start(self):
         self.game_on = True
