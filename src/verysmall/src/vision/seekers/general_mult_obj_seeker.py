@@ -24,12 +24,13 @@ class GeneralMultObjSeeker:
                 cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
 
             if cnts_array.shape[0] > self.num_objects:
-                if np.all(self.objects != None):
-                    self.kmeans.init = self.objects
-                    self.kmeans.fit(cnts_array)
-                else:
-                    self.kmeans.fit(cnts_array)
-
+                self.kmeans.fit(cnts_array)
                 self.objects = self.kmeans.cluster_centers_
 
         return self.objects
+
+    def reset(self):
+        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=50,
+        precompute_distances=True, n_jobs=1)
+
+        self.objects = None
