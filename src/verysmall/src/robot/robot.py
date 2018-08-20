@@ -1,11 +1,15 @@
 import rospy
+PKG = 'verysmall'
+import roslib; roslib.load_manifest(PKG)
+from rospy.numpy_msg import numpy_msg
+
 import sys
 import time
 from verysmall.msg import things_position, motor_speed,game_topic
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from strategy.univector_statemachine import AttackerWithUnivector
+#from strategy.univector_statemachine import AttackerWithUnivector
 from utils.json_handler import JsonHandler
 
 
@@ -55,7 +59,7 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivector()
+        #self.state_machine = AttackerWithUnivector()
 
     def run(self):
         if self.game_state == 0:  # Stopped

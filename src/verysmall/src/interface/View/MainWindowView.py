@@ -3,7 +3,12 @@
 import sys
 import fltk as fl
 from ..virtual_field import Virtual_Field
+
 import rospy
+PKG = 'verysmall'
+import roslib; roslib.load_manifest(PKG)
+from rospy.numpy_msg import numpy_msg
+
 import time
 from Queue import Queue
 from collections import deque
@@ -63,24 +68,14 @@ class MainWindowView:
 
         # Queue of data from Topic Things position
         #self.data = Queue(maxsize=10)
-        msg = things_position(
-                twofloat64(),
-                twofloat64(),
-                [twofloat64() for _ in range(5)],
-                [.0 for _ in range(5)],
-                [twofloat64() for _ in range(5)],
-
-                [twofloat64() for _ in range(5)],
-                [.0 for _ in range(5)],
-                [twofloat64() for _ in range(5)]
-            )
+        msg = things_position()
         self.data = deque(
         # Shapes the size of the Queue
         #self.data.put(
             [msg,msg])
 
         # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
+        rospy.Subscriber('things_position', numpy_msg(things_position), self.read, queue_size=1)
         rospy.init_node('virtual_field', anonymous=True)
         self.past_time = time.time()
         # Define colors

@@ -53,9 +53,6 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
  	FILES
 	twofloat64.msg
-	motor_speed.msg
-	robot_vector.msg
-	comunication_topic.msg
 	game_topic.msg
 	things_position.msg
 )

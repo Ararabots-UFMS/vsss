@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import rospy
-import math
+#!/usr/bin/env python
+PKG = 'verysmall'
+import roslib; roslib.load_manifest(PKG)
+from rospy.numpy_msg import numpy_msg
+import numpy as np
 from verysmall.msg import things_position
 from verysmall.msg import twofloat64, robot_vector
-from random import uniform
+
 
 
 class RosVisionPublisher:
@@ -12,7 +16,7 @@ class RosVisionPublisher:
         if isnode:  # if this a separeted node
             rospy.init_node('vision', anonymous=True)
         # else is only a publisher
-        self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
+        self.pub = rospy.Publisher('things_position', (things_position), queue_size=1)
 
         self.empty_robot_vector = .0
         self.empty_robot_pos = tuple([.0, .0])
@@ -45,50 +49,18 @@ class RosVisionPublisher:
             :param enemies_speed: 2float64[5]
             :return: returns nothing
         """
-        #rospy.logfatal(ball_pos)
-        msg = things_position(
-            twofloat64(ball_pos[0], ball_pos[1]),
-            twofloat64(ball_speed[0], ball_speed[1]),
-            [twofloat64(team_pos[0][0], team_pos[0][1]),
-             twofloat64(team_pos[1][0], team_pos[1][1]),
-             twofloat64(team_pos[2][0], team_pos[2][1]),
-             twofloat64(team_pos[3][0], team_pos[3][1]),
-             twofloat64(team_pos[4][0], team_pos[4][1])
-             ],
-            [team_orient[0] if team_orient[0] else self.empty_robot_vector,
-             team_orient[1] if team_orient[1] else self.empty_robot_vector,
-             team_orient[2] if team_orient[2] else self.empty_robot_vector,
-             team_orient[3] if team_orient[3] else self.empty_robot_vector,
-             team_orient[4] if team_orient[4] else self.empty_robot_vector
-             ],
-            [
-                twofloat64(team_speed[0][0], team_speed[0][1]),
-                twofloat64(team_speed[1][0], team_speed[1][1]),
-                twofloat64(team_speed[2][0], team_speed[2][1]),
-                twofloat64(team_speed[3][0], team_speed[3][1]),
-                twofloat64(team_speed[4][0], team_speed[4][1]),
-            ],
-            [twofloat64(enemies_pos[0][0], enemies_pos[0][1]),
-             twofloat64(enemies_pos[1][0], enemies_pos[1][1]),
-             twofloat64(enemies_pos[2][0], enemies_pos[2][1]),
-             twofloat64(enemies_pos[3][0], enemies_pos[3][1]),
-             twofloat64(enemies_pos[4][0], enemies_pos[4][1])
-             ],
-            [enemies_orientation[0] if enemies_orientation[0] else self.empty_robot_vector,
-             enemies_orientation[1] if enemies_orientation[1] else self.empty_robot_vector,
-             enemies_orientation[2] if enemies_orientation[2] else self.empty_robot_vector,
-             enemies_orientation[3] if enemies_orientation[3] else self.empty_robot_vector,
-             enemies_orientation[4] if enemies_orientation[4] else self.empty_robot_vector
-             ],
-            [
-                twofloat64(enemies_speed[0][0], enemies_speed[0][1]),
-                twofloat64(enemies_speed[1][0], enemies_speed[1][1]),
-                twofloat64(enemies_speed[2][0], enemies_speed[2][1]),
-                twofloat64(enemies_speed[3][0], enemies_speed[3][1]),
-                twofloat64(enemies_speed[4][0], enemies_speed[4][1])
-            ]
-        )
 
+        msg = things_position(
+            ball_pos,
+            ball_speed,
+            team_pos.flatten(),
+            team_orient.flatten(),
+            team_speed.flatten(),
+            enemies_pos.flatten(),
+            enemies_orientation.flatten(),
+            enemies_speed.flatten()
+        )
+        rospy.logfatal(team_pos[0])
         try:
             self.pub.publish(msg)
         except rospy.ROSException as e:
