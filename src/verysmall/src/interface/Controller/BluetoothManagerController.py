@@ -6,10 +6,10 @@ import fltk as fl
 from utils.json_handler import JsonHandler
 
 class BluetoothManagerController():
-    def __init__(self, hidden=False):
+    def __init__(self, _robot_bluetooth, hidden=False):
         self.file = "parameters/bluetooth.json"
         self.json_handler = JsonHandler()
-        self.bluetooths_dict = self.json_handler.read("parameters/bluetooth.json")
+        self.bluetooths_dict = _robot_bluetooth#self.json_handler.read("parameters/bluetooth.json")
         self.view = BluetoothManagerView()
         self.view.root.callback(self.on_close_callback)
         buffer = []
@@ -20,13 +20,7 @@ class BluetoothManagerController():
         self.view.end(hidden)
 
     def on_close_callback(self,ptr):
-        print "maoe"
-        self.bluetooths_dict = {}
-        for b in self.view.bluetooths:
-            key = str(b[0].label())
-            value = str(b[1].label())
-            self.bluetooths_dict[key] = value
-        self.json_handler.write(self.bluetooths_dict,"parameters/bluetooth.json")
+
         self.view.root.hide()
 
     def show(self):
