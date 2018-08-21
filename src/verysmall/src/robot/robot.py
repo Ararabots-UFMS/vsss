@@ -1,11 +1,12 @@
 import rospy
 import sys
 import time
+import numpy as np
 from verysmall.msg import things_position, game_topic
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-#from strategy.univector_statemachine import AttackerWithUnivector
+from strategy.univector_statemachine import AttackerWithUnivector
 from utils.json_handler import JsonHandler
 
 
@@ -55,15 +56,14 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        #self.state_machine = AttackerWithUnivector()
+        self.state_machine = AttackerWithUnivector()
 
     def run(self):
         if self.game_state == 0:  # Stopped
             self.bluetooth_sender.sendPacket(0, 0)
         elif self.game_state == 1:  # Normal Play
-            # left, right, _ = self.state_machine.action(self.position, self.orientation, self.enemies_position, self.enemies_speed, self.ball_position)
-            # self.bluetooth_sender.sendPacket(left, right)
-            pass
+            left, right, _ = self.state_machine.action(130, self.position, self.orientation, 0,self.enemies_position, self.enemies_speed, self.ball_position)
+            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
             pass
         elif self.game_state == 3:  # Penaly
@@ -90,16 +90,17 @@ class Robot():
         self.changed_game_state = True
 
     def read_topic(self, data):
-        self.ball_position = data.ball_pos
-        self.ball_speed = data.ball_speed
-        self.position = data.team_pos[self.robot_id_integer]
-        self.orientation = data.team_orientation[self.robot_id_integer]
-        self.team_pos = data.team_pos
-        self.team_orientation = data.team_orientation
-        self.team_speed = data.team_speed
-        self.enemies_position = data.enemies_pos
-        self.enemies_orientation = data.enemies_orientation
-        self.enemies_speed = data.enemies_speed
+        self.ball_position = np.nan_to_num(np.array(data.ball_pos))
+        self.ball_speed = np.nan_to_num(np.array(data.ball_speed))
+        self.team_pos = np.nan_to_num(np.array(data.team_pos)).reshape((5, 2))
+        self.team_orientation = np.nan_to_num(np.array(data.team_orientation))
+        self.team_speed = np.nan_to_num(np.array(data.team_speed)).reshape((5, 2))
+        self.position = self.team_pos[self.robot_id_integer]
+        self.orientation = self.team_orientation[self.robot_id_integer]
+        self.enemies_position = np.nan_to_num(data.enemies_pos).reshape((5, 2))
+        self.enemies_orientation = np.nan_to_num(data.enemies_orientation)
+        self.enemies_speed = np.nan_to_num(data.enemies_pos).reshape((5, 2))
+
         self.run()
 
     def debug(self):

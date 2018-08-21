@@ -30,7 +30,7 @@ class Movement():
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector"""
-        self.univet_field.updateObstacles(np.array(obstacle_position, np.array(obstacle_speed)))
+        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
         return self.follow_vector(np.array(robot_vector), np.array(vec), speed)
 
