@@ -123,6 +123,17 @@ class Vision:
         self.game_state = data.game_state
         if self.game_state:
             self.hawk_eye.reset()
+            self.reset_all_things()
+
+    def reset_all_things(self):
+        # Used when the game state changes to playing
+        self.ball.reset()
+
+        for i in xrange(len(self.home_team)):
+            self.home_team[i].reset()
+
+        for i in xrange(len(self.adv_team)):
+            self.adv_team[i].reset()
 
     def start(self):
         self.game_on = True

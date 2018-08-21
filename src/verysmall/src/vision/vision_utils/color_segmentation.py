@@ -119,7 +119,7 @@ class ColorSegmentation:
     def run(self):
         window_name = "color segmentation"
         cv2.namedWindow(window_name)
-        
+
         exit = False
         self.visited = []
         frame = self.camera.read()
@@ -135,13 +135,13 @@ class ColorSegmentation:
                 mask = self.draw_mask()
                 aux_mask[:,:,0],aux_mask[:,:,1], aux_mask[:,:,2] = mask, mask, mask
                 self.draw_visited()
-                img = np.hstack([self.frame, aux_mask])
+                cv2.imshow("Segment", aux_mask)
             else:
-                img = self.frame
+                cv2.destroyWindow("Segment")
 
-            cv2.imshow(window_name, img)
+            cv2.imshow(window_name, self.frame)
 
-            if key in set([ord('b'), ord('a'), ord('y')]): 
+            if key in set([ord('b'), ord('a'), ord('y')]):
                 self.visited = []
                 cv2.setMouseCallback(window_name, self.onMouse_get_color)
 
@@ -174,7 +174,7 @@ class ColorSegmentation:
 
         cv2.destroyWindow(window_name)
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 
 if __name__ == "__main__":
@@ -183,4 +183,3 @@ if __name__ == "__main__":
     camera = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
     c = ColorSegmentation(camera, params_file)
     c.run()
-    
