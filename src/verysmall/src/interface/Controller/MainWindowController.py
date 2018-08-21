@@ -1,4 +1,5 @@
 from ..View.MainWindowView import MainWindowView
+from BluetoothManagerController import BluetoothManagerController
 import fltk as fl
 import sys
 import os
@@ -17,6 +18,9 @@ class MainWindowController():
     def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _trainer):
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
+
+        # The controllers are created but not show
+        self.bluetooth_controller = BluetoothManagerController(hidden=True)
 
         # Save the parameters for future use
         self.robot_params = _robot_params
@@ -135,7 +139,13 @@ class MainWindowController():
         self.vision_proxy = ServiceProxy('vision_command', vision_command)
 
     def top_menu_choice(self, ptr):
-        self.send_vision_operation(int(ptr.value()))
+        if ptr.value() < 4:
+            self.send_vision_operation(ptr.value())
+        if ptr.value() < 9:
+            if ptr.value() == 8:
+                self.bluetooth_controller.show()
+                while self.bluetooth_controller.view.root.visible():
+                    fl.Fl.wait()
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()

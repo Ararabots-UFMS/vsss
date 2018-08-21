@@ -35,19 +35,19 @@ class BluetoothManagerView:
         self.create_add_button()
 
         self.root.resizable(self.scroll)    #allow to create scrollbar
-        # self.root.show()
+        self.root.show()
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
         # self.root.show(len(sys.argv), sys.argv)
         # for i in xrange(10):
         #     self.create_bluetooth_entry("name","address")
         # self.root.end()
-        while fl.Fl.wait() > 0:
-            # print self.bluetooths[-1][0].label()
-            if fl.Fl.get_key(ord("q")):#ord pega o numero do caractere dentro da funcd
-                fl._exit()#sair da janela
-            elif fl.Fl.get_key(ord("n")):
-                self.add_button_cb(None)
+        # while fl.Fl.wait() > 0:
+        #     # print self.bluetooths[-1][0].label()
+        #     if fl.Fl.get_key(ord("q")):#ord pega o numero do caractere dentro da funcd
+        #         fl._exit()#sair da janela
+        #     elif fl.Fl.get_key(ord("n")):
+        #         self.add_button_cb(None)
 
     #this method creates the main title of the window
     def create_main_title(self, text):
@@ -201,13 +201,16 @@ class BluetoothManagerView:
         # fl.Fl_delete_widget(self.scroll)
         self.scroll.redraw()
 
-    def end(self):
+    def end(self, hidden=False):
         # Show main window
         self.root.clear_visible_focus()
         self.root.end()
-        self.root.show()
+        if hidden:
+            self.root.hide()
+        else:
+            self.root.show()
+            fl.Fl.run()
 
-        fl.Fl.run()
 
     def window_callback(self,ptr):
         print "shablaudson carai"
@@ -220,6 +223,6 @@ class BluetoothManagerView:
     def proportion_width(self, proportion):
         return int(self.width * proportion/100)
 
-# if __name__ == '__main__':
-#     window_manager = WindowManager()
-#     fl.Fl.run()
+if __name__ == '__main__':
+    window_manager = BluetoothManagerView()
+    window_manager.end()
