@@ -1,19 +1,14 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
 import sys
+import numpy as np
 import fltk as fl
 from ..virtual_field import Virtual_Field
-
 import rospy
-PKG = 'verysmall'
-import roslib; roslib.load_manifest(PKG)
-from rospy.numpy_msg import numpy_msg
-
 import time
 from Queue import Queue
 from collections import deque
 from verysmall.msg import things_position
-from verysmall.msg import twofloat64, robot_vector
 
 
 class canvas(fl.Fl_Double_Window):
@@ -75,7 +70,7 @@ class MainWindowView:
             [msg,msg])
 
         # Ros node for reading the buffer
-        rospy.Subscriber('things_position', numpy_msg(things_position), self.read, queue_size=1)
+        rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
         rospy.init_node('virtual_field', anonymous=True)
         self.past_time = time.time()
         # Define colors
@@ -85,7 +80,6 @@ class MainWindowView:
     def read(self, data):
         # Inserts data in the Queue
         #if not self.data.full():
-        
         self.data.append(data)
 
     def redraw_field(self):
@@ -98,9 +92,14 @@ class MainWindowView:
             #rospy.logfatal(self.now_time - self.past_time)
             self.virtual_field.plot_arena()  # New arena image
 
-            self.virtual_field.plot_ball(data_item.ball_pos)  # Plot the ball
-            self.virtual_field.plot_robots(data_item.team_pos, data_item.team_orientation, self.virtual_field.colors["yellow"])
-            self.virtual_field.plot_robots(data_item.enemies_pos, data_item.enemies_orientation, self.virtual_field.colors["blue"], is_away=True)
+            self.virtual_field.plot_ball(np.nan_to_num(np.array(data_item.ball_pos)))  # Plot the ball
+            self.virtual_field.plot_robots(np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),
+                                           np.nan_to_num(np.array(data_item.team_orientation)),
+                                           self.virtual_field.colors["yellow"])
+
+            self.virtual_field.plot_robots(np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),
+                                           np.nan_to_num(data_item.enemies_orientation),
+                                           self.virtual_field.colors["blue"], is_away=True)
             self.arena.image = self.virtual_field.field
             self.arena.redraw()
             #self.past_time = self.now_time

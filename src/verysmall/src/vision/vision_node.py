@@ -38,6 +38,7 @@ class VisionNode:
 
         self.vision = Vision(self.camera, self.adv_robots, self.home_color, self.home_robots, self.home_tag,
                              arena_params, colors_params, method="color_segmentation")
+        self.vision.game_on = True
 
         self.thread = Thread(target=self.vision.run, args=())
         self.thread.daemon = True

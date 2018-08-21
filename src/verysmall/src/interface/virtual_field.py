@@ -163,7 +163,7 @@ class Virtual_Field():
 
     def plot_ball(self, ball_center):
 
-        validate = [ball_center.x,ball_center.y]
+        validate = ball_center
 
         ball_center = unit_convert(ball_center, self.width_conv, self.height_conv)
         ball_center = position_from_origin(ball_center, self.field_origin)

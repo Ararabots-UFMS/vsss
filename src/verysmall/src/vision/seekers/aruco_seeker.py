@@ -87,7 +87,7 @@ class ArucoSeeker:
 
         return identified_markers
 
-    def reset():
+    def reset(self):
         # In the case fo the aruco seeker this function is unecessary
         # But was left here to mantain the minimum structure of a seeker
         # all seekers must have a reset method

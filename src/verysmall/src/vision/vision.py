@@ -40,18 +40,18 @@ class Vision:
         # infos in the vision topic
 
         # Ball info
-        self.ball_pos = [[0,0]]
-        self.ball_speed = [[0,0]]
+        self.ball_pos = np.array([[.0, .0]])
+        self.ball_speed = np.array([[.0, .0]])
 
         # Home team info
-        self.home_team_pos = np.zeros((5,2))
-        self.home_team_orientation = np.zeros(5)
-        self.home_team_speed = np.zeros((5,2))
+        self.home_team_pos = np.array([[0.0, 0.0]] * 5)
+        self.home_team_orientation = np.array([0.0] * 5)
+        self.home_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Adv team info
-        self.adv_team_pos = np.zeros((5,2))
-        self.adv_team_orientation = np.zeros(5)
-        self.adv_team_speed = np.zeros((5,2))
+        self.adv_team_pos = np.array([[0.0,0.0]] * 5)
+        self.adv_team_orientation = np.array([0.0] * 5)
+        self.adv_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
         rospy.Subscriber('game_topic', game_topic, self.on_game_state_change)

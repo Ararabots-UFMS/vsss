@@ -1,11 +1,7 @@
 import rospy
-PKG = 'verysmall'
-import roslib; roslib.load_manifest(PKG)
-from rospy.numpy_msg import numpy_msg
-
 import sys
 import time
-from verysmall.msg import things_position, motor_speed,game_topic
+from verysmall.msg import things_position, game_topic
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
