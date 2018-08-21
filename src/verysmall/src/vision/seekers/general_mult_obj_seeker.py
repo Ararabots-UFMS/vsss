@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from sklearn.cluster import KMeans
+import rospy
 
 # @author Wellington Castro <wvmcastro>
 
@@ -8,7 +9,7 @@ class GeneralMultObjSeeker:
 
     def __init__(self, num_objects):
         self.num_objects = num_objects
-        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=50,
+        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=30,
         precompute_distances=True, n_jobs=1)
 
         self.objects = None
@@ -24,13 +25,16 @@ class GeneralMultObjSeeker:
                 cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
 
             if cnts_array.shape[0] > self.num_objects:
+                if np.all(self.objects != None):
+                    self.kmeans.init = self.objects
+
                 self.kmeans.fit(cnts_array)
                 self.objects = self.kmeans.cluster_centers_
+                # rospy.logfatal("Centroides" + str(self.objects))
 
         return self.objects
 
     def reset(self):
-        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=50,
-        precompute_distances=True, n_jobs=1)
+        self.kmeans.init = 'k-means++'
 
         self.objects = None
