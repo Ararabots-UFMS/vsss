@@ -2,7 +2,7 @@
 import fltk as fl
 import sys
 import os
-import virtual_field as vf
+import virtualField as vf
 import rospy
 from verysmall.msg import things_position
 from verysmall.msg import five_robot_pos, five_robot_vector
