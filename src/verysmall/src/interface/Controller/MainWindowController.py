@@ -16,11 +16,12 @@ sys.path[0] = old_path
 
 class MainWindowController():
     def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _trainer):
-        # Lets create the view of our controller shall we
-        self.view = MainWindowView()
 
         # The controllers are created but not show
-        self.bluetooth_controller = BluetoothManagerController(hidden=True)
+        self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
+
+        # Lets create the view of our controller shall we
+        self.view = MainWindowView()
 
         # Save the parameters for future use
         self.robot_params = _robot_params

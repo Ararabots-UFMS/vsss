@@ -1,4 +1,4 @@
-import virtual_field as vf
+import virtualField as vf
 from auxiliary import *
 import cv2 as cv
 import numpy as np

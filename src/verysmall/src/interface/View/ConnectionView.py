@@ -11,7 +11,7 @@ def theCancelButtonCallback(ptr):
     os._exit(-1)
 
 
-class WindowManager:
+class ConnectionView:
     """docstring for window_manager"""
 
     def __init__(self):
@@ -68,6 +68,6 @@ class WindowManager:
 
 if __name__ == '__main__':
 
-    window_manager = WindowManager()
+    window_manager = ConnectionView()
 
     fl.Fl.run()
