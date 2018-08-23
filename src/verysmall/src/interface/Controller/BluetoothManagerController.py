@@ -7,8 +7,6 @@ from utils.json_handler import JsonHandler
 
 class BluetoothManagerController():
     def __init__(self, _robot_bluetooth, hidden=False):
-        self.file = "parameters/bluetooth.json"
-        self.json_handler = JsonHandler()
         self.bluetooths_dict = _robot_bluetooth#self.json_handler.read("parameters/bluetooth.json")
         self.view = BluetoothManagerView()
         self.view.root.callback(self.on_close_callback)
@@ -20,7 +18,12 @@ class BluetoothManagerController():
         self.view.end(hidden)
 
     def on_close_callback(self,ptr):
-
+        bluetooths = {}
+        for b in self.view.bluetooths:
+            name, address = b[0].label(), b[1].label()
+            bluetooths = [name] = address
+        jh = JsonHandler()
+        jh.write(bt_dict,"parameters/bluetooth.json")
         self.view.root.hide()
 
     def show(self):
