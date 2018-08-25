@@ -1,5 +1,6 @@
 from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
+from ConnectionController import ConnectionController
 import fltk as fl
 import sys
 import os
@@ -19,6 +20,7 @@ class MainWindowController():
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
+        self.connection_controller = ConnectionController(_robot_bluetooth, _game_opt)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
@@ -143,10 +145,18 @@ class MainWindowController():
         if ptr.value() < 4:
             self.send_vision_operation(ptr.value())
         if ptr.value() < 9:
-            if ptr.value() == 8:
-                self.bluetooth_controller.show()
-                while self.bluetooth_controller.view.root.visible():
-                    fl.Fl.wait()
+            if ptr.value() == 7: # Connection controller
+                self.wait_window_close(self.connection_controller)
+            if ptr.value() == 8: # Bluetooth Controller
+                self.wait_window_close(self.bluetooth_controller)
+        else:
+            if ptr.value() == 14:
+                self.wait_window_close(self.bluetooth_controller)
+
+    def wait_window_close(self, window_controller):
+        window_controller.show()
+        while window_controller.view.root.visible():
+            fl.Fl.wait()
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()

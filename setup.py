@@ -57,12 +57,16 @@ if __name__=="__main__":
         bash_file[line_number] = "export ROS_ARARA_ROOT="+ros_arara_root + "\n"
         bash_file[line_number+1] = installation_bash + "\n"
         bash_file[line_number+2] = package_bash+ "\n"
+        bash_file[line_number+3] = "source "+ros_arara_root+"src/parameters/rosmaster.bash"+ "\n"
+        bash_file[line_number+4] = "export ROS_PACKAGE_PATH="+path_to_file + "/src/:"+ path_to_ros+"share/"+"\n"
     else:
         print("Creating sources in bash")
         bash_file.append("\n#======= ARARABOT ROS BASH SCRIPT =============\n" +
                          "export ROS_ARARA_ROOT="+ros_arara_root + "\n" +
                          installation_bash + "\n" +
                          package_bash+ "\n" +
+                         "source "+ros_arara_root+"src/parameters/rosmaster.bash"+ "\n" +
+                         "export ROS_PACKAGE_PATH="+path_to_file + "/src/:"+ path_to_ros+"share/"+"\n"
                          "#======== END OF ARARABOT SCRIPT ==============\n")
 
     with open(os.path.expanduser('~')+'/.bashrc','w+') as file:

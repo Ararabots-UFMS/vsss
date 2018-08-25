@@ -139,6 +139,7 @@ class MainWindowView:
         self.top_menu.add("Configurações/Interface")
         self.top_menu.add("Configurações/Campo Virtual")
         self.top_menu.add("Configurações/Console")
+        self.top_menu.add("Configurações/Conexão")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Sobre/Hotkeys")
