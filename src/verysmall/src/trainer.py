@@ -29,19 +29,20 @@ class Trainer:
         # Allocate robots process
         self.player_process = {}
         self.player_nodes = {}
+        self.create_robots()
 
-        #TODO: Criar funcao para instanciar robos
-
+    def create_robots():
         # Doing loops for creating the robot nodes
         for robot in self.robot_params.keys():
             # arguments for the node
             bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
+            if
             variables = robot + ' ' + self.robot_bluetooth[bluetooth_number] + " " + self.robot_params[robot]['body_id']
 
             # creates a node with robot list arguments
             node = roslaunch.core.Node('verysmall', 'robot_node.py',
-                                       name=robot,
-                                       args=variables)
+            name=robot,
+            args=variables)
 
             # Lets store the node for future alterations
             self.player_nodes[robot] = node

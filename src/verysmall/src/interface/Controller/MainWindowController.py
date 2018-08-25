@@ -49,26 +49,29 @@ class MainWindowController():
         self.vision_proxy = None
         self.register_mac_service()
 
+        #replaced by the function set_robots_bluetooth
+        self.set_robots_bluetooth()
+
         # For each Robot, this loop covers all the inputs
-        for num in range(self.view.n_robots):
-            # Access the robot params dict using a int
-            # and stores its reference in a temporary variable
-            current_robot = self.robot_params[self.faster_hash[num]]
-
-            # This integer is for the value of item in the
-            # Drop-down choice box
-            current_item = 0
-            for item in self.robot_bluetooth_keys:
-                # Add the key of the dictionary to the drop-down
-                self.view.robot_bluetooths[num].add(item)
-
-                # If key is the same as the key in the robot
-                if current_robot['bluetooth_mac_address'] == item:
-                    # Set the value has they active item in the choice menu
-                    self.view.robot_bluetooths[num].value(current_item)
-
-                # Increments the value of item
-                current_item += 1
+        # for num in range(self.view.n_robots):
+        #     # Access the robot params dict using a int
+        #     # and stores its reference in a temporary variable
+        #     current_robot = self.robot_params[self.faster_hash[num]]
+        #
+        #     # This integer is for the value of item in the
+        #     # Drop-down choice box
+        #     current_item = 0
+        #     for item in self.robot_bluetooth_keys:
+        #         # Add the key of the dictionary to the drop-down
+        #         self.view.robot_bluetooths[num].add(item)
+        #
+        #         # If key is the same as the key in the robot
+        #         if current_robot['bluetooth_mac_address'] == item:
+        #             # Set the value has they active item in the choice menu
+        #             self.view.robot_bluetooths[num].value(current_item)
+        #
+        #         # Increments the value of item
+        #         current_item += 1
 
             # This integer, again, is for the value of item in the
             # Drop-down choice box
@@ -120,6 +123,60 @@ class MainWindowController():
 
         self.view.end()
 
+    def set_robots_bluetooth(self):
+        # For each Robot, this loop covers all the inputs
+        for num in xrange(self.view.n_robots):
+            # Access the robot params dict using a int
+            # and stores its reference in a temporary variable
+            current_robot = self.robot_params[self.faster_hash[num]]
+
+            # This integer is for the value of item in the
+            # Drop-down choice box
+
+            #"Nenhum" means the zero value, in case the bluetooth name of the robot changes
+            self.view.robot_bluetooths[num].add("Nenhum")
+            self.view.robot_bluetooths[num].value(0)
+
+            current_item = 1
+            for item in self.robot_bluetooth_keys:
+                # Add the key of the dictionary to the drop-down
+                self.view.robot_bluetooths[num].add(item)
+
+                # If key is the same as the key in the robot
+                if current_robot['bluetooth_mac_address'] == item:
+                    # Set the value has they active item in the choice menu
+                    self.view.robot_bluetooths[num].value(current_item)
+
+                # Increments the value of item
+                current_item += 1
+
+            # This integer, again, is for the value of item in the
+            # Drop-down choice box
+            current_item = 0
+            for item in self.robot_roles_keys:
+                # Add the key of the dictionary to the drop-down...
+                # again
+                self.view.robot_roles[num].add(item)
+                if current_robot['role'] == item:
+                    # Same as above
+                    self.view.robot_roles[num].value(current_item)
+                # Well...
+                current_item += 1
+
+            # The value for the check button
+            self.view.robot_radio_button[num].value(current_robot['active'])
+            # Unique id for the check-Box
+            self.view.robot_radio_button[num].id = num
+
+            # Multiple callbacks, each for one type of input
+            # but since whe have ids for each robot input
+            # we can parse through each using its on dictionary
+            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+            self.view.robot_roles[num].callback(self.role_choice)
+            self.view.robot_radio_button[num].callback(self.radio_choice)
+            self.view.top_menu.callback(self.top_menu_choice)
+
+
     def send_vision_operation(self, operation):
         """Sends a service request to vision node
             :param operation : uint8
@@ -148,6 +205,7 @@ class MainWindowController():
                 while self.bluetooth_controller.view.root.visible():
                     fl.Fl.wait()
 
+
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
@@ -161,8 +219,13 @@ class MainWindowController():
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):
-        self.trainer.set_robot_bluetooth(ptr.id)
-        self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()]
+        #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
+        if ptr.value():
+            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()]
+            self.trainer.set_robot_bluetooth(ptr.id)
+        else:
+            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
+            self.trainer.set_robot_active(ptr.id, False)
 
     def action_button_clicked(self, ptr):
         if self.view.play_button.playing:
