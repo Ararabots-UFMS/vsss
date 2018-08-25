@@ -7,7 +7,7 @@ from utils.math_utils import angleBetween, distancePoints
 sys.path[0]+="robot/movement/"
 from control.PID import PID
 from univector.un_field import univectorField
-
+from rospy import logfatal
 # univector
 RADIUS = 3.48 # Distance from ball
 KR = 1
@@ -32,6 +32,8 @@ class Movement():
         """Recive players positions and speed and return the speed to follow univector"""
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        logfatal(str(vec))
+        logfatal(str(robot_vector))
         return self.follow_vector(np.array(robot_vector), np.array(vec), speed)
 
     def in_goal_position(self, robot_position, goal_position):
@@ -79,13 +81,27 @@ class Movement():
             return 0, 0, True
         correction = self.pid.update(diff_angle)
         if correction < 0:
-            return int(speed+correction), 0, False
-        return 0, int(speed-correction), False
+            return self.normalize(int(speed+correction)), 0, False
+        return 0, self.normalize(int(speed-correction)), False
 
     def return_speed(self, speed, correction):
         """Recives the robot speed and the PID correction, and return each wheel speed."""
         if speed < 0: #backwards
-            return int(speed + correction), int(speed - correction), False
+            if correction > 0:
+                return int(speed), int(speed - correction), False
+            else:
+                return int(speed + correction), int(speed), False
         else: #forward
-            return int(speed - correction), int(speed + correction), False
+            if correction > 0:
+                return self.normalize(int(speed - correction)), int(speed), False
+            else:
+                return int(speed), self.normalize(int(speed + correction)), False
 
+    def normalize(self, speed):
+        """Normalize robot speed
+            speed: int
+            return: int
+        """
+        if abs(speed) > 255:
+            return 255*speed/abs(speed)
+        return speed
