@@ -8,6 +8,7 @@ import rospy
 import time
 from camera.camera import Camera
 from vision_utils.params_setter import ParamsSetter
+from vision_utils.color_segmentation import ColorSegmentation
 
 from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
@@ -78,10 +79,11 @@ class Vision:
 
         self.computed_frames = 0
 
+        # Super necessary to compute the robots positions
         self.origin = None
         self.conversion_factor = None
-        self.game_on = False
 
+        self.game_on = False
         self.finish = False
 
         # Creates the lists to the home team and the adversary
@@ -96,13 +98,14 @@ class Vision:
             self.colors_params_file = colors_params
             self.load_colors_params()
             self.pipeline = self.color_seg_pipeline
+            self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
             print "Method not recognized!"
 
-        self.params_setter = ParamsSetter(camera, params_file_name)
-
         if self.params_file_name != "":
             self.load_params()
+
+        self.params_setter = ParamsSetter(camera, params_file_name)
 
         self.set_origin_and_factor()
 
@@ -257,11 +260,11 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
-                self.send_message(ball=True, home_team=True, adv_team=True)
-
                 self.computed_frames += 1
 
                 self.update_fps()
+
+                self.send_message(ball=True, home_team=True, adv_team=True)
 
         self.camera.stop()
         self.camera.capture.release()
@@ -293,7 +296,7 @@ class Vision:
 
         self.mercury.publish(self.ball_pos[0], self.ball_speed[0], self.home_team_pos,
                              self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
-                             self.adv_team_orientation, self.adv_team_speed)
+                             self.adv_team_orientation, self.adv_team_speed, self.fps)
 
 
 if __name__ == "__main__":
@@ -325,7 +328,7 @@ if __name__ == "__main__":
         arena = v.arena_image
         key = cv2.waitKey(1) & 0xFF
         if show:
-            cv2.imshow('vision', v.adv_seg)#cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
+            cv2.imshow('vision', v.arena_image)#cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             # cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if key == ord('q'): # exit
             v.pause()
@@ -339,6 +342,9 @@ if __name__ == "__main__":
         elif key == ord('c'): # open cropper
             v.params_setter.run()
             v.load_params()
+        elif key == ord('g'): # "get color"
+            v.color_calibrator.run()
+            v.load_colors_params()
         elif key == ord('f'):
             print v.fps, "frames/second"
 
