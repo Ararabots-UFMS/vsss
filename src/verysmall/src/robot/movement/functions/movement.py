@@ -4,16 +4,23 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from utils.math_utils import angleBetween, distancePoints
+from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
 from univector.un_field import univectorField
 from rospy import logfatal
+
+path = '../../../parameters/univector_constants.json'
+jsonHandler = JsonHandler()
+univector_list = jsonHandler.read(path)
+
 # univector
-RADIUS = 3.48 # Distance from ball
-KR = 1
-K0 = 0.12
-DMIN = 15
-LDELTA = 50
+RADIUS = univector_list['RADIUS']
+KR = univector_list['KR']
+K0 = univector_list['K0']
+DMIN = univector_list['DMIN']
+LDELTA = univector_list['LDELTA']
+
 RIGHT = 1
 LEFT = 0
 
