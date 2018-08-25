@@ -1,7 +1,1 @@
-{
-  "ciclope" : "20:15:04:09:70:95",
-  "robotop" : "20:1a:06:ad:ba:90:02",
-  "furia"   : "20:1a:06:ad:ba:90:03",
-  "muralha" : "20:1a:06:ad:ba:90:04",
-  "rogerio" : "20:1a:06:ad:ba:90:05"
-}
+{"furia": "20:1a:06:ad:ba:90:03", "furiasa": "20:1a:06:ad:ba:90:03", "rogerio": "20:1a:06:ad:ba:90:05", "robotop": "20:1a:06:ad:ba:90:02", "ciclope": "20:15:04:09:70:95", "muralha": {"ciclope": "20:15:04:09:70:95", "furiasa": "20:1a:06:ad:ba:90:03", "robotop": "20:1a:06:ad:ba:90:02", "rogerio": "20:1a:06:ad:ba:90:05", "muralha": "20:1a:06:ad:ba:90:04"}}

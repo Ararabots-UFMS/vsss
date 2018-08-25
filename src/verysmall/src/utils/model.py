@@ -15,3 +15,4 @@ class Model():
     def save_params(self):
         self.json_handler.write(self.robot_params, "parameters/robots.json")
         self.json_handler.write(self.game_opt, "parameters/game.json")
+        self.json_handler.write(self.robot_bluetooth, "parameters/bluetooth.json")

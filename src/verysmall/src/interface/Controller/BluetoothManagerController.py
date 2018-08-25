@@ -21,9 +21,11 @@ class BluetoothManagerController():
         bluetooths = {}
         for b in self.view.bluetooths:
             name, address = b[0].label(), b[1].label()
-            bluetooths = [name] = address
-        jh = JsonHandler()
-        jh.write(bt_dict,"parameters/bluetooth.json")
+            bluetooths[name] = address
+        self.bluetooths_dict[name] = bluetooths
+        #jh = JsonHandler()
+        #jh.write(bluetooths,"parameters/bluetooth.json")
+
         self.view.root.hide()
 
     def show(self):
