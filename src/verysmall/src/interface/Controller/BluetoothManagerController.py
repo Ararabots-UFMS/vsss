@@ -23,8 +23,8 @@ class BluetoothManagerController():
             name, address = b[0].label(), b[1].label()
             bluetooths[name] = address
         self.bluetooths_dict[name] = bluetooths
-        #jh = JsonHandler()
-        #jh.write(bluetooths,"parameters/bluetooth.json")
+        jh = JsonHandler()
+        jh.write(bluetooths,"parameters/bluetooth.json")
 
         self.view.root.hide()
 

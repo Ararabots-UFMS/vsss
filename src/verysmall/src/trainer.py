@@ -3,6 +3,8 @@ from robot.robot import Robot
 from verysmall.srv import manage_mac
 import rospy
 import roslaunch
+from rospy import logfatal
+import sys
 
 
 class Trainer:
@@ -31,14 +33,18 @@ class Trainer:
         self.player_nodes = {}
         self.create_robots()
 
-    def create_robots():
+    def create_robots(self):
         # Doing loops for creating the robot nodes
+        # logfatal(str(self.robot_params.keys()))
         for robot in self.robot_params.keys():
+            # logfatal(str(self.robot_params.keys()))
             # arguments for the node
             bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
-            if
-            variables = robot + ' ' + self.robot_bluetooth[bluetooth_number] + " " + self.robot_params[robot]['body_id']
-
+            try:
+                variables = robot + " " + self.robot_bluetooth[bluetooth_number] + " " + self.robot_params[robot]['body_id']
+            except:
+                variables = robot + " -1 " + self.robot_params[robot]['body_id']
+                self.robot_params[robot]['active']= False
             # creates a node with robot list arguments
             node = roslaunch.core.Node('verysmall', 'robot_node.py',
             name=robot,

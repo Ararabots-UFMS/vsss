@@ -52,7 +52,7 @@ class MainWindowController():
         #replaced by the function set_robots_bluetooth
         self.set_robots_bluetooth()
 
-        # For each Robot, this loop covers all the inputs
+        # # For each Robot, this loop covers all the inputs
         # for num in range(self.view.n_robots):
         #     # Access the robot params dict using a int
         #     # and stores its reference in a temporary variable
@@ -72,33 +72,33 @@ class MainWindowController():
         #
         #         # Increments the value of item
         #         current_item += 1
-
-            # This integer, again, is for the value of item in the
-            # Drop-down choice box
-            current_item = 0
-            for item in self.robot_roles_keys:
-                # Add the key of the dictionary to the drop-down...
-                # again
-                self.view.robot_roles[num].add(item)
-                if current_robot['role'] == item:
-                    # Same as above
-                    self.view.robot_roles[num].value(current_item)
-                # Well...
-                current_item += 1
-
-            # The value for the check button
-            self.view.robot_radio_button[num].value(current_robot['active'])
-            # Unique id for the check-Box
-            self.view.robot_radio_button[num].id = num
-
-            # Multiple callbacks, each for one type of input
-            # but since whe have ids for each robot input
-            # we can parse through each using its on dictionary
-            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
-            self.view.robot_roles[num].callback(self.role_choice)
-            self.view.robot_radio_button[num].callback(self.radio_choice)
-            self.view.top_menu.callback(self.top_menu_choice)
-
+        #
+        #     # This integer, again, is for the value of item in the
+        #     # Drop-down choice box
+        #     current_item = 0
+        #     for item in self.robot_roles_keys:
+        #         # Add the key of the dictionary to the drop-down...
+        #         # again
+        #         self.view.robot_roles[num].add(item)
+        #         if current_robot['role'] == item:
+        #             # Same as above
+        #             self.view.robot_roles[num].value(current_item)
+        #         # Well...
+        #         current_item += 1
+        #
+        #     # The value for the check button
+        #     self.view.robot_radio_button[num].value(current_robot['active'])
+        #     # Unique id for the check-Box
+        #     self.view.robot_radio_button[num].id = num
+        #
+        #     # Multiple callbacks, each for one type of input
+        #     # but since whe have ids for each robot input
+        #     # we can parse through each using its on dictionary
+        #     self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+        #     self.view.robot_roles[num].callback(self.role_choice)
+        #     self.view.robot_radio_button[num].callback(self.radio_choice)
+        #     self.view.top_menu.callback(self.top_menu_choice)
+        #
         # A loop for the assigned robot actions
         for num in range(3):
 
@@ -118,7 +118,15 @@ class MainWindowController():
             # Set a callback for input and button
             self.view.option_robots[num].callback(self.action_input_choice)
             self.view.action_buttons[num].callback(self.action_button_clicked)
-
+        # Multiple callbacks, each for one type of input
+        # but since whe have ids for each robot input
+        # we can parse through each using its on dictionary
+        for num in xrange(self.view.n_robots):
+            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+            self.view.robot_roles[num].callback(self.role_choice)
+            self.view.robot_radio_button[num].callback(self.radio_choice)
+            
+        self.view.top_menu.callback(self.top_menu_choice)
         self.view.play_button.callback(self.action_button_clicked)
 
         self.view.end()
@@ -168,13 +176,7 @@ class MainWindowController():
             # Unique id for the check-Box
             self.view.robot_radio_button[num].id = num
 
-            # Multiple callbacks, each for one type of input
-            # but since whe have ids for each robot input
-            # we can parse through each using its on dictionary
-            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
-            self.view.robot_roles[num].callback(self.role_choice)
-            self.view.robot_radio_button[num].callback(self.radio_choice)
-            self.view.top_menu.callback(self.top_menu_choice)
+
 
 
     def send_vision_operation(self, operation):
@@ -204,7 +206,7 @@ class MainWindowController():
                 self.bluetooth_controller.show()
                 while self.bluetooth_controller.view.root.visible():
                     fl.Fl.wait()
-
+                self.set_robots_bluetooth()
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
