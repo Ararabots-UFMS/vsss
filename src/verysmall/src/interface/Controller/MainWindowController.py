@@ -19,6 +19,7 @@ class MainWindowController():
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
+        self.debug_controller = Deb
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
@@ -41,6 +42,7 @@ class MainWindowController():
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
         self.assigned_robot_text = ["Jogador "+str(x) for x in range(1, 6)]
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
+        self.view.team_color.value(self.game_opt["time"])
 
         # Creates the game topic
         self.pub = RosGamePublisher()
@@ -129,6 +131,8 @@ class MainWindowController():
         self.view.top_menu.callback(self.top_menu_choice)
         self.view.play_button.callback(self.action_button_clicked)
 
+        self.view.team_color.callback(self.on_color_change)
+
         self.view.end()
 
     def set_robots_bluetooth(self):
@@ -177,8 +181,6 @@ class MainWindowController():
             self.view.robot_radio_button[num].id = num
 
 
-
-
     def send_vision_operation(self, operation):
         """Sends a service request to vision node
             :param operation : uint8
@@ -201,12 +203,15 @@ class MainWindowController():
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:
             self.send_vision_operation(ptr.value())
-        if ptr.value() < 9:
+        elif ptr.value() < 9:
             if ptr.value() == 8:
                 self.bluetooth_controller.show()
                 while self.bluetooth_controller.view.root.visible():
                     fl.Fl.wait()
                 self.set_robots_bluetooth()
+        elif ptr.value() < 12:
+            if ptr.value() == 11:
+                self.
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
@@ -263,3 +268,7 @@ class MainWindowController():
             self.view.play_button.color(fl.FL_RED)
             self.view.play_button.label("Parar")
             self.view.play_button.playing = not self.view.play_button.playing
+
+    #this function change the team color in the game_opt to the selected one
+    def on_color_change(self,ptr):
+        self.game_opt["time"] = ptr.value()

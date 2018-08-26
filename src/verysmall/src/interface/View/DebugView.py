@@ -13,7 +13,7 @@ def theCancelButtonCallback(ptr):
     os._exit(-1)
 
 
-class WindowManager:
+class DebugView:
     """docstring for window_manager"""
 
     def __init__(self):
@@ -24,7 +24,7 @@ class WindowManager:
 
         self.root.label("Debug")
         self.create_main_title("DEBUG")
-        self.check_simulacao = None
+        self.check_simulation = None
         self.title_visao = None
         self.create_title_visao("Visão")
         self.title_console = None
@@ -32,8 +32,8 @@ class WindowManager:
         self.check_robots = None
         self.create_check_robots()
 
-        self.create_check_simulacao()
-        self.create_check_vetores()
+        self.create_check_simulation()
+        self.create_check_robot_vector()
         self.top_menu = None
         self.line = None
         self.title = None
@@ -67,23 +67,23 @@ class WindowManager:
         self.title.align(fl.FL_ALIGN_CENTER)
         self.title.show()
 
-    def create_check_simulacao(self):
-        self.check_simulacao = None
-        self.check_simulacao = fl.Fl_Check_Button(self.proportion_width(11),
+    def create_check_simulation(self):
+        self.check_simulation = None
+        self.check_simulation = fl.Fl_Check_Button(self.proportion_width(11),
                            self.proportion_height(15),
                            self.proportion_width(4), self.proportion_height(4), "Simulação de previsão de movimento"
                            )
-        self.check_simulacao.labelcolor(fl.FL_WHITE)
-        self.check_simulacao.clear_visible_focus()
+        self.check_simulation.labelcolor(fl.FL_WHITE)
+        self.check_simulation.clear_visible_focus()
 
-    def create_check_vetores(self):
-        self.check_vetores = None
-        self.check_vetores = fl.Fl_Check_Button(self.proportion_width(17),
+    def create_check_robot_vector(self):
+        self.check_robot_vector = None
+        self.check_robot_vector = fl.Fl_Check_Button(self.proportion_width(17),
                            self.proportion_height(20),
                            self.proportion_width(4), self.proportion_height(4), "Vetores dos robôs"
                            )
-        self.check_vetores.labelcolor(fl.FL_WHITE)
-        self.check_vetores.clear_visible_focus()
+        self.check_robot_vector.labelcolor(fl.FL_WHITE)
+        self.check_robot_vector.clear_visible_focus()
 
     def create_title_console(self, text):
         self.title_console = fl.Fl_Box(self.proportion_width(5), self.proportion_height(26),
@@ -129,6 +129,6 @@ class WindowManager:
 
 if __name__ == '__main__':
 
-    window_manager = WindowManager()
+    DebugView = DebugView()
 
     fl.Fl.run()
