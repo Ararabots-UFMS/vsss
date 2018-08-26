@@ -61,13 +61,14 @@ if __name__ == "__main__":
 
     while not rospy.is_shutdown():
         if vision_node.show:
-            cv2.imshow('vision', vision_node.vision.arena_image)
-            cv2.waitKey(1) & 0xFF
+            cv2.imshow('vision', cv2.cvtColor(vision_node.vision.arena_image, cv2.COLOR_HSV2BGR))
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                vision_node.show = not vision_node.show
+                cv2.destroyWindow("vision")
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == 1:
                 vision_node.show = not vision_node.show
-                if not vision_node.show:
-                    cv2.destroyWindow("vision")
             elif vision_node.state_changed == 2:
                 vision_node.vision.params_setter.run()
                 vision_node.vision.load_params()
@@ -77,7 +78,7 @@ if __name__ == "__main__":
                 if vision_node.vision.colors_params_file != "":
                     # if it is, execute the color calibrator
                     vision_node.vision.color_calibrator.run()
-                    vision_node.load_colors_params()
+                    vision_node.vision.load_colors_params()
             vision_node.state_changed = 0
         rate.sleep()
 
