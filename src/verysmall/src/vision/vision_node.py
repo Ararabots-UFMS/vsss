@@ -18,7 +18,7 @@ class VisionNode:
     def __init__(self):
 
         self.home_color = "yellow"  # blue or yellow
-        self.home_robots = 5
+        self.home_robots = 1
         self.adv_robots = 2
         self.home_tag = "aruco"
         self.show = False
