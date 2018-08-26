@@ -29,6 +29,7 @@ class MainWindowView:
         self.option_robots = [None, None, None, None, None]
         self.robot_bluetooths = [None, None, None, None, None]
         self.robot_roles = [None, None, None, None, None]
+        self.team_color = None
         self.robot_radio_button = [None, None, None, None, None]
         self.action_buttons = []
         self.play_button = None
@@ -60,6 +61,7 @@ class MainWindowView:
         self.create_top_menu()
         self.create_left_menu()
         self.create_arena()
+        self.create_toggle_color()
 
         # Queue of data from Topic Things position
         #self.data = Queue(maxsize=10)
@@ -270,6 +272,25 @@ class MainWindowView:
         play_pause_button.color(fl.FL_DARK_GREEN)
         self.play_button = play_pause_button
 
+    def create_toggle_color(self):
+        #creates a dropdown menu to choose the color of the team
+        self.padding_y += self.proportion_height(3) * 2
+        temp_name = "Cor da Camisa"
+        self.team_color = fl.Fl_Choice(self.proportion_width(10),
+                                               self.padding_y,
+                                               self.proportion_width(10),
+                                               self.proportion_height(4),
+                                               temp_name)
+
+        self.team_color.id = 13
+        self.team_color.down_box(fl.FL_FLAT_BOX)
+        self.team_color.labelcolor(fl.FL_WHITE)
+        self.team_color.color(fl.FL_RED)
+        self.team_color.add("Azul")
+        self.team_color.add("Amarelo")
+        self.team_color.value(0)
+
+        
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
         return int(self.height * proportion / 100)
