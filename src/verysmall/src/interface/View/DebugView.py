@@ -42,11 +42,6 @@ class DebugView:
         self.root.show(len(sys.argv), sys.argv)
         self.root.end()
         
-        fl.Fl.run()
-        while fl.Fl.wait() > 0:
-            if fl.Fl.get_key(113):
-                fl.Fl.exit()
-
     def create_main_title(self, text):
         self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(0),
                                self.proportion_width(35), self.proportion_height(10), text)
@@ -114,6 +109,7 @@ class DebugView:
             
             self.check_robots[num].labelcolor(fl.FL_WHITE)
             self.check_robots[num].clear_visible_focus()
+            self.check_robots[num].value(1)
 
     def create_scroll(self):
         self.scroll = fl.Fl_Scrollbar(self.proportion_width(5), self.proportion_height(26),
@@ -125,6 +121,17 @@ class DebugView:
 
     def proportion_width(self, proportion):
         return int(self.width * proportion/100)
+
+    
+    def end(self, hidden=False):
+        # Show main window
+        self.root.clear_visible_focus()
+        self.root.end()
+        if hidden:
+            self.root.hide()
+        else:
+            self.root.show()
+            fl.Fl.run()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
+from DebugController import DebugController
 import fltk as fl
 import sys
 import os
@@ -15,11 +16,11 @@ from rospy import ServiceException,ServiceProxy, wait_for_service
 sys.path[0] = old_path
 
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _trainer):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _trainer):
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
-        self.debug_controller = Deb
+        self.debug_controller = DebugController(_debug_params, hidden=True)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
@@ -209,9 +210,9 @@ class MainWindowController():
                 while self.bluetooth_controller.view.root.visible():
                     fl.Fl.wait()
                 self.set_robots_bluetooth()
-        elif ptr.value() < 12:
-            if ptr.value() == 11:
-                self.
+        elif ptr.value() < 16:
+            if ptr.value() == 13:
+                self.debug_controller.show()
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
