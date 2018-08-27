@@ -39,9 +39,9 @@ class MainWindowView:
         self.padding_y = 0
         self.n_robots = 5
 
-        self.frame_count = 0
-        self.time_now = 0
-
+        self.vision_fps = 0.0
+        self.topic_fps = 0.0
+        
         # Get the usable screen proportions
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
@@ -84,8 +84,7 @@ class MainWindowView:
         # Inserts data in the Queue
         #if not self.data.full():
         self.data.append(data)
-        self.time_now = time.time()
-            
+
 
     def redraw_field(self):
 
@@ -93,7 +92,6 @@ class MainWindowView:
         #if not self.data.empty():
         try:
             self.data_item = data_item = self.data.popleft()  # Get the data
-            self.frame_count += 1
 
 
             self.virtualField.plot(np.nan_to_num(np.array(data_item.ball_pos)),                         # ball position
@@ -103,7 +101,7 @@ class MainWindowView:
                                    np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
                                    np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
                                    self.virtualField.colors["blue"],                                    # away team color
-                                   self.frame_count, (self.time_now - self.init_time), is_away=True)    # frames, time, is_away flag
+                                   self.vision_fps, self.topic_fps, is_away=True)                       # vision_fps, topic_fps, is_away flag
 
             self.arena.image = self.virtualField.field
             self.arena.redraw()
