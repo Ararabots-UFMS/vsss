@@ -39,6 +39,9 @@ class MainWindowView:
         self.padding_y = 0
         self.n_robots = 5
 
+        self.frame_count = 0
+        self.time_now = 0
+
         # Get the usable screen proportions
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
@@ -53,7 +56,7 @@ class MainWindowView:
         #TODO: Criar dropdown para as tags
         self.virtualField = virtualField(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtualField.plot_arena(self.virtualField.raw_field)
-
+        self.init_time = time.time()
         self.root.label("ARARABOTS MANAGEMENT SYSTEM")
 
         # Construct main window
@@ -81,24 +84,27 @@ class MainWindowView:
         # Inserts data in the Queue
         #if not self.data.full():
         self.data.append(data)
+        self.time_now = time.time()
+            
 
     def redraw_field(self):
+
+
         #if not self.data.empty():
         try:
             self.data_item = data_item = self.data.popleft()  # Get the data
-            #rospy.logfatal(len(self.data))
-            #self.data.task_done()  # Finishes the get process
-            #self.now_time = time.time()
-            #rospy.logfatal(self.now_time - self.past_time)
+            self.frame_count += 1
 
-            self.virtualField.plot_ball(np.nan_to_num(np.array(data_item.ball_pos)))  # Plot the ball
-            self.virtualField.plot_robots(np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),
-                                           np.nan_to_num(np.array(data_item.team_orientation)),
-                                           self.virtualField.colors["yellow"])
 
-            self.virtualField.plot_robots(np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),
-                                           np.nan_to_num(data_item.enemies_orientation),
-                                           self.virtualField.colors["blue"], is_away=True)
+            self.virtualField.plot(np.nan_to_num(np.array(data_item.ball_pos)),                         # ball position
+                                   np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),         # home team position
+                                   np.nan_to_num(np.array(data_item.team_orientation)),                 # home team vectors
+                                   self.virtualField.colors["yellow"],                                  # home team color
+                                   np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
+                                   np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
+                                   self.virtualField.colors["blue"],                                    # away team color
+                                   self.frame_count, (self.time_now - self.init_time), is_away=True)    # frames, time, is_away flag
+
             self.arena.image = self.virtualField.field
             self.arena.redraw()
             #self.past_time = self.now_time

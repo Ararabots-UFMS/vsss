@@ -230,6 +230,27 @@ class virtualField():
 
             index = index + 1
 
+
+    def plot(self, ball_center, robotlistH, robotvecH, colorH, robotlistA, robotvecA, colorA, frames, time, is_away):
+        
+        self.plot_ball(ball_center)
+        self.plot_robots(robotlistH, robotvecH, colorH)
+        self.plot_robots(robotlistA, robotvecA, colorA, is_away)
+
+
+        ''' usar no maximo 2 casas decimais, substituir os parametros 
+            de entrada do metodo pelos lidos no topico e substituir os 
+            valores de exemplo no plot abaixo '''
+        cv.putText(self.field, "Topic", (self.proportion_width(0.6), self.proportion_height(5.0)), self.text_font, 0.29, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(self.field, "FPS", (self.proportion_width(0.6), self.proportion_height(7.0)), self.text_font, 0.29, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(self.field, "999.99", (self.proportion_width(0.6), self.proportion_height(9.0)), self.text_font, 0.29, self.colors["red"], 1, cv.LINE_AA)
+        
+        cv.putText(self.field, "Vision", (self.proportion_width(0.6), self.proportion_height(13.0)), self.text_font, 0.29, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(self.field, "FPS", (self.proportion_width(0.6), self.proportion_height(15.0)), self.text_font, 0.29, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(self.field, "999.99", (self.proportion_width(0.6), self.proportion_height(17.0)), self.text_font, 0.29, self.colors["red"], 1, cv.LINE_AA)
+
+
+
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
         return int(self.height * proportion / 100)
@@ -240,3 +261,4 @@ class virtualField():
 
     def proportion_average(self, size):
         return int(((self.width + self.height) * 0.5) * size / 100)
+
