@@ -2,13 +2,15 @@
 # -*- coding: latin-1 -*-
 from ..View.ConnectionView import ConnectionView
 from os import environ
+from fltk import fl_message, FL_WHITE
 
 class ConnectionController:
     def __init__(self, _robot_params, _game_opt):
         self.robot_params = _robot_params
         self.view = ConnectionView()
         self.default_ros_uri = "http://localhost:11311"
-        self.file_master_uri = _game_opt["ROS_MASTER_URI"]
+        self.game_opt = _game_opt
+        self.file_master_uri = self.game_opt["ROS_MASTER_URI"]
         self.view.ip_field.value(self.file_master_uri)
 
         self.view.update_button.callback(self.change_ros_master)
@@ -21,5 +23,7 @@ class ConnectionController:
         line = "export ROS_MASTER_URI="+self.file_master_uri
 
         with open(environ['ROS_ARARA_ROOT'] + "src/parameters/rosmaster.bash", "w+") as bash_file:
+            self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
+            fl_message("Por favor, reinicie o bash para concluir as alterações")
             bash_file.write(line)
             bash_file.close()
