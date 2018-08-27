@@ -3,6 +3,7 @@ import sys
 import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+path = sys.path[0] + 'parameters/univector_constants.json'
 from utils.math_utils import angleBetween, distancePoints
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
@@ -10,7 +11,6 @@ from control.PID import PID
 from univector.un_field import univectorField
 from rospy import logfatal
 
-path = '../../../parameters/univector_constants.json'
 jsonHandler = JsonHandler()
 univector_list = jsonHandler.read(path)
 
