@@ -2,7 +2,7 @@
 # -*- coding: latin-1 -*-
 from ..View.ConnectionView import ConnectionView
 from os import environ
-from fltk import fl_message, FL_WHITE
+from fltk import fl_message, FL_WHITE, Fl
 
 class ConnectionController:
     def __init__(self, _robot_params, _game_opt):
@@ -24,6 +24,7 @@ class ConnectionController:
 
         with open(environ['ROS_ARARA_ROOT'] + "src/parameters/rosmaster.bash", "w+") as bash_file:
             self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
+            Fl.background(200, 200, 200)
             fl_message("Por favor, reinicie o bash para concluir as alterações")
             bash_file.write(line)
             bash_file.close()
