@@ -101,7 +101,7 @@ class MainWindowView:
                                    np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
                                    np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
                                    self.virtualField.colors["blue"],                                    # away team color
-                                   self.vision_fps, self.topic_fps, is_away=True)                       # vision_fps, topic_fps, is_away flag
+                                   int(self.data_item.vision_fps*10)/10.0, self.topic_fps, is_away=True)                       # vision_fps, topic_fps, is_away flag
 
             self.arena.image = self.virtualField.field
             self.arena.redraw()
