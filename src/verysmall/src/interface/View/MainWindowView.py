@@ -41,6 +41,9 @@ class MainWindowView:
 
         self.vision_fps = 0.0
         self.topic_fps = 0.0
+
+        self.t0 = 0.0
+        self.computed_frames = 0.0
         
         # Get the usable screen proportions
         self.width = fl.Fl.w()
@@ -83,6 +86,7 @@ class MainWindowView:
     def read(self, data):
         # Inserts data in the Queue
         #if not self.data.full():
+        #data.redraw_fps = int((self.computed_frames / (time.time() - self.t0) )*10)/10.0
         self.data.append(data)
 
 
@@ -101,7 +105,7 @@ class MainWindowView:
                                    np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
                                    np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
                                    self.virtualField.colors["blue"],                                    # away team color
-                                   int(self.data_item.vision_fps*10)/10.0, self.topic_fps, is_away=True)                       # vision_fps, topic_fps, is_away flag
+                                   int(self.data_item.vision_fps*10)/10.0,  int((self.computed_frames / (time.time() - self.t0) )*10)/10.0, is_away=True)                       # vision_fps, topic_fps, is_away flag
 
             self.arena.image = self.virtualField.field
             self.arena.redraw()
@@ -109,9 +113,11 @@ class MainWindowView:
         #else:
         except IndexError:
             #print("vazia")
+
             rospy.loginfo("vazia")
             #self.arena.redraw()
 
+        self.computed_frames += 1
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
@@ -289,7 +295,7 @@ class MainWindowView:
         self.root.show()
 
         self.RATE = 0.013#0.04
-
+        self.t0 = time.time()
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 
         fl.Fl.run()
