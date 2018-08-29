@@ -4,7 +4,7 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints
+from utils.math_utils import angleBetween, distancePoints, unitVector
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
@@ -36,63 +36,109 @@ class Movement():
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
-        """Recive players positions and speed and return the speed to follow univector"""
+        """Recive players positions and speed and return the speed to follow univector
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param robot_speed : np.array([float, float])
+         :param obstacle_position : np.array([float, float])
+         :param obstacle_speed : np.array([float, float])
+         :param ball_position : np.array([float, float])
+
+        :return: returns nothing
+        """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        logfatal(str(vec))
-        logfatal(str(robot_vector))
-        return self.follow_vector(np.array(robot_vector), np.array(vec), speed)
+        # logfatal(str(vec))
+        # logfatal(str(robot_vector))
+        return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
 
     def in_goal_position(self, robot_position, goal_position):
-        """Verify if the robot is in goal position and return a boolean of the result"""
+        """Verify if the robot is in goal position and return a boolean of the result
+         :param robot_position : np.array([float, float])
+         :param goal_position : np.array([float, float])
+
+        :return: returns : boolean
+        """
         if distancePoints(robot_position, goal_position) <= self.error_margin:
             return True
         return False
 
     def in_goal_vector(self, robot_vector, goal_vector):
-        """Verify if the robot is in goal vector and return a boolean of the result"""
-        if abs(angleBetween(robot_vector, goal_vector, ccw=False)) <= 0.0349066: #2 degrees error
+        """Verify if the robot is in goal vector and return a boolean of the result
+         :param robot_vector : np.array([float, float])
+         :param goal_vector : np.array([float, float])
+
+         :return: returns : boolean
+        """
+        if abs(angleBetween(robot_vector, goal_vector, ccw=False)) <= 0.087266463: #5 degrees error
             return True
         return False
 
-    def move_to_point(self, robot_position, robot_vector, goal_position, speed):
+    def move_to_point(self, speed, robot_position, robot_vector, goal_position):
         """Recives robot position, robot direction vector, goal position and a speed.
         Return the speed os the wheel to follow the vector (goal - robot)
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param goal_position : np.array([float, float])
+
+        :return: returns int, int, boolean
         """
         if self.in_goal_position(robot_position, goal_position):
             return 0, 0, True
-        if any(self.last_pos != goal_position):
-            self.pid.reset()
-        direction_vector = goal_position - robot_position
-        return self.follow_vector(robot_vector, direction_vector, speed) 
+        direction_vector = unitVector(goal_position - robot_position)
 
-    def follow_vector(self, robot_vector, goal_vector, speed):
+        # logfatal(str(direction_vector))
+        return self.follow_vector(speed, robot_vector, direction_vector)
+
+    def follow_vector(self,  speed, robot_vector, goal_vector):
         """Recives the robot vector, goal vector and a speed and return the speed
-        of the wheels to follow the goal vector"""
+        of the wheels to follow the goal vector
+         :param speed : int
+         :param robot_vector : np.array([float, float])
+         :param goal_vector : np.array([float, float])
+
+        :return: returns int, int, boolean
+        """
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=False) 
         correction = self.pid.update(diff_angle)
         return self.return_speed(speed, correction)
 
     def spin(self, speed, ccw=True):
         """Recives a speed and a boolean counterclockwise and return the left wheel speed,
-        right wheel speed and a boolean. Spin the robot"""
+           right wheel speed and a boolean. Spin the robot
+         :param speed : int
+         :param ccw : boolean
+
+         :return: returns int, int, boolean
+        """
         if ccw:
             return int(-speed), int(speed), False
         return int(speed), int(-speed), False
 
-    def head_to(self, robot_vector, goal_vector, speed):
+    def head_to(self, robot_vector, goal_vector):
         """Recives robot direction vector, goal vector and a speed. Return the left wheels speed,
-        right wheel speed and done. Robot vector and goal vector will be parallels vectors."""
+        right wheel speed and done. Robot vector and goal vector will be parallels vectors.
+        :param robot_vector : np.array([float, float])
+        :param goal_vector : np.array([float, float])
+
+        :return: returns int, int, boolean
+        """
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        logfatal(str(diff_angle))
         if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True
         correction = self.pid.update(diff_angle)
-        if correction < 0:
-            return self.normalize(int(speed+correction)), 0, False
-        return 0, self.normalize(int(speed-correction)), False
+        return self.normalize(int(correction)), self.normalize(int(-correction)), False
 
     def return_speed(self, speed, correction):
-        """Recives the robot speed and the PID correction, and return each wheel speed."""
+        """Recives the robot speed and the PID correction, and return each wheel speed.
+        :param speed : int
+        :param correction : int
+
+        :return: returns int, int, boolean
+        """
         if speed < 0: #backwards
             if correction > 0:
                 return int(speed), int(speed - correction), False
@@ -106,8 +152,8 @@ class Movement():
 
     def normalize(self, speed):
         """Normalize robot speed
-            speed: int
-            return: int
+            :param speed: int
+            :return: return int
         """
         if abs(speed) > 255:
             return 255*speed/abs(speed)

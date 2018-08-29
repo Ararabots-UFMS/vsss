@@ -62,7 +62,7 @@ class Robot():
         if self.game_state == 0:  # Stopped
             self.bluetooth_sender.sendPacket(0, 0)
         elif self.game_state == 1:  # Normal Play
-            left, right, _ = self.state_machine.action(130, self.position, self.orientation, 0, self.enemies_position, self.enemies_speed, self.ball_position)
+            left, right, _ = self.state_machine.action(200, self.position, self.orientation, 0, self.enemies_position, self.enemies_speed, self.ball_position)
             self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
             pass
