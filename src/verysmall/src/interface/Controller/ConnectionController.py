@@ -2,7 +2,10 @@
 # -*- coding: latin-1 -*-
 from ..View.ConnectionView import ConnectionView
 from os import environ
+from sys import path
 from fltk import fl_message, FL_WHITE, Fl
+path[0] = environ['ROS_ARARA_ROOT'] + "src/"
+from utils.enum_interfaces import all_interfaces, format_ip
 
 class ConnectionController:
     def __init__(self, _robot_params, _game_opt):
@@ -14,6 +17,17 @@ class ConnectionController:
         self.view.ip_field.value(self.file_master_uri)
 
         self.view.update_button.callback(self.change_ros_master)
+
+        self.self_ips_list = {}
+        item = count = 0
+        for ip in all_interfaces():
+            self.self_ips_list[ip[0]] = format_ip(ip[1])
+            self.view.self_ip_field.add(self.self_ips_list[ip[0]])
+            if ip[0] == self.game_opt['ROS_IP'][0]:
+                item = count
+            count += 1
+
+        self.view.self_ip_field.value(item)
 
     def show(self):
         self.view.root.show()

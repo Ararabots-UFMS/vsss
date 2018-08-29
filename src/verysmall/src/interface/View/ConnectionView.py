@@ -19,8 +19,13 @@ class ConnectionView:
     def __init__(self):
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
+        
         self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
                                  self.proportion_width(45), self.proportion_height(55))
+
+        self.width = self.root.w()
+        self.height = self.root.h()
+
         self.root.label("Conexao")
         self.top_menu = None
         self.line = None
@@ -37,9 +42,9 @@ class ConnectionView:
         #self.create_bluetooth_title("Bluetooth")
         #self.create_carcaca_title("Carcaça")
         #self.create_joystick_title("Joystick")
-        self.create_node_title("Node mestre")
+        #self.create_node_title("Node mestre")
         # self.create_player_number()
-        self.create_choice_bluetooth()
+        #self.create_choice_bluetooth()
         #self.create_choice_carcaca()
         #self.create_check_robots()
         self.create_ip_field()
@@ -151,17 +156,25 @@ class ConnectionView:
             self.check_robots[num].clear_visible_focus()
 
     def create_ip_field(self):
-        self.ip_field = fl.Fl_Input(self.proportion_width(5), self.proportion_height(45),
-                               self.proportion_width(20), self.proportion_height(5))
+        self.ip_field = fl.Fl_Input(self.proportion_width(10), self.proportion_height(15),
+                               self.proportion_width(20), self.proportion_height(5), "IP Nó Mestre:")
+        self.ip_field.align(fl.FL_ALIGN_LEFT_TOP)
         self.ip_field.labelcolor(fl.FL_WHITE)
         self.ip_field.show()
 
+        self.self_ip_field = fl.Fl_Choice(self.proportion_width(10), self.proportion_height(25),
+                               self.proportion_width(20), self.proportion_height(5), "Próprio ROS IP:")
+        self.self_ip_field.align(fl.FL_ALIGN_LEFT_TOP)
+        self.self_ip_field.labelcolor(fl.FL_WHITE)
+        self.self_ip_field.show()
+
     def create_update_button(self,text):
-        self.update_button = fl.Fl_Button(self.proportion_width(27), self.proportion_height(45),
+        self.update_button = fl.Fl_Button(self.proportion_width(15), self.proportion_height(30),
                                self.proportion_width(6), self.proportion_height(5), text)
         self.update_button.color(fl.FL_RED)
         self.update_button.labelcolor(fl.FL_WHITE)
         self.update_button.labelfont(fl.FL_BOLD)
+
     def proportion_height(self, proportion):
         return int(self.height * proportion/100)
 
