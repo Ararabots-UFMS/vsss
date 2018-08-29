@@ -33,15 +33,15 @@ class ConnectionView:
         self.ip_field = None
         self.update_button = None
         self.joystick_title = None
-        self.create_main_title("Jogadores")
-        self.create_bluetooth_title("Bluetooth")
-        self.create_carcaca_title("Carcaça")
-        self.create_joystick_title("Joystick")
+        self.create_main_title("Node mestre")
+        #self.create_bluetooth_title("Bluetooth")
+        #self.create_carcaca_title("Carcaça")
+        #self.create_joystick_title("Joystick")
         self.create_node_title("Node mestre")
         # self.create_player_number()
         self.create_choice_bluetooth()
-        self.create_choice_carcaca()
-        self.create_check_robots()
+        #self.create_choice_carcaca()
+        #self.create_check_robots()
         self.create_ip_field()
         self.create_update_button("Atualizar")
         fl.Fl.background(23, 23, 23)
@@ -172,5 +172,5 @@ class ConnectionView:
 if __name__ == '__main__':
 
     window_manager = ConnectionView()
-
+    window_manager.root.show()
     fl.Fl.run()
