@@ -1,3 +1,4 @@
+from rospy import logfatal
 from utils.json_handler import JsonHandler
 
 class Model():
@@ -11,7 +12,11 @@ class Model():
         self.robot_bluetooth = self.json_handler.read("parameters/bluetooth.json", escape=True)
         self.robot_roles = self.json_handler.read("parameters/roles.json", escape=True)
         self.game_opt = self.json_handler.read("parameters/game.json", escape=True)
+        self.debug_params = self.json_handler.read("parameters/debug.json",escape=True)
 
     def save_params(self):
+        logfatal(str(self.debug_params))
         self.json_handler.write(self.robot_params, "parameters/robots.json")
         self.json_handler.write(self.game_opt, "parameters/game.json")
+        self.json_handler.write(self.robot_bluetooth, "parameters/bluetooth.json")
+        self.json_handler.write(self.debug_params, "parameters/debug.json")

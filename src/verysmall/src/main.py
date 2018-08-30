@@ -49,7 +49,7 @@ if __name__ == '__main__':
     trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
     lc.stop()
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
-                                      trainer)
+                                      model.debug_params,trainer)
     lc.start("Salvando banco de dados")
     if vision_owner:
         vision_process.stop()

@@ -80,7 +80,7 @@ class BluetoothManagerView:
 
     def create_add_window(self, name = None, address = None):
 
-        self.add_window = fl.Fl_Single_Window(350, 210, "Adicionar Bluetooth")
+        self.add_window = fl.Fl_Single_Window(420, 300, "Adicionar Bluetooth")
         self.add_window.callback(self.add_window_cb)
         self.add_name_label = fl.Fl_Box(0, self.proportion_height(5), self.proportion_width(6), self.proportion_height(5), "Nome")
         self.add_name_label.labelcolor(fl.FL_WHITE)
@@ -90,7 +90,7 @@ class BluetoothManagerView:
         self.add_address_label.labelcolor(fl.FL_WHITE)
         self.add_address_input = fl.Fl_Input(self.proportion_width(8), self.proportion_height(14), self.proportion_width(15), self.proportion_height(5))
 
-        self.add_new_button = fl.Fl_Button(self.proportion_width(10), self.proportion_height(22),self.proportion_width(6), self.proportion_height(5), "Salvar" )
+        self.add_new_button = fl.Fl_Button(self.proportion_width(11), self.proportion_height(22),self.proportion_width(6), self.proportion_height(5), "Salvar" )
         self.add_new_button.color(fl.FL_DARK_GREEN)
         self.add_new_button.labelcolor(fl.FL_WHITE)
         self.add_new_button.labelfont(fl.FL_BOLD)
