@@ -17,12 +17,13 @@ class DebugController():
         
         self.view.check_simulation.value(self.debug_params["movement_predict_simulation"])
         self.view.check_robot_vector.value(self.debug_params["robot_vector"])
+        logfatal(str(self.debug_params["robot_vector"]))
 
         for i in range(len(self.view.check_robots)):
             self.view.check_robots[i].value(self.debug_params["things"][self.faster_hash[i]])
 
 
-        self.view = DebugView()
+        
         self.debug_params = _debug_params
         self.view.root.callback(self.on_close_callback)        
         self.view.end(hidden)
