@@ -18,7 +18,7 @@ class VisionNode:
     def __init__(self):
 
         self.home_color = "yellow"  # blue or yellow
-        self.home_robots = 5
+        self.home_robots = 1
         self.adv_robots = 2
         self.home_tag = "aruco"
         self.show = False
@@ -54,27 +54,33 @@ class VisionNode:
 
 
 if __name__ == "__main__":
+    COLOR_CALIBRATION = 3
 
     vision_node = VisionNode()
     rate = rospy.Rate(30)  # 30hz
 
     while not rospy.is_shutdown():
         if vision_node.show:
-            cv2.imshow('vision', vision_node.vision.adv_seg)
-            cv2.waitKey(1) & 0xFF
+            cv2.imshow('vision', cv2.cvtColor(vision_node.vision.arena_image, cv2.COLOR_HSV2BGR))
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
+                vision_node.show = not vision_node.show
+                cv2.destroyWindow("vision")
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == 1:
                 vision_node.show = not vision_node.show
-                if not vision_node.show:
-                    cv2.destroyWindow("vision")
-                vision_node.state_changed = 0
-
             elif vision_node.state_changed == 2:
                 vision_node.vision.params_setter.run()
                 vision_node.vision.load_params()
-                vision_node.state_changed = 0
+            elif vision_node.state_changed == COLOR_CALIBRATION:
+                # This will verify if the color segmentation technique is
+                # the chosen one
+                if vision_node.vision.colors_params_file != "":
+                    # if it is, execute the color calibrator
+                    vision_node.vision.color_calibrator.run()
+                    vision_node.vision.load_colors_params()
+            vision_node.state_changed = 0
         rate.sleep()
 
     vision_node.vision.stop()
     cv2.destroyAllWindows()
-
