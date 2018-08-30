@@ -273,9 +273,13 @@ class MainWindowController():
             self.view.play_button.playing = not self.view.play_button.playing
 
     #this function change the team color in the game_opt to the selected one
+    #ptr is the pointer of the widget the callback belongs
     def on_color_change(self,ptr):
+        ''':params ptr:pointer'''
         self.game_opt["time"] = ptr.value()
 
     #this function changes the team side in game_opt to the selected one
+    #ptr is the pointer of the widget the callback belongs
     def on_side_change(self,ptr):
+        ''':params ptr:pointer'''
         self.game_opt["side"] = ptr.value()
