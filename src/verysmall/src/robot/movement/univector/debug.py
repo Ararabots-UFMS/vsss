@@ -24,10 +24,10 @@ enemyColor = (0, 255, 255)
 ballColor = (31, 136, 246)
 pathColor = (255, 0, 255)
 
-RADIUS = 3.48
-KR = 4.15
-K0 = 0.12
-DMIN = 3.48
+RADIUS = 5.0
+KR = 15
+K0 = 25
+DMIN = 5
 LDELTA = 4.5
 
 def getObstacle():
@@ -70,14 +70,13 @@ def drawField(img, univetField):
     for l in range(0, h, 3):
         for c in range(0, w, 3):
             pos = [c, -l]
-            theta = univetField.getVec(_robotPos=pos, _vRobot=[0,0])
-
-            v = np.array([np.cos(theta), np.sin(theta)])
+            v = univetField.getVec(_robotPos=pos, _vRobot=[0,0])
 
             s = cm2pixel(np.array([c, l]))
             new = cm2pixel(np.array(pos)) + 10*v
 
             new[1] = -new[1]
+
             cv2.arrowedLine(img, tuple(np.int0(s)), tuple(np.int0(new)), (50,50,50), 1)
 
 def drawPath(img, start, end, univetField):
@@ -85,15 +84,15 @@ def drawPath(img, start, end, univetField):
     _currentPos = cm2pixel(currentPos)
 
     newPos = None
-    alpha = 0.8
-    beta = 7
+    alpha = 2
+    beta = 10
 
     t0 = time.time()
 
     while(np.linalg.norm(currentPos - end) >= beta):
-        theta = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
-        v = np.array([math.cos(theta), math.sin(theta)])
-        newPos = currentPos + (alpha*v)
+        v = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
+        print v
+        newPos = currentPos + (alpha*np.array(v))
         _newPos = cm2pixel(newPos).astype(int)
 
         cv2.line(img, (_currentPos[0], -_currentPos[1]), (_newPos[0], -_newPos[1]), pathColor, 3)
@@ -121,11 +120,11 @@ if __name__ == "__main__":
         robot = getRobot()
         ball = getBall()
 
-        obstacle = np.array([getObstacle(), getObstacle(), getObstacle(), getObstacle(), getObstacle()])
-        vObstacle = np.array([[0,0], [0,0], [0,0], [0,0], [0,0]])
+        obstacle = np.array([[]])
+        vObstacle = np.array([[0, 0]])
 
-        # obstacle = np.array([getObstacle()])
-        # vObstacle = np.array([[0,0]])
+        obstacle = np.array([getObstacle()])
+        vObstacle = np.array([[0,0]])
 
         # Drawing components
         drawRobot(imgField2, robot)

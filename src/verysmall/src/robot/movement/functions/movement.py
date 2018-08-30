@@ -32,7 +32,7 @@ class Movement():
         self.last_pos = np.array([0, 0])
         self.error_margin = error
         self.attack_side = attack_side
-        self.univet_field = univectorField(atack_goal=RIGHT)
+        self.univet_field = univectorField(atack_goal=self.attack_side)
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
@@ -49,8 +49,6 @@ class Movement():
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        # logfatal(str(vec))
-        # logfatal(str(robot_vector))
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
 
     def in_goal_position(self, robot_position, goal_position):
