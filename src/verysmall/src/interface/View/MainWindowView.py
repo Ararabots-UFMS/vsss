@@ -30,6 +30,7 @@ class MainWindowView:
         self.robot_bluetooths = [None, None, None, None, None]
         self.robot_roles = [None, None, None, None, None]
         self.team_color = None
+        self.team_side = None
         self.robot_radio_button = [None, None, None, None, None]
         self.action_buttons = []
         self.play_button = None
@@ -62,6 +63,7 @@ class MainWindowView:
         self.create_left_menu()
         self.create_arena()
         self.create_toggle_color()
+        self.create_toggle_side()
 
         # Queue of data from Topic Things position
         #self.data = Queue(maxsize=10)
@@ -259,7 +261,7 @@ class MainWindowView:
         self.padding_y += self.proportion_height(3)
 
         play_pause_button = fl.Fl_Button(self.proportion_width(10),
-                                         self.padding_y,
+                                         self.padding_y + self.proportion_height(3) * 2,
                                          self.proportion_width(21),
                                          self.proportion_height(4),
                                          "Jogar"
@@ -274,7 +276,7 @@ class MainWindowView:
 
     def create_toggle_color(self):
         #creates a dropdown menu to choose the color of the team
-        self.padding_y += self.proportion_height(3) * 2
+        
         temp_name = "Cor da Camisa"
         self.team_color = fl.Fl_Choice(self.proportion_width(10),
                                                self.padding_y,
@@ -289,7 +291,29 @@ class MainWindowView:
         self.team_color.add("Azul")
         self.team_color.add("Amarelo")
         self.team_color.value(0)
+       # self.team_color.align(fl.FL_ALIGN_LEFT)
+        #self.padding_y += self.proportion_height(3) * 2
+        #we skip this padding increment to force the next component to be with the same height
 
+    def create_toggle_side(self):
+     #creates a dropdown menu to choose the color of the team
+        
+        temp_name = "Lado da arena"
+        self.team_side = fl.Fl_Choice(self.proportion_width(10)  + self.proportion_width(11),
+                                               self.padding_y,
+                                               self.proportion_width(10),
+                                               self.proportion_height(4),
+                                               temp_name)
+
+        self.team_side.id = 13
+        self.team_side.down_box(fl.FL_FLAT_BOX)
+        self.team_side.labelcolor(fl.FL_WHITE)
+        self.team_side.color(fl.FL_RED)
+        self.team_side.add("Direito")
+        self.team_side.add("Esquerdo")
+        self.team_side.value(0)
+        self.team_side.align(fl.FL_ALIGN_RIGHT)
+        self.padding_y += self.proportion_height(3) * 2
         
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""

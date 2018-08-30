@@ -44,6 +44,7 @@ class MainWindowController():
         self.assigned_robot_text = ["Jogador "+str(x) for x in range(1, 6)]
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
         self.view.team_color.value(self.game_opt["time"])
+        self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
         self.pub = RosGamePublisher()
@@ -133,6 +134,7 @@ class MainWindowController():
         self.view.play_button.callback(self.action_button_clicked)
 
         self.view.team_color.callback(self.on_color_change)
+        self.view.team_side.callback(self.on_side_change)
 
         self.view.end()
 
@@ -273,3 +275,7 @@ class MainWindowController():
     #this function change the team color in the game_opt to the selected one
     def on_color_change(self,ptr):
         self.game_opt["time"] = ptr.value()
+
+    #this function changes the team side in game_opt to the selected one
+    def on_side_change(self,ptr):
+        self.game_opt["side"] = ptr.value()
