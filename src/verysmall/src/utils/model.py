@@ -1,5 +1,5 @@
+#!/usr/bin/python
 from utils.json_handler import JsonHandler
-
 class Model():
     """The model class for loading and saving json files"""
 
