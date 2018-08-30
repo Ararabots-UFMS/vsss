@@ -58,8 +58,8 @@ class ConnectionView:
         #        fl._exit()#sair da janela
 
     def create_main_title(self, text):
-        self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(0),
-                               self.proportion_width(35), self.proportion_height(10), text)
+        self.title = fl.Fl_Box(self.proportion_width(33), self.proportion_height(5),
+                               self.proportion_width(34), self.proportion_height(10), text)
         self.title.labelcolor(fl.FL_WHITE)
         self.title.labelsize(23)
         self.title.box(fl.FL_FLAT_BOX)
@@ -156,21 +156,21 @@ class ConnectionView:
             self.check_robots[num].clear_visible_focus()
 
     def create_ip_field(self):
-        self.ip_field = fl.Fl_Input(self.proportion_width(10), self.proportion_height(15),
-                               self.proportion_width(20), self.proportion_height(5), "IP Nó Mestre:")
+        self.ip_field = fl.Fl_Input(self.proportion_width(30), self.proportion_height(25),
+                               self.proportion_width(40), self.proportion_height(8), "IP Nó Mestre:")
         self.ip_field.align(fl.FL_ALIGN_LEFT_TOP)
         self.ip_field.labelcolor(fl.FL_WHITE)
         self.ip_field.show()
 
-        self.self_ip_field = fl.Fl_Choice(self.proportion_width(10), self.proportion_height(25),
-                               self.proportion_width(20), self.proportion_height(5), "Próprio ROS IP:")
+        self.self_ip_field = fl.Fl_Choice(self.proportion_width(30), self.proportion_height(45),
+                               self.proportion_width(40), self.proportion_height(8), "Próprio ROS IP:")
         self.self_ip_field.align(fl.FL_ALIGN_LEFT_TOP)
         self.self_ip_field.labelcolor(fl.FL_WHITE)
         self.self_ip_field.show()
 
     def create_update_button(self,text):
-        self.update_button = fl.Fl_Button(self.proportion_width(15), self.proportion_height(30),
-                               self.proportion_width(6), self.proportion_height(5), text)
+        self.update_button = fl.Fl_Button(self.proportion_width(38), self.proportion_height(65),
+                               self.proportion_width(24), self.proportion_height(6), text)
         self.update_button.color(fl.FL_RED)
         self.update_button.labelcolor(fl.FL_WHITE)
         self.update_button.labelfont(fl.FL_BOLD)

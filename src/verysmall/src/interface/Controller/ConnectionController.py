@@ -17,28 +17,44 @@ class ConnectionController:
         self.view.ip_field.value(self.file_master_uri)
 
         self.view.update_button.callback(self.change_ros_master)
+        self.view.self_ip_field.callback(self.ip_choice)
 
-        self.self_ips_list = {}
-        item = count = 0
-        for ip in all_interfaces():
-            self.self_ips_list[ip[0]] = format_ip(ip[1])
-            self.view.self_ip_field.add(self.self_ips_list[ip[0]])
-            if ip[0] == self.game_opt['ROS_IP'][0]:
+        item = -1
+        count = 0
+        self.ip_list = all_interfaces()
+
+        for ip in self.ip_list:
+            self.view.self_ip_field.add(ip[0]+" - "+format_ip(ip[1]))
+            if ip[0] == self.game_opt['ROS_IP'][0] and format_ip(ip[1]) == self.game_opt['ROS_IP'][1]:
                 item = count
             count += 1
 
+        if item == -1:
+            item = count
+            self.view.self_ip_field.add(self.game_opt['ROS_IP'][0] + " - " + self.game_opt['ROS_IP'][1])
+            self.ip_list.append(self.game_opt['ROS_IP'])
+
         self.view.self_ip_field.value(item)
+        self.ip = self.ip_list[item]
 
     def show(self):
         self.view.root.show()
 
+    def ip_choice(self, ptr):
+        self.ip = self.ip_list[ptr.value()]
+
     def change_ros_master(self, ptr):
         self.file_master_uri = self.view.ip_field.value()
-        line = "export ROS_MASTER_URI="+self.file_master_uri
+        formatted_ip_string = format_ip(self.ip[1])
+        self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
+        self.game_opt["ROS_IP"] = [self.ip[0], formatted_ip_string]
+
+        line = "export ROS_MASTER_URI="+self.file_master_uri + "\n" +\
+               "export ROS_HOSTNAME="+formatted_ip_string + "\n" +\
+               "export ROS_IP="+formatted_ip_string + "\n"
 
         with open(environ['ROS_ARARA_ROOT'] + "src/parameters/rosmaster.bash", "w+") as bash_file:
-            self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
-            Fl.background(200, 200, 200)
-            fl_message("Por favor, reinicie o bash para concluir as alterações")
             bash_file.write(line)
             bash_file.close()
+            Fl.background(200, 200, 200)
+            fl_message("Por favor, reinicie o bash para concluir as alterações")

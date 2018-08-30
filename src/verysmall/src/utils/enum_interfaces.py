@@ -27,10 +27,13 @@ def all_interfaces():
 
 
 def format_ip(addr):
-    return str(ord(addr[0])) + '.' + \
-           str(ord(addr[1])) + '.' + \
-           str(ord(addr[2])) + '.' + \
-           str(ord(addr[3]))
+    if len(addr) > 4:
+        return addr
+    else:
+        return str(ord(addr[0])) + '.' + \
+               str(ord(addr[1])) + '.' + \
+               str(ord(addr[2])) + '.' + \
+               str(ord(addr[3]))
 
 
 if __name__ == '__main__':
