@@ -8,6 +8,12 @@ path[0] = environ['ROS_ARARA_ROOT'] + "src/"
 from utils.enum_interfaces import all_interfaces, format_ip
 
 class ConnectionController:
+    """
+        This class is responsible for creating and updating the connection view
+
+        :return: returns nothing
+    """
+
     def __init__(self, _robot_params, _game_opt):
         self.robot_params = _robot_params
         self.view = ConnectionView()
@@ -38,12 +44,28 @@ class ConnectionController:
         self.ip = self.ip_list[item]
 
     def show(self):
+        """
+            Displays the connection view
+            :return: returns nothing
+        """
         self.view.root.show()
 
     def ip_choice(self, ptr):
+        """
+            This function sets the ip variable for saving
+            :param ptr: pointer for the widget, uses value() attribute
+            :return: returns nothing
+        """
         self.ip = self.ip_list[ptr.value()]
 
     def change_ros_master(self, ptr):
+        """
+            This function is for updating the bash and json
+
+            :param ptr: note used but required for callback
+            :return: returns nothing
+        """
+
         self.file_master_uri = self.view.ip_field.value()
         formatted_ip_string = format_ip(self.ip[1])
         self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
