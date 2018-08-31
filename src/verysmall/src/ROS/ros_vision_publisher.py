@@ -55,7 +55,8 @@ class RosVisionPublisher:
             team_speed.flatten().tolist(),
             enemies_pos.flatten().tolist(),
             enemies_orientation.flatten().tolist(),
-            enemies_speed.flatten().tolist()
+            enemies_speed.flatten().tolist(),
+            fps
         )
 
         try:

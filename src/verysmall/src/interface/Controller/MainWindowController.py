@@ -1,5 +1,6 @@
 from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
+from ConnectionController import ConnectionController
 from DebugController import DebugController
 import fltk as fl
 import sys
@@ -20,6 +21,7 @@ class MainWindowController():
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
+        self.connection_controller = ConnectionController(_robot_bluetooth, _game_opt)
         self.debug_controller = DebugController(_debug_params, hidden=True)
 
         # Lets create the view of our controller shall we
@@ -56,53 +58,7 @@ class MainWindowController():
         #replaced by the function set_robots_bluetooth
         self.set_robots_bluetooth()
 
-        # # For each Robot, this loop covers all the inputs
-        # for num in range(self.view.n_robots):
-        #     # Access the robot params dict using a int
-        #     # and stores its reference in a temporary variable
-        #     current_robot = self.robot_params[self.faster_hash[num]]
-        #
-        #     # This integer is for the value of item in the
-        #     # Drop-down choice box
-        #     current_item = 0
-        #     for item in self.robot_bluetooth_keys:
-        #         # Add the key of the dictionary to the drop-down
-        #         self.view.robot_bluetooths[num].add(item)
-        #
-        #         # If key is the same as the key in the robot
-        #         if current_robot['bluetooth_mac_address'] == item:
-        #             # Set the value has they active item in the choice menu
-        #             self.view.robot_bluetooths[num].value(current_item)
-        #
-        #         # Increments the value of item
-        #         current_item += 1
-        #
-        #     # This integer, again, is for the value of item in the
-        #     # Drop-down choice box
-        #     current_item = 0
-        #     for item in self.robot_roles_keys:
-        #         # Add the key of the dictionary to the drop-down...
-        #         # again
-        #         self.view.robot_roles[num].add(item)
-        #         if current_robot['role'] == item:
-        #             # Same as above
-        #             self.view.robot_roles[num].value(current_item)
-        #         # Well...
-        #         current_item += 1
-        #
-        #     # The value for the check button
-        #     self.view.robot_radio_button[num].value(current_robot['active'])
-        #     # Unique id for the check-Box
-        #     self.view.robot_radio_button[num].id = num
-        #
-        #     # Multiple callbacks, each for one type of input
-        #     # but since whe have ids for each robot input
-        #     # we can parse through each using its on dictionary
-        #     self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
-        #     self.view.robot_roles[num].callback(self.role_choice)
-        #     self.view.robot_radio_button[num].callback(self.radio_choice)
-        #     self.view.top_menu.callback(self.top_menu_choice)
-        #
+
         # A loop for the assigned robot actions
         for num in range(3):
 
@@ -196,25 +152,26 @@ class MainWindowController():
         except ServiceException as exc:
             print("Service did not process request: " + str(exc))
 
-    def register_mac_service(self):
-        """Creates a proxy for communicating with service
-            :return: returns nothing
-        """
-        wait_for_service('vision_command')
-        self.vision_proxy = ServiceProxy('vision_command', vision_command)
-
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:
             self.send_vision_operation(ptr.value())
-        elif ptr.value() < 9:
-            if ptr.value() == 8:
-                self.bluetooth_controller.show()
-                while self.bluetooth_controller.view.root.visible():
-                    fl.Fl.wait()
-                self.set_robots_bluetooth()
+
+        if ptr.value() < 9:
+            if ptr.value() == 7: # Connection controller
+                self.wait_window_close(self.connection_controller)
+            if ptr.value() == 8: # Bluetooth Controller
+                self.wait_window_close(self.bluetooth_controller)
+
         elif ptr.value() < 16:
             if ptr.value() == 13:
-                self.debug_controller.show()
+                self.wait_window_close(self.debug_controller)
+            elif ptr.value() == 14:
+                self.wait_window_close(self.connection_controller)
+
+    def wait_window_close(self, window_controller):
+        window_controller.show()
+        while window_controller.view.root.visible():
+            fl.Fl.wait()
 
     def action_input_choice(self, ptr):
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
@@ -231,7 +188,7 @@ class MainWindowController():
     def bluetooth_choice(self, ptr):
         #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
         if ptr.value():
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()]
+            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
             self.trainer.set_robot_bluetooth(ptr.id)
         else:
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
@@ -283,3 +240,10 @@ class MainWindowController():
     def on_side_change(self,ptr):
         ''':params ptr:pointer'''
         self.game_opt["side"] = ptr.value()
+
+    def register_mac_service(self):
+        """Creates a proxy for communicating with service
+            :return: returns nothing
+        """
+        wait_for_service('vision_command')
+        self.vision_proxy = ServiceProxy('vision_command', vision_command)

@@ -1,9 +1,7 @@
-from rospy import logfatal
+#!/usr/bin/python
 from utils.json_handler import JsonHandler
-
 class Model():
     """The model class for loading and saving json files"""
-
 
     def __init__(self):
         self.json_handler = JsonHandler()
@@ -15,7 +13,6 @@ class Model():
         self.debug_params = self.json_handler.read("parameters/debug.json",escape=True)
 
     def save_params(self):
-        logfatal(str(self.debug_params))
         self.json_handler.write(self.robot_params, "parameters/robots.json")
         self.json_handler.write(self.game_opt, "parameters/game.json")
         self.json_handler.write(self.robot_bluetooth, "parameters/bluetooth.json")

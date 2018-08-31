@@ -41,6 +41,12 @@ class MainWindowView:
         self.padding_y = 0
         self.n_robots = 5
 
+        self.vision_fps = 0.0
+        self.topic_fps = 0.0
+
+        self.t0 = 0.0
+        self.computed_frames = 0.0
+        
         # Get the usable screen proportions
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
@@ -55,7 +61,7 @@ class MainWindowView:
         #TODO: Criar dropdown para as tags
         self.virtualField = virtualField(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtualField.plot_arena(self.virtualField.raw_field)
-
+        self.init_time = time.time()
         self.root.label("ARARABOTS MANAGEMENT SYSTEM")
 
         # Construct main window
@@ -84,34 +90,38 @@ class MainWindowView:
     def read(self, data):
         # Inserts data in the Queue
         #if not self.data.full():
+        #data.redraw_fps = int((self.computed_frames / (time.time() - self.t0) )*10)/10.0
         self.data.append(data)
 
+
     def redraw_field(self):
+
+
         #if not self.data.empty():
         try:
             self.data_item = data_item = self.data.popleft()  # Get the data
-            #rospy.logfatal(len(self.data))
-            #self.data.task_done()  # Finishes the get process
-            #self.now_time = time.time()
-            #rospy.logfatal(self.now_time - self.past_time)
 
-            self.virtualField.plot_ball(np.nan_to_num(np.array(data_item.ball_pos)))  # Plot the ball
-            self.virtualField.plot_robots(np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),
-                                           np.nan_to_num(np.array(data_item.team_orientation)),
-                                           self.virtualField.colors["yellow"])
 
-            self.virtualField.plot_robots(np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),
-                                           np.nan_to_num(data_item.enemies_orientation),
-                                           self.virtualField.colors["blue"], is_away=True)
+            self.virtualField.plot(np.nan_to_num(np.array(data_item.ball_pos)),                         # ball position
+                                   np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),         # home team position
+                                   np.nan_to_num(np.array(data_item.team_orientation)),                 # home team vectors
+                                   self.virtualField.colors["yellow"],                                  # home team color
+                                   np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
+                                   np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
+                                   self.virtualField.colors["blue"],                                    # away team color
+                                   int(self.data_item.vision_fps*10)/10.0,  int((self.computed_frames / (time.time() - self.t0) )*10)/10.0, is_away=True)                       # vision_fps, topic_fps, is_away flag
+
             self.arena.image = self.virtualField.field
             self.arena.redraw()
             #self.past_time = self.now_time
         #else:
         except IndexError:
             #print("vazia")
+
             rospy.loginfo("vazia")
             #self.arena.redraw()
 
+        self.computed_frames += 1
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
@@ -139,10 +149,11 @@ class MainWindowView:
         self.top_menu.add("Jogadores/CarcaÃ§as")
         self.top_menu.add("Jogadores/Bluetooth")
 
-        self.top_menu.add("ConfiguraÃ§Ãµes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("ConfiguraÃ§Ãµes/Interface")
-        self.top_menu.add("ConfiguraÃ§Ãµes/Campo Virtual")
-        self.top_menu.add("ConfiguraÃ§Ãµes/Console")
+        self.top_menu.add("Configurações", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
+        self.top_menu.add("Configurações/Interface")
+        self.top_menu.add("Configurações/Campo Virtual")
+        self.top_menu.add("Configurações/Console")
+        self.top_menu.add("Configurações/Conexão")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Sobre/Atalhos")
@@ -278,8 +289,8 @@ class MainWindowView:
         #creates a dropdown menu to choose the color of the team
         
         temp_name = "Cor da Camisa"
-        self.team_color = fl.Fl_Choice(self.proportion_width(10),
-                                               self.padding_y,
+        self.team_color = fl.Fl_Choice(self.proportion_width(54.5),
+                                               self.proportion_height(8),
                                                self.proportion_width(10),
                                                self.proportion_height(4),
                                                temp_name)
@@ -299,8 +310,8 @@ class MainWindowView:
      #creates a dropdown menu to choose the color of the team
         
         temp_name = "Lado da arena"
-        self.team_side = fl.Fl_Choice(self.proportion_width(10)  + self.proportion_width(11),
-                                               self.padding_y,
+        self.team_side = fl.Fl_Choice(self.proportion_width(55.5) + self.proportion_width(10),
+                                               self.proportion_height(8),
                                                self.proportion_width(10),
                                                self.proportion_height(4),
                                                temp_name)
@@ -330,7 +341,7 @@ class MainWindowView:
         self.root.show()
 
         self.RATE = 0.013#0.04
-
+        self.t0 = time.time()
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 
         fl.Fl.run()

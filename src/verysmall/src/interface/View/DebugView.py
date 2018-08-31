@@ -39,7 +39,7 @@ class DebugView:
         self.title = None
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
-        self.root.show(len(sys.argv), sys.argv)
+        self.root.show()
         self.root.end()
         
     def create_main_title(self, text):
