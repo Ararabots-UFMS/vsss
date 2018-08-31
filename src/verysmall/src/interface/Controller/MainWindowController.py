@@ -188,7 +188,7 @@ class MainWindowController():
     def bluetooth_choice(self, ptr):
         #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
         if ptr.value():
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()]
+            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
             self.trainer.set_robot_bluetooth(ptr.id)
         else:
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"

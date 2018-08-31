@@ -289,8 +289,8 @@ class MainWindowView:
         #creates a dropdown menu to choose the color of the team
         
         temp_name = "Cor da Camisa"
-        self.team_color = fl.Fl_Choice(self.proportion_width(10),
-                                               self.padding_y,
+        self.team_color = fl.Fl_Choice(self.proportion_width(54.5),
+                                               self.proportion_height(8),
                                                self.proportion_width(10),
                                                self.proportion_height(4),
                                                temp_name)
@@ -310,8 +310,8 @@ class MainWindowView:
      #creates a dropdown menu to choose the color of the team
         
         temp_name = "Lado da arena"
-        self.team_side = fl.Fl_Choice(self.proportion_width(10)  + self.proportion_width(11),
-                                               self.padding_y,
+        self.team_side = fl.Fl_Choice(self.proportion_width(55.5) + self.proportion_width(10),
+                                               self.proportion_height(8),
                                                self.proportion_width(10),
                                                self.proportion_height(4),
                                                temp_name)

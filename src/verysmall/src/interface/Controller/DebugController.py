@@ -1,10 +1,10 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
-
 from ..View.DebugView import DebugView
 import fltk as fl
 from utils.json_handler import JsonHandler
 from rospy import logfatal
+
 
 class DebugController():
     def __init__(self, _debug_params, hidden=False):
@@ -17,17 +17,14 @@ class DebugController():
         
         self.view.check_simulation.value(self.debug_params["movement_predict_simulation"])
         self.view.check_robot_vector.value(self.debug_params["robot_vector"])
-        logfatal(str(self.debug_params["robot_vector"]))
+        #logfatal(str(self.debug_params["robot_vector"]))
 
         for i in range(len(self.view.check_robots)):
             self.view.check_robots[i].value(self.debug_params["things"][self.faster_hash[i]])
 
-
-        
         self.debug_params = _debug_params
         self.view.root.callback(self.on_close_callback)        
         self.view.end(hidden)
-
 
     def on_close_callback(self,ptr):
         self.debug_params["movement_predict_simulation"] = self.view.check_simulation.value()
@@ -41,6 +38,5 @@ class DebugController():
         self.view.root.show()
 
 
-
 if __name__ == '__main__':
-    window_manager = BluetoothManagerController()
+    window_manager = DebugController()
