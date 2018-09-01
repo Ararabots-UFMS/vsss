@@ -21,6 +21,9 @@ class CameraSelectController:
 
         self.view.device_input.redraw()
 
+    def window_system_exit(self,ptr):
+        sys.exit(0)
+
     def button_callback(self,ptr):
         if ptr.id == 0:  # Cancel
             sys.exit(0)
@@ -94,6 +97,7 @@ class CameraSelectController:
         self.view.ok_button.id = 1
         self.view.refresh_button.id = 2
 
+        self.view.root.callback(self.window_system_exit)
         self.view.cancel_button.callback(self.button_callback)
         self.view.ok_button.callback(self.button_callback)
         self.view.refresh_button.callback(self.button_callback)

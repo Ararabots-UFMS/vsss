@@ -30,7 +30,8 @@ class RosVisionPublisher:
 
         # )
 
-    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed, enemies_pos, enemies_orientation, enemies_speed):
+    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed,
+    enemies_pos, enemies_orientation, enemies_speed, fps):
 
         """
             This function publishes in the things position topic
@@ -54,7 +55,8 @@ class RosVisionPublisher:
             team_speed.flatten().tolist(),
             enemies_pos.flatten().tolist(),
             enemies_orientation.flatten().tolist(),
-            enemies_speed.flatten().tolist()
+            enemies_speed.flatten().tolist(),
+            fps
         )
 
         try:
