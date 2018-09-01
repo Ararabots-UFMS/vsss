@@ -21,7 +21,7 @@ class MainWindowController():
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
-        self.connection_controller = ConnectionController(_robot_bluetooth, _game_opt)
+        self.connection_controller = ConnectionController(_game_opt)
         self.debug_controller = DebugController(_debug_params, hidden=True)
 
         # Lets create the view of our controller shall we

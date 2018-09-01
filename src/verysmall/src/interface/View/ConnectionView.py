@@ -17,33 +17,40 @@ class ConnectionView:
     """View responsible for creating the Connection Window"""
 
     def __init__(self):
+        # get the current desktop size
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
-        
+
+        # using current desktop sizes, create a connection window
         self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
                                  self.proportion_width(45), self.proportion_height(55))
 
+        # update the current dimensions for the ones given by the window
         self.width = self.root.w()
         self.height = self.root.h()
 
-        self.root.label("Conexao")
+        # Allocating resources
         self.top_menu = None
         self.line = None
         self.title = None
         self.node_title = None
         self.bluetooth_title = None
         self.carcaca_title = None
+        self.self_ip_field = None
         self.choice_jogador = []
         self.check_robots = None
         self.ip_field = None
         self.update_button = None
         self.joystick_title = None
-        self.create_main_title("Node mestre")
-        self.create_ip_field()
-        self.create_update_button("Atualizar")
+        # end of resource allocation
+
+        self.root.label("Conexao")  # window title
+        self.create_main_title("Node mestre")  # main window title
+        self.create_ip_field()  # inputs
+        self.create_update_button("Atualizar")  # last button
         fl.Fl.background(23, 23, 23)
-        self.root.labelcolor(fl.FL_WHITE)
-        self.root.end()
+        self.root.labelcolor(fl.FL_WHITE)  # font color for current window
+        self.root.end()  # end and show
 
     def create_main_title(self, text):
         """
