@@ -77,7 +77,7 @@ class ConnectionController:
         """
             This function is for updating the bash and json
 
-            :param ptr: note used but required for callback
+            :param ptr: not used but required for callback
             :return: returns nothing
         """
 

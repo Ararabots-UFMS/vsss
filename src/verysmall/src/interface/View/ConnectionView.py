@@ -55,7 +55,7 @@ class ConnectionView:
     def create_main_title(self, text):
         """
             This function creates the main windows title
-
+            :param: text: String
             :return: returns nothing
         """
 
@@ -90,7 +90,7 @@ class ConnectionView:
     def create_update_button(self,text):
         """
             This function creates the update button
-
+            :param: text: String
             :return: returns nothing
         """
 
