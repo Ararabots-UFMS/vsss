@@ -2,6 +2,8 @@
 import rospy
 import math
 from verysmall.msg import game_topic
+from verysmall.srv import vision_command
+from rospy import ServiceException,ServiceProxy, wait_for_service
 from random import uniform
 
 
@@ -12,13 +14,12 @@ class RosGamePublisher:
             rospy.init_node('game', anonymous=True)
         # else is only a publisher
         self.pub = rospy.Publisher('game_topic', game_topic, queue_size=1)
-        # uint8        game_state
-        # uint8[5]     robot_roles
-        # uint8        penalty_robot
-        # uint8        freeball_robot
-        # uint8        meta_robot
         self.msg = game_topic()
         self.msg.robot_roles = '00000'
+
+        # Variable for storing proxy
+        self.vision_proxy = None
+        self.register_vision_service()
 
     def set_game_state(self, _game_state):
         self.msg.game_state = _game_state
@@ -67,6 +68,24 @@ class RosGamePublisher:
         except rospy.ROSException as e:
             rospy.logfatal(e)
 
+    def register_vision_service(self):
+        """Creates a proxy for communicating with service
+            :return: returns nothing
+        """
+        wait_for_service('vision_command')
+        self.vision_proxy = ServiceProxy('vision_command', vision_command)
+
+    def send_vision_operation(self, operation):
+        """Sends a service request to vision node
+            :param operation : uint8
+
+            :return: returns nothing
+        """
+        wait_for_service('vision_command')
+        try:
+            self.vision_proxy(operation)
+        except ServiceException as exc:
+            print("Service did not process request: " + str(exc))
 
 if __name__ == '__main__':
     try:

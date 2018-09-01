@@ -76,7 +76,6 @@ class MainWindowView:
         msg = things_position()
         self.data = deque(
         # Shapes the size of the Queue
-        #self.data.put(
             [msg,msg])
 
         # Ros node for reading the buffer
@@ -89,19 +88,11 @@ class MainWindowView:
 
     def read(self, data):
         # Inserts data in the Queue
-        #if not self.data.full():
-        #data.redraw_fps = int((self.computed_frames / (time.time() - self.t0) )*10)/10.0
         self.data.append(data)
 
-
     def redraw_field(self):
-
-
-        #if not self.data.empty():
         try:
-            self.data_item = data_item = self.data.popleft()  # Get the data
-
-
+            data_item = self.data.popleft()  # Get the data
             self.virtualField.plot(np.nan_to_num(np.array(data_item.ball_pos)),                         # ball position
                                    np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),         # home team position
                                    np.nan_to_num(np.array(data_item.team_orientation)),                 # home team vectors
@@ -113,13 +104,8 @@ class MainWindowView:
 
             self.arena.image = self.virtualField.field
             self.arena.redraw()
-            #self.past_time = self.now_time
-        #else:
         except IndexError:
-            #print("vazia")
-
             rospy.loginfo("vazia")
-            #self.arena.redraw()
 
         self.computed_frames += 1
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)

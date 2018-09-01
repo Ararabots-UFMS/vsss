@@ -5,15 +5,10 @@ from DebugController import DebugController
 import fltk as fl
 import sys
 import os
-from verysmall.msg import game_topic
 
 old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']
-from verysmall.srv import vision_command
-
-sys.path[0] +="src/"
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_game_publisher import RosGamePublisher
-from rospy import ServiceException,ServiceProxy, wait_for_service
 sys.path[0] = old_path
 
 class MainWindowController():
@@ -50,10 +45,6 @@ class MainWindowController():
 
         # Creates the game topic
         self.pub = RosGamePublisher()
-
-        # Variable for storing proxy
-        self.vision_proxy = None
-        self.register_mac_service()
 
         #replaced by the function set_robots_bluetooth
         self.set_robots_bluetooth()
@@ -139,22 +130,9 @@ class MainWindowController():
             # Unique id for the check-Box
             self.view.robot_radio_button[num].id = num
 
-
-    def send_vision_operation(self, operation):
-        """Sends a service request to vision node
-            :param operation : uint8
-
-            :return: returns nothing
-        """
-        wait_for_service('vision_command')
-        try:
-            self.vision_proxy(operation)
-        except ServiceException as exc:
-            print("Service did not process request: " + str(exc))
-
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:
-            self.send_vision_operation(ptr.value())
+            self.pub.send_vision_operation(ptr.value())
 
         if ptr.value() < 9:
             if ptr.value() == 7: # Connection controller
@@ -186,7 +164,8 @@ class MainWindowController():
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):
-        #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
+        # this verification allow to set a default value for the bluetooth_name of the robot,
+        # so we can edit or delete bluetooth entries
         if ptr.value():
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
             self.trainer.set_robot_bluetooth(ptr.id)
@@ -240,10 +219,3 @@ class MainWindowController():
     def on_side_change(self,ptr):
         ''':params ptr:pointer'''
         self.game_opt["side"] = ptr.value()
-
-    def register_mac_service(self):
-        """Creates a proxy for communicating with service
-            :return: returns nothing
-        """
-        wait_for_service('vision_command')
-        self.vision_proxy = ServiceProxy('vision_command', vision_command)
