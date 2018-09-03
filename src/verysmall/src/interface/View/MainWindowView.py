@@ -1,23 +1,38 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
-import sys
 import numpy as np
 import fltk as fl
 from ..virtualField import virtualField
-import rospy
 import time
-from Queue import Queue
-from collections import deque
-from verysmall.msg import things_position
+from sys import path
+from os import environ
+old_path = path[0]
+path[0] = environ['ROS_ARARA_ROOT'] + "src/"
+from ROS.ros_main_window_subscriber import RosMainWindowSubscriber
+path[0] = old_path
 
 
-class canvas(fl.Fl_Double_Window):
+class Canvas(fl.Fl_Double_Window):
+    """The canvas class is a sub-class of Fl_Double_Window, so it has double buffering enabled"""
     def __init__(self, x, y, w, h, l, image):
+        """
+            :param x: int
+            :param y: int
+            :param w: int
+            :param h: int
+            :param h: int
+            :param l: int
+            :param image: np.array([h, l])
+
+            :return: returns nothing
+        """
         fl.Fl_Double_Window.__init__(self, x, y, w, h, l)
         self.image = image
 
     def draw(self):
+        """This function is called when the redraw happens"""
         fl.fl_draw_image(self.image.data, 0,0, self.w(), self.h(), 3, 0)
+
 
 class MainWindowView:
     """Creates the visual for the main window and uses the MainWindowController to handle callbacks"""
@@ -40,9 +55,9 @@ class MainWindowView:
         self.padding_x = 0
         self.padding_y = 0
         self.n_robots = 5
+        self.arena = None
 
-        self.vision_fps = 0.0
-        self.topic_fps = 0.0
+        self.reader = RosMainWindowSubscriber()
 
         self.t0 = 0.0
         self.computed_frames = 0.0
@@ -56,9 +71,8 @@ class MainWindowView:
 
         # Create a new Buffered window
         self.root = fl.Fl_Window(self.proportion_width(2.5), self.proportion_height(5),
-                                        self.proportion_width(95), self.proportion_height(90))
-        #TODO: Diminuir campo virtual para abrir space para os numeros da tag
-        #TODO: Criar dropdown para as tags
+                                 self.proportion_width(95), self.proportion_height(90))
+
         self.virtualField = virtualField(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtualField.plot_arena(self.virtualField.raw_field)
         self.init_time = time.time()
@@ -68,54 +82,44 @@ class MainWindowView:
         self.create_top_menu()
         self.create_left_menu()
         self.create_arena()
+        self.arena.image = self.virtualField.field
         self.create_toggle_color()
         self.create_toggle_side()
 
-        # Queue of data from Topic Things position
-        #self.data = Queue(maxsize=10)
-        msg = things_position()
-        self.data = deque(
-        # Shapes the size of the Queue
-            [msg,msg])
-
-        # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
-        rospy.init_node('virtual_field', anonymous=True)
         self.past_time = time.time()
         # Define colors
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
 
-    def read(self, data):
-        # Inserts data in the Queue
-        self.data.append(data)
-
     def redraw_field(self):
-        try:
-            data_item = self.data.popleft()  # Get the data
-            self.virtualField.plot(np.nan_to_num(np.array(data_item.ball_pos)),                         # ball position
-                                   np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),         # home team position
-                                   np.nan_to_num(np.array(data_item.team_orientation)),                 # home team vectors
-                                   self.virtualField.colors["yellow"],                                  # home team color
-                                   np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),                # away team position
-                                   np.nan_to_num(data_item.enemies_orientation),                        # away team vectors
-                                   self.virtualField.colors["blue"],                                    # away team color
-                                   int(self.data_item.vision_fps*10)/10.0,  int((self.computed_frames / (time.time() - self.t0) )*10)/10.0, is_away=True)                       # vision_fps, topic_fps, is_away flag
 
+        data_item = self.reader.pop_item()  # Get the data
+
+        if data_item is not None:
+
+            self.virtualField.plot(data_item.ball_pos,                  # ball position
+                                   data_item.team_pos,                  # home team position
+                                   data_item.team_orientation,          # home team vectors
+                                   self.virtualField.colors["yellow"],  # home team color
+                                   data_item.enemies_pos,               # away team position
+                                   data_item.enemies_orientation,       # away team vectors
+                                   self.virtualField.colors["blue"],    # away team color
+                                   int(data_item.vision_fps*10)/10.0,
+                                   int((self.computed_frames / (time.time() - self.t0))*10)/10.0,
+                                   is_away=True)  # vision_fps, topic_fps, is_away flag
             self.arena.image = self.virtualField.field
             self.arena.redraw()
-        except IndexError:
-            rospy.loginfo("vazia")
 
         self.computed_frames += 1
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
         """Creates a top window, double buffered one"""
-        self.arena = canvas(self.proportion_width(40), self.proportion_height(15),
+        self.arena = Canvas(self.proportion_width(40), self.proportion_height(15),
                             self.proportion_width(50), self.proportion_height(70), "D_Window",self.virtualField.field)
         self.arena.box(fl.FL_FLAT_BOX)
         self.arena.end()
+        self.arena.image = self.virtualField.field
 
     def create_top_menu(self):
         """Creates the buttons and inputs for players"""
@@ -325,8 +329,7 @@ class MainWindowView:
         self.root.clear_visible_focus()
         self.root.end()
         self.root.show()
-
-        self.RATE = 0.013#0.04
+        self.RATE = 0.013
         self.t0 = time.time()
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 

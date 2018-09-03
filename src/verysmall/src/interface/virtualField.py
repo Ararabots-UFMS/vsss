@@ -207,7 +207,7 @@ class virtualField():
         cv.circle(field, (self.proportion_width(60.295), self.proportion_height(80.770)), self.mark_radius,
                   self.colors["gray"], -1)
 
-
+        self.field = copy.deepcopy(field)
 
         ''' plot_ball 
 

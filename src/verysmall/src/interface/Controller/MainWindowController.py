@@ -8,11 +8,12 @@ import os
 
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from ROS.ros_game_publisher import RosGamePublisher
+from ROS.ros_main_window_publisher import RosMainWindowPublisher
 sys.path[0] = old_path
 
+
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _trainer):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _coach):
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
@@ -28,8 +29,8 @@ class MainWindowController():
         self.robot_roles = _robot_roles
         self.game_opt = _game_opt
 
-        # The trainer object class control the active and the activities of robots
-        self.trainer = _trainer
+        # The coach object class control the active and the activities of robots
+        self.coach = _coach
 
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
@@ -44,7 +45,7 @@ class MainWindowController():
         self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
-        self.pub = RosGamePublisher()
+        self.pub = RosMainWindowPublisher()
 
         #replaced by the function set_robots_bluetooth
         self.set_robots_bluetooth()
@@ -155,7 +156,7 @@ class MainWindowController():
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
     def radio_choice(self, ptr):
-        self.trainer.set_robot_active(ptr.id, ptr.value())
+        self.coach.set_robot_active(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
@@ -168,10 +169,10 @@ class MainWindowController():
         # so we can edit or delete bluetooth entries
         if ptr.value():
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
-            self.trainer.set_robot_bluetooth(ptr.id)
+            self.coach.set_robot_bluetooth(ptr.id)
         else:
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
-            self.trainer.set_robot_active(ptr.id, False)
+            self.coach.set_robot_active(ptr.id, False)
 
     def action_button_clicked(self, ptr):
         if self.view.play_button.playing:

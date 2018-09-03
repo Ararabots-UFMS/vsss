@@ -5,7 +5,7 @@ from utils.model import Model
 from interface.Controller.MainWindowController import MainWindowController
 from interface.Controller.LoadingController import LoadingController
 from ROS.ros_utils import RosUtils
-from trainer import Trainer
+from coach.Coach import Coach
 import rospy
 import roslaunch
 from utils.camera_loader import CameraLoader
@@ -46,10 +46,10 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    trainer = Trainer(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
+    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
     lc.stop()
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
-                                      model.debug_params,trainer)
+                                      model.debug_params,coach)
     lc.start("Salvando banco de dados")
     if vision_owner:
         vision_process.stop()
