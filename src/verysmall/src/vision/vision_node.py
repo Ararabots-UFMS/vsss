@@ -11,6 +11,7 @@ from verysmall.srv import vision_command
 import os
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from ROS.ros_vision_publisher import RosVisionService
 sys.path[0] = old_path
 
 
@@ -45,12 +46,7 @@ class VisionNode:
         self.thread.start()
 
         # Creates the service responsible for vision modes and operations
-        self.service = rospy.Service('vision_command', vision_command, self.vision_management)
-
-    def vision_management(self, req):
-        success = True
-        self.state_changed = req.operation
-        return success
+        self.service = RosVisionService(self.state_changed)
 
 
 if __name__ == "__main__":

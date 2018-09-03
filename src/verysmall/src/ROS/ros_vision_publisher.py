@@ -6,6 +6,28 @@ import numpy as np
 from verysmall.msg import things_position
 
 
+class RosVisionService:
+    """
+    This Class implements a service for changing vision parameters
+    """
+    def __init__(self, _request_response):
+        """
+        :param _request_response: int
+        """
+        self.request_response = _request_response
+        self.core = rospy.Service('vision_command', vision_command, self.vision_management)
+
+    def vision_management(self, req):
+        """
+        This is the reading function for a service response
+        :param req: variable to get the request operation
+        :return: bool
+        """
+        success = True
+        self.request_response = req.operation
+        return success
+
+
 class RosVisionPublisher:
     """This class can publish Vision messages on a Things Position Topic"""
     def __init__(self, isnode=False):
@@ -14,36 +36,21 @@ class RosVisionPublisher:
         # else is only a publisher
         self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
 
-        self.empty_robot_vector = .0
-        self.empty_robot_pos = tuple([.0, .0])
-
-        # example of how to use the virtual_field class
-        # Example of publishing a message
-        # self.publish(
-        #    [0, 0],
-        #    0.,
-        #    [robot_pos() for _ in range(5)],
-        #    [robot_vector() for _ in range(5)],
-        #    [home_robot_speed for _ in range(5)]
-        #    [robot_pos() for _ in range(5)],
-        #    [robot_vector() for _ in range(5)],
-
-        # )
-
     def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed,
-    enemies_pos, enemies_orientation, enemies_speed, fps):
+                enemies_pos, enemies_orientation, enemies_speed, fps):
 
         """
             This function publishes in the things position topic
 
-            :param ball_pos: 2float64
-            :param ball_speed: 2float64
-            :param team_pos: 2float64[5]
+            :param ball_pos: float64[2]
+            :param ball_speed: float64[2]
+            :param team_pos: float64[10]
             :param team_orient: float64[5]
-            :param team_speed: 2float64[5]
-            :param enemies_pos: 2float64[5]
-            :param enemies_orient: 2float64[5]
-            :param enemies_speed: 2float64[5]
+            :param team_speed: float64[10]
+            :param enemies_pos: float64[10]
+            :param enemies_orientation: float64[5]
+            :param enemies_speed: float64[10]
+            :param fps: float
             :return: returns nothing
         """
 
