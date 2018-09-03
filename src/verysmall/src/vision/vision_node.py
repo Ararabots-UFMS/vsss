@@ -5,7 +5,6 @@ import cv2
 from camera.camera import Camera
 from threading import Thread
 from vision import Vision
-from verysmall.srv import vision_command
 
 # Top level imports
 import os
@@ -46,7 +45,17 @@ class VisionNode:
         self.thread.start()
 
         # Creates the service responsible for vision modes and operations
-        self.service = RosVisionService(self.state_changed)
+        self.service = RosVisionService(self.vision_management)
+
+    def vision_management(self, req):
+        """
+        This is the reading function for a service response
+        :param req: variable to get the request operation
+        :return: bool
+        """
+        success = True
+        self.state_changed = req.operation
+        return success
 
 
 if __name__ == "__main__":

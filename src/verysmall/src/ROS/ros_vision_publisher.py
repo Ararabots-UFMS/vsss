@@ -4,28 +4,18 @@ import rospy
 PKG = 'verysmall'
 import numpy as np
 from verysmall.msg import things_position
+from verysmall.srv import vision_command
 
 
 class RosVisionService:
     """
     This Class implements a service for changing vision parameters
     """
-    def __init__(self, _request_response):
+    def __init__(self, _request_function):
         """
-        :param _request_response: int
+        :param _request_function: function callback
         """
-        self.request_response = _request_response
-        self.core = rospy.Service('vision_command', vision_command, self.vision_management)
-
-    def vision_management(self, req):
-        """
-        This is the reading function for a service response
-        :param req: variable to get the request operation
-        :return: bool
-        """
-        success = True
-        self.request_response = req.operation
-        return success
+        self.core = rospy.Service('vision_command', vision_command, _request_function)
 
 
 class RosVisionPublisher:

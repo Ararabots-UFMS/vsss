@@ -5,8 +5,8 @@ import numpy as np
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from strategy.univector_statemachine import AttackerWithUnivector
 from ROS.ros_robot_subscriber import RosRobotSubscriber
+from strategy.univector_statemachine import AttackerWithUnivector
 from utils.json_handler import JsonHandler
 
 

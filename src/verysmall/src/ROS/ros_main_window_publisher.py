@@ -19,7 +19,7 @@ class RosMainWindowPublisher:
         # else is only a publisher
         self.pub = rospy.Publisher('game_topic', game_topic, queue_size=1)
         self.msg = game_topic()
-        self.msg.robot_roles = (0, 0, 0, 0, 0)
+        self.msg.robot_roles = [0, 0, 0, 0, 0]
 
         # Variable for storing proxy
         self.vision_proxy = None
@@ -74,7 +74,7 @@ class RosMainWindowPublisher:
         """
         self.msg = game_topic(
             game_state,
-            robot_roles,
+            tuple(robot_roles),
             penalty_robot,
             freeball_robot,
             meta_robot
