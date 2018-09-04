@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 from sklearn.cluster import KMeans
 import rospy
-
+import time
 # @author Wellington Castro <wvmcastro>
 
 class GeneralMultObjSeeker:
@@ -11,26 +11,27 @@ class GeneralMultObjSeeker:
         self.num_objects = num_objects
         self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=30,
         precompute_distances=True, n_jobs=1)
-
         self.objects = None
 
     def seek(self, img):
         cnts = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
-        num_cnts = len(cnts)
+        centroids_list = []
 
-        if num_cnts > 0:
-            cnts_array = np.array(cnts[0]).reshape(-1, 2)
+        if len(cnts):
+            for cnt in cnts:
+                M = cv2.moments(cnt)
+                if M['m00'] != 0:
+                    c_x = int(M['m10'] / M['m00'])
+                    c_y = int(M['m01'] / M['m00'])
+                    centroids_list.append(np.asarray([c_x, c_y]))
 
-            for i in xrange(1, num_cnts):
-                cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
+            if len(centroids_list) >= self.num_objects:
+                centroids = np.asarray(centroids_list).reshape(-1, 2)
 
-            if cnts_array.shape[0] > self.num_objects:
                 if np.all(self.objects != None):
                     self.kmeans.init = self.objects
-
-                self.kmeans.fit(cnts_array)
+                self.kmeans.fit(centroids)
                 self.objects = self.kmeans.cluster_centers_
-                # rospy.logfatal("Centroides" + str(self.objects))
 
         return self.objects
 
