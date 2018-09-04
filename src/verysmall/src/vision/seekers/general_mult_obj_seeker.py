@@ -32,13 +32,13 @@ class GeneralMultObjSeeker:
                 self.kmeans.fit(cnts_array)
                 newObjects= self.kmeans.cluster_centers_
 
-            if not first_iteration:
-                diff = newObjects - self.objects
-                distances = np.linalg.norm(diff, axis=1)
-                changes = np.where(distances > 2.5)[0]
-                self.objects[changes,:] = self.kmeans.cluster_centers_[changes,:]
-            else:
-                self.objects = newObjects
+                if not first_iteration:
+                    diff = newObjects - self.objects
+                    distances = np.linalg.norm(diff, axis=1)
+                    changes = np.where(distances > 2.5)[0]
+                    self.objects[changes,:] = self.kmeans.cluster_centers_[changes,:]
+                else:
+                    self.objects = newObjects
 
 
         return self.objects
