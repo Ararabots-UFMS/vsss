@@ -6,6 +6,7 @@ from camera.camera import Camera
 from threading import Thread
 from vision import Vision
 from verysmall.srv import vision_command
+from time import time
 
 # Top level imports
 import os
@@ -65,7 +66,9 @@ if __name__ == "__main__":
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 vision_node.show = not vision_node.show
-                cv2.destroyWindow("vision")
+                cv2.destroyAllWindows()
+                vision_node.vision.computed_frames = 0;
+                vision_node.vision.t0 = time.time();
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == 1:
                 vision_node.show = not vision_node.show

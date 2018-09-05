@@ -14,6 +14,14 @@ class GeneralMultObjSeeker:
         self.objects = None
 
     def seek(self, img):
+        """
+            This function receives a binary image with objects and return
+            its centers positions
+            param img : np.array([uint8]).shape([m,n])
+            img is a binary image of a team
+           :return: objecs: np.array([float, float]).shape([k, 2])
+           object has the position of the center of each object in img
+        """
         cnts = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
         centroids_list = []
         num_cnts = len(cnts)
