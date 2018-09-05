@@ -32,13 +32,14 @@ class RobotParamsView:
         self.check_robots = None
 
         self.root.label("Parâmetros do rôbo")
-        self.create_main_field("DEBUG")
-        self.create_title_visao("Visão")
-        self.create_title_console("Console")
-        self.create_check_robots()
+        self.create_main_field("Jogador 1")
+        self.create_fields()
+        #self.create_title_visao("Visão")
+        #self.create_title_console("Console")
+        #self.create_check_robots()
 
-        self.create_check_simulation()
-        self.create_check_robot_vector()
+        #self.create_check_simulation()
+        #self.create_check_robot_vector()
         self.top_menu = None
         self.line = None
         self.title = None
@@ -48,14 +49,31 @@ class RobotParamsView:
         self.root.end()
 
     def create_main_field(self, text):
-        self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(0),
-                               self.proportion_width(35), self.proportion_height(10), text)
+        self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(25),
+                               self.proportion_width(20), self.proportion_height(20), text)
         self.title.labelcolor(fl.FL_WHITE)
-        self.title.labelsize(23)
+        #self.title.labelsize(23)
         self.title.box(fl.FL_FLAT_BOX)
-        # self.title.color(fl.FL_RED)
+        self.title.color(fl.FL_RED)
         self.title.align(fl.FL_ALIGN_CENTER)
         self.title.show()
+
+    def create_fields(self):
+
+        self.tag_field = fl.Fl_Input(self.proportion_width(28), self.proportion_height(25),
+                                    self.proportion_width(5), self.proportion_height(20), "Tag:")
+        self.tag_field.align(fl.FL_ALIGN_LEFT_TOP)
+        self.tag_field.labelcolor(fl.FL_WHITE)
+
+        self.bluetooth_field = fl.Fl_Input(self.proportion_width(36), self.proportion_height(25),
+                                    self.proportion_width(25), self.proportion_height(20), "Bluetooth:")
+        self.bluetooth_field.align(fl.FL_ALIGN_LEFT_TOP)
+        self.bluetooth_field.labelcolor(fl.FL_WHITE)
+
+        self.body_field = fl.Fl_Input(self.proportion_width(64), self.proportion_height(25),
+                                    self.proportion_width(25), self.proportion_height(20), "Carcaça:")
+        self.body_field.align(fl.FL_ALIGN_LEFT_TOP)
+        self.body_field.labelcolor(fl.FL_WHITE)
 
     def create_title_visao(self, text):
         self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(10),
