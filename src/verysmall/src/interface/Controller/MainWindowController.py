@@ -2,6 +2,7 @@ from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
 from ConnectionController import ConnectionController
 from DebugController import DebugController
+from RobotParamsController import RobotParamsController
 import fltk as fl
 import sys
 import os
@@ -13,12 +14,14 @@ sys.path[0] = old_path
 
 
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _coach):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach):
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
         self.connection_controller = ConnectionController(_game_opt)
         self.debug_controller = DebugController(_debug_params, hidden=True)
+        self.robot_params_controller = RobotParamsController(_robot_params, _robot_bluetooth,
+                                                             _robot_roles, _robot_bodies)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
@@ -48,7 +51,7 @@ class MainWindowController():
         self.pub = RosMainWindowPublisher()
 
         #replaced by the function set_robots_bluetooth
-        self.set_robots_bluetooth()
+        self.set_robots_params()
 
 
         # A loop for the assigned robot actions
@@ -74,7 +77,7 @@ class MainWindowController():
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
         for num in xrange(self.view.n_robots):
-            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+            self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
             
@@ -86,7 +89,7 @@ class MainWindowController():
 
         self.view.end()
 
-    def set_robots_bluetooth(self):
+    def set_robots_params(self):
         # For each Robot, this loop covers all the inputs
         for num in xrange(self.view.n_robots):
             # Access the robot params dict using a int
@@ -97,21 +100,21 @@ class MainWindowController():
             # Drop-down choice box
 
             #"Nenhum" means the zero value, in case the bluetooth name of the robot changes
-            self.view.robot_bluetooths[num].add("Nenhum")
-            self.view.robot_bluetooths[num].value(0)
-
-            current_item = 1
-            for item in self.robot_bluetooth_keys:
-                # Add the key of the dictionary to the drop-down
-                self.view.robot_bluetooths[num].add(item)
-
-                # If key is the same as the key in the robot
-                if current_robot['bluetooth_mac_address'] == item:
-                    # Set the value has they active item in the choice menu
-                    self.view.robot_bluetooths[num].value(current_item)
-
-                # Increments the value of item
-                current_item += 1
+            # self.view.robot_params[num].add("Nenhum")
+            # self.view.robot_params[num].value(0)
+            #
+            # current_item = 1
+            # for item in self.robot_bluetooth_keys:
+            #     # Add the key of the dictionary to the drop-down
+            #     self.view.robot_params[num].add(item)
+            #
+            #     # If key is the same as the key in the robot
+            #     if current_robot['bluetooth_mac_address'] == item:
+            #         # Set the value has they active item in the choice menu
+            #         self.view.robot_params[num].value(current_item)
+            #
+            #     # Increments the value of item
+            #     current_item += 1
 
             # This integer, again, is for the value of item in the
             # Drop-down choice box
@@ -130,6 +133,18 @@ class MainWindowController():
             self.view.robot_radio_button[num].value(current_robot['active'])
             # Unique id for the check-Box
             self.view.robot_radio_button[num].id = num
+
+    def parameters_button(self, ptr):
+        old = self.robot_params[self.faster_hash[ptr.id]].copy()
+
+        self.robot_params_controller.show(ptr.id)
+        while self.robot_params_controller.view.root.visible():
+            fl.Fl.wait()
+
+        import rospy
+        rospy.logfatal(self.robot_params[self.faster_hash[ptr.id]] == old)
+
+
 
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:

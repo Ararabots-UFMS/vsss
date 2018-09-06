@@ -42,7 +42,7 @@ class MainWindowView:
         # Init Variables
         self.title = None
         self.option_robots = [None, None, None, None, None]
-        self.robot_bluetooths = [None, None, None, None, None]
+        self.robot_params = [None, None, None, None, None]
         self.robot_roles = [None, None, None, None, None]
         self.team_color = None
         self.team_side = None
@@ -173,7 +173,7 @@ class MainWindowView:
         self.padding_y += self.proportion_height(10)
         self.padding_x = self.proportion_width(10)
         # No loop unrolling this time
-        for text in ["Papel", "Camisa"]:
+        for text in ["Papel", "Parâmetros"]:
             label = fl.Fl_Box(self.padding_x,
                               self.padding_y,
                               self.proportion_width(10),
@@ -206,21 +206,21 @@ class MainWindowView:
             self.robot_roles[num].labelcolor(fl.FL_WHITE)
             self.robot_roles[num].box(fl.FL_NO_BOX)
 
-            # Bluetooth inputs
-            self.robot_bluetooths[num] = fl.Fl_Choice(
+            # # Bluetooth inputs
+            self.robot_params[num] = fl.Fl_Button(
                 temp_x_padding[1],
                 self.padding_y,
                 self.proportion_width(10),
                 self.proportion_height(4),
-                temp_names[num])
-
-            # ID for using in callback with the bluetooth input
-            self.robot_bluetooths[num].id = num
-
-            # Bluetooth inputs styles
-            self.robot_bluetooths[num].color(fl.FL_RED)
-            self.robot_bluetooths[num].labeltype(fl.FL_NO_LABEL)
-            self.robot_bluetooths[num].labelcolor(fl.FL_WHITE)
+                'Config')
+            #
+            # # ID for using in callback with the bluetooth input
+            self.robot_params[num].id = num
+            #
+            # # Bluetooth inputs styles
+            self.robot_params[num].color(fl.FL_RED)
+            self.robot_params[num].labelfont(fl.FL_HELVETICA_BOLD)
+            self.robot_params[num].labelcolor(fl.FL_WHITE)
 
             # Input to define if robot is active or not
             self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[2],

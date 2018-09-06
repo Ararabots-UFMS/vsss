@@ -20,7 +20,7 @@ class RobotParamsView:
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
 
-        self.root = fl.Fl_Double_Window(self.proportion_width(2.5), self.proportion_height(5),
+        self.root = fl.Fl_Double_Window(self.proportion_width(25), self.proportion_height(40),
                                         self.proportion_width(50), self.proportion_height(15))
 
         self.width = self.root.w()

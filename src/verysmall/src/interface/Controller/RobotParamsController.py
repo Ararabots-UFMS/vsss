@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: latin-1 -*-
-#from ..View.RobotParamsView import RobotParamsView
+from ..View.RobotParamsView import RobotParamsView
 
 
 class RobotParamsController:
@@ -47,9 +47,9 @@ class RobotParamsController:
 
             try:  # assort tag
                 current_robot_tag = current_robot['tag_number']
-                if self.tag_is_owned_by[current_robot_tag] is None:  # in case tag is empty
+                if self.tag_is_owned_by[int(current_robot_tag)] is None:  # in case tag is empty
                     # The current robot is the owner of that tag
-                    self.tag_is_owned_by[current_robot_tag] = self.faster_hash[x]
+                    self.tag_is_owned_by[int(current_robot_tag)] = self.faster_hash[x]
 
             except KeyError:
                 pass
@@ -126,7 +126,7 @@ class RobotParamsController:
         self.view.root.show()
 
     def save_and_exit(self, ptr):
-        self.current_robot["tag_number"] = self.view.tag_field.text().strip('*')
+        self.current_robot["tag_number"] = int(self.view.tag_field.text().strip('*'))-1
         self.current_robot["bluetooth_mac_address"] = self.view.bluetooth_field.text().strip('*')
         self.current_robot["body_id"] = self.view.body_field.text().strip('*')
         self.hide(None)
@@ -143,7 +143,7 @@ class RobotParamsController:
 
         try:
             self.view.tag_field.value(
-                current_robot['tag_number']
+                int(current_robot['tag_number'])
             )
         except KeyError:
             self.view.tag_field.value(0)
