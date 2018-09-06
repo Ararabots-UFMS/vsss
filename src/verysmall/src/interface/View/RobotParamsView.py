@@ -30,19 +30,15 @@ class RobotParamsView:
         self.title_visao = None
         self.title_console = None
         self.check_robots = None
-
-        self.root.label("Parâmetros do rôbo")
-        self.create_main_field("Jogador 1")
-        self.create_fields()
-        #self.create_title_visao("Visão")
-        #self.create_title_console("Console")
-        #self.create_check_robots()
-
-        #self.create_check_simulation()
-        #self.create_check_robot_vector()
         self.top_menu = None
         self.line = None
         self.title = None
+
+        self.root.label("Parâmetros do robô")
+        self.create_main_field("Jogador 1")
+        self.create_fields()
+        self.create_buttons()
+
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
         self.root.show()
@@ -51,96 +47,52 @@ class RobotParamsView:
     def create_main_field(self, text):
         self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(25),
                                self.proportion_width(20), self.proportion_height(20), text)
-        self.title.labelcolor(fl.FL_WHITE)
-        #self.title.labelsize(23)
-        self.title.box(fl.FL_FLAT_BOX)
+
         self.title.color(fl.FL_RED)
-        self.title.align(fl.FL_ALIGN_CENTER)
+        self.apply_bold_and_color(self.title, 0, True)
+        self.title.align(fl.FL_ALIGN_RIGHT + fl.FL_ALIGN_INSIDE)
         self.title.show()
 
     def create_fields(self):
 
-        self.tag_field = fl.Fl_Input(self.proportion_width(28), self.proportion_height(25),
-                                    self.proportion_width(5), self.proportion_height(20), "Tag:")
-        self.tag_field.align(fl.FL_ALIGN_LEFT_TOP)
-        self.tag_field.labelcolor(fl.FL_WHITE)
+        self.tag_field = fl.Fl_Choice(self.proportion_width(28), self.proportion_height(25),
+                                      self.proportion_width(7), self.proportion_height(20), "Tag:")
 
-        self.bluetooth_field = fl.Fl_Input(self.proportion_width(36), self.proportion_height(25),
-                                    self.proportion_width(25), self.proportion_height(20), "Bluetooth:")
-        self.bluetooth_field.align(fl.FL_ALIGN_LEFT_TOP)
-        self.bluetooth_field.labelcolor(fl.FL_WHITE)
+        self.bluetooth_field = fl.Fl_Choice(self.proportion_width(38), self.proportion_height(25),
+                                            self.proportion_width(27), self.proportion_height(20), "Bluetooth:")
 
-        self.body_field = fl.Fl_Input(self.proportion_width(64), self.proportion_height(25),
-                                    self.proportion_width(25), self.proportion_height(20), "Carcaça:")
-        self.body_field.align(fl.FL_ALIGN_LEFT_TOP)
-        self.body_field.labelcolor(fl.FL_WHITE)
+        self.body_field = fl.Fl_Choice(self.proportion_width(68), self.proportion_height(25),
+                                       self.proportion_width(27), self.proportion_height(20), "Carcaça:")
 
-    def create_title_visao(self, text):
-        self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(10),
-                               self.proportion_width(35), self.proportion_height(4), text)
-        self.title.labelcolor(fl.FL_WHITE)
-        self.title.labelsize(23)
-        self.title.box(fl.FL_NO_BOX)
-        # self.title.color(fl.FL_RED)
-        self.title.align(fl.FL_ALIGN_CENTER)
-        self.title.show()
+        self.apply_input_label_style([self.tag_field, self.bluetooth_field, self.body_field])
 
-    def create_check_simulation(self):
-        self.check_simulation = None
-        self.check_simulation = fl.Fl_Check_Button(self.proportion_width(11),
-                                                   self.proportion_height(15),
-                                                   self.proportion_width(4), self.proportion_height(4),
-                                                   "Simulação de previsão de movimento"
-                                                   )
-        self.check_simulation.labelcolor(fl.FL_WHITE)
-        self.check_simulation.clear_visible_focus()
+    def create_buttons(self):
+        self.cancel_button = fl.Fl_Button(self.proportion_width(63),
+                                          self.proportion_height(70),
+                                       self.proportion_width(15),
+                                       self.proportion_height(20), "Cancel")
 
-    def create_check_robot_vector(self):
-        self.check_robot_vector = None
-        self.check_robot_vector = fl.Fl_Check_Button(self.proportion_width(17),
-                                                     self.proportion_height(20),
-                                                     self.proportion_width(4), self.proportion_height(4),
-                                                     "Vetores dos robôs"
-                                                     )
-        self.check_robot_vector.labelcolor(fl.FL_WHITE)
-        self.check_robot_vector.clear_visible_focus()
+        self.ok_button = fl.Fl_Button(self.proportion_width(80),
+                                      self.proportion_height(70),
+                                   self.proportion_width(15),
+                                   self.proportion_height(20), "OK")
 
-    def create_title_console(self, text):
-        self.title_console = fl.Fl_Box(self.proportion_width(5), self.proportion_height(26),
-                                       self.proportion_width(35), self.proportion_height(4), text)
-        self.title_console.labelcolor(fl.FL_WHITE)
-        self.title_console.labelsize(23)
-        self.title_console.box(fl.FL_FLAT_BOX)
-        self.title_console.align(fl.FL_ALIGN_CENTER)
-        self.title_console.show()
+        self.apply_bold_and_color(self.ok_button, fl.FL_DARK_GREEN, True)
+        self.apply_bold_and_color(self.cancel_button, fl.FL_RED, True)
 
-    def create_check_robots(self):
-        n = 6
-        self.check_robots = [None] * n
-        temp_names = ["robo 1", "robo 2", "robo 3", "robo 4", "robo 5", "ball"]
-        print temp_names
-        for num in range(0, n / 2):
-            self.check_robots[num] = fl.Fl_Check_Button(self.proportion_width(10) + self.proportion_width(5) * num * 2,
-                                                        self.proportion_height(32),
-                                                        self.proportion_width(4), self.proportion_height(4),
-                                                        temp_names[num]
-                                                        )
-            self.check_robots[num].labelcolor(fl.FL_WHITE)
-            self.check_robots[num].clear_visible_focus()
+    def apply_input_label_style(self, array_of_widgets = None):
+        for label in array_of_widgets:
+            label.align(fl.FL_ALIGN_LEFT_TOP)
+            label.labelcolor(fl.FL_WHITE)
 
-        for num in range(n / 2, n):
-            self.check_robots[num] = fl.Fl_Check_Button(
-                self.proportion_width(10) + self.proportion_width(5) * (num - n / 2) * 2,
-                self.proportion_height(37), self.proportion_width(4), self.proportion_height(4),
-                temp_names[num])
+    def apply_bold_and_color(self, label, color=0, flat_box = False):
+        label.labelcolor(fl.FL_WHITE)
+        label.labelfont(fl.FL_HELVETICA_BOLD)
+        if color:
+            label.color(color)
 
-            self.check_robots[num].labelcolor(fl.FL_WHITE)
-            self.check_robots[num].clear_visible_focus()
-            self.check_robots[num].value(1)
-
-    def create_scroll(self):
-        self.scroll = fl.Fl_Scrollbar(self.proportion_width(5), self.proportion_height(26),
-                                      self.proportion_width(35), self.proportion_height(20))
+        if flat_box:
+            label.box(fl.FL_FLAT_BOX)
 
     def proportion_height(self, proportion):
         return int(self.height * proportion / 100)
@@ -161,5 +113,5 @@ class RobotParamsView:
 
 if __name__ == '__main__':
     robotp = RobotParamsView()
-
-    fl.Fl.run()
+    robotp.end()
+    #fl.Fl.run()
