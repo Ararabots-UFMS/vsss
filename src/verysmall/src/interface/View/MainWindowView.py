@@ -61,7 +61,7 @@ class MainWindowView:
 
         self.t0 = 0.0
         self.computed_frames = 0.0
-        
+
         # Get the usable screen proportions
         self.width = fl.Fl.w()
         self.height = fl.Fl.h()
@@ -139,11 +139,11 @@ class MainWindowView:
         self.top_menu.add("Jogadores/CarcaÃ§as")
         self.top_menu.add("Jogadores/Bluetooth")
 
-        self.top_menu.add("Configurações", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("Configurações/Interface")
-        self.top_menu.add("Configurações/Campo Virtual")
-        self.top_menu.add("Configurações/Console")
-        self.top_menu.add("Configurações/Conexão")
+        self.top_menu.add("ConfiguraÃ§Ãµes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
+        self.top_menu.add("ConfiguraÃ§Ãµes/Interface")
+        self.top_menu.add("ConfiguraÃ§Ãµes/Campo Virtual")
+        self.top_menu.add("ConfiguraÃ§Ãµes/Console")
+        self.top_menu.add("ConfiguraÃ§Ãµes/Conexï¿½o")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Sobre/Atalhos")
@@ -173,21 +173,42 @@ class MainWindowView:
         self.padding_y += self.proportion_height(10)
         self.padding_x = self.proportion_width(10)
         # No loop unrolling this time
-        for text in ["Papel", "Parâmetros"]:
-            label = fl.Fl_Box(self.padding_x,
-                              self.padding_y,
-                              self.proportion_width(10),
-                              self.proportion_height(5),
-                              text)
-            label.labelcolor(fl.FL_WHITE)
-            label.labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
-            self.padding_x += self.proportion_width(11)
+        # Just kidding, loop unrolling strikes again
+        label = []
+        #for text in ["Papel", "ParÃ¢metros", "Ativo"]:
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(10),
+                          self.proportion_height(5),
+                          "Papel"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(11)
+
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(5),
+                          self.proportion_height(5),
+                          "ParÃ¢metros"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(7)
+
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(5),
+                          self.proportion_height(5),
+                          "Ativo"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(11)
 
         # Variables for the input loops
         temp_names = ["Jogador 1: ", "Jogador 2: ", "Jogador 3: ", "Jogador 4: ", "Jogador 5: "]
         temp_x_padding = [self.proportion_width(10),
                           self.proportion_width(10) * 2 + self.proportion_width(1),
-                          self.proportion_width(10) * 3 + self.proportion_width(2)
+                          self.proportion_width(10) * 3 + self.proportion_width(2),
+                          self.proportion_width(10) * 3
                           ]
         self.padding_y += self.proportion_height(5)
 
@@ -210,7 +231,7 @@ class MainWindowView:
             self.robot_params[num] = fl.Fl_Button(
                 temp_x_padding[1],
                 self.padding_y,
-                self.proportion_width(10),
+                self.proportion_width(5),
                 self.proportion_height(4),
                 'Config')
             #
@@ -223,7 +244,7 @@ class MainWindowView:
             self.robot_params[num].labelcolor(fl.FL_WHITE)
 
             # Input to define if robot is active or not
-            self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[2],
+            self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[3],
                                self.padding_y,
                                self.proportion_width(2),
                                self.proportion_height(4)
@@ -248,7 +269,7 @@ class MainWindowView:
 
             action_button = fl.Fl_Button(self.proportion_width(10) * 2 + self.proportion_width(1),
                                          self.padding_y,
-                                         self.proportion_width(10),
+                                         self.proportion_width(5),
                                          self.proportion_height(4),
                                          "Vai!")
             action_button.labelcolor(fl.FL_WHITE)
@@ -262,8 +283,8 @@ class MainWindowView:
         self.padding_y += self.proportion_height(3)
 
         play_pause_button = fl.Fl_Button(self.proportion_width(10),
-                                         self.padding_y + self.proportion_height(3) * 2,
-                                         self.proportion_width(21),
+                                         self.padding_y + self.proportion_height(3) * 2 - self.proportion_height(2),
+                                         self.proportion_width(16),
                                          self.proportion_height(4),
                                          "Jogar"
                                          )
@@ -271,13 +292,13 @@ class MainWindowView:
         play_pause_button.playing = False
         play_pause_button.labelcolor(fl.FL_WHITE)
         play_pause_button.labelfont(fl.FL_BOLD)
-        play_pause_button.box(fl.FL_FLAT_BOX)
+        # play_pause_button.box(fl.FL_FLAT_BOX)
         play_pause_button.color(fl.FL_DARK_GREEN)
         self.play_button = play_pause_button
 
     def create_toggle_color(self):
         #creates a dropdown menu to choose the color of the team
-        
+
         temp_name = "Cor da Camisa"
         self.team_color = fl.Fl_Choice(self.proportion_width(54.5),
                                                self.proportion_height(8),
@@ -298,7 +319,7 @@ class MainWindowView:
 
     def create_toggle_side(self):
      #creates a dropdown menu to choose the color of the team
-        
+
         temp_name = "Lado da arena"
         self.team_side = fl.Fl_Choice(self.proportion_width(55.5) + self.proportion_width(10),
                                                self.proportion_height(8),
@@ -315,7 +336,7 @@ class MainWindowView:
         self.team_side.value(0)
         self.team_side.align(fl.FL_ALIGN_RIGHT)
         self.padding_y += self.proportion_height(3) * 2
-        
+
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
         return int(self.height * proportion / 100)

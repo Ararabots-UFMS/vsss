@@ -21,7 +21,7 @@ class RobotParamsView:
         self.height = fl.Fl.h()
 
         self.root = fl.Fl_Double_Window(self.proportion_width(25), self.proportion_height(40),
-                                        self.proportion_width(50), self.proportion_height(15))
+                                        self.proportion_width(20), self.proportion_height(25))
 
         self.width = self.root.w()
         self.height = self.root.h()
@@ -45,45 +45,47 @@ class RobotParamsView:
         self.root.end()
 
     def create_main_field(self, text):
-        self.title = fl.Fl_Box(self.proportion_width(5), self.proportion_height(25),
-                               self.proportion_width(20), self.proportion_height(20), text)
+        self.title = fl.Fl_Box(self.proportion_width(0), self.proportion_height(4),
+                               self.proportion_width(100), self.proportion_height(9), text)
 
-        self.title.color(fl.FL_RED)
+        #self.title.color(fl.FL_RED)
+        self.title.labelsize(20)
         self.apply_bold_and_color(self.title, 0, True)
-        self.title.align(fl.FL_ALIGN_RIGHT + fl.FL_ALIGN_INSIDE)
+        self.title.align(fl.FL_ALIGN_CENTER)
         self.title.show()
 
     def create_fields(self):
 
-        self.tag_field = fl.Fl_Choice(self.proportion_width(28), self.proportion_height(25),
-                                      self.proportion_width(7), self.proportion_height(20), "Tag:")
+        self.tag_field = fl.Fl_Choice(self.proportion_width(38), self.proportion_height(20),
+                                      self.proportion_width(40), self.proportion_height(15), "Tag:")
 
-        self.bluetooth_field = fl.Fl_Choice(self.proportion_width(38), self.proportion_height(25),
-                                            self.proportion_width(27), self.proportion_height(20), "Bluetooth:")
+        self.bluetooth_field = fl.Fl_Choice(self.proportion_width(38), self.proportion_height(40),
+                                            self.proportion_width(40), self.proportion_height(15), "Bluetooth:")
 
-        self.body_field = fl.Fl_Choice(self.proportion_width(68), self.proportion_height(25),
-                                       self.proportion_width(27), self.proportion_height(20), "Carcaça:")
+        self.body_field = fl.Fl_Choice(self.proportion_width(38), self.proportion_height(60),
+                                       self.proportion_width(40), self.proportion_height(15), "Carcaça:")
 
         self.apply_input_label_style([self.tag_field, self.bluetooth_field, self.body_field])
 
     def create_buttons(self):
-        self.cancel_button = fl.Fl_Button(self.proportion_width(63),
-                                          self.proportion_height(70),
-                                       self.proportion_width(15),
-                                       self.proportion_height(20), "Cancel")
+        self.cancel_button = fl.Fl_Button(self.proportion_width(70),
+                                          self.proportion_height(82),
+                                       self.proportion_width(20),
+                                       self.proportion_height(12), "Cancel")
 
-        self.ok_button = fl.Fl_Button(self.proportion_width(80),
-                                      self.proportion_height(70),
-                                   self.proportion_width(15),
-                                   self.proportion_height(20), "OK")
+        self.ok_button = fl.Fl_Button(self.proportion_width(20),
+                                      self.proportion_height(82),
+                                   self.proportion_width(20),
+                                   self.proportion_height(12), "OK")
 
-        self.apply_bold_and_color(self.ok_button, fl.FL_DARK_GREEN, True)
-        self.apply_bold_and_color(self.cancel_button, fl.FL_RED, True)
+        self.apply_bold_and_color(self.ok_button, fl.FL_DARK_GREEN, False)
+        self.apply_bold_and_color(self.cancel_button, fl.FL_RED, False)
 
     def apply_input_label_style(self, array_of_widgets = None):
         for label in array_of_widgets:
-            label.align(fl.FL_ALIGN_LEFT_TOP)
+            label.align(fl.FL_ALIGN_LEFT)
             label.labelcolor(fl.FL_WHITE)
+            label.color(fl.FL_RED)
 
     def apply_bold_and_color(self, label, color=0, flat_box = False):
         label.labelcolor(fl.FL_WHITE)
