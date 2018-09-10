@@ -7,14 +7,15 @@ import fltk as fl
 import sys
 import os
 
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from ROS.ros_main_window_publisher import RosMainWindowPublisher
-sys.path[0] = old_path
+# old_path = sys.path[0]
+# sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+# from ROS.ros_game_topic_publisher import RosMainWindowPublisher
+# sys.path[0] = old_path
 
 
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach
+                 , _game_topic_publisher):
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
@@ -48,7 +49,7 @@ class MainWindowController():
         self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
-        self.pub = RosMainWindowPublisher()
+        self.pub = _game_topic_publisher
 
         #replaced by the function set_robots_bluetooth
         self.set_robots_params()
@@ -141,10 +142,10 @@ class MainWindowController():
         while self.robot_params_controller.view.root.visible():
             fl.Fl.wait()
 
-        import rospy
-        rospy.logfatal(self.robot_params[self.faster_hash[ptr.id]] == old)
+        the_same = self.robot_params[self.faster_hash[ptr.id]] == old
 
-
+        if (not the_same) and self.robot_params[self.faster_hash[ptr.id]]['active']:
+            self.coach.set_robot_parameters(ptr.id)
 
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:
@@ -175,8 +176,7 @@ class MainWindowController():
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
-        self.pub.set_robot_role(ptr.id, ptr.value())
-        self.pub.publish()
+        self.coach.change_robot_role(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):

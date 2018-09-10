@@ -11,13 +11,14 @@ path[0] = old_path
 class Coach:
     """Creates the Coach"""
 
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _launcher=None):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _game_topic_publisher, _launcher=None):
 
         # Save the parameters for future use
         self.robot_params = _robot_params
         self.robot_bluetooth = _robot_bluetooth
         self.robot_roles = _robot_roles
         self.game_opt = _game_opt
+        self.pub = _game_topic_publisher
 
         # Fast access array to use a dict as an simple array
         self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
@@ -34,20 +35,38 @@ class Coach:
         # Doing loops for creating the robot nodes
         for robot in self.robot_params.keys():
             # arguments for the node
-            bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
             try:
-                variables = robot + " " + self.robot_bluetooth[bluetooth_number] + " " + \
-                                          self.robot_params[robot]['body_id']
-            except:
-                variables = robot + " -1 " + self.robot_params[robot]['body_id']
+                bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
+                bluetooth_address = self.robot_bluetooth[bluetooth_number]
+            except KeyError:
+                bluetooth_address = str(-1)
+
+            try:
+                tag = self.robot_params[robot]['tag_number']
+                body = self.robot_params[robot]['body_id']
+                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body
+            except KeyError:
+                variables = ""
                 self.robot_params[robot]['active'] = False
 
             # Creates a player node
             self.ros_functions.create_and_store_node(robot, self.robot_params[robot]['active'], variables)
 
-    def set_robot_bluetooth(self, robot_id):
+    def change_robot_role(self, robot_id, role):
         """
-        With robot_id, sets the node bluetooth
+        This function changes the coach role sugestion and publishes through game_topic
+        :param robot_id: int
+        :param role: int
+        :return: nothing
+        """
+        # TODO: alterar objeto Coach
+        # TODO: alterar funcao para receber string e transformar em int para publicar
+        self.pub.set_robot_role(robot_id, role)
+        self.pub.publish()
+
+    def set_robot_parameters(self, robot_id):
+        """
+        With robot_id, sets all the argument for node
         :param robot_id: int
         :return: nothing
         """
@@ -55,7 +74,9 @@ class Coach:
 
         # arguments for the node
         bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
-        variables = robot + ' ' + self.robot_bluetooth[bluetooth_number] + " " + self.robot_params[robot]['body_id']
+        tag = self.robot_params[robot]['tag_number']
+        body = self.robot_params[robot]['body_id']
+        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body
 
         self.ros_functions.change_arguments_of_node(robot, variables)
 

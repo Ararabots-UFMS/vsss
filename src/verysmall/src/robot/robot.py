@@ -13,12 +13,13 @@ from utils.json_handler import JsonHandler
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, robot_name, mac_address, robot_body, isAdversary=False):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, isAdversary=False):
         # Parameters
-        self.robot_name = robot_name
+        self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
-        self.mac_address = mac_address # Mac address
-        self.robot_body = robot_body
+        self.mac_address = _mac_address # Mac address
+        self.robot_body = _robot_body
+        self.tag = _tag
 
         # Receive from vision
         self.position = None

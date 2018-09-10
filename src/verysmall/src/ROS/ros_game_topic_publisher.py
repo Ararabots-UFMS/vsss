@@ -5,7 +5,7 @@ from verysmall.srv import vision_command
 from rospy import ServiceException,ServiceProxy, wait_for_service
 
 
-class RosMainWindowPublisher:
+class GameTopicPublisher:
     """
     This class can publish Game related messages on a 'Game topic' Topic
     :return: nothing
@@ -113,6 +113,6 @@ class RosMainWindowPublisher:
 
 if __name__ == '__main__':
     try:
-        RosMainWindowPublisher()
+        GameTopicPublisher()
     except rospy.ROSInterruptException:
         pass

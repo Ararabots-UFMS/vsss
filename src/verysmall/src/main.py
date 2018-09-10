@@ -2,9 +2,11 @@
 # -*- coding: latin-1 -*-
 from utils.json_handler import JsonHandler
 from utils.model import Model
+from utils.process_killer import ProcessKiller
 from interface.Controller.MainWindowController import MainWindowController
 from interface.Controller.LoadingController import LoadingController
 from ROS.ros_utils import RosUtils
+from ROS.ros_game_topic_publisher import GameTopicPublisher
 from coach.Coach import Coach
 import rospy
 import roslaunch
@@ -14,8 +16,10 @@ Instantiates all the windows, robots, topics and services
 """
 
 if __name__ == '__main__':
+    
+    ProcessKiller(["vision_node","robot"])
+    
     rospy.init_node('virtual_field', anonymous=True)
-
     # Load the database
     model = Model()
 
@@ -46,11 +50,15 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, launch)
+    game_topic_publisher = GameTopicPublisher()
+
+    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, game_topic_publisher, launch)
     lc.stop()
+
     controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
-                                      model.debug_params, model.robot_bodies, coach)
+                                      model.debug_params, model.robot_bodies, coach, game_topic_publisher)
     lc.start("Salvando banco de dados")
+
     if vision_owner:
         vision_process.stop()
 
