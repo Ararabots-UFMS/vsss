@@ -40,9 +40,6 @@ class RobotStateMachine(StateMachine):
 	# Penalty to normal game
 	penalt_to_normal = state_penalt.to(state_normal)
 
-	# All transitions to stop game
-	# stop = state_normal.to(state_stop) | state_freeball.to(state_stop) | state_penalt.to(state_stop) | state_stop.to(state_stop)
-
 	def play(self):
 		# print state
 		pass

@@ -1,17 +1,18 @@
-from robotstatemachine import RobotStateMachine
-from model_robot_state_machine import ModelRobotStateMachine
+from robotstatemachine import RobotStateMachine, ModelMachine
 
 def main():
-	# print "ok"
-	estado = ModelRobotStateMachine(state='state_stop')
+	# para chamar um objeto na classe deve chamar de estado a id do stado cado tenha
+	estado = ModelMachine(state=1)
 	trr = RobotStateMachine(estado)
-	# trr.run('game_freeball')
+	trr.run('game_freeball')
 
 	# state.state = 'state_penalt'
 
-	print trr
+	print estado.state
+	print trr.current_state
 
-	
+	estado.stop()
+	print trr.current_state
 	
 	# print trr.current_state
 
