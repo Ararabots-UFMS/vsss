@@ -94,7 +94,7 @@ if __name__ == "__main__":
     try:
         color = int(sys.argv[2])
     except IndexError:
-        color = 0
+        color = 1
 
     vision_node = VisionNode(color)
     rate = rospy.Rate(30)  # 30hz
