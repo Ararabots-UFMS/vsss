@@ -70,3 +70,10 @@ class RobotStateMachine(StateMachine):
 	# Callback of transition of the Penalt to Normal
 	def on_penalt_to_normal(self):
 		pass
+
+class ModelMachine(object):
+	def __init__(self, state):
+		self.state = state
+
+	def stop(self):
+		self.state = 1
