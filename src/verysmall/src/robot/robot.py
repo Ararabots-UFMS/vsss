@@ -78,7 +78,8 @@ class Robot():
             print("wut")
 
         if self.changed_game_state:
-            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+")")
+            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
+                           str(self.side_of_goal))
             self.changed_game_state = False
 
     def read_parameters(self):

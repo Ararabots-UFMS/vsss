@@ -29,7 +29,13 @@ class VisionOperations(Enum):
 
 
 class VisionNode:
+    """
+    A node for spinning the Vision
+    """
     def __init__(self, color=0):
+        """
+        :param color: int
+        """
         self.team_colors = ['blue', 'yellow']
         self.home_color = self.team_colors[color]  # blue or yellow
         self.home_robots = 1
@@ -85,7 +91,12 @@ class VisionNode:
 
 if __name__ == "__main__":
 
-    vision_node = VisionNode()
+    try:
+        color = int(sys.argv[2])
+    except IndexError:
+        color = 0
+
+    vision_node = VisionNode(color)
     rate = rospy.Rate(30)  # 30hz
 
     while not rospy.is_shutdown():
