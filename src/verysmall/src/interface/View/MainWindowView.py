@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 import numpy as np
 import fltk as fl
 from ..virtualField import virtualField
@@ -135,15 +135,15 @@ class MainWindowView:
         self.top_menu.add("Vis√£o/Calibra√ß√£o de cor")
 
         self.top_menu.add("Jogadores", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("Jogadores/Calibrc√£o")
+        self.top_menu.add("Jogadores/Calibrac√£o")
         self.top_menu.add("Jogadores/Carca√ßas")
         self.top_menu.add("Jogadores/Bluetooth")
 
-        self.top_menu.add("ConfiguraÁıes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("ConfiguraÁıes/Interface")
-        self.top_menu.add("ConfiguraÁıes/Campo Virtual")
-        self.top_menu.add("ConfiguraÁıes/Console")
-        self.top_menu.add("ConfiguraÁıes/Conex„o")
+        self.top_menu.add("Configura√ß√µes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
+        self.top_menu.add("Configura√ß√µes/Interface")
+        self.top_menu.add("Configura√ß√µes/Campo Virtual")
+        self.top_menu.add("Configura√ß√µes/Console")
+        self.top_menu.add("Configura√ß√µes/Conex√£o")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Sobre/Atalhos")
@@ -173,7 +173,7 @@ class MainWindowView:
         self.padding_y += self.proportion_height(10)
         self.padding_x = self.proportion_width(10)
         # No loop unrolling this time
-        for text in ["Papel", "Par‚metros"]:
+        for text in ["Papel", "Par√¢metros"]:
             label = fl.Fl_Box(self.padding_x,
                               self.padding_y,
                               self.proportion_width(10),
@@ -212,13 +212,14 @@ class MainWindowView:
                 self.padding_y,
                 self.proportion_width(10),
                 self.proportion_height(4),
-                'Config')
+                '‚öô')
             #
             # # ID for using in callback with the bluetooth input
             self.robot_params[num].id = num
             #
             # # Bluetooth inputs styles
             self.robot_params[num].color(fl.FL_RED)
+            self.robot_params[num].labelsize(28)
             self.robot_params[num].labelfont(fl.FL_HELVETICA_BOLD)
             self.robot_params[num].labelcolor(fl.FL_WHITE)
 
@@ -310,8 +311,8 @@ class MainWindowView:
         self.team_side.down_box(fl.FL_FLAT_BOX)
         self.team_side.labelcolor(fl.FL_WHITE)
         self.team_side.color(fl.FL_RED)
-        self.team_side.add("Direito")
         self.team_side.add("Esquerdo")
+        self.team_side.add("Direito")
         self.team_side.value(0)
         self.team_side.align(fl.FL_ALIGN_RIGHT)
         self.padding_y += self.proportion_height(3) * 2

@@ -25,10 +25,11 @@ class RosRobotSubscriber:
         :return: nothing
         """
         self.robot.game_state = data.game_state
+        self.robot.side_of_goal = data.side_of_the_field
+        self.robot.role = data.robot_roles[self.robot.robot_id_integer]
         self.robot.penalty_robot = data.penalty_robot
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
-        self.robot.role = data.robot_roles[self.robot.robot_id_integer]
         self.robot.changed_game_state = True
 
     def read_topic(self, data):

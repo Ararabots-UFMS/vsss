@@ -8,8 +8,8 @@ import sys
 import os
 
 # old_path = sys.path[0]
-# sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-# from ROS.ros_game_topic_publisher import RosMainWindowPublisher
+# sys.path[0] = os.environ['ROS_ARARA_ROOT'] + "src/"
+# from vision.vision_node import VisionOperations
 # sys.path[0] = old_path
 
 
@@ -201,6 +201,7 @@ class MainWindowController:
         :param ptr: pointer of the widget
         :return: nothing
         """
+        self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
         self.game_opt["time"] = ptr.value()
 
     def on_side_change(self, ptr):
@@ -209,4 +210,6 @@ class MainWindowController:
         :param ptr: pointer of the widget
         :return: nothing
         """
+        self.pub.set_side_of_the_field(ptr.value())
         self.game_opt["side"] = ptr.value()
+        self.pub.publish()
