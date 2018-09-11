@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 import numpy as np
 import fltk as fl
 from ..virtualField import virtualField
@@ -233,7 +233,7 @@ class MainWindowView:
                 self.padding_y,
                 self.proportion_width(5),
                 self.proportion_height(4),
-                'Config')
+                '⚙')
             #
             # # ID for using in callback with the bluetooth input
             self.robot_params[num].id = num
@@ -242,6 +242,7 @@ class MainWindowView:
             self.robot_params[num].color(fl.FL_RED)
             self.robot_params[num].labelfont(fl.FL_HELVETICA_BOLD)
             self.robot_params[num].labelcolor(fl.FL_WHITE)
+            self.robot_params[num].labelsize(28)
 
             # Input to define if robot is active or not
             self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[3],
