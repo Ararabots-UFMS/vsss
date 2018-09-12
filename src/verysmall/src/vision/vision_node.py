@@ -11,13 +11,33 @@ import os
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
 from ROS.ros_vision_publisher import RosVisionService
+from utils.model import Model
+from utils.camera_loader import CameraLoader
 sys.path[0] = old_path
+from enum import Enum
+
+
+class VisionOperations(Enum):
+    """
+    This class stores vision operations for service request
+    """
+    SHOW = 1
+    CROPPER = 2
+    COLOR_CALIBRATION = 3
+    SET_TEAM_COLOR_BLUE = 4
+    SET_TEAM_COLOR_YELLOW = 5
 
 
 class VisionNode:
-    def __init__(self):
-
-        self.home_color = "yellow"  # blue or yellow
+    """
+    A node for spinning the Vision
+    """
+    def __init__(self, color=0):
+        """
+        :param color: int
+        """
+        self.team_colors = ['blue', 'yellow']
+        self.home_color = self.team_colors[color]  # blue or yellow
         self.home_robots = 1
         self.adv_robots = 2
         self.home_tag = "aruco"
@@ -33,6 +53,9 @@ class VisionNode:
             device = int(sys.argv[1])
         except ValueError:
             device = sys.argv[1]
+        except IndexError:
+            model = Model()
+            return_type, device = CameraLoader(model.game_opt['camera']).get_index()
 
         self.camera = Camera(device, root_path + "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
@@ -57,11 +80,23 @@ class VisionNode:
         self.state_changed = req.operation
         return success
 
+    def set_team_color(self, color_value):
+        """
+        Set the vision team color
+        :param color_value: int
+        :return: nothing
+        """
+        self.vision.home_color = self.team_colors[color_value-4]  # The value is defined in VisionOperations
+
 
 if __name__ == "__main__":
-    COLOR_CALIBRATION = 3
 
-    vision_node = VisionNode()
+    try:
+        color = int(sys.argv[2])
+    except IndexError:
+        color = 1
+
+    vision_node = VisionNode(color)
     rate = rospy.Rate(30)  # 30hz
 
     while not rospy.is_shutdown():
@@ -72,18 +107,25 @@ if __name__ == "__main__":
                 vision_node.show = not vision_node.show
                 cv2.destroyWindow("vision")
         if vision_node.state_changed:  # Process requisition
-            if vision_node.state_changed == 1:
+            if vision_node.state_changed == VisionOperations.SHOW.value:
                 vision_node.show = not vision_node.show
-            elif vision_node.state_changed == 2:
+
+            elif vision_node.state_changed == VisionOperations.CROPPER.value:
                 vision_node.vision.params_setter.run()
                 vision_node.vision.load_params()
-            elif vision_node.state_changed == COLOR_CALIBRATION:
+
+            elif vision_node.state_changed == VisionOperations.COLOR_CALIBRATION.value:
                 # This will verify if the color segmentation technique is
                 # the chosen one
                 if vision_node.vision.colors_params_file != "":
                     # if it is, execute the color calibrator
                     vision_node.vision.color_calibrator.run()
                     vision_node.vision.load_colors_params()
+
+            elif vision_node.state_changed in [VisionOperations.SET_TEAM_COLOR_BLUE.value,
+                                               VisionOperations.SET_TEAM_COLOR_YELLOW.value]:
+                vision_node.set_team_color(vision_node.state_changed)
+
             vision_node.state_changed = 0
         rate.sleep()
 

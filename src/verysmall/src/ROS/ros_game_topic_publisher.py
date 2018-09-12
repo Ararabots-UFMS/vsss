@@ -61,10 +61,11 @@ class GameTopicPublisher:
         """
         self.msg.meta_robot = _meta_robot
 
-    def set_message(self, game_state, robot_roles, penalty_robot, freeball_robot, meta_robot):
+    def set_message(self, game_state, side_of_the_field, robot_roles, penalty_robot, freeball_robot, meta_robot):
         """
         This function sets the publisher message
         :param game_state: uint8
+        :param side_of_the_field: uint8
         :param robot_roles: uint8[5]
         :param penalty_robot: uint8
         :param freeball_robot: uint8
@@ -74,11 +75,20 @@ class GameTopicPublisher:
         """
         self.msg = game_topic(
             game_state,
+            side_of_the_field,
             tuple(robot_roles),
             penalty_robot,
             freeball_robot,
             meta_robot
         )
+
+    def set_side_of_the_field(self, side):
+        """
+        Set side of the game, right(1) or left(0)?
+        :param side: int
+        :return: nothing
+        """
+        self.msg.side_of_the_field = side
 
     def publish(self):
         """

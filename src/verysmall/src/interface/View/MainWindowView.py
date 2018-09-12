@@ -135,7 +135,7 @@ class MainWindowView:
         self.top_menu.add("Visão/Calibração de cor")
 
         self.top_menu.add("Jogadores", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("Jogadores/Calibrcão")
+        self.top_menu.add("Jogadores/Calibracão")
         self.top_menu.add("Jogadores/Carcaças")
         self.top_menu.add("Jogadores/Bluetooth")
 
@@ -143,7 +143,7 @@ class MainWindowView:
         self.top_menu.add("Configurações/Interface")
         self.top_menu.add("Configurações/Campo Virtual")
         self.top_menu.add("Configurações/Console")
-        self.top_menu.add("Configurações/Conex�o")
+        self.top_menu.add("Configurações/Conexão")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Sobre/Atalhos")
@@ -172,6 +172,7 @@ class MainWindowView:
         # Padding for the upper labels
         self.padding_y += self.proportion_height(10)
         self.padding_x = self.proportion_width(10)
+
         # No loop unrolling this time
         # Just kidding, loop unrolling strikes again
         label = []
@@ -332,8 +333,8 @@ class MainWindowView:
         self.team_side.down_box(fl.FL_FLAT_BOX)
         self.team_side.labelcolor(fl.FL_WHITE)
         self.team_side.color(fl.FL_RED)
-        self.team_side.add("Direito")
         self.team_side.add("Esquerdo")
+        self.team_side.add("Direito")
         self.team_side.value(0)
         self.team_side.align(fl.FL_ALIGN_RIGHT)
         self.padding_y += self.proportion_height(3) * 2

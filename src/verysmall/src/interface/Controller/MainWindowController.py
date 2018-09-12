@@ -8,12 +8,12 @@ import sys
 import os
 
 # old_path = sys.path[0]
-# sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-# from ROS.ros_game_topic_publisher import RosMainWindowPublisher
+# sys.path[0] = os.environ['ROS_ARARA_ROOT'] + "src/"
+# from vision.vision_node import VisionOperations
 # sys.path[0] = old_path
 
 
-class MainWindowController():
+class MainWindowController:
     def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach
                  , _game_topic_publisher):
 
@@ -53,7 +53,6 @@ class MainWindowController():
 
         #replaced by the function set_robots_bluetooth
         self.set_robots_params()
-
 
         # A loop for the assigned robot actions
         for num in range(3):
@@ -99,24 +98,6 @@ class MainWindowController():
 
             # This integer is for the value of item in the
             # Drop-down choice box
-
-            #"Nenhum" means the zero value, in case the bluetooth name of the robot changes
-            # self.view.robot_params[num].add("Nenhum")
-            # self.view.robot_params[num].value(0)
-            #
-            # current_item = 1
-            # for item in self.robot_bluetooth_keys:
-            #     # Add the key of the dictionary to the drop-down
-            #     self.view.robot_params[num].add(item)
-            #
-            #     # If key is the same as the key in the robot
-            #     if current_robot['bluetooth_mac_address'] == item:
-            #         # Set the value has they active item in the choice menu
-            #         self.view.robot_params[num].value(current_item)
-            #
-            #     # Increments the value of item
-            #     current_item += 1
-
             # This integer, again, is for the value of item in the
             # Drop-down choice box
             current_item = 0
@@ -179,16 +160,6 @@ class MainWindowController():
         self.coach.change_robot_role(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
-    def bluetooth_choice(self, ptr):
-        # this verification allow to set a default value for the bluetooth_name of the robot,
-        # so we can edit or delete bluetooth entries
-        if ptr.value():
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
-            self.coach.set_robot_bluetooth(ptr.id)
-        else:
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
-            self.coach.set_robot_active(ptr.id, False)
-
     def action_button_clicked(self, ptr):
         if self.view.play_button.playing:
             self.pub.set_game_state(0)  # Sets the game state to stopped
@@ -224,14 +195,21 @@ class MainWindowController():
             self.view.play_button.label("Parar")
             self.view.play_button.playing = not self.view.play_button.playing
 
-    #this function change the team color in the game_opt to the selected one
-    #ptr is the pointer of the widget the callback belongs
-    def on_color_change(self,ptr):
-        ''':params ptr:pointer'''
+    def on_color_change(self, ptr):
+        """
+        This function change the team color in the game_opt to the selected one
+        :param ptr: pointer of the widget
+        :return: nothing
+        """
+        self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
         self.game_opt["time"] = ptr.value()
 
-    #this function changes the team side in game_opt to the selected one
-    #ptr is the pointer of the widget the callback belongs
-    def on_side_change(self,ptr):
-        ''':params ptr:pointer'''
+    def on_side_change(self, ptr):
+        """
+        This function changes the team side in game_opt to the selected one
+        :param ptr: pointer of the widget
+        :return: nothing
+        """
+        self.pub.set_side_of_the_field(ptr.value())
         self.game_opt["side"] = ptr.value()
+        self.pub.publish()

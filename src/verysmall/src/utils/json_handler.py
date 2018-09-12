@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import json, yaml
 import sys
+from os import environ
 
 # @author Wellington Castro <wvmcastro>
 
@@ -15,6 +16,10 @@ class JsonHandler:
         dictionary = dict()
         try:
             params_file = open(file_name, "r")
+        except IOError:
+            params_file = open(environ['ROS_ARARA_ROOT']+"src/" + file_name, "r")
+
+        try:
             dictionary = json.loads(params_file.read())
             params_file.close()
         except:
@@ -26,13 +31,16 @@ class JsonHandler:
 
         return dictionary
 
-
     def write(self, dictionary, file_name):
         """ Writes the dictionary content in a json file """
         sucess = True
 
         try:
             file = open(file_name, "w+")
+        except IOError:
+            file = open(environ['ROS_ARARA_ROOT'] + "src/" + file_name, "w+")
+
+        try:
             json.dump(dictionary, file)
             file.close()
         except:

@@ -231,9 +231,11 @@ class Vision:
 
     def attribute_teams(self):
         if self.home_color == "blue":
+            #rospy.logfatal("blue")
             self.home_seg = self.blue_seg
             self.adv_seg = self.yellow_seg
         else:
+            #rospy.logfatal("yellow")
             self.home_seg = self.yellow_seg
             self.adv_seg = self.blue_seg
 

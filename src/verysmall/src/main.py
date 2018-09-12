@@ -41,7 +41,7 @@ if __name__ == '__main__':
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
         lc.start("Carregando nó da visão")
         # Launch Vision with another Topic
-        arguments = str(device_index)
+        arguments = str(device_index) + " " + str(model.game_opt['time'])
 
         vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
                                           name='vision', args=arguments)

@@ -41,6 +41,11 @@ class Robot():
         self.penalty_robot = None
         self.freeball_robot = None
         self.meta_robot = None
+        self.side_of_goal = 0
+        # right(1) or left(0)
+        self.left_side = 0
+        self.right_side = not self.left_side
+
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
@@ -73,7 +78,8 @@ class Robot():
             print("wut")
 
         if self.changed_game_state:
-            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+")")
+            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
+                           str(self.side_of_goal))
             self.changed_game_state = False
 
     def read_parameters(self):

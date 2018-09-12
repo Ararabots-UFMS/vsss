@@ -41,6 +41,11 @@ class RobotParamsController:
         self.view.end(True)
 
     def set_owner_of_parameters(self, n_robots=5):
+        """
+        Defines which options are available
+        :param n_robots: Number of robots to check ownership
+        :return: nothing
+        """
         # Give the correct owner for things
         for x in xrange(n_robots):
             current_robot = self.robot_params[self.faster_hash[x]]
@@ -69,6 +74,10 @@ class RobotParamsController:
                 pass
 
     def clear_variables(self):
+        """
+        Clear choices and set value to none
+        :return: nothing
+        """
         # Saves current robot owner of bluetooth
         self.bluetooth_is_owned_by = dict.fromkeys(self.robot_bluetooth.keys())
 
@@ -83,7 +92,10 @@ class RobotParamsController:
         self.view.bluetooth_field.clear()
 
     def populate_fields(self):
-
+        """
+        Inflate choice inputs with dict values
+        :return: nothing
+        """
         # Values for mapping int to bluetooth name
         self.bluetooth_value = {"Nenhum": 0}
         self.view.bluetooth_field.add("Nenhum")
@@ -116,9 +128,19 @@ class RobotParamsController:
                 self.view.tag_field.add(str(x))
 
     def hide(self, ptr):
+        """
+        Just hide the window
+        :param ptr: Button Pointer
+        :return: nothing
+        """
         self.view.root.hide()
 
     def show(self, robot_id):
+        """
+        Clear inputs, define owners, define robot_id
+        :param robot_id: int
+        :return: nothing
+        """
         self.clear_variables()
         self.set_owner_of_parameters()
         self.populate_fields()
@@ -126,6 +148,11 @@ class RobotParamsController:
         self.view.root.show()
 
     def save_and_exit(self, ptr):
+        """
+        Defines dict values for robot_id
+        :param ptr: button pointer
+        :return: nothing
+        """
         self.current_robot["tag_number"] = int(self.view.tag_field.text().strip('*'))-1
         self.current_robot["bluetooth_mac_address"] = self.view.bluetooth_field.text().strip('*')
         self.current_robot["body_id"] = self.view.body_field.text().strip('*')
