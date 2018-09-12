@@ -2,27 +2,27 @@ from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
 from ConnectionController import ConnectionController
 from DebugController import DebugController
+from RobotParamsController import RobotParamsController
 import fltk as fl
 import sys
 import os
-from verysmall.msg import game_topic
 
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']
-from verysmall.srv import vision_command
+# old_path = sys.path[0]
+# sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+# from ROS.ros_game_topic_publisher import RosMainWindowPublisher
+# sys.path[0] = old_path
 
-sys.path[0] +="src/"
-from ROS.ros_game_publisher import RosGamePublisher
-from rospy import ServiceException,ServiceProxy, wait_for_service
-sys.path[0] = old_path
 
 class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _trainer):
+    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach
+                 , _game_topic_publisher):
 
         # The controllers are created but not show
         self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
         self.connection_controller = ConnectionController(_game_opt)
         self.debug_controller = DebugController(_debug_params, hidden=True)
+        self.robot_params_controller = RobotParamsController(_robot_params, _robot_bluetooth,
+                                                             _robot_roles, _robot_bodies)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
@@ -33,8 +33,8 @@ class MainWindowController():
         self.robot_roles = _robot_roles
         self.game_opt = _game_opt
 
-        # The trainer object class control the active and the activities of robots
-        self.trainer = _trainer
+        # The coach object class control the active and the activities of robots
+        self.coach = _coach
 
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
@@ -49,14 +49,10 @@ class MainWindowController():
         self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
-        self.pub = RosGamePublisher()
-
-        # Variable for storing proxy
-        self.vision_proxy = None
-        self.register_mac_service()
+        self.pub = _game_topic_publisher
 
         #replaced by the function set_robots_bluetooth
-        self.set_robots_bluetooth()
+        self.set_robots_params()
 
 
         # A loop for the assigned robot actions
@@ -82,7 +78,7 @@ class MainWindowController():
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
         for num in xrange(self.view.n_robots):
-            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+            self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
             
@@ -94,7 +90,7 @@ class MainWindowController():
 
         self.view.end()
 
-    def set_robots_bluetooth(self):
+    def set_robots_params(self):
         # For each Robot, this loop covers all the inputs
         for num in xrange(self.view.n_robots):
             # Access the robot params dict using a int
@@ -105,21 +101,21 @@ class MainWindowController():
             # Drop-down choice box
 
             #"Nenhum" means the zero value, in case the bluetooth name of the robot changes
-            self.view.robot_bluetooths[num].add("Nenhum")
-            self.view.robot_bluetooths[num].value(0)
-
-            current_item = 1
-            for item in self.robot_bluetooth_keys:
-                # Add the key of the dictionary to the drop-down
-                self.view.robot_bluetooths[num].add(item)
-
-                # If key is the same as the key in the robot
-                if current_robot['bluetooth_mac_address'] == item:
-                    # Set the value has they active item in the choice menu
-                    self.view.robot_bluetooths[num].value(current_item)
-
-                # Increments the value of item
-                current_item += 1
+            # self.view.robot_params[num].add("Nenhum")
+            # self.view.robot_params[num].value(0)
+            #
+            # current_item = 1
+            # for item in self.robot_bluetooth_keys:
+            #     # Add the key of the dictionary to the drop-down
+            #     self.view.robot_params[num].add(item)
+            #
+            #     # If key is the same as the key in the robot
+            #     if current_robot['bluetooth_mac_address'] == item:
+            #         # Set the value has they active item in the choice menu
+            #         self.view.robot_params[num].value(current_item)
+            #
+            #     # Increments the value of item
+            #     current_item += 1
 
             # This integer, again, is for the value of item in the
             # Drop-down choice box
@@ -139,22 +135,21 @@ class MainWindowController():
             # Unique id for the check-Box
             self.view.robot_radio_button[num].id = num
 
+    def parameters_button(self, ptr):
+        old = self.robot_params[self.faster_hash[ptr.id]].copy()
 
-    def send_vision_operation(self, operation):
-        """Sends a service request to vision node
-            :param operation : uint8
+        self.robot_params_controller.show(ptr.id)
+        while self.robot_params_controller.view.root.visible():
+            fl.Fl.wait()
 
-            :return: returns nothing
-        """
-        wait_for_service('vision_command')
-        try:
-            self.vision_proxy(operation)
-        except ServiceException as exc:
-            print("Service did not process request: " + str(exc))
+        the_same = self.robot_params[self.faster_hash[ptr.id]] == old
+
+        if (not the_same) and self.robot_params[self.faster_hash[ptr.id]]['active']:
+            self.coach.set_robot_parameters(ptr.id)
 
     def top_menu_choice(self, ptr):
         if ptr.value() < 4:
-            self.send_vision_operation(ptr.value())
+            self.pub.send_vision_operation(ptr.value())
 
         if ptr.value() < 9:
             if ptr.value() == 7: # Connection controller
@@ -177,22 +172,22 @@ class MainWindowController():
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
     def radio_choice(self, ptr):
-        self.trainer.set_robot_active(ptr.id, ptr.value())
+        self.coach.set_robot_active(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
-        self.pub.set_robot_role(ptr.id, ptr.value())
-        self.pub.publish()
+        self.coach.change_robot_role(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def bluetooth_choice(self, ptr):
-        #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
+        # this verification allow to set a default value for the bluetooth_name of the robot,
+        # so we can edit or delete bluetooth entries
         if ptr.value():
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
-            self.trainer.set_robot_bluetooth(ptr.id)
+            self.coach.set_robot_bluetooth(ptr.id)
         else:
             self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
-            self.trainer.set_robot_active(ptr.id, False)
+            self.coach.set_robot_active(ptr.id, False)
 
     def action_button_clicked(self, ptr):
         if self.view.play_button.playing:
@@ -240,10 +235,3 @@ class MainWindowController():
     def on_side_change(self,ptr):
         ''':params ptr:pointer'''
         self.game_opt["side"] = ptr.value()
-
-    def register_mac_service(self):
-        """Creates a proxy for communicating with service
-            :return: returns nothing
-        """
-        wait_for_service('vision_command')
-        self.vision_proxy = ServiceProxy('vision_command', vision_command)

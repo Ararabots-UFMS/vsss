@@ -5,12 +5,12 @@ import cv2
 from camera.camera import Camera
 from threading import Thread
 from vision import Vision
-from verysmall.srv import vision_command
 
 # Top level imports
 import os
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from ROS.ros_vision_publisher import RosVisionService
 sys.path[0] = old_path
 
 
@@ -45,9 +45,14 @@ class VisionNode:
         self.thread.start()
 
         # Creates the service responsible for vision modes and operations
-        self.service = rospy.Service('vision_command', vision_command, self.vision_management)
+        self.service = RosVisionService(self.vision_management)
 
     def vision_management(self, req):
+        """
+        This is the reading function for a service response
+        :param req: variable to get the request operation
+        :return: bool
+        """
         success = True
         self.state_changed = req.operation
         return success
