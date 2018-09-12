@@ -10,7 +10,7 @@ class GameTopicPublisher:
     This class can publish Game related messages on a 'Game topic' Topic
     :return: nothing
     """
-    def __init__(self, isnode=False):
+    def __init__(self, isnode=False, _game_opt = None, _robot_params = None):
         """
         :param isnode: Boolean
         """
@@ -20,6 +20,21 @@ class GameTopicPublisher:
         self.pub = rospy.Publisher('game_topic', game_topic, queue_size=1)
         self.msg = game_topic()
         self.msg.robot_roles = [0, 0, 0, 0, 0]
+        
+        self.game_opt = _game_opt
+        self.robot_params = _robot_params
+
+        # Init message values
+        self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
+
+        for robot_id in xrange(5):
+            self.set_robot_role(robot_id, self.robot_params[self.faster_hash[robot_id]]['role'])
+
+        self.set_freeball_robot(self.game_opt['freeball_player'])
+        self.set_penalty_robot(self.game_opt['penalty_player'])
+        self.set_meta_robot(self.game_opt['meta_player']) 
+
+        self.set_side_of_the_field(self.game_opt['side'])
 
         # Variable for storing proxy
         self.vision_proxy = None

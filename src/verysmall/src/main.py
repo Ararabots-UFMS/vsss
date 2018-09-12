@@ -50,7 +50,7 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    game_topic_publisher = GameTopicPublisher()
+    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params)
 
     coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, game_topic_publisher, launch)
     lc.stop()

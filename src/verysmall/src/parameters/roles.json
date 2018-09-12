@@ -1,5 +1,5 @@
 {
-  "Atacante" : 1,
-  "Goleiro"  : 2,
-  "Zagueiro" : 3
+  "Atacante" : 0,
+  "Goleiro"  : 1,
+  "Zagueiro" : 2
 }
