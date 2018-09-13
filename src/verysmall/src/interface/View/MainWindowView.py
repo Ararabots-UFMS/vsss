@@ -352,7 +352,7 @@ class MainWindowView:
         self.root.clear_visible_focus()
         self.root.end()
         self.root.show()
-        self.RATE = 0.013
+        self.RATE = 0.016
         self.t0 = time.time()
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 
