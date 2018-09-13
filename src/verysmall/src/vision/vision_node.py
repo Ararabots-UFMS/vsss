@@ -27,7 +27,6 @@ class VisionOperations(Enum):
     SET_TEAM_COLOR_BLUE = 4
     SET_TEAM_COLOR_YELLOW = 5
 
-
 class VisionNode:
     """
     A node for spinning the Vision
@@ -107,7 +106,9 @@ if __name__ == "__main__":
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 vision_node.show = not vision_node.show
-                cv2.destroyWindow("vision")
+                cv2.destroyAllWindows()
+                vision_node.vision.computed_frames = 0;
+                vision_node.vision.t0 = time.time();
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == VisionOperations.SHOW.value:
                 vision_node.show = not vision_node.show
