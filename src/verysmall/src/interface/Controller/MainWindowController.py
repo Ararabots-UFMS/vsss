@@ -23,7 +23,7 @@ class MainWindowController:
         self.game_opt = model.game_opt
 
         # The controllers are created but not show
-        self.bluetooth_controller = BluetoothManagerController(self.robot_bluetooth, hidden=True)
+        self.bluetooth_controller = BluetoothManagerController(model, hidden=True)
         self.connection_controller = ConnectionController(self.game_opt)
         self.debug_controller = DebugController(model.debug_params, hidden=True)
         self.robot_params_controller = RobotParamsController(self.robot_params, self.robot_bluetooth,
