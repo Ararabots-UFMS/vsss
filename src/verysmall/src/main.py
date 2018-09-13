@@ -50,13 +50,12 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params)
-
-    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, game_topic_publisher, launch)
+    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles)
+    #                   _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _game_topic_publisher
+    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt, game_topic_publisher, launch)
     lc.stop()
 
-    controller = MainWindowController(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt,
-                                      model.debug_params, model.robot_bodies, coach, game_topic_publisher)
+    controller = MainWindowController(model, coach, game_topic_publisher)
     lc.start("Salvando banco de dados")
 
     if vision_owner:

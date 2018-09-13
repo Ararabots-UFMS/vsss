@@ -14,24 +14,24 @@ import os
 
 
 class MainWindowController:
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _robot_bodies, _coach
-                 , _game_topic_publisher):
+    def __init__(self, model, _coach, _game_topic_publisher):
+
+        # Save the parameters for future use
+        self.robot_params = model.robot_params
+        self.robot_bluetooth = model.robot_bluetooth
+        self.robot_roles = model.robot_roles
+        self.game_opt = model.game_opt
 
         # The controllers are created but not show
-        self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
-        self.connection_controller = ConnectionController(_game_opt)
-        self.debug_controller = DebugController(_debug_params, hidden=True)
-        self.robot_params_controller = RobotParamsController(_robot_params, _robot_bluetooth,
-                                                             _robot_roles, _robot_bodies)
+        self.bluetooth_controller = BluetoothManagerController(self.robot_bluetooth, hidden=True)
+        self.connection_controller = ConnectionController(self.game_opt)
+        self.debug_controller = DebugController(model.debug_params, hidden=True)
+        self.robot_params_controller = RobotParamsController(self.robot_params, self.robot_bluetooth,
+                                                             self.robot_roles, model.robot_bodies)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
 
-        # Save the parameters for future use
-        self.robot_params = _robot_params
-        self.robot_bluetooth = _robot_bluetooth
-        self.robot_roles = _robot_roles
-        self.game_opt = _game_opt
 
         # The coach object class control the active and the activities of robots
         self.coach = _coach
@@ -100,16 +100,16 @@ class MainWindowController:
             # Drop-down choice box
             # This integer, again, is for the value of item in the
             # Drop-down choice box
-            current_item = 0
+            
             for item in self.robot_roles_keys:
                 # Add the key of the dictionary to the drop-down...
                 # again
-                self.view.robot_roles[num].add(item)
+                current_item = int(self.robot_roles[item])
+                self.view.robot_roles[num].insert(current_item,item,0,None,None,0)
+
                 if current_robot['role'] == item:
                     # Same as above
                     self.view.robot_roles[num].value(current_item)
-                # Well...
-                current_item += 1
 
             # The value for the check button
             self.view.robot_radio_button[num].value(current_robot['active'])

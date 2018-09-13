@@ -10,7 +10,7 @@ class GameTopicPublisher:
     This class can publish Game related messages on a 'Game topic' Topic
     :return: nothing
     """
-    def __init__(self, isnode=False, _game_opt = None, _robot_params = None):
+    def __init__(self, isnode=False, _game_opt = None, _robot_params = None, _robot_name_roles = None):
         """
         :param isnode: Boolean
         """
@@ -23,12 +23,14 @@ class GameTopicPublisher:
         
         self.game_opt = _game_opt
         self.robot_params = _robot_params
+        self.robot_name_roles = _robot_name_roles
 
         # Init message values
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
 
         for robot_id in xrange(5):
-            self.set_robot_role(robot_id, self.robot_params[self.faster_hash[robot_id]]['role'])
+            role_name = self.robot_params[self.faster_hash[robot_id]]['role']
+            self.set_robot_role(robot_id, self.robot_name_roles[role_name])
 
         self.set_freeball_robot(self.game_opt['freeball_player'])
         self.set_penalty_robot(self.game_opt['penalty_player'])
