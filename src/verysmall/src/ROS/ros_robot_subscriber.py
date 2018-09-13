@@ -25,7 +25,7 @@ class RosRobotSubscriber:
         :return: nothing
         """
         self.robot.game_state = data.game_state
-        self.robot.side_of_goal = data.side_of_the_field
+        self.robot.team_side = data.team_side
         self.robot.role = data.robot_roles[self.robot.robot_id_integer]
         self.robot.penalty_robot = data.penalty_robot
         self.robot.freeball_robot = data.freeball_robot

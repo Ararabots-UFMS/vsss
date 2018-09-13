@@ -36,7 +36,7 @@ class GameTopicPublisher:
         self.set_penalty_robot(self.game_opt['penalty_player'])
         self.set_meta_robot(self.game_opt['meta_player']) 
 
-        self.set_side_of_the_field(self.game_opt['side'])
+        self.set_team_side(self.game_opt['side'])
 
         # Variable for storing proxy
         self.vision_proxy = None
@@ -59,6 +59,24 @@ class GameTopicPublisher:
         """
         self.msg.robot_roles[robot_id] = role
 
+    def assigned_action_to_robot(self, action_id, robot_id):
+        """
+        Assigned a robot_id to action(meta, free or penalty)
+            - 0 -> Freeball
+            - 1 -> Penalti
+            - 2 -> Tiro de meta
+        :param action_id: int
+        :param robot_id: int
+        :return: nothing
+        """
+        if action_id:
+            if action_id == 1:
+                self.set_penalty_robot(robot_id)
+            else:
+                self.set_meta_robot(robot_id)
+        else:
+            self.set_freeball_robot(robot_id)
+
     def set_penalty_robot(self, _penalty_robot):
         """
         Set the selected robot the action of taking penalty actions
@@ -78,11 +96,11 @@ class GameTopicPublisher:
         """
         self.msg.meta_robot = _meta_robot
 
-    def set_message(self, game_state, side_of_the_field, robot_roles, penalty_robot, freeball_robot, meta_robot):
+    def set_message(self, game_state, team_side, robot_roles, penalty_robot, freeball_robot, meta_robot):
         """
         This function sets the publisher message
         :param game_state: uint8
-        :param side_of_the_field: uint8
+        :param team_side: uint8
         :param robot_roles: uint8[5]
         :param penalty_robot: uint8
         :param freeball_robot: uint8
@@ -92,20 +110,20 @@ class GameTopicPublisher:
         """
         self.msg = game_topic(
             game_state,
-            side_of_the_field,
+            team_side,
             tuple(robot_roles),
             penalty_robot,
             freeball_robot,
             meta_robot
         )
 
-    def set_side_of_the_field(self, side):
+    def set_team_side(self, side):
         """
         Set side of the game, right(1) or left(0)?
         :param side: int
         :return: nothing
         """
-        self.msg.side_of_the_field = side
+        self.msg.team_side = side
 
     def publish(self):
         """

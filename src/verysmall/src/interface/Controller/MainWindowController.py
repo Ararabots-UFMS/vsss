@@ -4,18 +4,16 @@ from ConnectionController import ConnectionController
 from DebugController import DebugController
 from RobotParamsController import RobotParamsController
 import fltk as fl
-import sys
-import os
-
-# old_path = sys.path[0]
-# sys.path[0] = os.environ['ROS_ARARA_ROOT'] + "src/"
-# from vision.vision_node import VisionOperations
-# sys.path[0] = old_path
 
 
 class MainWindowController:
     def __init__(self, model, _coach, _game_topic_publisher):
-
+        """
+        This class os resonsible for managing the main window
+        :param model: Dict
+        :param _coach: Coach Class Object
+        :param _game_topic_publisher: GameTopicPublisher Class Objcet
+        """
         # Save the parameters for future use
         self.robot_params = model.robot_params
         self.robot_bluetooth = model.robot_bluetooth
@@ -31,7 +29,6 @@ class MainWindowController:
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
-
 
         # The coach object class control the active and the activities of robots
         self.coach = _coach
@@ -51,7 +48,7 @@ class MainWindowController:
         # Creates the game topic
         self.pub = _game_topic_publisher
 
-        #replaced by the function set_robots_bluetooth
+        # Replaced by the function set_robots_bluetooth
         self.set_robots_params()
 
         # A loop for the assigned robot actions
@@ -90,6 +87,10 @@ class MainWindowController:
         self.view.end()
 
     def set_robots_params(self):
+        """
+        Set robot roles and active checks
+        :return: nothing
+        """
         # For each Robot, this loop covers all the inputs
         for num in xrange(self.view.n_robots):
             # Access the robot params dict using a int
@@ -117,6 +118,12 @@ class MainWindowController:
             self.view.robot_radio_button[num].id = num
 
     def parameters_button(self, ptr):
+        """
+        Takes a point with id = robot_id, calls the Param Controller and compares old with new dict for
+        assigning variables to the robot node
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         old = self.robot_params[self.faster_hash[ptr.id]].copy()
 
         self.robot_params_controller.show(ptr.id)
@@ -129,6 +136,11 @@ class MainWindowController:
             self.coach.set_robot_parameters(ptr.id)
 
     def top_menu_choice(self, ptr):
+        """
+        Callback function, using the value of pointer
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         if ptr.value() < 4:
             self.pub.send_vision_operation(ptr.value())
 
@@ -145,22 +157,49 @@ class MainWindowController:
                 self.wait_window_close(self.connection_controller)
 
     def wait_window_close(self, window_controller):
+        """
+        Wait till window is not visible
+        :param window_controller: Fl_Window
+        :return: nothing
+        """
         window_controller.show()
         while window_controller.view.root.visible():
             fl.Fl.wait()
 
     def action_input_choice(self, ptr):
+        """
+        Assign robot action callback
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.pub.assigned_action_to_robot(ptr.id, ptr.value())
+        self.pub.publish()
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
     def radio_choice(self, ptr):
+        """
+        Checkbox callback, node active or not?
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         self.coach.set_robot_active(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
+        """
+        Callback for robot role choice
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         self.coach.change_robot_role(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
     def action_button_clicked(self, ptr):
+        """
+        Action callback related to all buttons
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         if self.view.play_button.playing:
             self.pub.set_game_state(0)  # Sets the game state to stopped
             self.pub.publish()
@@ -210,6 +249,6 @@ class MainWindowController:
         :param ptr: pointer of the widget
         :return: nothing
         """
-        self.pub.set_side_of_the_field(ptr.value())
+        self.pub.set_team_side(ptr.value())
         self.game_opt["side"] = ptr.value()
         self.pub.publish()
