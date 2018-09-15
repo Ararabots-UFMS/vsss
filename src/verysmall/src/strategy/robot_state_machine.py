@@ -20,27 +20,27 @@ class RobotStateMachine(StateMachine):
         freeball_to_normal  {[Transition]} -- [Transition freeball to normal]
         penalt_to_normal    {[Transition]} -- [Transition penalty to normal]
     """
-    def __init__(self):
-        # Base States
-        self.stop      = State('Stop', initial=True, value=1)
-        self.normal    = State('Normal', value=2)
-        self.freeball  = State('FreeBall', value=3)
-        self.penalty   = State('Penalty', value=4)
+    # def __init__(self):
+    # Base States
+    stop      = State('Stop', initial=True)
+    normal    = State('Normal')
+    freeball  = State('FreeBall')
+    penalty   = State('Penalty')
 
-        # Base Transictions
+    # Base Transictions
 
-        # Stop to freebal game
-        self.stop_to_freeball = self.stop.to(self.freeball)
-        # Stop to normal game
-        self.stop_to_normal = self.stop.to(self.normal)
-        # Stop to penalty
-        self.stop_to_penalty = self.stop.to(self.penalty)
-        # Freball to normal game
-        self.freeball_to_normal = self.freeball.to(self.normal)
-        # Penalty to normal game
-        self.penalty_to_normal = self.penalty.to(self.normal)
+    # Stop to freebal game
+    stop_to_freeball = stop.to(freeball)
+    # Stop to normal game
+    stop_to_normal = stop.to(normal)
+    # Stop to penalty
+    stop_to_penalty = stop.to(penalty)
+    # Freball to normal game
+    freeball_to_normal = freeball.to(normal)
+    # Penalty to normal game
+    penalty_to_normal = penalty.to(normal)
 
-        self.ee = self.stop_to_freeball | self.stop_to_normal | self.stop_to_penalty | self.freeball_to_normal | self.penalty_to_normal
+    go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
     # Stop all robbery
     def on_enter_stop(self):
@@ -57,11 +57,3 @@ class RobotStateMachine(StateMachine):
     # Callback of transition of the Stop Game to Penalt
     def on_enter_penalty(self):
         print "Penalty"
-
-
-class ModelMachine(object):
-    def __init__(self, state):
-        self.state = state
-
-    def stop(self):
-        self.state = "Stop"

@@ -1,8 +1,8 @@
-from statemachine import StateMachine, State
 from statemachine.mixins import MachineMixin
-from robot_state_machine import RobotStateMachine
 
-class AttackerWithUnivector(RobotStateMachine):
+class AttackerWithUnivector(MachineMixin):
+    state_machine_name = 'RobotStateMachine'
+
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
