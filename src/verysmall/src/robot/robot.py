@@ -6,7 +6,7 @@ from verysmall.msg import things_position, game_topic
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from strategy.univector_statemachine import AttackerWithUnivector
+from strategy.attacker_with_univector import AttackerWithUnivector
 from utils.json_handler import JsonHandler
 
 
@@ -64,11 +64,9 @@ class Robot():
             self.bluetooth_sender.sendPacket(0, 0)
         elif self.game_state == 1:  # Normal Play
             self.state_machine.statemachine.stop_to_normal()
-            left, right, _ = self.state_machine.action(130, self.position, self.orientation, 0, self.enemies_position, self.enemies_speed, self.ball_position)
-            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
             pass
-        elif self.game_state == 3:  # Penaly
+        elif self.game_state == 3:  # Penalty
             pass
         elif self.game_state == 4:  # Meta
             pass
