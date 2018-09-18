@@ -1,4 +1,13 @@
-from attacker_with_univector import AttackerWithUnivector
+from attacker_with_univector import AttackerWithUnivector, MyModel
+import sys
+import os
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from robot.movement.functions.movement import Movement
+from utils.json_handler import JsonHandler
+import rospy
+import numpy as np
+
+
 
 class AttackerWithUnivectorController():
 
@@ -10,7 +19,8 @@ class AttackerWithUnivectorController():
         self.enemies_speed = None
         self.ball_position = None
 
-        self.AttackerWithUnivector = AttackerWithUnivector()
+        self.stop = MyModel(state='Stop')
+        self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
@@ -31,7 +41,8 @@ class AttackerWithUnivectorController():
         self.ball_position = ball_position
 
     def set_to_stop_game(self):
-        pass
+        self.stop.state = 'stop'
+        return 0, 0
 
     def in_normal_game(self):
         if self.AttackerWithUnivector.is_stop:
@@ -42,3 +53,18 @@ class AttackerWithUnivectorController():
 
         elif self.AttackerWithUnivector.is_univector:
             self.AttackerWithUnivector.univector_to_univector()
+
+    def in_freeball_game(self):
+        self.AttackerWithUnivector.stop_to_freeball()
+        self.AttackerWithUnivector.freeball_to_normal()
+
+    def in_penalty_game(self):
+        self.AttackerWithUnivector.stop_to_penalty()
+        self.AttackerWithUnivector.penalty_to_normal()
+
+    def in_meta_game(self):
+        self.AttackerWithUnivector.stop_to_meta()
+        self.AttackerWithUnivector.meta_to_normal()
+
+    def in_univector_state(self):
+        self.AttackerWithUnivector.univector_to_univector()

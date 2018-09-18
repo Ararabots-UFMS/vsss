@@ -47,3 +47,8 @@ class AttackerWithUnivector(StateMachine):
     univector_to_univector = normal.to(univector)
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
+
+
+class MyModel(object):
+    def __init__(self, state):
+        self.state = state
