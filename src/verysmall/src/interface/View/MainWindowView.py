@@ -1,23 +1,38 @@
 #!/usr/bin/python
-# -*- coding: latin-1 -*-
-import sys
+# -*- coding: utf-8 -*-
 import numpy as np
 import fltk as fl
 from ..virtualField import virtualField
-import rospy
 import time
-from Queue import Queue
-from collections import deque
-from verysmall.msg import things_position
+from sys import path
+from os import environ
+old_path = path[0]
+path[0] = environ['ROS_ARARA_ROOT'] + "src/"
+from ROS.ros_main_window_subscriber import RosMainWindowSubscriber
+path[0] = old_path
 
 
-class canvas(fl.Fl_Double_Window):
+class Canvas(fl.Fl_Double_Window):
+    """The canvas class is a sub-class of Fl_Double_Window, so it has double buffering enabled"""
     def __init__(self, x, y, w, h, l, image):
+        """
+            :param x: int
+            :param y: int
+            :param w: int
+            :param h: int
+            :param h: int
+            :param l: int
+            :param image: np.array([h, l])
+
+            :return: returns nothing
+        """
         fl.Fl_Double_Window.__init__(self, x, y, w, h, l)
         self.image = image
 
     def draw(self):
+        """This function is called when the redraw happens"""
         fl.fl_draw_image(self.image.data, 0,0, self.w(), self.h(), 3, 0)
+
 
 class MainWindowView:
     """Creates the visual for the main window and uses the MainWindowController to handle callbacks"""
@@ -27,8 +42,10 @@ class MainWindowView:
         # Init Variables
         self.title = None
         self.option_robots = [None, None, None, None, None]
-        self.robot_bluetooths = [None, None, None, None, None]
+        self.robot_params = [None, None, None, None, None]
         self.robot_roles = [None, None, None, None, None]
+        self.team_color = None
+        self.team_side = None
         self.robot_radio_button = [None, None, None, None, None]
         self.action_buttons = []
         self.play_button = None
@@ -38,6 +55,12 @@ class MainWindowView:
         self.padding_x = 0
         self.padding_y = 0
         self.n_robots = 5
+        self.arena = None
+
+        self.reader = RosMainWindowSubscriber()
+
+        self.t0 = 0.0
+        self.computed_frames = 0.0
 
         # Get the usable screen proportions
         self.width = fl.Fl.w()
@@ -48,74 +71,55 @@ class MainWindowView:
 
         # Create a new Buffered window
         self.root = fl.Fl_Window(self.proportion_width(2.5), self.proportion_height(5),
-                                        self.proportion_width(95), self.proportion_height(90))
-        #TODO: Diminuir campo virtual para abrir space para os numeros da tag
-        #TODO: Criar dropdown para as tags
+                                 self.proportion_width(95), self.proportion_height(90))
+
         self.virtualField = virtualField(self.proportion_width(50), self.proportion_height(70), is_rgb=True)
         self.virtualField.plot_arena(self.virtualField.raw_field)
-
+        self.init_time = time.time()
         self.root.label("ARARABOTS MANAGEMENT SYSTEM")
 
         # Construct main window
         self.create_top_menu()
         self.create_left_menu()
         self.create_arena()
+        self.arena.image = self.virtualField.field
+        self.create_toggle_color()
+        self.create_toggle_side()
 
-        # Queue of data from Topic Things position
-        #self.data = Queue(maxsize=10)
-        msg = things_position()
-        self.data = deque(
-        # Shapes the size of the Queue
-        #self.data.put(
-            [msg,msg])
-
-        # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
-        rospy.init_node('virtual_field', anonymous=True)
         self.past_time = time.time()
         # Define colors
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
 
-    def read(self, data):
-        # Inserts data in the Queue
-        #if not self.data.full():
-        self.data.append(data)
-
     def redraw_field(self):
-        #if not self.data.empty():
-        try:
-            self.data_item = data_item = self.data.popleft()  # Get the data
-            #rospy.logfatal(len(self.data))
-            #self.data.task_done()  # Finishes the get process
-            #self.now_time = time.time()
-            #rospy.logfatal(self.now_time - self.past_time)
 
-            self.virtualField.plot_ball(np.nan_to_num(np.array(data_item.ball_pos)))  # Plot the ball
-            self.virtualField.plot_robots(np.nan_to_num(np.array(data_item.team_pos)).reshape((5, 2)),
-                                           np.nan_to_num(np.array(data_item.team_orientation)),
-                                           self.virtualField.colors["yellow"])
+        data_item = self.reader.pop_item()  # Get the data
 
-            self.virtualField.plot_robots(np.nan_to_num(data_item.enemies_pos).reshape((5, 2)),
-                                           np.nan_to_num(data_item.enemies_orientation),
-                                           self.virtualField.colors["blue"], is_away=True)
+        if data_item is not None:
+
+            self.virtualField.plot(data_item.ball_pos,                  # ball position
+                                   data_item.team_pos,                  # home team position
+                                   data_item.team_orientation,          # home team vectors
+                                   self.virtualField.colors["yellow"],  # home team color
+                                   data_item.enemies_pos,               # away team position
+                                   data_item.enemies_orientation,       # away team vectors
+                                   self.virtualField.colors["blue"],    # away team color
+                                   int(data_item.vision_fps*10)/10.0,
+                                   int((self.computed_frames / (time.time() - self.t0))*10)/10.0,
+                                   is_away=True)  # vision_fps, topic_fps, is_away flag
             self.arena.image = self.virtualField.field
             self.arena.redraw()
-            #self.past_time = self.now_time
-        #else:
-        except IndexError:
-            #print("vazia")
-            rospy.loginfo("vazia")
-            #self.arena.redraw()
 
+        self.computed_frames += 1
         fl.Fl.repeat_timeout(self.RATE, self.redraw_field)
 
     def create_arena(self):
         """Creates a top window, double buffered one"""
-        self.arena = canvas(self.proportion_width(40), self.proportion_height(15),
+        self.arena = Canvas(self.proportion_width(40), self.proportion_height(15),
                             self.proportion_width(50), self.proportion_height(70), "D_Window",self.virtualField.field)
         self.arena.box(fl.FL_FLAT_BOX)
         self.arena.end()
+        self.arena.image = self.virtualField.field
 
     def create_top_menu(self):
         """Creates the buttons and inputs for players"""
@@ -125,23 +129,24 @@ class MainWindowView:
         self.top_menu.labelcolor(fl.FL_WHITE)
         self.top_menu.textcolor(fl.FL_WHITE)
 
-        self.top_menu.add("C‚mera", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("C‚mera/CalibraÁ„o")
-        self.top_menu.add("C‚mera/Corte")
-        self.top_menu.add("C‚mera/OpÁıes")
+        self.top_menu.add("Vis√£o", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
+        self.top_menu.add("Vis√£o/Imagem original")
+        self.top_menu.add("Vis√£o/Enquadramento")
+        self.top_menu.add("Vis√£o/Calibra√ß√£o de cor")
 
         self.top_menu.add("Jogadores", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("Jogadores/CalibraÁ„o")
-        self.top_menu.add("Jogadores/CarcaÁas")
+        self.top_menu.add("Jogadores/Calibrac√£o")
+        self.top_menu.add("Jogadores/Carca√ßas")
         self.top_menu.add("Jogadores/Bluetooth")
 
-        self.top_menu.add("ConfiguraÁıes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("ConfiguraÁıes/Interface")
-        self.top_menu.add("ConfiguraÁıes/Campo Virtual")
-        self.top_menu.add("ConfiguraÁıes/Console")
+        self.top_menu.add("Configura√ß√µes", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
+        self.top_menu.add("Configura√ß√µes/Interface")
+        self.top_menu.add("Configura√ß√µes/Campo Virtual")
+        self.top_menu.add("Configura√ß√µes/Console")
+        self.top_menu.add("Configura√ß√µes/Conex√£o")
 
         self.top_menu.add("Sobre", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
-        self.top_menu.add("Sobre/Hotkeys")
+        self.top_menu.add("Sobre/Atalhos")
         self.top_menu.add("Sobre/Interface")
         self.top_menu.add("Sobre/Equipe")
 
@@ -167,22 +172,44 @@ class MainWindowView:
         # Padding for the upper labels
         self.padding_y += self.proportion_height(10)
         self.padding_x = self.proportion_width(10)
+
         # No loop unrolling this time
-        for text in ["Papel", "Camisa"]:
-            label = fl.Fl_Box(self.padding_x,
-                              self.padding_y,
-                              self.proportion_width(10),
-                              self.proportion_height(5),
-                              text)
-            label.labelcolor(fl.FL_WHITE)
-            label.labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
-            self.padding_x += self.proportion_width(11)
+        # Just kidding, loop unrolling strikes again
+        label = []
+        #for text in ["Papel", "Par√¢metros", "Ativo"]:
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(10),
+                          self.proportion_height(5),
+                          "Papel"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(11)
+
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(5),
+                          self.proportion_height(5),
+                          "Par√¢metros"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(7)
+
+        label.append(fl.Fl_Box(self.padding_x,
+                          self.padding_y,
+                          self.proportion_width(5),
+                          self.proportion_height(5),
+                          "Ativo"))
+        label[-1].labelcolor(fl.FL_WHITE)
+        label[-1].labelfont(fl.FL_HELVETICA_BOLD)  # type Bold
+        self.padding_x += self.proportion_width(11)
 
         # Variables for the input loops
         temp_names = ["Jogador 1: ", "Jogador 2: ", "Jogador 3: ", "Jogador 4: ", "Jogador 5: "]
         temp_x_padding = [self.proportion_width(10),
                           self.proportion_width(10) * 2 + self.proportion_width(1),
-                          self.proportion_width(10) * 3 + self.proportion_width(2)
+                          self.proportion_width(10) * 3 + self.proportion_width(2),
+                          self.proportion_width(10) * 3
                           ]
         self.padding_y += self.proportion_height(5)
 
@@ -201,24 +228,25 @@ class MainWindowView:
             self.robot_roles[num].labelcolor(fl.FL_WHITE)
             self.robot_roles[num].box(fl.FL_NO_BOX)
 
-            # Bluetooth inputs
-            self.robot_bluetooths[num] = fl.Fl_Choice(
+            # # Bluetooth inputs
+            self.robot_params[num] = fl.Fl_Button(
                 temp_x_padding[1],
                 self.padding_y,
-                self.proportion_width(10),
+                self.proportion_width(5),
                 self.proportion_height(4),
-                temp_names[num])
-
-            # ID for using in callback with the bluetooth input
-            self.robot_bluetooths[num].id = num
-
-            # Bluetooth inputs styles
-            self.robot_bluetooths[num].color(fl.FL_RED)
-            self.robot_bluetooths[num].labeltype(fl.FL_NO_LABEL)
-            self.robot_bluetooths[num].labelcolor(fl.FL_WHITE)
+                '‚öô')
+            #
+            # # ID for using in callback with the bluetooth input
+            self.robot_params[num].id = num
+            #
+            # # Bluetooth inputs styles
+            self.robot_params[num].color(fl.FL_RED)
+            self.robot_params[num].labelfont(fl.FL_HELVETICA_BOLD)
+            self.robot_params[num].labelcolor(fl.FL_WHITE)
+            self.robot_params[num].labelsize(28)
 
             # Input to define if robot is active or not
-            self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[2],
+            self.robot_radio_button[num] = fl.Fl_Check_Button(temp_x_padding[3],
                                self.padding_y,
                                self.proportion_width(2),
                                self.proportion_height(4)
@@ -243,7 +271,7 @@ class MainWindowView:
 
             action_button = fl.Fl_Button(self.proportion_width(10) * 2 + self.proportion_width(1),
                                          self.padding_y,
-                                         self.proportion_width(10),
+                                         self.proportion_width(5),
                                          self.proportion_height(4),
                                          "Vai!")
             action_button.labelcolor(fl.FL_WHITE)
@@ -257,8 +285,8 @@ class MainWindowView:
         self.padding_y += self.proportion_height(3)
 
         play_pause_button = fl.Fl_Button(self.proportion_width(10),
-                                         self.padding_y,
-                                         self.proportion_width(21),
+                                         self.padding_y + self.proportion_height(3) * 2 - self.proportion_height(2),
+                                         self.proportion_width(16),
                                          self.proportion_height(4),
                                          "Jogar"
                                          )
@@ -266,9 +294,50 @@ class MainWindowView:
         play_pause_button.playing = False
         play_pause_button.labelcolor(fl.FL_WHITE)
         play_pause_button.labelfont(fl.FL_BOLD)
-        play_pause_button.box(fl.FL_FLAT_BOX)
+        # play_pause_button.box(fl.FL_FLAT_BOX)
         play_pause_button.color(fl.FL_DARK_GREEN)
         self.play_button = play_pause_button
+
+    def create_toggle_color(self):
+        #creates a dropdown menu to choose the color of the team
+
+        temp_name = "Cor da Camisa"
+        self.team_color = fl.Fl_Choice(self.proportion_width(54.5),
+                                               self.proportion_height(8),
+                                               self.proportion_width(10),
+                                               self.proportion_height(4),
+                                               temp_name)
+
+        self.team_color.id = 13
+        self.team_color.down_box(fl.FL_FLAT_BOX)
+        self.team_color.labelcolor(fl.FL_WHITE)
+        self.team_color.color(fl.FL_RED)
+        self.team_color.add("Azul")
+        self.team_color.add("Amarelo")
+        self.team_color.value(0)
+       # self.team_color.align(fl.FL_ALIGN_LEFT)
+        #self.padding_y += self.proportion_height(3) * 2
+        #we skip this padding increment to force the next component to be with the same height
+
+    def create_toggle_side(self):
+     #creates a dropdown menu to choose the color of the team
+
+        temp_name = "Lado da arena"
+        self.team_side = fl.Fl_Choice(self.proportion_width(55.5) + self.proportion_width(10),
+                                               self.proportion_height(8),
+                                               self.proportion_width(10),
+                                               self.proportion_height(4),
+                                               temp_name)
+
+        self.team_side.id = 13
+        self.team_side.down_box(fl.FL_FLAT_BOX)
+        self.team_side.labelcolor(fl.FL_WHITE)
+        self.team_side.color(fl.FL_RED)
+        self.team_side.add("Esquerdo")
+        self.team_side.add("Direito")
+        self.team_side.value(0)
+        self.team_side.align(fl.FL_ALIGN_RIGHT)
+        self.padding_y += self.proportion_height(3) * 2
 
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
@@ -283,9 +352,8 @@ class MainWindowView:
         self.root.clear_visible_focus()
         self.root.end()
         self.root.show()
-
-        self.RATE = 0.013#0.04
-
+        self.RATE = 0.016
+        self.t0 = time.time()
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 
         fl.Fl.run()

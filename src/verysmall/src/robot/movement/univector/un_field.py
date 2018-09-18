@@ -275,4 +275,4 @@ class univectorField:
 
     def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
         angle = self.getAngleVec(_robotPos, _vRobot, _ball)
-        return [np.cos(angle), np.sin(angle)]
+        return np.asarray([np.cos(angle), np.sin(angle)])

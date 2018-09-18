@@ -97,8 +97,8 @@ class HawkEye:
         for i in xrange(len(robots)):
             id = robots[i][ID]
             pos = self.pixel_to_real_world(robots[i][POS])
-            robots_list[id].update(id, pos, orientation=robots[i][ANGLE])
-
+            robots_list[i].update(id, pos, orientation=robots[i][ANGLE])
+        
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to
             store the info """

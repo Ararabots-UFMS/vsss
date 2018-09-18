@@ -174,7 +174,7 @@ class ColorSegmentation:
 
         cv2.destroyWindow(window_name)
 
-CAMERA_ID = 1
+CAMERA_ID = 0
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 
 if __name__ == "__main__":
