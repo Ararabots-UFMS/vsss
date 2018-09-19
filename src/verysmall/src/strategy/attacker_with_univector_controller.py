@@ -30,7 +30,6 @@ class AttackerWithUnivectorController():
 
         self.movement = Movement([])
 
-
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
         """
         Update game variables
@@ -56,31 +55,51 @@ class AttackerWithUnivectorController():
         if self.AttackerWithUnivector.is_stop:
             self.AttackerWithUnivector.stop_to_normal()
 
-        elif self.AttackerWithUnivector.is_normal:
+        if self.AttackerWithUnivector.is_normal:
             self.AttackerWithUnivector.normal_to_univector()
 
-        elif self.AttackerWithUnivector.is_univector:
-            self.AttackerWithUnivector.univector_to_univector()
+        if self.AttackerWithUnivector.is_univector:
+            return self.in_univector_state()
 
     def in_freeball_game(self):
-        self.AttackerWithUnivector.stop_to_freeball()
-        self.AttackerWithUnivector.freeball_to_normal()
+        if self.AttackerWithUnivector.is_stop:
+            self.AttackerWithUnivector.stop_to_freeball()
+
+        if self.AttackerWithUnivector.is_freeball:
+            self.AttackerWithUnivector.freeball_to_normal()
+
+        if self.AttackerWithUnivector.is_normal:
+            self.in_normal_game()
 
     def in_penalty_game(self):
-        self.AttackerWithUnivector.stop_to_penalty()
-        self.AttackerWithUnivector.penalty_to_normal()
+        if self.AttackerWithUnivector.is_stop:
+            self.AttackerWithUnivector.stop_to_penalty()
+
+        if self.AttackerWithUnivector.is_penalty:
+            self.AttackerWithUnivector.penalty_to_normal()
+
+        if self.AttackerWithUnivector.is_normal:
+            self.in_normal_game()
 
     def in_meta_game(self):
-        self.AttackerWithUnivector.stop_to_meta()
-        self.AttackerWithUnivector.meta_to_normal()
+        if self.AttackerWithUnivector.is_stop:
+            self.AttackerWithUnivector.stop_to_meta()
+
+        if self.AttackerWithUnivector.is_meta:
+            self.AttackerWithUnivector.meta_to_normal()
+
+        if self.AttackerWithUnivector.is_normal:
+            self.in_normal_game()
 
     def in_univector_state(self):
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
             speed = 150,
             robot_position=self.position,
-            robot_vector=self.orientation,
-            robot_speed=0,
-            obstacle_position=self.enemies_position,
-            
+            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+            robot_speed=[0, 0],
+            obstacle_position=np.resize(self.enemies_position, (5, 2)),
+            obstacle_speed=[[0,0]]*5,
+            ball_position=self.ball_position
         )
+        return left, right
