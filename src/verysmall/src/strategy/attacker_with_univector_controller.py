@@ -69,7 +69,7 @@ class AttackerWithUnivectorController():
             self.AttackerWithUnivector.freeball_to_normal()
 
         if self.AttackerWithUnivector.is_normal:
-            self.in_normal_game()
+            return self.in_normal_game()
 
     def in_penalty_game(self):
         if self.AttackerWithUnivector.is_stop:
@@ -79,7 +79,7 @@ class AttackerWithUnivectorController():
             self.AttackerWithUnivector.penalty_to_normal()
 
         if self.AttackerWithUnivector.is_normal:
-            self.in_normal_game()
+            return self.in_normal_game()
 
     def in_meta_game(self):
         if self.AttackerWithUnivector.is_stop:
@@ -89,7 +89,7 @@ class AttackerWithUnivectorController():
             self.AttackerWithUnivector.meta_to_normal()
 
         if self.AttackerWithUnivector.is_normal:
-            self.in_normal_game()
+            return self.in_normal_game()
 
     def in_univector_state(self):
         self.AttackerWithUnivector.univector_to_univector()

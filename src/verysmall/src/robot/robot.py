@@ -7,7 +7,6 @@ import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
-from utils.json_handler import JsonHandler
 
 
 class Robot():
@@ -22,16 +21,18 @@ class Robot():
         self.tag = _tag
 
         # Receive from vision
-        self.position = None
-        self.vector = None
         self.ball_position = None
-        self.team_vector = None
-        self.team_position = None
-        self.enemies_vector = None
+        self.ball_speed = None
+        self.team_pos = None
+        self.team_orientation = None
+        self.team_speed = None
+        self.position = None
+        self.orientation = None
         self.enemies_position = None
+        self.enemies_orientation = None
+        self.enemies_speed = None
 
         # Calculated inside robot
-        self.motor_speed = None
         self.PID = None
 
         # Receive from game topic
@@ -63,7 +64,9 @@ class Robot():
         self.state_machine = AttackerWithUnivectorController()
 
     def run(self):
-        self.state_machine.update_game_information(self.position, self.orientation, self.)
+        self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
+                                                   robot_speed=[0, 0], enemies_position=self.enemies_position,
+                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position)
         if self.game_state == 0:  # Stopped
             left, right = self.state_machine.set_to_stop_game()
             self.bluetooth_sender.sendPacket(left, right)
