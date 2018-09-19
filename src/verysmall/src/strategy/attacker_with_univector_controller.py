@@ -1,13 +1,19 @@
 from attacker_with_univector import AttackerWithUnivector, MyModel
 import sys
 import os
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+path += 'parameters/robots_pid.json'
 from robot.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 import rospy
 import numpy as np
 
+jsonHandler = JsonHandler()
+univector_list = jsonHandler.read(path)
 
+KP = univector_list['robot_1']['KP']
+KD = univector_list['robot_1']['KD']
+KI = univector_list['robot_1']['KI']
 
 class AttackerWithUnivectorController():
 
@@ -21,6 +27,8 @@ class AttackerWithUnivectorController():
 
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
+
+        self.movement = Movement([])
 
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
@@ -68,3 +76,11 @@ class AttackerWithUnivectorController():
 
     def in_univector_state(self):
         self.AttackerWithUnivector.univector_to_univector()
+        left, right, _ = self.movement.do_univector(
+            speed = 150,
+            robot_position=self.position,
+            robot_vector=self.orientation,
+            robot_speed=0,
+            obstacle_position=self.enemies_position,
+            
+        )
