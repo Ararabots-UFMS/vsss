@@ -6,7 +6,7 @@ from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
-from strategy.univector_statemachine import AttackerWithUnivector
+from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from utils.json_handler import JsonHandler
 
 
@@ -60,21 +60,25 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivector()
+        self.state_machine = AttackerWithUnivectorController()
 
     def run(self):
+        self.state_machine.update_game_information(self.position, self.orientation, self.)
         if self.game_state == 0:  # Stopped
-            self.state_machine.statemachine.current_state = self.state_machine.statemachine.stop
-            self.bluetooth_sender.sendPacket(0, 0)
+            left, right = self.state_machine.set_to_stop_game()
+            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 1:  # Normal Play
-            left, right, _ = self.state_machine.action(200, self.position, self.orientation, 0, self.enemies_position, self.enemies_speed, self.ball_position)
+            left, right = self.state_machine.in_normal_game()
             self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
-            pass
+            left, right = self.state_machine.in_freeball_game()
+            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 3:  # Penalty
-            pass
+            left, right = self.state_machine.in_penalty_game()
+            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 4:  # Meta
-            pass
+            left, right = self.state_machine.in_meta_game()
+            self.bluetooth_sender.sendPacket(left, right)
         else:  # I really really really Dont Know
             print("wut")
 
