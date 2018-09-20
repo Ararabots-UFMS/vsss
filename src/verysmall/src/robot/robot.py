@@ -69,21 +69,17 @@ class Robot():
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position)
         if self.game_state == 0:  # Stopped
             left, right = self.state_machine.set_to_stop_game()
-            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 1:  # Normal Play
             left, right = self.state_machine.in_normal_game()
-            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 2:  # Freeball
             left, right = self.state_machine.in_freeball_game()
-            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 3:  # Penalty
             left, right = self.state_machine.in_penalty_game()
-            self.bluetooth_sender.sendPacket(left, right)
         elif self.game_state == 4:  # Meta
             left, right = self.state_machine.in_meta_game()
-            self.bluetooth_sender.sendPacket(left, right)
         else:  # I really really really Dont Know
             print("wut")
+        self.bluetooth_sender.sendPacket(left, right)
 
         if self.changed_game_state:
             rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +

@@ -2,23 +2,25 @@ from statemachine import StateMachine, State
 
 class RobotStateMachine(StateMachine):
     """
-    Class for creation of the state machine of robberies, 
+    Class for creation of the state machine of robberies,
     consisting of basic states of each robbery
-    
+
     Extends:
         StateMachine
-    
+
     Variables:
         stop                {[State]} -- [Robberies stopped in this state]
-        freeball            {[State]} -- [Free ball state]
-        normal              {[State]} -- [Game playing normally]
-        penalt              {[State]} -- [Penalty status]
+        freeball            {[State]} -- [Freeball state]
+        normal              {[State]} -- [Normal Game state]
+        penalt              {[State]} -- [Penalty state]
+        meta                {[State]} -- [Meta state]
         stop                {[Transition]} -- [Status of all stopped robberies]
         game_freeball       {[Transition]} -- [Transition that starts to freeball]
         game_normal         {[Transition]} -- [Game transition that occurs normally]
         game_penalt         {[Transition]} -- [Game transition stop to penalty]
         freeball_to_normal  {[Transition]} -- [Transition freeball to normal]
         penalt_to_normal    {[Transition]} -- [Transition penalty to normal]
+        meta_to_normal      {[Transition]} -- [Transition meta to normal]
     """
     # Base States
     stop      = State('Stop', initial=True)

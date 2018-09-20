@@ -15,6 +15,7 @@ KP = univector_list['robot_1']['KP']
 KD = univector_list['robot_1']['KD']
 KI = univector_list['robot_1']['KI']
 
+
 class AttackerWithUnivectorController():
 
     def __init__(self):
@@ -48,10 +49,20 @@ class AttackerWithUnivectorController():
         self.ball_position = ball_position
 
     def set_to_stop_game(self):
+        """
+        Set state stop in the state machine
+
+        :return: int, int
+        """
         self.stop.state = 'stop'
         return 0, 0
 
     def in_normal_game(self):
+        """
+        Transitions in normal game state
+
+        :return: int, int
+        """
         if self.AttackerWithUnivector.is_stop:
             self.AttackerWithUnivector.stop_to_normal()
 
@@ -62,6 +73,11 @@ class AttackerWithUnivectorController():
             return self.in_univector_state()
 
     def in_freeball_game(self):
+        """
+        Transitions in freeball state
+
+        :return: int, int
+        """
         if self.AttackerWithUnivector.is_stop:
             self.AttackerWithUnivector.stop_to_freeball()
 
@@ -72,6 +88,11 @@ class AttackerWithUnivectorController():
             return self.in_normal_game()
 
     def in_penalty_game(self):
+        """
+        Transitions in penalty state
+
+        :return: int, int
+        """
         if self.AttackerWithUnivector.is_stop:
             self.AttackerWithUnivector.stop_to_penalty()
 
@@ -82,6 +103,11 @@ class AttackerWithUnivectorController():
             return self.in_normal_game()
 
     def in_meta_game(self):
+        """
+        Transitions in meta state
+
+        :return: int, int
+        """
         if self.AttackerWithUnivector.is_stop:
             self.AttackerWithUnivector.stop_to_meta()
 
@@ -92,6 +118,11 @@ class AttackerWithUnivectorController():
             return self.in_normal_game()
 
     def in_univector_state(self):
+        """
+        State univector return left wheel and right wheel speeds
+
+        :return: int, int
+        """
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
             speed = 150,
