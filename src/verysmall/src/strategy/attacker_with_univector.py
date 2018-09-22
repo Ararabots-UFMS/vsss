@@ -48,7 +48,7 @@ class AttackerWithUnivector(StateMachine):
     penalty_to_normal = penalty.to(normal)
 
     normal_to_univector = normal.to(univector)
-    univector_to_univector = normal.to(univector)
+    univector_to_univector = univector.to(univector)
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 

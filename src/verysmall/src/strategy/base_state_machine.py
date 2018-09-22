@@ -45,3 +45,7 @@ class RobotStateMachine(StateMachine):
     meta_to_normal = meta.to(normal)
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
+
+class MyModel(object):
+    def __init__(self, state):
+        self.state = state
