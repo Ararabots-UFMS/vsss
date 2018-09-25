@@ -27,12 +27,12 @@ LEFT = 0
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, PID_list, error=10, attack_side=RIGHT):
+    def __init__(self, PID_list, error=10, attack_goal=RIGHT):
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
         self.last_pos = np.array([0, 0])
         self.error_margin = error
-        self.attack_side = attack_side
-        self.univet_field = univectorField(atack_goal=self.attack_side)
+        self.attack_goal = attack_goal
+        self.univet_field = univectorField(attack_goal=self.attack_goal)
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
