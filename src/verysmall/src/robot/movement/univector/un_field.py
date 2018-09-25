@@ -226,6 +226,14 @@ class univectorField:
         self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)
         self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal, rotation_support=_rotation)
 
+    def update_attack_side(self, attack_goal):
+        """
+        Sets the attack field for univector
+        :param attack_goal: int
+        :return: nothing
+        """
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, atack_goal=attack_goal)
+
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
         self.obstaclesSpeed = np.array(_obsSpeeds)
