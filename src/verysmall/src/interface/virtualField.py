@@ -353,8 +353,8 @@ class virtualField():
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
 
-                if self.draw_vectors and self.robot_draw_list[index]:
-                    self.drawPath(robot_list[index], ball_center)
+                    if self.draw_vectors and self.robot_draw_list[index]:
+                        self.drawPath(robot_list[index], ball_center)
 
             index = index + 1
 
@@ -426,7 +426,7 @@ class virtualField():
     def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0]):
         self.univetField.update_attack_side(attack_side)
         self.draw_vectors = plot_vector
-        self.set_draw_vectors(robot_list)
+        self.set_visible_vectors(robot_list)
 
     def set_draw_vectors(self, plot_vector = 0):
         self.draw_vectors = plot_vector
