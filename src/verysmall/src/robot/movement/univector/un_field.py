@@ -117,7 +117,7 @@ class move2Goal:
         if type(self.attack_goal) != type(int) and self.rotation_support == True:
             self.u = np.array(self.attack_goal - self.origin, dtype=np.float32)
         else: # is int
-            if self.attack_goal == RIGHT:
+            if self.attack_goal == LEFT:
                 self.u = np.array([-1.0, 0.0])
             else:
                 self.u = np.array([1.0, 0.0])
@@ -232,7 +232,7 @@ class univectorField:
         :param attack_goal: int
         :return: nothing
         """
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, atack_goal=attack_goal)
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal)
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)

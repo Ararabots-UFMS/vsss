@@ -30,7 +30,7 @@ class AttackerWithUnivectorController():
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
+        self.movement = Movement([KP, KD, KI], error=10, attack_goal=( not self.attack_goal))
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
         """

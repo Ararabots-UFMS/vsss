@@ -62,7 +62,7 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivectorController(attack_goal=(not self.team_side))
+        self.state_machine = AttackerWithUnivectorController(attack_goal=( self.team_side))
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
