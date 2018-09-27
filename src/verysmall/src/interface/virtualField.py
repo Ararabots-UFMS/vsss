@@ -401,13 +401,13 @@ class virtualField():
         end = np.array(end)
 
         newPos = None
-        alpha = 7
-        beta = 14
+        alpha = 3.5
+        beta = 3.5
         point_lines = []
 
         distance = np.linalg.norm(currentPos - end)
         it = 0
-        while (distance >= beta) and it < 15:
+        while (distance >= beta) and it < 45:
 
             v = self.univetField.getVec(_robotPos=currentPos, _vRobot=[0, 0])
             newPos = currentPos + (alpha * v)
