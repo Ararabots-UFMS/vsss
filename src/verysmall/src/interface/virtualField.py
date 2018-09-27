@@ -5,6 +5,16 @@ import rospy
 import time
 from auxiliary import *
 import copy
+from sys import path
+from os import environ
+old_path = path[0]
+path[0] = environ['ROS_ARARA_ROOT'] + "src/"
+file_path = path[0] + 'parameters/univector_constants.json'
+from utils.json_handler import JsonHandler
+jsonHandler = JsonHandler()
+univector_list = jsonHandler.read(file_path)
+from robot.movement.univector.un_field import univectorField
+path[0] = old_path
 
 
 class virtualField():
@@ -51,6 +61,10 @@ class virtualField():
         self.height_conv = 0.998 * self.height / 130
         self.angle_conversion_factor = 180 / math.pi
 
+        self.univetField = univectorField()
+        self.draw_vectors = False
+        self.robot_draw_list = [0]*5
+
         self.field_origin = (self.proportion_width(5.882), self.proportion_height(99.9))
         self.ball_radius = self.proportion_average(1.5)
         self.mark_radius = self.proportion_average(0.3)
@@ -58,6 +72,14 @@ class virtualField():
         self.away_team_radius = self.proportion_average(2.5)
 
         self.text_font = cv.FONT_HERSHEY_SIMPLEX
+
+        # univector
+        self.RADIUS = univector_list['RADIUS']
+        self.KR = univector_list['KR']
+        self.K0 = univector_list['K0']
+        self.DMIN = univector_list['DMIN']
+        self.LDELTA = univector_list['LDELTA']
+        self.univetField.updateConstants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
 
         if is_rgb:
             self.colors = {"blue": [0, 0, 255],
@@ -207,7 +229,16 @@ class virtualField():
         cv.circle(field, (self.proportion_width(60.295), self.proportion_height(80.770)), self.mark_radius,
                   self.colors["gray"], -1)
 
+        cv.putText(field, "Render", (self.proportion_width(0.3), self.proportion_height(2.0)), self.text_font,
+                   0.35, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(field, "FPS", (self.proportion_width(0.3), self.proportion_height(4.0)), self.text_font, 0.35,
+                   self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(field, "Vision", (self.proportion_width(0.3), self.proportion_height(11.0)), self.text_font,
+                   0.35, self.colors["white"], 1, cv.LINE_AA)
+        cv.putText(field, "FPS", (self.proportion_width(0.3), self.proportion_height(13.0)), self.text_font, 0.35,
+                   self.colors["white"], 1, cv.LINE_AA)
 
+        self.field = copy.deepcopy(field)
 
         ''' plot_ball 
 
@@ -294,8 +325,8 @@ class virtualField():
 
           saida
             imagem do campo com os robos impressos na mesma '''
-    
-    def plot_robots(self, robot_list, robot_vector, color, is_away=False):
+
+    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0)):
         """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
@@ -322,11 +353,10 @@ class virtualField():
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
 
+                    if self.draw_vectors and self.robot_draw_list[index]:
+                        self.drawPath(robot_list[index], ball_center)
+
             index = index + 1
-
-
-
-
 
             ''' metodo unico para unificar os plots, recebe todas as informacoes necessarias para plot de cada um dos times e 
                 e da bola. tambem recebe informacoes de fps do topico e da visao 
@@ -337,30 +367,69 @@ class virtualField():
                 saida
                   imagem completa com todos os robos, a bola e o campo impressos, que sera mostrada na interface do sistema
                 '''
-    def plot(self, ball_center, robotlistH, robotvecH, colorH, robotlistA, robotvecA, colorA, fps_vision, fps_topic, is_away):
-        
+
+    def plot(self, data, colorH, colorA, fps_vision, fps_topic, is_away):
+
+        ball_center = data.ball_pos  # ball position
+        robotlistH = data.team_pos  # home team position
+        robotvecH = data.team_orientation  # home team vectors
+        robotlistA = data.enemies_pos  # away team position
+        robotvecA = data.enemies_orientation  # away team vectors
+        robot_speed_away = data.enemies_speed
+
         self.plot_ball(ball_center)
-        self.plot_robots(robotlistH, robotvecH, colorH)
+
+        if self.draw_vectors:
+            self.univetField.updateBall(ball_center)
+            self.univetField.updateObstacles(robotlistA,robot_speed_away)
+
+        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center)
         self.plot_robots(robotlistA, robotvecA, colorA, is_away)
 
 
         ''' usar no maximo 1 casa decimal, substituir os parametros 
             de entrada do metodo pelos lidos no topico e substituir os 
             valores de exemplo no plot abaixo '''
-        cv.putText(self.field, "Topic", (self.proportion_width(0.3), self.proportion_height(2.0)), self.text_font, 0.35, self.colors["white"], 1, cv.LINE_AA)
-        cv.putText(self.field, "FPS", (self.proportion_width(0.3), self.proportion_height(4.0)), self.text_font, 0.35, self.colors["white"], 1, cv.LINE_AA)
+
         cv.putText(self.field, str(fps_topic), (self.proportion_width(0.2), self.proportion_height(7.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
-        #cv.putText(self.field, "60.0", (self.proportion_width(0.1), self.proportion_height(7.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
-        
-        cv.putText(self.field, "Vision", (self.proportion_width(0.3), self.proportion_height(11.0)), self.text_font, 0.35, self.colors["white"], 1, cv.LINE_AA)
-        cv.putText(self.field, "FPS", (self.proportion_width(0.3), self.proportion_height(13.0)), self.text_font, 0.35, self.colors["white"], 1, cv.LINE_AA)
+
         cv.putText(self.field, str(fps_vision), (self.proportion_width(0.2), self.proportion_height(16.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
-        #cv.putText(self.field, "60.0", (self.proportion_width(0.1), self.proportion_height(16.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
 
+    def drawPath(self, start, end):
+        currentPos = np.array(start)
+        _currentPos = position_from_origin(unit_convert(start, self.width_conv, self.height_conv), self.field_origin)
+        end = np.array(end)
 
+        newPos = None
+        alpha = 7
+        beta = 14
+        point_lines = []
 
+        distance = np.linalg.norm(currentPos - end)
+        it = 0
+        while (distance >= beta) and it < 15:
 
+            v = self.univetField.getVec(_robotPos=currentPos, _vRobot=[0, 0])
+            newPos = currentPos + (alpha * v)
+            _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
+            cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
+            currentPos = newPos
+            _currentPos = _newPos
+            it+=1
+            distance = np.linalg.norm(currentPos - end)
 
+    def set_visible_vectors(self, robot_list):
+        faster_hash = ['robot_'+str(x) for x in range(1, 6)]
+        for id in xrange(len(self.robot_draw_list)):
+            self.robot_draw_list[id] = robot_list[faster_hash[id]]
+
+    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0]):
+        self.univetField.update_attack_side(attack_side)
+        self.draw_vectors = plot_vector
+        self.set_visible_vectors(robot_list)
+
+    def set_draw_vectors(self, plot_vector = 0):
+        self.draw_vectors = plot_vector
 
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""

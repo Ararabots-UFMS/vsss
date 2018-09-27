@@ -5,9 +5,16 @@ import roslaunch
 
 
 class Team():
-    """Crates all the robots and Trainer"""
+    """Crates all the robots and Coach"""
 
     def send_mac_address_operation(self, operation, robot_id, mac):
+        """
+
+        :param operation:
+        :param robot_id:
+        :param mac:
+        :return:
+        """
         # Register or Remove a bluetooth device associated with a robot
         rospy.wait_for_service('manage_mac')
         try:

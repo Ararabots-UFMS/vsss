@@ -106,7 +106,7 @@ class HawkEye:
         px_pos = self.ball_seeker.seek(img)
         if np.all(px_pos != None):
             pos = self.pixel_to_real_world(px_pos)
-            ball.update(-1, pos)
+            ball.update(0, pos)
         else:
             ball.reset()
 
