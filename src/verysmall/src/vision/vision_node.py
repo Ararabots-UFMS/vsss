@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 vision_node.show = not vision_node.show
                 cv2.destroyAllWindows()
                 vision_node.vision.computed_frames = 0;
-                vision_node.vision.t0 = time.time();
+                vision_node.vision.t0 = time();
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == 1:
                 vision_node.show = not vision_node.show
