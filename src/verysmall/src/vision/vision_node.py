@@ -5,6 +5,7 @@ import cv2
 from camera.camera import Camera
 from threading import Thread
 from vision import Vision
+from time import time
 
 # Top level imports
 import os

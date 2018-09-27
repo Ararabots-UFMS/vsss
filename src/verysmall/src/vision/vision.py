@@ -256,7 +256,7 @@ class Vision:
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
-                self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
+                #self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 

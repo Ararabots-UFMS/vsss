@@ -40,6 +40,7 @@ class Things:
         # Checkes if this is not the first update
         if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
             # If it is not the first update, calculate the robot speed
+            #pos = (self.pos + pos) / 2.0 # tentando diminuir erro
             self.speed = (pos - self.pos) / (now - self.last_update)
         else:
             self.speed = 0
