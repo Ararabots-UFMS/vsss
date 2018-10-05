@@ -1,6 +1,5 @@
 import rospy
 import sys
-import time
 import numpy as np
 import random
 from comunication.sender import Sender
@@ -13,13 +12,13 @@ from strategy.attacker_with_univector_controller import AttackerWithUnivectorCon
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, isAdversary=False):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body):
         # Parameters
         self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
         self.mac_address = _mac_address # Mac address
         self.robot_body = _robot_body
-        self.tag = _tag
+        self.tag = int(_tag)
 
         # Receive from vision
         self.ball_position = None
@@ -62,7 +61,7 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivectorController(attack_goal=( self.team_side))
+        self.state_machine = AttackerWithUnivectorController()
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
