@@ -256,7 +256,7 @@ class Vision:
 
                 self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
 
-                self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
+                #self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
@@ -274,10 +274,11 @@ class Vision:
             function"""
         for thing in things:
             # The id of the thing will be its index in the lists
-            id = thing.id if thing.id >= 0 else 0
-            positions_list[id] = thing.pos
-            orientations_list[id] = thing.orientation
-            speeds_list[id] = thing.speed
+            id = thing.id
+            if id >= 0:
+                positions_list[id] = thing.pos
+                orientations_list[id] = thing.orientation
+                speeds_list[id] = thing.speed
 
     def send_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be

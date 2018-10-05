@@ -7,7 +7,7 @@ import numpy as np
 import uuid
 import cv2
 
-CAMERA_ID = 1
+CAMERA_ID = 0
 PARAMS_FILE = ""
 FRAME_SIZE = (1280, 720)
 

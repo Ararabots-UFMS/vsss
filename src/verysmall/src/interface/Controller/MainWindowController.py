@@ -2,39 +2,40 @@ from ..View.MainWindowView import MainWindowView
 from BluetoothManagerController import BluetoothManagerController
 from ConnectionController import ConnectionController
 from DebugController import DebugController
+from RobotParamsController import RobotParamsController
 import fltk as fl
-import sys
-import os
-from verysmall.msg import game_topic
 
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']
-from verysmall.srv import vision_command
 
-sys.path[0] +="src/"
-from ROS.ros_game_publisher import RosGamePublisher
-from rospy import ServiceException,ServiceProxy, wait_for_service
-sys.path[0] = old_path
-
-class MainWindowController():
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _debug_params, _trainer):
+class MainWindowController:
+    def __init__(self, model, _coach, _game_topic_publisher):
+        """
+        This class os resonsible for managing the main window
+        :param model: Dict
+        :param _coach: Coach Class Object
+        :param _game_topic_publisher: GameTopicPublisher Class Objcet
+        """
+        # Save the parameters for future use
+        self.robot_params = model.robot_params
+        self.robot_bluetooth = model.robot_bluetooth
+        self.robot_roles = model.robot_roles
+        self.game_opt = model.game_opt
+        self.debug_params = model.debug_params
 
         # The controllers are created but not show
-        self.bluetooth_controller = BluetoothManagerController(_robot_bluetooth, hidden=True)
-        self.connection_controller = ConnectionController(_game_opt)
-        self.debug_controller = DebugController(_debug_params, hidden=True)
+        self.bluetooth_controller = BluetoothManagerController(model, hidden=True)
+        self.connection_controller = ConnectionController(self.game_opt)
+        self.debug_controller = DebugController(model.debug_params, hidden=True)
+        self.robot_params_controller = RobotParamsController(self.robot_params, self.robot_bluetooth,
+                                                             self.robot_roles, model.robot_bodies)
 
         # Lets create the view of our controller shall we
         self.view = MainWindowView()
+        self.view.virtualField.set_univector_debug_params(not self.game_opt['side'],
+                                                          model.debug_params['robot_vector'],
+                                                          model.debug_params['things'])
 
-        # Save the parameters for future use
-        self.robot_params = _robot_params
-        self.robot_bluetooth = _robot_bluetooth
-        self.robot_roles = _robot_roles
-        self.game_opt = _game_opt
-
-        # The trainer object class control the active and the activities of robots
-        self.trainer = _trainer
+        # The coach object class control the active and the activities of robots
+        self.coach = _coach
 
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
@@ -49,15 +50,10 @@ class MainWindowController():
         self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
-        self.pub = RosGamePublisher()
+        self.pub = _game_topic_publisher
 
-        # Variable for storing proxy
-        self.vision_proxy = None
-        self.register_mac_service()
-
-        #replaced by the function set_robots_bluetooth
-        self.set_robots_bluetooth()
-
+        # Replaced by the function set_robots_bluetooth
+        self.set_robots_params()
 
         # A loop for the assigned robot actions
         for num in range(3):
@@ -82,7 +78,7 @@ class MainWindowController():
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
         for num in xrange(self.view.n_robots):
-            self.view.robot_bluetooths[num].callback(self.bluetooth_choice)
+            self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
             
@@ -94,7 +90,11 @@ class MainWindowController():
 
         self.view.end()
 
-    def set_robots_bluetooth(self):
+    def set_robots_params(self):
+        """
+        Set robot roles and active checks
+        :return: nothing
+        """
         # For each Robot, this loop covers all the inputs
         for num in xrange(self.view.n_robots):
             # Access the robot params dict using a int
@@ -103,58 +103,50 @@ class MainWindowController():
 
             # This integer is for the value of item in the
             # Drop-down choice box
-
-            #"Nenhum" means the zero value, in case the bluetooth name of the robot changes
-            self.view.robot_bluetooths[num].add("Nenhum")
-            self.view.robot_bluetooths[num].value(0)
-
-            current_item = 1
-            for item in self.robot_bluetooth_keys:
-                # Add the key of the dictionary to the drop-down
-                self.view.robot_bluetooths[num].add(item)
-
-                # If key is the same as the key in the robot
-                if current_robot['bluetooth_mac_address'] == item:
-                    # Set the value has they active item in the choice menu
-                    self.view.robot_bluetooths[num].value(current_item)
-
-                # Increments the value of item
-                current_item += 1
-
             # This integer, again, is for the value of item in the
             # Drop-down choice box
-            current_item = 0
+            
             for item in self.robot_roles_keys:
                 # Add the key of the dictionary to the drop-down...
                 # again
-                self.view.robot_roles[num].add(item)
+                current_item = int(self.robot_roles[item])
+                self.view.robot_roles[num].insert(current_item,item,0,None,None,0)
+
                 if current_robot['role'] == item:
                     # Same as above
                     self.view.robot_roles[num].value(current_item)
-                # Well...
-                current_item += 1
 
             # The value for the check button
             self.view.robot_radio_button[num].value(current_robot['active'])
             # Unique id for the check-Box
             self.view.robot_radio_button[num].id = num
 
-
-    def send_vision_operation(self, operation):
-        """Sends a service request to vision node
-            :param operation : uint8
-
-            :return: returns nothing
+    def parameters_button(self, ptr):
         """
-        wait_for_service('vision_command')
-        try:
-            self.vision_proxy(operation)
-        except ServiceException as exc:
-            print("Service did not process request: " + str(exc))
+        Takes a point with id = robot_id, calls the Param Controller and compares old with new dict for
+        assigning variables to the robot node
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        old = self.robot_params[self.faster_hash[ptr.id]].copy()
+
+        self.robot_params_controller.show(ptr.id)
+        while self.robot_params_controller.view.root.visible():
+            fl.Fl.wait()
+
+        the_same = self.robot_params[self.faster_hash[ptr.id]] == old
+
+        if (not the_same) and self.robot_params[self.faster_hash[ptr.id]]['active']:
+            self.coach.set_robot_parameters(ptr.id)
 
     def top_menu_choice(self, ptr):
+        """
+        Callback function, using the value of pointer
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         if ptr.value() < 4:
-            self.send_vision_operation(ptr.value())
+            self.pub.send_vision_operation(ptr.value())
 
         if ptr.value() < 9:
             if ptr.value() == 7: # Connection controller
@@ -165,36 +157,55 @@ class MainWindowController():
         elif ptr.value() < 16:
             if ptr.value() == 13:
                 self.wait_window_close(self.debug_controller)
+                self.view.virtualField.set_draw_vectors(self.debug_params['robot_vector'])
+                self.view.virtualField.set_visible_vectors(self.debug_params['things'])
             elif ptr.value() == 14:
                 self.wait_window_close(self.connection_controller)
 
     def wait_window_close(self, window_controller):
+        """
+        Wait till window is not visible
+        :param window_controller: Fl_Window
+        :return: nothing
+        """
         window_controller.show()
         while window_controller.view.root.visible():
             fl.Fl.wait()
 
     def action_input_choice(self, ptr):
+        """
+        Assign robot action callback
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.pub.assigned_action_to_robot(ptr.id, ptr.value())
+        self.pub.publish()
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
     def radio_choice(self, ptr):
-        self.trainer.set_robot_active(ptr.id, ptr.value())
+        """
+        Checkbox callback, node active or not?
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.coach.set_robot_active(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
-        self.pub.set_robot_role(ptr.id, ptr.value())
-        self.pub.publish()
+        """
+        Callback for robot role choice
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.coach.change_robot_role(ptr.id, ptr.value())
         self.robot_params[self.faster_hash[ptr.id]]['role'] = self.robot_roles_keys[ptr.value()]
 
-    def bluetooth_choice(self, ptr):
-        #this verification allow to set a default value for the bluetooth_name of the robot, so we can edit or delete bluetooth entries
-        if ptr.value():
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = self.robot_bluetooth_keys[ptr.value()-1]
-            self.trainer.set_robot_bluetooth(ptr.id)
-        else:
-            self.robot_params[self.faster_hash[ptr.id]]['bluetooth_mac_address'] = "Nenhum"
-            self.trainer.set_robot_active(ptr.id, False)
-
     def action_button_clicked(self, ptr):
+        """
+        Action callback related to all buttons
+        :param ptr: Widget pointer
+        :return: nothing
+        """
         if self.view.play_button.playing:
             self.pub.set_game_state(0)  # Sets the game state to stopped
             self.pub.publish()
@@ -229,21 +240,22 @@ class MainWindowController():
             self.view.play_button.label("Parar")
             self.view.play_button.playing = not self.view.play_button.playing
 
-    #this function change the team color in the game_opt to the selected one
-    #ptr is the pointer of the widget the callback belongs
-    def on_color_change(self,ptr):
-        ''':params ptr:pointer'''
+    def on_color_change(self, ptr):
+        """
+        This function change the team color in the game_opt to the selected one
+        :param ptr: pointer of the widget
+        :return: nothing
+        """
+        self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
         self.game_opt["time"] = ptr.value()
 
-    #this function changes the team side in game_opt to the selected one
-    #ptr is the pointer of the widget the callback belongs
-    def on_side_change(self,ptr):
-        ''':params ptr:pointer'''
-        self.game_opt["side"] = ptr.value()
-
-    def register_mac_service(self):
-        """Creates a proxy for communicating with service
-            :return: returns nothing
+    def on_side_change(self, ptr):
         """
-        wait_for_service('vision_command')
-        self.vision_proxy = ServiceProxy('vision_command', vision_command)
+        This function changes the team side in game_opt to the selected one
+        :param ptr: pointer of the widget
+        :return: nothing
+        """
+        self.pub.set_team_side(ptr.value())
+        self.game_opt["side"] = ptr.value()
+        self.pub.publish()
+        self.view.virtualField.univetField.update_attack_side(not ptr.value())

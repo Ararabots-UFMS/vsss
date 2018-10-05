@@ -9,7 +9,7 @@ import time
 import os
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 1
+CAMERA_ID = 0
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
