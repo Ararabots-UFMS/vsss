@@ -40,6 +40,7 @@ class Things:
         # Checkes if this is not the first update
         if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
             # If it is not the first update, calculate the robot speed
+            #pos = (self.pos + pos) / 2.0 # tentando diminuir erro
             self.speed = (pos - self.pos) / (now - self.last_update)
         else:
             self.speed = 0
@@ -98,7 +99,7 @@ class HawkEye:
             id = robots[i][ID]
             pos = self.pixel_to_real_world(robots[i][POS])
             robots_list[i].update(id, pos, orientation=robots[i][ANGLE])
-        
+
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to
             store the info """
@@ -106,7 +107,7 @@ class HawkEye:
         px_pos = self.ball_seeker.seek(img)
         if np.all(px_pos != None):
             pos = self.pixel_to_real_world(px_pos)
-            ball.update(-1, pos)
+            ball.update(0, pos)
         else:
             ball.reset()
 

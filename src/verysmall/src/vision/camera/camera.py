@@ -25,6 +25,7 @@ class Camera:
         self.lens_correction = lens_correction
         self.params_file_name = params_file_name
         self.capture = cv2.VideoCapture(self.id)
+
         self.json_handler = JsonHandler()
         self.frame = None
 

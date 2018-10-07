@@ -1,37 +1,38 @@
 import rospy
 import sys
-import time
 import numpy as np
+import random
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
-from strategy.univector_statemachine import AttackerWithUnivector
-from utils.json_handler import JsonHandler
+from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 
 
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, isAdversary=False):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body):
         # Parameters
         self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
         self.mac_address = _mac_address # Mac address
         self.robot_body = _robot_body
-        self.tag = _tag
+        self.tag = int(_tag)
 
         # Receive from vision
-        self.position = None
-        self.vector = None
         self.ball_position = None
-        self.team_vector = None
-        self.team_position = None
-        self.enemies_vector = None
+        self.ball_speed = None
+        self.team_pos = None
+        self.team_orientation = None
+        self.team_speed = None
+        self.position = None
+        self.orientation = None
         self.enemies_position = None
+        self.enemies_orientation = None
+        self.enemies_speed = None
 
         # Calculated inside robot
-        self.motor_speed = None
         self.PID = None
 
         # Receive from game topic
@@ -60,22 +61,25 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivector()
+        self.state_machine = AttackerWithUnivectorController()
 
     def run(self):
+        self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
+                                                   robot_speed=[0, 0], enemies_position=self.enemies_position,
+                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position)
         if self.game_state == 0:  # Stopped
-            self.bluetooth_sender.sendPacket(0, 0)
+            left, right = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
-            left, right, _ = self.state_machine.action(200, self.position, self.orientation, 0, self.enemies_position, self.enemies_speed, self.ball_position)
-            self.bluetooth_sender.sendPacket(left, right)
+            left, right = self.state_machine.in_normal_game()
         elif self.game_state == 2:  # Freeball
-            pass
-        elif self.game_state == 3:  # Penaly
-            pass
+            left, right = self.state_machine.in_freeball_game()
+        elif self.game_state == 3:  # Penalty
+            left, right = self.state_machine.in_penalty_game()
         elif self.game_state == 4:  # Meta
-            pass
+            left, right = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")
+        self.bluetooth_sender.sendPacket(left, right)
 
         if self.changed_game_state:
             rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +

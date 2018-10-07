@@ -97,12 +97,8 @@ class MainWindowView:
 
         if data_item is not None:
 
-            self.virtualField.plot(data_item.ball_pos,                  # ball position
-                                   data_item.team_pos,                  # home team position
-                                   data_item.team_orientation,          # home team vectors
+            self.virtualField.plot(data_item,
                                    self.virtualField.colors["yellow"],  # home team color
-                                   data_item.enemies_pos,               # away team position
-                                   data_item.enemies_orientation,       # away team vectors
                                    self.virtualField.colors["blue"],    # away team color
                                    int(data_item.vision_fps*10)/10.0,
                                    int((self.computed_frames / (time.time() - self.t0))*10)/10.0,

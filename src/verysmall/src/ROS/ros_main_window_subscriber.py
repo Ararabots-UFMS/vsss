@@ -44,6 +44,7 @@ class RosMainWindowSubscriber:
             data_item.team_orientation = nan_to_num(array(data_item.team_orientation))  # home team vectors
             data_item.enemies_pos = nan_to_num(data_item.enemies_pos).reshape((5, 2))  # away team position
             data_item.enemies_orientation = nan_to_num(data_item.enemies_orientation)  # away team vectors
+            data_item.enemies_speed = nan_to_num(array(data_item.enemies_speed)).reshape((5, 2))  # away team speed
         except IndexError:
             rospy.loginfo("vazia")
 

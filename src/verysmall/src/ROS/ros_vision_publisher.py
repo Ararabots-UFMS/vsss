@@ -64,6 +64,12 @@ class RosVisionPublisher:
 
 if __name__ == '__main__':
     try:
-        RosVisionPublisher()
+        r = RosVisionPublisher(True)
+        msg = things_position()
+        msg.ball_pos = (100.0,100.0)
+        msg.team_pos[0] = 50.0
+        msg.team_pos[1] = 50.0
+        while not rospy.is_shutdown():
+            r.pub.publish(msg)
     except rospy.ROSInterruptException:
         pass

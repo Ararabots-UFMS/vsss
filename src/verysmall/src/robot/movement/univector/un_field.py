@@ -4,15 +4,15 @@ import numpy as np
 sys.path.append('../')
 import math
 from math import pi
+from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
 
 LEFT = 0
 RIGHT = 1
 
-def angleWithX(p):
-    i = np.array([1.0,0.0])
-    theta = math.atan2(np.cross(i, p), np.dot(i, p))
+def angleWithX(p, x=np.array([1.0,0.0])):
+    theta = atan2(np.cross(x, p), np.dot(x, p))
     return theta
 
 def wrap2pi(theta):
@@ -42,7 +42,7 @@ class hyperbolicSpiral:
             r = radius
 
         p = np.array(_p)
-        theta = wrap2pi(angleWithX(p))
+        theta = atan2(p[1], p[0])
         ro = np.linalg.norm(p)
 
         if ro > r:
@@ -51,9 +51,11 @@ class hyperbolicSpiral:
             a = (pi / 2.0) * math.sqrt(ro / r)
 
         if cw:
-            return wrap2pi(theta + a)
+            _theta = wrap2pi(theta+a)
+            return atan2(sin(_theta), cos(_theta))
         else:
-            return wrap2pi(theta - a)
+            _theta = wrap2pi(theta-a)
+            return atan2(sin(_theta), cos(_theta))
 
     def n_h(self, _p, _radius=None, cw=True):
         p = np.array(_p)
@@ -63,9 +65,7 @@ class hyperbolicSpiral:
             radius = _radius
 
         fi = self.fi_h(p, radius, cw)
-        cos = math.cos(fi)
-        sin = math.sin(fi)
-        return np.array([cos, sin])
+        return np.array([cos(fi), sin(fi)])
 
 
 class repulsive:
@@ -83,20 +83,26 @@ class repulsive:
         p = np.array(_p) - self.origin
 
         if _theta == True:
-            theta = angleWithX(p)
-            return wrap2pi(theta)
+            return atan2(p[1], p[0])
         else:
             return p
 
 
 class move2Goal:
 
-    def __init__(self, _Kr, _radius, atack_goal=LEFT):
+    def __init__(self, _Kr, _radius, attack_goal=RIGHT, rotation_support=False):
         self.Kr = _Kr
         self.radius = _radius
         self.hyperSpiral = hyperbolicSpiral(self.Kr, self.radius)
         self.origin = np.array([None, None])
-        self.atack_goal = atack_goal
+        self.attack_goal = attack_goal
+        self.rotation_support = rotation_support
+
+        self.u = np.array([None, None])
+        self.v = np.array([None, None])
+
+        self.toUnivectorMatrix = None
+        self.toCanonicalMatrix = None
 
     def updateParams(self, _KR, _RADIUS):
         self.Kr = _KR
@@ -105,14 +111,33 @@ class move2Goal:
 
     def updateOrigin(self, newOrigin):
         self.origin = np.array(newOrigin)
+        self.buildAxis()
+
+    def buildAxis(self):
+        if type(self.attack_goal) != type(int) and self.rotation_support == True:
+            self.u = np.array(self.attack_goal - self.origin, dtype=np.float32)
+        else: # is int
+            if self.attack_goal == LEFT:
+                self.u = np.array([-1.0, 0.0])
+            else:
+                self.u = np.array([1.0, 0.0])
+
+        self.u /= -np.linalg.norm(self.u)
+        theta = math.atan2(self.u[1], self.u[0])
+        self.v = np.array([-sin(theta), cos(theta)])
+
+        self.toCanonicalMatrix = np.array([self.u, self.v]).T
+        self.toUnivectorMatrix = np.linalg.inv(self.toCanonicalMatrix)
 
     def fi_tuf(self, _p):
         hyperSpiral = self.hyperSpiral
         n_h = self.hyperSpiral.n_h
 
         p = np.array(_p) - self.origin
-
         r = self.radius
+
+        p = np.dot(self.toUnivectorMatrix, p).reshape(2,)
+
         x,y = p
         yl = y+r
         yr = y-r
@@ -120,33 +145,28 @@ class move2Goal:
         # Parece que houve algum erro de digitacao no artigo
         # Pois quando pl e pr sao definidos dessa maneira o campo gerado
         # se parece mais com o resultado obtido no artigo
-        pl = np.array([x, yl])
-        pr = np.array([x, yr])
+        pl = np.array([x, yr])
+        pr = np.array([x, yl])
 
         # Este caso eh para quando o robo esta dentro do "circulo" da bola
         if -r <= y < r:
-
-            if self.atack_goal == LEFT:
-                nh_pl = n_h(pl, cw=False)
-                nh_pr = n_h(pr, cw=True)
-            else:
-                nh_pl = n_h(pl, cw=True)
-                nh_pr = n_h(pr, cw=False)
+            nh_pl = n_h(pl, cw=False)
+            nh_pr = n_h(pr, cw=True)
 
             # Apesar de no artigo nao ser utilizado o modulo, quando utilizado
             # na implementacao o resultado foi mais condizente com o artigo
             vec = ( abs(yl)*nh_pl + abs(yr)*nh_pr ) / (2.0 * r)
-            return wrap2pi(angleWithX(vec))
-        elif y < -r:
-            if self.atack_goal == LEFT:
-                return hyperSpiral.fi_h(pl, cw=True)
-            else:
-                return hyperSpiral.fi_h(pr, cw=False)
-        else: #y >= r
-            if self.atack_goal == LEFT:
-                return hyperSpiral.fi_h(pr, cw=False)
-            else:
-                return hyperSpiral.fi_h(pl, cw=True)
+            vec = np.dot(self.toCanonicalMatrix, vec).reshape(2,)
+        else:
+            if y < -r:
+                theta =  hyperSpiral.fi_h(pl, cw=True)
+            else: #y >= r
+                theta =  hyperSpiral.fi_h(pr, cw=False)
+
+            vec = np.array([cos(theta), sin(theta)])
+            vec = np.dot(self.toCanonicalMatrix, vec).reshape(2,)
+
+        return atan2(vec[1], vec[0])
 
 class avoidObstacle:
     def __init__(self, _pObs, _vObs, _pRobot, _vRobot, _K0):
@@ -182,15 +202,15 @@ class avoidObstacle:
         self.K0 = _K0
 
     def updateObstacle(self, _pObs, _vObs):
-        self.pObs = np.copy(np.array(_pObs))
-        self.vObs = np.copy(np.array(_vObs))
+        self.pObs = np.array(_pObs)
+        self.vObs = np.array(_vObs)
 
     def updateRobot(self, _pRobot, _vRobot):
         self.pRobot = np.array(_pRobot)
         self.vRobot = np.array(_vRobot)
 
 class univectorField:
-    def __init__(self, atack_goal=LEFT):
+    def __init__(self, attack_goal=RIGHT, _rotation=False):
         self.obstacles = np.array([[None, None]])
         self.obstaclesSpeed = np.array([[None, None]])
         self.ballPos = np.array([None, None])
@@ -204,7 +224,15 @@ class univectorField:
         self.LDELTA = None
         # Subfields
         self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, atack_goal=atack_goal)
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal, rotation_support=_rotation)
+
+    def update_attack_side(self, attack_goal):
+        """
+        Sets the attack field for univector
+        :param attack_goal: int
+        :return: nothing
+        """
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal)
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
@@ -218,6 +246,10 @@ class univectorField:
         self.robotPos = np.array(_robotPos)
         self.vRobot = np.array(_vRobot)
         self.avdObsField.updateRobot(self.robotPos, self.vRobot)
+
+    def setRotationAndAttackGoal(self, rotation, attack_goal):
+        self.mv2GoalField.attack_goal = attack_goal
+        self.mv2GoalField.rotation_support = rotation
 
     def updateConstants(self, _RADIUS, _KR, _K0, _DMIN, _LDELTA):
         self.RADIUS = _RADIUS
@@ -241,7 +273,7 @@ class univectorField:
         if all(ball != None):
             self.updateBall(ball)
 
-        closestCenter = np.array([None, None])  # array to store the closest center
+        closestCenter = np.array([None, None]) # array to store the closest center
         centers = []
         minDistance = self.DMIN + 1
 
@@ -253,8 +285,8 @@ class univectorField:
                 centers.append(center)
 
             centers = np.asarray(centers)
-            distVect = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
-            index = np.argmin(distVect)  # index of closest center
+            distVect = np.linalg.norm(np.subtract(centers, self.robotPos) , axis=1)
+            index = np.argmin(distVect) # index of closest center
             closestCenter = centers[index]
             minDistance = distVect[index]
 
@@ -268,9 +300,19 @@ class univectorField:
             # Checks if at least one obstacle exist
             if self.obstacles.size:
                 g = gaussian(minDistance - self.DMIN, self.LDELTA)
+                # a + jb
+                # c + jd
+                # a*c + jad + jcb -b*d
+                # a*c - b*d, j(ad+cb)
+                # fi_auf *= g
+                # fi_tuf *= (1.0-g)
+                # v1 = np.array([cos(fi_auf), sin(fi_auf)])
+                # v2 = np.array([cos(fi_tuf), sin(fi_tuf)])
+                # result = np.array([v1[0]*v2[0]-v1[1]*v2[1], v1[0]*v2[1]+v2[0]*v1[1]])
+                # return atan2(result[1], result[0])
                 diff = wrap2pi(fi_auf - fi_tuf)
-                return g * diff + fi_tuf
-            else:  # if there is no obstacles
+                return wrap2pi(g*diff + fi_tuf)
+            else: # if there is no obstacles
                 return fi_tuf
 
     def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
