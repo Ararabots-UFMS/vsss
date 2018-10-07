@@ -18,19 +18,21 @@ KI = univector_list['robot_1']['KI']
 
 class AttackerWithUnivectorController():
 
-    def __init__(self, attack_goal):
+    def __init__(self):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
-        self.attack_goal = attack_goal
+
+        #Attack_in left side
+        self.attack_goal = 0
 
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=( not self.attack_goal))
+        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
         """
@@ -126,7 +128,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
-            speed = 230,
+            speed = 180,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
