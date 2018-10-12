@@ -4,6 +4,15 @@ from ctypes import *
 # DIRECTION values are in range 4 to 7
 # SPEED values both are in range 0 to 255
 
+SET_PID_OP_BYTE = 12
+ANGLE_CORRECTION_OP_BYTE = 8
+CW_BYTE = 0
+CCW_BYTE = 3
+WALK_FORWARD_BYTE = 4
+WALK_BACKWARDS_BYTE = 7
+WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
+WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 6
+
 class Sender():
 
     def __init__ (self, robotId, bluetoothId, port=0x1001):
@@ -32,16 +41,41 @@ class Sender():
         except:
             print "Packet error robot: ", self.robotId
 
+
+    def send_set_pid_packet(self, KP, KI, KD):
+        try:
+            self.sock.send(c_ubyte(SET_PID_OP_BYTE))
+            self.sock.send(c_ubyte(KP))
+            self.sock.send(c_ubyte(KI))
+            self.sock.send(c_ubyte(KD))
+        except:
+            print "Packet error robot: ", self.robotId
+
+    def send_angle_corretion(self, theta, speed):
+        try:
+            correct_theta, orientation = self.get_angle_orientation_and_correction(theta)
+            self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
+            self.sock.send(c_ubyte(correct_theta))
+            self.sock.send(c_ubyte(speed))
+        except:
+            print "Packet error robot: ", self.robotId
+
+    def get_angle_orientation_and_correction(self, theta):
+        if theta < 180:
+            return theta, CW_BYTE
+        else:
+            return 360-theta, CCW_BYTE
+
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""
         if leftWheel >= 0 and rightWheel >= 0:
-            return 4
+            return WALK_FORWARD_BYTE
         elif leftWheel < 0 and rightWheel < 0:
-            return 7
+            return WALK_BACKWARDS_BYTE
         elif leftWheel < 0:
-            return 5
+            return WALK_RIGHT_FRONT_LEFT_BACK_BYTE
         else:
-            return 6
+            return WALK_RIGHT_BACK_LEFT_FRONT_BYTE
 
     def closeSocket(self):
         """Close the socket"""
