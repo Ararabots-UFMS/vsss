@@ -327,7 +327,7 @@ class virtualField():
           saida
             imagem do campo com os robos impressos na mesma '''
 
-    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed):
+    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[0, 0]):
         """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
@@ -341,7 +341,7 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
                     
 
                 else:
@@ -356,7 +356,7 @@ class virtualField():
                                                         int(center[1] + math.sin(-angle) * self.robot_side_size)),
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
 
                     if self.draw_vectors and self.robot_draw_list[index]:
