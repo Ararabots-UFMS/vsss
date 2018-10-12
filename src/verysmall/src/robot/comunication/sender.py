@@ -30,6 +30,16 @@ class Sender():
         except:
             print "Connect error robot: ", self.robotId
 
+    def send_movement_package(self, package_array, isHardwareCorretion = False):
+        """
+            Receives an array of angle and speed, if the correction is in hardware
+            otherwise, just the wheels speed  
+        """
+        if isHardwareCorretion:
+            send_angle_corretion(package_array[0], package_array[1])
+        else:
+            sendPacket(package_array[0], package_array[1])
+
     def sendPacket(self, leftWheel, rightWheel):
         """Recive the speed, get the first byte and then send the msg to the robot"""
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
