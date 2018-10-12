@@ -55,9 +55,9 @@ class Sender():
     def send_set_pid_packet(self, KP, KI, KD):
         try:
             self.sock.send(c_ubyte(SET_PID_OP_BYTE))
-            self.sock.send(c_ubyte(KP))
-            self.sock.send(c_ubyte(KI))
-            self.sock.send(c_ubyte(KD))
+            self.sock.send(KP)
+            self.sock.send(KI)
+            self.sock.send(KD)
         except:
             print "Packet error robot: ", self.robotId
 
