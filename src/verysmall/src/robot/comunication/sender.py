@@ -1,4 +1,5 @@
 import bluetooth
+import struct
 from ctypes import *
 
 # DIRECTION values are in range 4 to 7
@@ -53,12 +54,8 @@ class Sender():
 
 
     def send_float(self, n_float):
-        try:
-            for value in xrange(4):
-                print (n_float>>(4*value))&8
-                #self.sock.send(c_ubyte((n_float>>(4*value))&8))
-        except:
-            print "cast error: ", n_float
+        for byte in struct.pack("!f", n_float):
+            self.sock.send(c_ubyte(ord(byte)))
 
     def send_set_pid_packet(self, KP, KI, KD):
         try:
