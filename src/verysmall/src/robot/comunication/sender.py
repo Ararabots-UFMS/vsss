@@ -33,7 +33,7 @@ class Sender():
     def send_movement_package(self, package_array, isHardwareCorretion = False):
         """
             Receives an array of angle and speed, if the correction is in hardware
-            otherwise, just the wheels speed  
+            otherwise, just the wheels speed
         """
         if isHardwareCorretion:
             send_angle_corretion(package_array[0], package_array[1])
@@ -52,12 +52,20 @@ class Sender():
             print "Packet error robot: ", self.robotId
 
 
+    def send_float(self, n_float):
+        try:
+            for value in xrange(4):
+                print (n_float>>(4*value))&8
+                #self.sock.send(c_ubyte((n_float>>(4*value))&8))
+        except:
+            print "cast error: ", n_float
+
     def send_set_pid_packet(self, KP, KI, KD):
         try:
             self.sock.send(c_ubyte(SET_PID_OP_BYTE))
-            self.sock.send(KP)
-            self.sock.send(KI)
-            self.sock.send(KD)
+            self.send_float(KP)
+            self.send_float(KI)
+            self.send_float(KD)
         except:
             print "Packet error robot: ", self.robotId
 
