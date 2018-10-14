@@ -1,4 +1,5 @@
 import bluetooth
+import math
 import struct
 from ctypes import *
 
@@ -66,20 +67,24 @@ class Sender():
         except:
             print "Packet error robot: ", self.robotId
 
-    def send_angle_corretion(self, theta, speed):
+    def send_angle_corretion(self, theta, speed, rad=True):
         try:
-            correct_theta, orientation = self.get_angle_orientation_and_correction(theta)
+            correct_theta, orientation = self.get_angle_orientation_and_correction(theta, rad)
             self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
+            print "c", correct_theta, " ", speed
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(speed))
         except:
             print "Packet error robot: ", self.robotId
 
-    def get_angle_orientation_and_correction(self, theta):
-        if theta < 180:
-            return theta, CW_BYTE
+    def get_angle_orientation_and_correction(self, angle, rad=True):
+        tmp = angle
+        if rad:
+            tmp = 180.0*angle/math.pi
+        if 0 <= tmp <= 180:
+            return int(tmp), CW_BYTE
         else:
-            return 360-theta, CCW_BYTE
+            return abs(int(tmp)), CCW_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""
