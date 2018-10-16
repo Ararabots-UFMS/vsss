@@ -50,8 +50,10 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles)
-    #                   _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _game_topic_publisher
+    game_topic_id = RosUtils.number_of_topic_instances('verysmall/game_topic')
+
+    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
+
     coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt, game_topic_publisher, launch)
     lc.stop()
 
