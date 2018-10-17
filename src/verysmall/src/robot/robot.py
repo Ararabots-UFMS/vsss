@@ -12,7 +12,7 @@ from strategy.attacker_with_univector_controller import AttackerWithUnivectorCon
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, _game_topic_name):
         # Parameters
         self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
@@ -52,7 +52,7 @@ class Robot():
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
         self.bluetooth_sender.connect()
 
-        self.subs = RosRobotSubscriber(self)
+        self.subs = RosRobotSubscriber(self, _game_topic_name)
 
         self.changed_game_state = True
         self.game_state_string = ["Stopped",

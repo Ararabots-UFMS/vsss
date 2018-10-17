@@ -22,7 +22,7 @@ class GameTopicPublisher:
             rospy.init_node('game', anonymous=True)
 
         # else is only a publisher
-        self.name = 'game_topic'+str(topic_number)
+        self.name = 'game_topic_'+str(topic_number)
 
         self.pub = rospy.Publisher(self.name, game_topic, queue_size=1)
         self.msg = game_topic()
@@ -56,6 +56,13 @@ class GameTopicPublisher:
         :return: nothing
         """
         self.msg.game_state = _game_state
+
+    def get_name(self):
+        """
+        Returns the name of game topic  
+        :return: nothing
+        """
+        return self.name
 
     def set_robot_role(self, robot_id, role):
         """
