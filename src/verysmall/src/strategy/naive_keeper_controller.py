@@ -2,6 +2,7 @@ import sys
 import os
 import rospy
 import numpy as np
+import ball_range
 from naive_keeper import NaiveGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
@@ -71,18 +72,58 @@ class NaiveGKController():
             self.NaiveGK.stop_to_normal()
 
         if self.NaiveGK.is_normal:
-            if self.team_side == LEFT: #left
 
-                if section.section(self.ball_position) == LEFT_GOAL_AREA:
-                    #defend
-                else:
-                    #trackeia
+            if section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+                self.NaiveGK.normal_to_defend_ball() #defend
+            else:
+                self.NaiveGK.normal_to_track_ball()#trackeia
 
-            else: #right
-                if section.section(self.ball_position) == RIGHT_GOAL_AREA:
-                    #defend
-                else:
-                    #trackeia
+        if self.NaiveGK.is_defend_ball:
+            return self.defend_ball()
+        else:
+            return self.track_ball()
+
+
+    def defend_ball(self):
+
+        if near_ball(self.ball_position, self.position):
+            self.NaiveGK.defend_ball_to_push_ball()
+            return self.push_ball()
+        else:
+            param_1, param_2 , _ = self.movement.do_univector(
+                speed = 180,
+                robot_position=self.position,
+                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                robot_speed=[0, 0],
+                obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                obstacle_speed=[[0,0]]*5,
+                ball_position=self.ball_position
+            )
+            return param_1, param_2 
+
+    def push_ball(self):
+        
+        if near_ball(self.ball_position, self.position):
+            return movement.spin(255,ball_range.spin_direction(self.ball_position, self.position, self.team_side))
+        elif (not near_ball(self.ball_position, self.position)) and section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+            param_1, param_2 , _ = self.movement.do_univector(
+                speed = 180,
+                robot_position=self.position,
+                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                robot_speed=[0, 0],
+                obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                obstacle_speed=[[0,0]]*5,
+                ball_position=self.ball_position
+            )
+            return param_1, param_2             
+        else:
+            self.NaiveGK.push_ball_to_normal()
+            return self.in_normal_game()
+
+
+    def track_ball(self):
+
+        if :
 
 
     def in_freeball_game(self):
