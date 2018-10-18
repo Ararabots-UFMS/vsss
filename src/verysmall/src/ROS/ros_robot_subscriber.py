@@ -8,13 +8,13 @@ class RosRobotSubscriber:
     """
     This class is responsible for reading and formatting ros messages for the robot node
     """
-    def __init__(self, _robot):
+    def __init__(self, _robot, _game_topic_name = 'game_topic_0'):
         """
         :param _robot: robot object
         """
         rospy.Subscriber('things_position', things_position, self.read_topic)
 
-        rospy.Subscriber('game_topic', game_topic, self.read_game_topic)
+        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic)
 
         self.robot = _robot
 

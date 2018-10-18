@@ -10,14 +10,21 @@ class GameTopicPublisher:
     This class can publish Game related messages on a 'Game topic' Topic
     :return: nothing
     """
-    def __init__(self, isnode=False, _game_opt = None, _robot_params = None, _robot_name_roles = None):
+    def __init__(self, isnode=False, _game_opt = None, _robot_params = None, _robot_name_roles = None, topic_number = 0):
         """
         :param isnode: Boolean
+        :param _game_opt: Game json
+        :param _robot_params: Robots Json
+        :param _robot_name_roles: Robot roles Json
+        :param topic_number: int
         """
         if isnode:  # if this a separeted node
             rospy.init_node('game', anonymous=True)
+
         # else is only a publisher
-        self.pub = rospy.Publisher('game_topic', game_topic, queue_size=1)
+        self.name = 'game_topic_'+str(topic_number)
+
+        self.pub = rospy.Publisher(self.name, game_topic, queue_size=1)
         self.msg = game_topic()
         self.msg.robot_roles = [0, 0, 0, 0, 0]
         
@@ -49,6 +56,13 @@ class GameTopicPublisher:
         :return: nothing
         """
         self.msg.game_state = _game_state
+
+    def get_name(self):
+        """
+        Returns the name of game topic  
+        :return: nothing
+        """
+        return self.name
 
     def set_robot_role(self, robot_id, role):
         """
