@@ -3,7 +3,7 @@ from statemachine import StateMachine, State
 
 class NaiveGK(StateMachine):
 
-	    """
+    """
     Class for creation of the state machine of robberies,
     consisting of basic states of each robbery
 
@@ -25,17 +25,17 @@ class NaiveGK(StateMachine):
         meta_to_normal      {[Transition]} -- [Transition meta to normal]
     """
     # Base States
-    stop      = State('Stop', initial=True)
+    stop = State('Stop', initial=True)
     normal    = State('Normal')
     freeball  = State('FreeBall')
     penalty   = State('Penalty')
     meta      = State('Meta')
 
-   	defend_ball		=	State('DEFEND')
-	push_ball		=	State('PUSH_BALL')
-	
-	track_ball		=	State('TRACK_BALL')
-	follow_ball		=	State('FOLLOW_BALL')
+    defend_ball     =   State('DEFEND')
+    push_ball       =   State('PUSH_BALL')
+    
+    track_ball      =   State('TRACK_BALL')
+    follow_ball     =   State('FOLLOW_BALL')
 
 
 
@@ -56,14 +56,14 @@ class NaiveGK(StateMachine):
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
-	normal_to_defend_ball		= normal.to(defend)
-	defend_ball_to_push_ball	= defend_ball.to(push_ball)
-	push_ball_to_normal        	= push_ball.to(normal)
+    normal_to_defend_ball       = normal.to(defend)
+    defend_ball_to_push_ball    = defend_ball.to(push_ball)
+    push_ball_to_normal         = push_ball.to(normal)
 
-	normal_to_track_ball			= normal.to(track_ball) 
-	track_ball_to_follow_ball		= track_ball.to(follow_ball)
+    normal_to_track_ball            = normal.to(track_ball) 
+    track_ball_to_follow_ball       = track_ball.to(follow_ball)
 
-	follow_ball_to_normal		= follow_ball.to(normal)
+    follow_ball_to_normal       = follow_ball.to(normal)
 
 
 class MyModel(object):

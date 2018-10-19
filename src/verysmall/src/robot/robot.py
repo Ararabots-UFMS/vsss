@@ -7,6 +7,7 @@ import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
+from strategy.naive_keeper_controller import NaiveGKController
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -64,12 +65,12 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivectorController()
+        self.state_machine = NaiveGKController()
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
-                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position)
+                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
         if self.game_state == 0:  # Stopped
             param_A, param_B = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play

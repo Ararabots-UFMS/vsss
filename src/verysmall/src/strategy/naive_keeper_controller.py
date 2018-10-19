@@ -20,6 +20,8 @@ KD = univector_list['robot_1']['KD']
 KI = univector_list['robot_1']['KI']
 
 
+GOAL_KEEPER_SPEED = 180
+
 class NaiveGKController():
 
     def __init__(self):
@@ -93,7 +95,7 @@ class NaiveGKController():
             return self.push_ball()
         else:
             param_1, param_2 , _ = self.movement.do_univector(
-                speed = 180,
+                speed = GOAL_KEEPER_SPEED,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=[0, 0],
@@ -107,9 +109,9 @@ class NaiveGKController():
         
         if near_ball(self.ball_position, self.position):
             return movement.spin(255,ball_range.spin_direction(self.ball_position, self.position, self.team_side))
-        elif (not near_ball(self.ball_position, self.position)) and section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+        elif (not near_ball(self.ball_position, self.position)) and (section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]):
             param_1, param_2 , _ = self.movement.do_univector(
-                speed = 180,
+                speed = GOAL_KEEPER_SPEED,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=[0, 0],
@@ -137,7 +139,7 @@ class NaiveGKController():
             self.defend_position[1] = self.ball_position[1]
 
         param_1, param_2 , _ = self.movement.do_univector(
-            speed = 180,
+            speed = GOAL_KEEPER_SPEED,
             robot_position = self.position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed = [0, 0],
