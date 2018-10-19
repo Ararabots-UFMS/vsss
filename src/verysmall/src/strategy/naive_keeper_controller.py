@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from arena_sections import *
 from ball_range import *
-from naive_attacker_strategy import NaiveAttacker, MyModel
+from naive_keeper import NaiveGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
@@ -22,7 +22,7 @@ CENTER_X = 75
 SPEED_DEFAULT = 180
 MAX_X = 150
 
-class NaiveAttackerController():
+class NaiveGKController():
 
     def __init__(self):
         self.position = None
@@ -34,7 +34,7 @@ class NaiveAttackerController():
         self.team_side = None
 
         self.stop = MyModel(state='Stop')
-        self.RobotStateMachine = NaiveAttacker(self.stop)
+        self.RobotStateMachine = NaiveGK(self.stop)
 
         self.movement = Movement([KP, KD, KI], 10)
 
