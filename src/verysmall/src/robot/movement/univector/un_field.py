@@ -7,6 +7,7 @@ from math import pi
 from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
+from rospy import logfatal
 
 LEFT = 0
 RIGHT = 1
@@ -222,9 +223,11 @@ class univectorField:
         self.K0 = None
         self.DMIN = None
         self.LDELTA = None
+        logfatal(attack_goal)
         # Subfields
+        self.univector_rotation_axis = _rotation
         self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal, rotation_support=_rotation)
+        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal, rotation_support=self.univector_rotation_axis)
 
     def update_attack_side(self, attack_goal):
         """
@@ -232,7 +235,10 @@ class univectorField:
         :param attack_goal: int
         :return: nothing
         """
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal)
+        if self.univector_rotation_axis:
+            self.mv2GoalField = move2Goal(self.KR, self.RADIUS, np.array([0.0 + attack_goal*150, 65.0]), self.univector_rotation_axis)
+        else:
+            self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal)
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
