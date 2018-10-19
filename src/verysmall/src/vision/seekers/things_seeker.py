@@ -33,6 +33,22 @@ class Things:
         # Saves the time of the last update
         self.last_update = None
 
+        self.speedWindow = []
+
+    def add_speed_to_queue(self, speed):
+        if len(self.speedWindow) == 10:
+            self.speedWindow.pop(0)
+        self.speedWindow.append(speed)
+
+    def get_avg_speed(self, instant_speed):
+        self.add_speed_to_queue(instant_speed)
+        avg_speed = np.array([0.0, 0.0])
+
+        for speed in self.speedWindow:
+            avg_speed += speed
+
+        return avg_speed / 10.0
+
     def update(self, id, pos, orientation=None):
         last_up = None
         now = time.time()
@@ -41,7 +57,8 @@ class Things:
         if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
             # If it is not the first update, calculate the robot speed
             #pos = (self.pos + pos) / 2.0 # tentando diminuir erro
-            self.speed = (pos - self.pos) / (now - self.last_update)
+            instant_speed = (pos - self.pos) / (now - self.last_update)
+            self.speed = self.get_avg_speed(instant_speed)
         else:
             self.speed = 0
 
