@@ -30,6 +30,8 @@ class NaiveGKController():
         self.ball_position = None
         self.team_side = None
 
+        self.defend_position = np.array([0,0])
+
         self.stop = MyModel(state='Stop')
         self.NaiveGK = NaiveGK(self.stop)
 
@@ -123,8 +125,27 @@ class NaiveGKController():
 
     def track_ball(self):
 
-        if :
+        self.defend_position[0] = 17.5 + 120*self.team_side
+        
+        if self.ball_position[1] > 92:
+            self.defend_position[1] = 92
 
+        elif self.defend_position[1] < 38:
+            self.defend_position[1] = 38
+
+        else:
+            self.defend_position[1] = self.ball_position[1]
+
+        param_1, param_2 , _ = self.movement.do_univector(
+            speed = 180,
+            robot_position = self.position,
+            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
+            robot_speed = [0, 0],
+            obstacle_position = np.resize(self.enemies_position, (5, 2)),
+            obstacle_speed = [[0,0]]*5,
+            ball_position = self.defend_position
+        )
+        return param_1, param_2             
 
     def in_freeball_game(self):
         """
