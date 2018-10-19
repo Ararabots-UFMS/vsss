@@ -33,11 +33,8 @@ class NaiveGK(StateMachine):
 
    	defend_ball		=	State('DEFEND')
 	push_ball		=	State('PUSH_BALL')
-	back_to_goal	=	State('BACK_TO_GOAL')
-
+	
 	track_ball		=	State('TRACK_BALL')
-	right_most_goal	=	State('RMG')
-	left_most_goal	=	State('LMG')
 	follow_ball		=	State('FOLLOW_BALL')
 
 
@@ -59,21 +56,14 @@ class NaiveGK(StateMachine):
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
-
-
 	normal_to_defend_ball		= normal.to(defend)
 	defend_ball_to_push_ball	= defend_ball.to(push_ball)
-	push_ball_to_back_to_goal	= push_ball.to(back_to_goal)
+	push_ball_to_normal        	= push_ball.to(normal)
 
-	normal_to_track_ball			= normal.to(track_ball)
-	track_ball_to_right_most_goal	= track_ball.to(right_most_goal) 
-	track_ball_to_left_most_goal	= track_ball.to(left_most_goal)
+	normal_to_track_ball			= normal.to(track_ball) 
 	track_ball_to_follow_ball		= track_ball.to(follow_ball)
 
-	right_most_goal_to_normal	= right_most_goal.to(normal)
-	left_most_goal_to_normal	= left_most_goal.to(normal)
 	follow_ball_to_normal		= follow_ball.to(normal)
-	back_to_goal_to_normal		= back_to_goal.to(normal)
 
 
 class MyModel(object):
