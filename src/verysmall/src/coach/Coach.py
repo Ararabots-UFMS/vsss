@@ -44,7 +44,7 @@ class Coach:
             try:
                 tag = self.robot_params[robot]['tag_number']
                 body = self.robot_params[robot]['body_id']
-                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body
+                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.pub.get_name()
             except KeyError:
                 variables = ""
                 self.robot_params[robot]['active'] = False
@@ -76,7 +76,7 @@ class Coach:
         bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
         tag = self.robot_params[robot]['tag_number']
         body = self.robot_params[robot]['body_id']
-        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body
+        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.pub.get_name()
 
         self.ros_functions.change_arguments_of_node(robot, variables)
 

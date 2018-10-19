@@ -17,6 +17,12 @@ from robot.movement.univector.un_field import univectorField
 path[0] = old_path
 
 
+# Lambda functions
+
+vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5)/10.0
+
+# ================
+
 class virtualField():
     """ class constructor 
 
@@ -61,7 +67,7 @@ class virtualField():
         self.height_conv = 0.998 * self.height / 130
         self.angle_conversion_factor = 180 / math.pi
 
-        self.univetField = univectorField()
+        self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
         self.draw_vectors = False
         self.robot_draw_list = [0]*5
 
@@ -341,8 +347,7 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
-                    
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)                    
 
                 else:
                     angle = robot_vector[index]
@@ -356,8 +361,7 @@ class virtualField():
                                                         int(center[1] + math.sin(-angle) * self.robot_side_size)),
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(np.linalg.norm(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
-
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
                     if self.draw_vectors and self.robot_draw_list[index]:
                         self.drawPath(robot_list[index], ball_center)
@@ -391,7 +395,7 @@ class virtualField():
             self.univetField.updateBall(ball_center)
             self.univetField.updateObstacles(robotlistA,robot_speed_away)
 
-        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_away)
+        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
         self.plot_robots(robotlistA, robotvecA, colorA, is_away, robot_speed_away)
 
 
@@ -450,3 +454,4 @@ class virtualField():
     def proportion_average(self, size):
         return int(((self.width + self.height) * 0.5) * size / 100)
 
+    

@@ -99,7 +99,7 @@ if __name__ == "__main__":
         color = 1
 
     vision_node = VisionNode(color)
-    rate = rospy.Rate(30)  # 30hz
+    rate = rospy.Rate(1)  # 30hz
 
     while not rospy.is_shutdown():
         if vision_node.show:

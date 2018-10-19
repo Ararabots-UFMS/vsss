@@ -8,11 +8,13 @@ sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 
+SOFTWARE = 0
+HARDWARE = 1
 
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, _game_topic_name):
         # Parameters
         self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
@@ -47,12 +49,13 @@ class Robot():
         self.left_side = 0
         self.right_side = not self.left_side
 
+        self.pid_type = SOFTWARE
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
         self.bluetooth_sender.connect()
 
-        self.subs = RosRobotSubscriber(self)
+        self.subs = RosRobotSubscriber(self, _game_topic_name)
 
         self.changed_game_state = True
         self.game_state_string = ["Stopped",
@@ -68,18 +71,23 @@ class Robot():
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position)
         if self.game_state == 0:  # Stopped
-            left, right = self.state_machine.set_to_stop_game()
+            param_A, param_B = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
-            left, right = self.state_machine.in_normal_game()
+            param_A, param_B = self.state_machine.in_normal_game()
         elif self.game_state == 2:  # Freeball
-            left, right = self.state_machine.in_freeball_game()
+            param_A, param_B = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
-            left, right = self.state_machine.in_penalty_game()
+            param_A, param_B = self.state_machine.in_penalty_game()
         elif self.game_state == 4:  # Meta
-            left, right = self.state_machine.in_meta_game()
+            param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")
-        self.bluetooth_sender.sendPacket(left, right)
+        # ========================================================
+        #             SOFTWARE        |    HARDWARE
+        # Param A :    LEFT           |      Theta
+        # Param B :    RIGHT          |      Speed
+        # ========================================================
+        self.bluetooth_sender.send_movement_package([param_A, param_B], self.pid_type)
 
         if self.changed_game_state:
             rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +

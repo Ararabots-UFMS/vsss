@@ -24,16 +24,26 @@ LDELTA = univector_list['LDELTA']
 RIGHT = 1
 LEFT = 0
 
+SOFTWARE = 0
+HARDWARE = 1
+
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, PID_list, error=10, attack_goal=RIGHT):
+    def __init__(self, PID_list, error=10, attack_goal=RIGHT, _pid_type=SOFTWARE):
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
         self.last_pos = np.array([0, 0])
         self.error_margin = error
         self.attack_goal = attack_goal
         self.univet_field = univectorField(attack_goal=self.attack_goal)
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.pid_type = _pid_type
+
+    def set_pid_type(self, _pid_type):
+        """
+            Define if the pid correction is done on SOFTWARE or HARDWARE (0 or 1 respectively)
+        """
+        self.pid_type = _pid_type
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
@@ -99,7 +109,12 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False) 
+        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        # Return the speed and angle if the PID is in hardware, otherwise
+        # returns both wheels speed and its correction
+        if self.pid_type == HARDWARE:
+            return (diff_angle, speed)
+
         correction = self.pid.update(diff_angle)
         return self.return_speed(speed, correction)
 
@@ -124,9 +139,14 @@ class Movement():
         :return: returns int, int, boolean
         """
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
-        logfatal(str(diff_angle))
+        #logfatal(str(diff_angle))
+
         if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True
+
+        if self.pid_type == HARDWARE:
+            return diff_angle, 0, False
+
         correction = self.pid.update(diff_angle)
         return self.normalize(int(correction)), self.normalize(int(-correction)), False
 
