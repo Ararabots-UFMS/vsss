@@ -6,8 +6,11 @@ from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber import RosRobotSubscriber
-from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
+#from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 #from strategy.naive_keeper_controller import NaiveGKController
+
+from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
+
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -65,7 +68,7 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
 
-        self.state_machine = AttackerWithUnivectorController()
+        self.state_machine = NaiveAttackerController()
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
