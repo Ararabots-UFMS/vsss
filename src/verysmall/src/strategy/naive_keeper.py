@@ -32,10 +32,9 @@ class NaiveGK(StateMachine):
     meta      = State('Meta')
 
     defend_ball     =   State('DEFEND')
-    push_ball       =   State('PUSH_BALL')
     
     track_ball      =   State('TRACK_BALL')
-    follow_ball     =   State('FOLLOW_BALL')
+
 
 
 
@@ -56,15 +55,14 @@ class NaiveGK(StateMachine):
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
-    normal_to_defend_ball       = normal.to(defend)
-    defend_ball_to_push_ball    = defend_ball.to(push_ball)
-    push_ball_to_normal         = push_ball.to(normal)
+    normal_to_defend_ball       = normal.to(defend_ball)
+    normal_to_track_ball        = normal.to(track_ball) 
+    
+    defend_ball_to_track        = defend_ball.to(track_ball)
+    track_to_defend_ball        = track_ball.to(defend_ball)
 
-    normal_to_track_ball            = normal.to(track_ball) 
-    track_ball_to_follow_ball       = track_ball.to(follow_ball)
-
-    follow_ball_to_normal       = follow_ball.to(normal)
-
+    
+    
 
 class MyModel(object):
     def __init__(self, state):
