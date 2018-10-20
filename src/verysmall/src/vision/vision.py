@@ -55,7 +55,7 @@ class Vision:
         self.adv_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
-        rospy.Subscriber('game_topic', game_topic, self.on_game_state_change)
+        rospy.Subscriber('game_topic_0', game_topic, self.on_game_state_change)
 
         self.game_state = None
 

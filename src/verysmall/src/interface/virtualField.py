@@ -347,8 +347,7 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
-                    
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)                    
 
                 else:
                     angle = robot_vector[index]
@@ -363,7 +362,6 @@ class virtualField():
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
                     cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
-
 
                     if self.draw_vectors and self.robot_draw_list[index]:
                         self.drawPath(robot_list[index], ball_center)
