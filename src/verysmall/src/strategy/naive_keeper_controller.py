@@ -115,15 +115,12 @@ class NaiveGKController():
             param1, param2, bool = self.movement.spin(255,spin_direction(self.ball_position, self.position, self.team_side))
             return param1, param2
         else:
-            rospy.logfatal("UNIVECT")
-            param_1, param_2 , _ = self.movement.do_univector(
+            param_1, param_2 , _ = self.movement.move_to_point(
                 speed = GOAL_KEEPER_SPEED,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=[0, 0],
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
+                robot_position = self.position,
+                robot_vector = [np.cos(self.orientation),np.sin(self.orientation)],
+                goal_position = self.defend_position
+
             )
             return param_1, param_2
 
@@ -143,29 +140,27 @@ class NaiveGKController():
 
     def follow_ball(self):
 
-        self.defend_position[0] = 17.5 + 120.0*self.team_side
+        self.defend_position[0] = 15.0 + 118.0*self.team_side
     
         if self.ball_position[1] >= 38.0 and self.ball_position[1] <= 92.0:
             #rospy.logfatal("frente area")
             self.defend_position[1] = self.ball_position[1]
         else:
-            if self.ball_position[1] > 92:
+            if self.ball_position[1] > 92.0:
                 #rospy.logfatal("esq area")
-                self.defend_position[1] = 92
+                self.defend_position[1] = 92.0
 
             else: #self.defend_position[1] < 38:
                 #rospy.logfatal("dir area")
-                self.defend_position[1] = 38
+                self.defend_position[1] = 38.0
 
-        param_1, param_2 , _ = self.movement.do_univector(
+        param_1, param_2 , _ = self.movement.move_to_point(
             speed = GOAL_KEEPER_SPEED,
             robot_position = self.position,
-            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
-            robot_speed = [0, 0],
-            obstacle_position = np.resize(self.enemies_position, (5, 2)),
-            obstacle_speed = [[0,0]]*5,
-            ball_position = self.defend_position
-        )
+            robot_vector = [np.cos(self.orientation),np.sin(self.orientation)],
+            goal_position = self.defend_position
+
+            )
         return param_1, param_2 
 
 

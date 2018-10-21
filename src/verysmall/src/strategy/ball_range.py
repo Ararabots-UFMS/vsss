@@ -14,7 +14,7 @@ def near_ball(ball_position, robot_position):
     :return: boolean
     """
     distance = np.linalg.norm(ball_position-robot_position)
-    return (distance <= 5.5)
+    return (distance <= 6.0)
 
 def behind_ball(ball_position, robot_position, team_side):
     """
