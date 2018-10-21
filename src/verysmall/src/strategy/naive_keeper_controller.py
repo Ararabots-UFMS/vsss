@@ -20,7 +20,7 @@ KD = univector_list['robot_1']['KD']
 KI = univector_list['robot_1']['KI']
 
 
-GOAL_KEEPER_SPEED = 180
+GOAL_KEEPER_SPEED = 255
 
 class NaiveGKController():
 
@@ -115,6 +115,7 @@ class NaiveGKController():
             param1, param2, bool = self.movement.spin(255,spin_direction(self.ball_position, self.position, self.team_side))
             return param1, param2
         else:
+            rospy.logfatal("MVTP")
             param_1, param_2 , _ = self.movement.move_to_point(
                 speed = GOAL_KEEPER_SPEED,
                 robot_position = self.position,
@@ -134,6 +135,9 @@ class NaiveGKController():
                 return self.in_defend_ball() #defend
             else:
                 return self.follow_ball()    
+        elif section(self.ball_position) in [LEFT_GOAL,RIGHT_GOAL]:
+            rospy.logfatal("GOL!!")
+            return 0,0
         else:
             return self.follow_ball()
 
@@ -143,15 +147,15 @@ class NaiveGKController():
         self.defend_position[0] = 15.0 + 118.0*self.team_side
     
         if self.ball_position[1] >= 38.0 and self.ball_position[1] <= 92.0:
-            #rospy.logfatal("frente area")
+            rospy.logfatal("frente area")
             self.defend_position[1] = self.ball_position[1]
         else:
             if self.ball_position[1] > 92.0:
-                #rospy.logfatal("esq area")
+                rospy.logfatal("esq area")
                 self.defend_position[1] = 92.0
 
             else: #self.defend_position[1] < 38:
-                #rospy.logfatal("dir area")
+                rospy.logfatal("dir area")
                 self.defend_position[1] = 38.0
 
         param_1, param_2 , _ = self.movement.move_to_point(
