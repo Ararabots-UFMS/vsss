@@ -14,13 +14,13 @@ path += '../parameters/robots_pid.json'
 jsonHandler = JsonHandler()
 univector_list = jsonHandler.read(path)
 
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
+KP = univector_list['robot_5']['KP']
+KD = univector_list['robot_5']['KD']
+KI = univector_list['robot_5']['KI']
 
 CENTER_Y = 65
 CENTER_X = 75
-SPEED_DEFAULT = 240
+SPEED_DEFAULT = 180
 MAX_X = 150
 
 class NaiveAttackerController():
@@ -80,16 +80,17 @@ class NaiveAttackerController():
             self.RobotStateMachine.stop_to_normal()
 
         if self.RobotStateMachine.is_normal:
-            # Caso a bola esteja no campo de ataque
-            if on_attack_side(self.ball_position, self.team_side):
-                # Verifica se a bola esta nas bordas
-                if (section(self.position) in self.borders):
-                    self.RobotStateMachine.normal_to_border() 
-                else:
-                    self.RobotStateMachine.normal_to_reach_ball()
-            # Caso o a bola esteja na defesa manda o atacante para um ponto fixo
-            else:
-                self.RobotStateMachine.normal_to_point()
+            return self.in_pid()
+            # # Caso a bola esteja no campo de ataque
+            # if on_attack_side(self.ball_position, self.team_side):
+            #     # Verifica se a bola esta nas bordas
+            #     if (section(self.position) in self.borders):
+            #         self.RobotStateMachine.normal_to_border() 
+            #     else:
+            #         self.RobotStateMachine.normal_to_reach_ball()
+            # # Caso o a bola esteja na defesa manda o atacante para um ponto fixo
+            # else:
+            #     self.RobotStateMachine.normal_to_point()
 
         # Se estado esta como borda
         if self.RobotStateMachine.is_border:
@@ -114,6 +115,26 @@ class NaiveAttackerController():
         # Estado de corrida do robo na borda
         elif self.RobotStateMachine.is_walk_border:
             return self.in_walk_border()
+
+
+    def in_pid(self):
+
+        rospy.logfatal(self.position)
+
+        point = [140,25-(7.5/2.0)]
+
+        left, right, done = self.movement.move_to_point(
+            speed = 150,
+            robot_position=self.position,
+            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+            goal_position = point
+        )
+        # left, right, done = self.movement.spin(255, 1)
+
+        if (distance_point(self.position, point) < 20):
+            return 0, 0
+
+        return left, right
 
 
     def in_border(self):
@@ -156,7 +177,7 @@ class NaiveAttackerController():
             self.RobotStateMachine.walk_border_to_point()
             return self.in_point()
 
-        self.ball_position[0] += 15
+        
 
         # Segue a bola com o univector
         left, right, _ = self.movement.move_to_point(
