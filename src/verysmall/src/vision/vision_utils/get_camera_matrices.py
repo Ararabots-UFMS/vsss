@@ -16,7 +16,7 @@ CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
 H_CENTERS = 12
 V_CENTERS = 9
-SCALE = 0.65
+SCALE = 0.8
 
 
 def get_error(objp, imgpoints, rvecs, tvecs, mtx, dist):
