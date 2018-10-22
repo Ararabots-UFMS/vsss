@@ -6,7 +6,7 @@ import math
 from aruco_seeker import ArucoSeeker
 from general_object_seeker import GeneralObjSeeker
 from general_mult_obj_seeker import GeneralMultObjSeeker
-
+import rospy
 # @author Wellington Castro <wvmcastro>
 
 # Sorry for these globals, but is good for code reading
@@ -112,10 +112,16 @@ class HawkEye:
 
         robots = self.home_team_seeker.seek(img, degree=False)
 
-        for i in xrange(len(robots)):
-            id = robots[i][ID]
-            pos = self.pixel_to_real_world(robots[i][POS])
-            robots_list[i].update(id, pos, orientation=robots[i][ANGLE])
+        k = 0
+        len_robots = len(robots)
+        for i in xrange(self.num_robots_home_team):
+            id = None if k >= len_robots else robots[k][ID];
+            if i == id:
+                pos = self.pixel_to_real_world(robots[k][POS])
+                robots_list[i].update(id, pos, orientation=robots[k][ANGLE])
+                k += 1
+            else:
+                robots_list[i].reset()
 
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to
