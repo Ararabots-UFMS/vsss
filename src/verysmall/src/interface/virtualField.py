@@ -17,6 +17,12 @@ from robot.movement.univector.un_field import univectorField
 path[0] = old_path
 
 
+# Lambda functions
+
+vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5)/10.0
+
+# ================
+
 class virtualField():
     """ class constructor 
 
@@ -61,7 +67,7 @@ class virtualField():
         self.height_conv = 0.998 * self.height / 130
         self.angle_conversion_factor = 180 / math.pi
 
-        self.univetField = univectorField()
+        self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
         self.draw_vectors = False
         self.robot_draw_list = [0]*5
 
@@ -70,8 +76,9 @@ class virtualField():
         self.mark_radius = self.proportion_average(0.3)
         self.robot_side_size = self.proportion_average(4.5)
         self.away_team_radius = self.proportion_average(2.5)
-
+        self.text_offset = (self.proportion_width(3.5), self.proportion_height(3.5))
         self.text_font = cv.FONT_HERSHEY_SIMPLEX
+
 
         # univector
         self.RADIUS = univector_list['RADIUS']
@@ -326,7 +333,7 @@ class virtualField():
           saida
             imagem do campo com os robos impressos na mesma '''
 
-    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0)):
+    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[0, 0]):
         """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
@@ -340,6 +347,8 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)                    
+
                 else:
                     angle = robot_vector[index]
                     center = position_from_origin(
@@ -352,6 +361,7 @@ class virtualField():
                                                         int(center[1] + math.sin(-angle) * self.robot_side_size)),
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
                     if self.draw_vectors and self.robot_draw_list[index]:
                         self.drawPath(robot_list[index], ball_center)
@@ -373,9 +383,11 @@ class virtualField():
         ball_center = data.ball_pos  # ball position
         robotlistH = data.team_pos  # home team position
         robotvecH = data.team_orientation  # home team vectors
+        robot_speed_home = data.team_speed
         robotlistA = data.enemies_pos  # away team position
         robotvecA = data.enemies_orientation  # away team vectors
         robot_speed_away = data.enemies_speed
+
 
         self.plot_ball(ball_center)
 
@@ -383,8 +395,8 @@ class virtualField():
             self.univetField.updateBall(ball_center)
             self.univetField.updateObstacles(robotlistA,robot_speed_away)
 
-        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center)
-        self.plot_robots(robotlistA, robotvecA, colorA, is_away)
+        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
+        self.plot_robots(robotlistA, robotvecA, colorA, is_away, robot_speed_away)
 
 
         ''' usar no maximo 1 casa decimal, substituir os parametros 
@@ -442,3 +454,4 @@ class virtualField():
     def proportion_average(self, size):
         return int(((self.width + self.height) * 0.5) * size / 100)
 
+    

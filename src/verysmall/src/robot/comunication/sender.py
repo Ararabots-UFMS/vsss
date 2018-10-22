@@ -38,9 +38,9 @@ class Sender():
             otherwise, just the wheels speed
         """
         if isHardwareCorretion:
-            send_angle_corretion(package_array[0], package_array[1])
+            self.send_angle_corretion(package_array[0], package_array[1])
         else:
-            sendPacket(package_array[0], package_array[1])
+            self.sendPacket(package_array[0], package_array[1])
 
     def sendPacket(self, leftWheel, rightWheel):
         """Recive the speed, get the first byte and then send the msg to the robot"""
