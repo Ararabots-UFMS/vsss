@@ -56,7 +56,7 @@ class NaiveGK(StateMachine):
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
-    normal_to_defend_ball       = normal.to(defend)
+    normal_to_defend_ball       = normal.to(defend_ball)
     defend_ball_to_push_ball    = defend_ball.to(push_ball)
     push_ball_to_normal         = push_ball.to(normal)
 

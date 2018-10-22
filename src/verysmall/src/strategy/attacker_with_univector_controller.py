@@ -34,7 +34,7 @@ class AttackerWithUnivectorController():
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
+    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:

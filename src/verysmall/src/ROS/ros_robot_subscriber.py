@@ -2,6 +2,7 @@
 from verysmall.msg import things_position, game_topic
 import rospy
 import numpy as np
+from struct import unpack
 
 
 class RosRobotSubscriber:
@@ -26,11 +27,12 @@ class RosRobotSubscriber:
         """
         self.robot.game_state = data.game_state
         self.robot.team_side = data.team_side
-        self.robot.role = data.robot_roles[self.robot.robot_id_integer]
+        self.robot.role = unpack('B', data.robot_roles[self.robot.robot_id_integer])[0]
         self.robot.penalty_robot = data.penalty_robot
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
         self.robot.changed_game_state = True
+        self.robot.state_machine = self.robot.strategies[self.robot.role]
 
     def read_topic(self, data):
         """
