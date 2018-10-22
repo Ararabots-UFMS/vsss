@@ -2,25 +2,39 @@
 import rospy
 from Queue import Queue
 from collections import deque
-from verysmall.msg import things_position
+from verysmall.msg import things_position, debug_topic
 from numpy import nan_to_num, array
 
 
 class RosMainWindowSubscriber:
-    def __init__(self, isnode=True):
+    def __init__(self, _game_topic_name = 'game_topic_0'):
         """
         This is class is mainly responsible for the ROS functions of Main Window View
         :return: nothing
         """
-        if isnode:
-            rospy.init_node('virtual_field', anonymous=True)
+        #if isnode:
+        #    rospy.init_node('virtual_field', anonymous=True)
 
         # Ros node for reading the buffer
         rospy.Subscriber('things_position', things_position, self.read, queue_size=1)
 
+        # Debug topic
+        rospy.Subscriber('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
+
         # Queue of data from Topic Things position
         msg = things_position()
-        self.data = deque([msg, msg])  # Shapes the size of the Queue
+        debug_msg = debug_topic()
+
+        self.data = deque([msg, msg], maxlen = 60)  # Shapes the size of the Queue
+        self.debug_data = deque([debug_msg, debug_msg], maxlen = 5)
+
+    def read_debug_topic(self, debug_data):
+        """
+        Read from topic callback and appends to data buffer
+        :return: nothing
+        """
+        # Inserts data in the Queue
+        self.debug_data.append(debug_data)
 
     def read(self, data):
         """
@@ -29,6 +43,25 @@ class RosMainWindowSubscriber:
         """
         # Inserts data in the Queue
         self.data.append(data)
+
+    def pop_item_debug(self):
+        """
+        Grabs an message from the queue and returns it in np.array format
+        :return data_item : things position message
+        """
+        debug_item = None
+
+        debug_item = [-1,-1]
+        
+        try:
+            debug_item = self.debug_data.popleft()
+            debug_item = [debug_item.id, nan_to_num(array(debug_item.vector))]
+        
+        except IndexError:
+            rospy.loginfo("vazia")
+
+        return debug_item
+
 
     def pop_item(self):
         """

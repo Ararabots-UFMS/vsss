@@ -454,4 +454,15 @@ class virtualField():
     def proportion_average(self, size):
         return int(((self.width + self.height) * 0.5) * size / 100)
 
-    
+    def plot_debug_vectors(self, robot_positions, debug_vectors):
+        for index in xrange(5):
+            if self.robot_draw_list[index]:
+                currentPos = robot_positions[index]
+
+                _currentPos = position_from_origin( 
+                            unit_convert( currentPos, self.width_conv, self.height_conv), self.field_origin)
+                newPos =  currentPos + self.robot_side_size * debug_vectors[index]
+                _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
+
+                cv.arrowedLine(self.field, _currentPos, (( _newPos[0]),
+                                     ( _newPos[1])), self.colors["blue"], 2)

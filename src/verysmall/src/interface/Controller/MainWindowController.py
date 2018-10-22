@@ -29,7 +29,7 @@ class MainWindowController:
                                                              self.robot_roles, model.robot_bodies)
 
         # Lets create the view of our controller shall we
-        self.view = MainWindowView()
+        self.view = MainWindowView(_game_topic_publisher.get_name())
         self.view.virtualField.set_univector_debug_params(not self.game_opt['side'],
                                                           model.debug_params['robot_vector'],
                                                           model.debug_params['things'])

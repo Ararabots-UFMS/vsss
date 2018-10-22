@@ -11,13 +11,14 @@ path[0] = old_path
 class Coach:
     """Creates the Coach"""
 
-    def __init__(self, _robot_params, _robot_bluetooth, _robot_roles, _game_opt, _game_topic_publisher, _launcher=None):
+    def __init__(self, model, _game_topic_publisher, _launcher=None):
 
         # Save the parameters for future use
-        self.robot_params = _robot_params
-        self.robot_bluetooth = _robot_bluetooth
-        self.robot_roles = _robot_roles
-        self.game_opt = _game_opt
+        self.robot_params = model.robot_params
+        self.robot_bluetooth = model.robot_bluetooth
+        self.robot_roles = model.robot_roles
+        self.game_opt = model.game_opt
+        self.debug_params = model.debug_params
         self.pub = _game_topic_publisher
 
         # Fast access array to use a dict as an simple array
@@ -44,7 +45,8 @@ class Coach:
             try:
                 tag = self.robot_params[robot]['tag_number']
                 body = self.robot_params[robot]['body_id']
-                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.pub.get_name()
+                debug = str(self.debug_params["things"][robot])
+                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.pub.get_name() + " " + debug
             except KeyError:
                 variables = ""
                 self.robot_params[robot]['active'] = False
@@ -76,7 +78,8 @@ class Coach:
         bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
         tag = self.robot_params[robot]['tag_number']
         body = self.robot_params[robot]['body_id']
-        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.pub.get_name()
+        debug = str(self.debug_params["things"][robot])
+        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.pub.get_name() + " " + debug
 
         self.ros_functions.change_arguments_of_node(robot, variables)
 
