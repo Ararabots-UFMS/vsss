@@ -31,7 +31,7 @@ class RobotStateMachineController():
 
         self.movement = Movement([KP, KD, KI], 10)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
+    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:
