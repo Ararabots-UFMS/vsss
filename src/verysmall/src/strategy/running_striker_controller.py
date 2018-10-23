@@ -2,7 +2,7 @@ import sys
 import os
 import rospy
 import numpy as np
-from runnning_striker import RunningStriker, Striker
+from running_striker import RunningStriker, Striker
 from arena_sections import *
 from ball_range import *
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
@@ -20,7 +20,7 @@ KI = univector_list['robot_1']['KI']
 
 class RunningStrikerController():
 
-    def __init__(self):
+    def __init__(self, _team_side):
         self.position = None
         self.orientation = None
         self.robot_speed = None
@@ -28,11 +28,15 @@ class RunningStrikerController():
         self.enemies_speed = None
         self.ball_position = None
 
-        #Attack_in left side
-        self.attack_goal = 0
+        #left is default
+        self.team_side = _team_side
 
-        self.stop = MyModel(state='Stop')
+        self.stop = Striker(state='Stop')
         self.RunningStriker = RunningStriker(self.stop)
+        if (self.team_side == LEFT):
+            self.attack_goal = RIGHT
+        else:
+            self.attack_goal = LEFT
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
 
@@ -85,8 +89,8 @@ class RunningStrikerController():
             if self.RunningStriker.is_border:
                 self.RunningStriker.normal_to_border()
 
-            if self.RunningStriker.is_normal:
-                self.RunningStriker.normal_to_univector()
+            # if self.RunningStriker.is_normal:
+            #     self.RunningStriker.normal_to_univector()
 
         if self.RunningStriker.is_univector:
             return self.in_univector_state()
@@ -189,15 +193,39 @@ class RunningStrikerController():
         return left, right
 
     def in_point(self):
+        position_center = np.array([75,65])
         self.RunningStriker.point_to_point()
         left, right, done = self.movement.move_to_point(
             speed = 60,
             robot_position = self.robot_position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position = self.ball_position)
+            goal_position = position_center)
         if done:
             self.RunningStriker.point_to_stop()
         return left, right
 
     def in_border(self):
-        
+        if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
+            left, right, done = self.movement.move_to_point(
+                speed = 60,
+                robot_position = self.robot_position,
+                robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
+                goal_position = self.ball_position)
+            if near_ball(self.ball_position, self.robot_position):
+                left, right, _ = self.movement.spin()
+                self.RunningStriker.border_to_normal()
+                return left, right
+            else:
+                self.RunningStriker.border_to_border()
+                return left, right
+        else:
+            self.RunningStriker.border_to_normal()
+            position_center = np.array([75,65])
+            left, right, done = self.movement.move_to_point(
+                speed = 60,
+                robot_position = self.robot_position,
+                robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
+                goal_position = position_center)
+            if done:
+                self.RunningStriker.point_to_stop()
+            return left, right
