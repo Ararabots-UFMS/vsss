@@ -171,7 +171,7 @@ class RunningStrikerController():
 
     def in_running(self):
         self.RunningStriker.running_to_running()
-        if !behind_ball(self.ball_position, self.robot_position, self.team_side):
+        if not behind_ball(self.ball_position, self.robot_position, self.team_side):
             self.RunningStriker.running_to_normal()
             return
 
@@ -180,7 +180,7 @@ class RunningStrikerController():
             robot_position = self.robot_position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
             goal_position = self.ball_position)
-        if !done:
+        if notdone:
             return left, right
 
         goal = goal_position(self.team_side) - self.robot_position

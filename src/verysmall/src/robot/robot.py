@@ -70,7 +70,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
 
-        self.state_machine = RunningStrikerController()
+        self.state_machine = RunningStrikerController(self.team_side)
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
@@ -95,16 +95,6 @@ class Robot():
         elif self.game_state == 8:  # Meta
             param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
-
-        stop = State('Stop', initial=True)
-        normal = State('Normal')
-        freeball = State('FreeBall')
-        penalty = State('Penalty')
-        univector = State('Univector')
-        running = State('Running')
-        border = State('Border')
-        point = State('Point')
-        meta = State('Meta')
             print("wut")
         # ========================================================
         #             SOFTWARE        |    HARDWARE
