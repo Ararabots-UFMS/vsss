@@ -64,6 +64,7 @@ class NaiveGKController():
 
         :return: int, int
         """
+
         self.stop.state = 'stop'
         return 0, 0
 
