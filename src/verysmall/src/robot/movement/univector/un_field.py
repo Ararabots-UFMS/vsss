@@ -223,7 +223,7 @@ class univectorField:
         self.K0 = None
         self.DMIN = None
         self.LDELTA = None
-        logfatal(attack_goal)
+
         # Subfields
         self.univector_rotation_axis = _rotation
         self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)

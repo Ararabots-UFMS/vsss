@@ -27,7 +27,7 @@ class AttackerWithUnivectorController():
         self.ball_position = None
 
         #Attack_in left side
-        self.attack_goal = 0
+        self.attack_goal = np.array([0.0, 65.0])
 
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
@@ -51,6 +51,7 @@ class AttackerWithUnivectorController():
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
         self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
         
     def set_to_stop_game(self):
         """

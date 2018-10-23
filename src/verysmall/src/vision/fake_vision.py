@@ -45,6 +45,8 @@ class VisionNode:
     def tick(self):
         self.msg.team_pos[0] = (self.msg.team_pos[0] + 1)%120
         self.msg.team_pos[1] = (self.msg.team_pos[1] + 1)%120
+        self.msg.team_pos[2] = (self.msg.team_pos[2] + 1)%120
+        self.msg.team_pos[3] = 120
         self.mercury.pub.publish(self.msg)
 
 
