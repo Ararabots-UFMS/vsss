@@ -18,7 +18,7 @@ KI = univector_list['robot_1']['KI']
 
 class AttackerWithUnivectorController():
 
-    def __init__(self):
+    def __init__(self, _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
@@ -27,12 +27,12 @@ class AttackerWithUnivectorController():
         self.ball_position = None
 
         #Attack_in left side
-        self.attack_goal = 0
+        self.attack_goal = np.array([0.0, 65.0])
 
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
+        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
@@ -50,7 +50,9 @@ class AttackerWithUnivectorController():
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
-
+        self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
+        
     def set_to_stop_game(self):
         """
         Set state stop in the state machine
@@ -132,7 +134,7 @@ class AttackerWithUnivectorController():
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
-            obstacle_position=np.resize(self.enemies_position, (5, 2)),
+            obstacle_position=self.enemies_position,
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position
         )

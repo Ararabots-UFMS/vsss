@@ -31,7 +31,7 @@ class RobotStateMachineController():
 
         self.movement = Movement([KP, KD, KI], 10)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position , team_side):
         """
         Update game variables
         :param position:
@@ -47,6 +47,8 @@ class RobotStateMachineController():
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
+        self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
 
     def set_to_stop_game(self):
         """

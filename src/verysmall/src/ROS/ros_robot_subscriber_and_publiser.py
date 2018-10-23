@@ -1,23 +1,29 @@
 #!/usr/bin/python
-from verysmall.msg import things_position, game_topic
+from verysmall.msg import things_position, game_topic, debug_topic
 import rospy
 import numpy as np
 from struct import unpack
 
 
-class RosRobotSubscriber:
+class RosRobotSubscriberAndPublisher:
     """
     This class is responsible for reading and formatting ros messages for the robot node
     """
-    def __init__(self, _robot, _game_topic_name = 'game_topic_0'):
+    def __init__(self, _robot, _game_topic_name = 'game_topic_0', _should_debug = False):
         """
         :param _robot: robot object
         """
-        rospy.Subscriber('things_position', things_position, self.read_topic)
+        rospy.Subscriber('things_position', things_position, self.read_topic , queue_size=10)
 
-        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic)
+        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic , queue_size=10)
+
+        if _should_debug:
+            self.pub = rospy.Publisher('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, queue_size=1)
 
         self.robot = _robot
+
+        self.debug_msg = debug_topic()
+        self.debug_msg.id = self.robot.robot_id_integer
 
     def read_game_topic(self, data):
         """
@@ -52,3 +58,18 @@ class RosRobotSubscriber:
         self.robot.enemies_speed = np.nan_to_num(data.enemies_pos).reshape((5, 2))
 
         self.robot.run()
+
+    def debug_publish(self, _vector):
+
+        """
+            This function publishes in the debug topic
+            :param vector: float64[2]
+            :return: returns nothing
+        """
+
+        self.debug_msg.vector = _vector
+        
+        try:
+            self.pub.publish(self.debug_msg)
+        except rospy.ROSException as e:
+            rospy.logfatal(msg)
