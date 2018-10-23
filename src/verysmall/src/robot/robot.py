@@ -66,7 +66,8 @@ class Robot():
                                   "Meta"]
         self.strategies = [
             AttackerWithUnivectorController(),
-            RobotStateMachineController(),
+            AttackerWithUnivectorController(),
+            AttackerWithUnivectorController(),
             AttackerWithUnivectorController()
         ]
 
