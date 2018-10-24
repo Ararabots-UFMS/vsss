@@ -74,6 +74,8 @@ class RunningStriker(StateMachine):
     penalty_to_point = penalty.to(point)
 
     normal_to_univector = normal.to(univector)
+    normal_to_point = normal.to(point)
+    normal_to_border = normal.to(border)
     univector_to_univector = univector.to(univector)
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal

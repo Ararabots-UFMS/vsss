@@ -70,7 +70,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
 
-        self.state_machine = RunningStrikerController()
+        self.state_machine = RunningStrikerController(self.team_side)
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
