@@ -9,7 +9,7 @@ from utils.json_handler import JsonHandler
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-bodies_unpack = jsonHandler.read(path)
+bodies_unpack = jsonHandler.read(path, escape = True)
 
 class AttackerWithUnivectorController():
 
@@ -21,6 +21,7 @@ class AttackerWithUnivectorController():
         self.enemies_speed = None
         self.ball_position = None
         self.robot_body = _robot_body
+        rospy.logfatal(self.robot_body)
         self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'],
                          bodies_unpack[self.robot_body]['KI']]
 
@@ -67,7 +68,6 @@ class AttackerWithUnivectorController():
 
         :return: int, int
         """
-        rospy.logfatal(str(self.pid_list))
         self.stop.state = 'stop'
         return 0, 0
 
