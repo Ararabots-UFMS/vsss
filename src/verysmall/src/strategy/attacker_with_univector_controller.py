@@ -6,25 +6,23 @@ from attacker_with_univector import AttackerWithUnivector, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
-
+bodies_unpack = jsonHandler.read(path)
 
 class AttackerWithUnivectorController():
 
-    def __init__(self, _debug_topic = None):
+    def __init__(self, _robot_body, _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
+        self.pid_list = [0, 0, 0]
+        self.robot_body = _robot_body
+        self.update_pid()
 
         #Attack_in left side
         self.attack_goal = np.array([0.0, 65.0])
@@ -32,7 +30,7 @@ class AttackerWithUnivectorController():
         self.stop = MyModel(state='Stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
@@ -52,6 +50,17 @@ class AttackerWithUnivectorController():
         self.ball_position = ball_position
         self.team_side = team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
+
+
+    def update_pid(self):
+        """
+        Update pid
+        :return:
+        """
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
+        self.movement.update_pid(self.pid_list)
+
+
         
     def set_to_stop_game(self):
         """
