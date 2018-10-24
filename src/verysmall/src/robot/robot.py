@@ -72,7 +72,7 @@ class Robot():
             AttackerWithUnivectorController(self.subsAndPubs)
         ]
 
-        self.state_machine = AttackerWithUnivectorController(self.subsAndPubs)
+        self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
 
     def run(self):
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,

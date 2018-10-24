@@ -42,6 +42,18 @@ class PID:
         """Set new target value"""
         self.set_target = num
 
+    def set_constants(self, kp, ki, kd):
+        """
+        Update pid constants
+        :param kp: float
+        :param ki: float
+        :param kd: float
+        :return:
+        """
+        self.set_kp(kp)
+        self.set_ki(ki)
+        self.set_kd(kd)
+
     def get_constants(self):
         """Return the constant values"""
         return self.kp, self.ki, self.kd    	

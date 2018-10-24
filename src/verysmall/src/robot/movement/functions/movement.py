@@ -50,6 +50,14 @@ class Movement():
         """
         self.pid_type = _pid_type
 
+    def update_pid(self, PID_list):
+        """
+        Update pid paramters
+        :param PID_list: [float, float, float]
+        :return:
+        """
+        self.pid.set_constants(PID_list[0], PID_list[1], PID_list[2])
+
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
          :param speed : int

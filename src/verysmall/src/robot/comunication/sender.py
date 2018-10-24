@@ -27,6 +27,7 @@ class Sender():
         self.bluetoothId = bluetoothId
         self.port = port
         self.sock = None
+        self.sock.setblocking(False)
 
     def connect(self):
         """Connect to the robot"""
