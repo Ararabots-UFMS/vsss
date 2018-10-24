@@ -29,7 +29,7 @@ class AttackerWithUnivectorController():
         #Attack_in left side
         self.attack_goal = np.array([0.0, 65.0])
 
-        self.stop = MyModel(state='Stop')
+        self.stop = MyModel(state='stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
@@ -130,7 +130,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
-            speed = 180,
+            speed = 100,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
