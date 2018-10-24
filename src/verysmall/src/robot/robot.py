@@ -66,10 +66,10 @@ class Robot():
                                   "Penaly",
                                   "Meta"]
         self.strategies = [
-            AttackerWithUnivectorController(),
-            AttackerWithUnivectorController(),
-            AttackerWithUnivectorController(),
-            AttackerWithUnivectorController()
+            AttackerWithUnivectorController(self.subsAndPubs),
+            AttackerWithUnivectorController(self.subsAndPubs),
+            AttackerWithUnivectorController(self.subsAndPubs),
+            AttackerWithUnivectorController(self.subsAndPubs)
         ]
 
         self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)

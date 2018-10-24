@@ -139,7 +139,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
-            speed = 180,
+            speed = 100,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
