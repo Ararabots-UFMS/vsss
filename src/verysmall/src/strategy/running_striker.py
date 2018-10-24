@@ -25,7 +25,7 @@ class RunningStriker(StateMachine):
         univector_to_univector {[Transition]} -- [univector normal to univector]
     """
     # Base States
-    stop = State('Stop', initial=True)
+    stop = State('stop', initial=True)
     normal = State('Normal')
     freeball = State('FreeBall')
     penalty = State('Penalty')
@@ -78,6 +78,7 @@ class RunningStriker(StateMachine):
     normal_to_border = normal.to(border)
     univector_to_univector = univector.to(univector)
 
+    point_to_point = point.to(point)
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
 

@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
 
-    coach = Coach(model.robot_params, model.robot_bluetooth, model.robot_roles, model.game_opt, game_topic_publisher, launch)
+    coach = Coach(model, game_topic_publisher, launch)
     lc.stop()
 
     controller = MainWindowController(model, coach, game_topic_publisher)

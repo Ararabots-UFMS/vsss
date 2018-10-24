@@ -20,20 +20,18 @@ KI = univector_list['robot_1']['KI']
 
 class RunningStrikerController():
 
-    def __init__(self, _team_side):
+    def __init__(self, _team_side, _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
-
-        #left is default
         self.team_side = _team_side
 
-        self.stop = Striker(state='Stop')
+        self.stop = Striker(state='stop')
         self.RunningStriker = RunningStriker(self.stop)
-        self.attack_goal = not self.team_side
+        self.attack_goal = np.array([150.0, 65.0])
         # if (self.team_side == LEFT):
         #     self.attack_goal = RIGHT
         # else:
@@ -74,11 +72,13 @@ class RunningStrikerController():
 
         :return: int, int
         """
-        rospy.logfatal("return")
         # if self.RunningStriker.is_stop:
         #     self.RunningStriker.stop_to_normal()
+        if self.RunningStriker.is_stop:
+            self.RunningStriker.stop_to_normal()
 
         if self.RunningStriker.is_normal:
+            rospy.logfatal("return :D")
             if on_extended_attack_side(self.position, self.team_side):
                 if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
                     self.RunningStriker.normal_to_border()
@@ -89,13 +89,13 @@ class RunningStrikerController():
                 self.RunningStriker.normal_to_point()
 
         if self.RunningStriker.is_border:
-            return self.RunningStriker.in_border_state()
+            return self.in_border_state()
 
         if self.RunningStriker.is_univector:
-            return self.RunningStriker.in_univector_state()
+            return self.in_univector_state()
 
         if self.RunningStriker.is_point:
-            return self.RunningStriker.in_point_state()
+            return self.in_point_state()
 
 
     def in_freeball_game(self):
@@ -152,12 +152,12 @@ class RunningStrikerController():
         rospy.logfatal("univector")
         self.RunningStriker.univector_to_univector()
         # if in
-        # if inside_range(self.ball_position[0], self.ball_position[0]+ ROBOT_SIZE, self.robot_position[0]):
-        if behind_ball(self.ball_position, self.robot_position, self.team_side):
+        # if inside_range(self.ball_position[0], self.ball_position[0]+ ROBOT_SIZE, self.position[0]):
+        if behind_ball(self.ball_position, self.position, self.team_side):
             self.RunningStriker.univector_to_running()
             return self.in_running()
         else:
-            if on_extended_attack_side(self.ball_position):
+            if on_extended_attack_side(self.ball_position, self.team_side):
                 self.RunningStriker.univector_to_univector()
                 left, right, _ = self.movement.do_univector(
                     speed = 180,
@@ -172,7 +172,7 @@ class RunningStrikerController():
             else:
                 left, right, done = self.movement.move_to_point(
                     speed = 60,
-                    robot_position = self.robot_position,
+                    robot_position = self.position,
                     robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                     goal_position = self.ball_position)
                 self.RunningStriker.univector_to_normal()
@@ -181,19 +181,19 @@ class RunningStrikerController():
     def in_running(self):
         rospy.logfatal("running")
         self.RunningStriker.running_to_running()
-        if not behind_ball(self.ball_position, self.robot_position, self.team_side):
+        if not behind_ball(self.ball_position, self.position, self.team_side):
             self.RunningStriker.running_to_normal()
             return 0,0
 
         left, right, done = self.movement.move_to_point(
             speed = 60,
-            robot_position = self.robot_position,
+            robot_position = self.position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
             goal_position = self.ball_position)
         if notdone:
             return left, right
 
-        goal = goal_position(self.team_side) - self.robot_position
+        goal = goal_position(self.team_side) - self.position
         self.RunningStriker.running_to_running()
         self.movement.follow_vector(
             speed = 120,
@@ -202,13 +202,13 @@ class RunningStrikerController():
         )
         return left, right
 
-    def in_point(self):
+    def in_point_state(self):
         rospy.logfatal("point")
         position_center = np.array([75,65])
         self.RunningStriker.point_to_point()
         left, right, done = self.movement.move_to_point(
             speed = 60,
-            robot_position = self.robot_position,
+            robot_position = self.position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
             goal_position = position_center)
         if done:
@@ -220,10 +220,10 @@ class RunningStrikerController():
         if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
             left, right, done = self.movement.move_to_point(
                 speed = 60,
-                robot_position = self.robot_position,
+                robot_position = self.position,
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                 goal_position = self.ball_position)
-            if near_ball(self.ball_position, self.robot_position):
+            if near_ball(self.ball_position, self.position):
                 left, right, _ = self.movement.spin()
                 self.RunningStriker.border_to_normal()
                 return left, right
@@ -235,7 +235,7 @@ class RunningStrikerController():
             position_center = np.array([75,65])
             left, right, done = self.movement.move_to_point(
                 speed = 60,
-                robot_position = self.robot_position,
+                robot_position = self.position,
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                 goal_position = position_center)
             if done:

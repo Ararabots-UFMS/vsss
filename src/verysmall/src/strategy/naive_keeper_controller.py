@@ -56,6 +56,7 @@ class NaiveGKController():
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
         self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
 
     def set_to_stop_game(self):
         """
@@ -63,6 +64,7 @@ class NaiveGKController():
 
         :return: int, int
         """
+
         self.stop.state = 'stop'
         return 0, 0
 

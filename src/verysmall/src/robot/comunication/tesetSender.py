@@ -1,7 +1,7 @@
 from sender import Sender
 from time import sleep
 # initialize the client
-dumbo = Sender(robotId=1, bluetoothId="84:0D:8E:0C:93:16")
+dumbo = Sender(robotId=1, bluetoothId="20:15:04:09:70:95")
 #robotop = Sender(robotId=2, bluetoothId="20:15:04:09:70:80")
 # connect the client
 dumbo.connect()

@@ -37,7 +37,7 @@ class Canvas(fl.Fl_Double_Window):
 class MainWindowView:
     """Creates the visual for the main window and uses the MainWindowController to handle callbacks"""
 
-    def __init__(self):
+    def __init__(self, _game_topic_name = 'game_topic_0'):
 
         # Init Variables
         self.title = None
@@ -57,7 +57,12 @@ class MainWindowView:
         self.n_robots = 5
         self.arena = None
 
-        self.reader = RosMainWindowSubscriber()
+        self.reader = RosMainWindowSubscriber(_game_topic_name)
+
+        self.debug_counter = 0
+        self.debug_vector_array = [np.array([.0,.0])]*5
+        self.debug_vector = np.array([.0,.0])
+        self.last_index = 0
 
         self.t0 = 0.0
         self.computed_frames = 0.0
@@ -104,6 +109,20 @@ class MainWindowView:
                                    int((self.computed_frames / (time.time() - self.t0))*10)/10.0,
                                    is_away=True)  # vision_fps, topic_fps, is_away flag
             self.arena.image = self.virtualField.field
+
+            if self.virtualField.draw_vectors:
+                
+                self.debug_counter = 0
+                self.last_index, self.debug_vector = self.reader.pop_item_debug()
+
+                while (self.debug_counter < 5) and self.last_index != -1:
+                    self.debug_vector_array[self.last_index] = self.debug_vector
+                    self.debug_counter+= 1
+                    self.last_index, self.debug_vector = self.reader.pop_item_debug()
+
+                if self.debug_counter: 
+                    self.virtualField.plot_debug_vectors(data_item.team_pos, self.debug_vector_array)
+            
             self.arena.redraw()
 
         self.computed_frames += 1

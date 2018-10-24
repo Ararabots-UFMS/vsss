@@ -52,7 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
  	FILES
-	twofloat64.msg
+	debug_topic.msg
 	game_topic.msg
 	things_position.msg
 )

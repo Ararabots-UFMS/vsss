@@ -29,7 +29,7 @@ class MainWindowController:
                                                              self.robot_roles, model.robot_bodies)
 
         # Lets create the view of our controller shall we
-        self.view = MainWindowView()
+        self.view = MainWindowView(_game_topic_publisher.get_name())
         self.view.virtualField.set_univector_debug_params(not self.game_opt['side'],
                                                           model.debug_params['robot_vector'],
                                                           model.debug_params['things'])
@@ -39,7 +39,7 @@ class MainWindowController:
 
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
-        self.robot_roles_keys = sorted(self.robot_roles.keys())
+        self.robot_roles_keys = sorted(self.robot_roles, key=self.robot_roles.get) #sorted(self.robot_roles.keys())
         self.robot_bluetooth_keys = self.robot_bluetooth.keys()
 
         # Fast access array to use a dict as an simple array
