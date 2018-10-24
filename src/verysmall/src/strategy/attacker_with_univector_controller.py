@@ -13,16 +13,16 @@ bodies_unpack = jsonHandler.read(path)
 
 class AttackerWithUnivectorController():
 
-    def __init__(self, _robot_body, _debug_topic = None):
+    def __init__(self, _robot_body = "Nenhum", _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
-        self.pid_list = [0, 0, 0]
         self.robot_body = _robot_body
-        self.update_pid()
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'],
+                         bodies_unpack[self.robot_body]['KI']]
 
         #Attack_in left side
         self.attack_goal = np.array([0.0, 65.0])
@@ -60,7 +60,6 @@ class AttackerWithUnivectorController():
         self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
         self.movement.update_pid(self.pid_list)
 
-
         
     def set_to_stop_game(self):
         """
@@ -68,6 +67,7 @@ class AttackerWithUnivectorController():
 
         :return: int, int
         """
+        rospy.logfatal(str(self.pid_list))
         self.stop.state = 'stop'
         return 0, 0
 
