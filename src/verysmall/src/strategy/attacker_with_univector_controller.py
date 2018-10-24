@@ -30,7 +30,7 @@ class AttackerWithUnivectorController():
         #Attack_in left side
         self.attack_goal = np.array([150.0, 65.0])
 
-        self.stop = MyModel(state='Stop')
+        self.stop = MyModel(state='stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal,_pid_type = HARDWARE, _debug_topic = _debug_topic)

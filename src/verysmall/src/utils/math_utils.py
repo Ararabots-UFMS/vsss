@@ -9,11 +9,6 @@ def unitVector(vector):
 
 def angleBetween(v1, v2, ccw=True):
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
-    # cosang = np.dot(v1, v2)
-    # sinang = np.cross(v1, v2)
-    # if ccw:
-    #     sinang = la.norm(np.cross(v1, v2))
-    # return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
 
     if ccw:
         cosang = np.dot(v1,v2)

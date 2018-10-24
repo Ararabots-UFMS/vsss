@@ -35,10 +35,10 @@ class Movement():
         self.last_pos = np.array([0, 0])
         self.error_margin = error
         self.attack_goal = attack_goal
-        if len(attack_goal) > 1:
-            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
-        else:
+        if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
+        else:
+            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
 
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         self.pid_type = _pid_type
