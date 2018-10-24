@@ -28,7 +28,7 @@ class RunningStrikerController():
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = _team_side
-
+        self.debug_topic = _debug_topic
         self.stop = Striker(state='stop')
         self.RunningStriker = RunningStriker(self.stop)
         self.attack_goal = np.array([150.0, 65.0])
@@ -37,7 +37,7 @@ class RunningStrikerController():
         # else:
         #     self.attack_goal = LEFT
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
+        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal, _debug_topic=self.debug_topic)
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
@@ -72,14 +72,15 @@ class RunningStrikerController():
 
         :return: int, int
         """
+        rospy.logfatal("normal")
         # if self.RunningStriker.is_stop:
         #     self.RunningStriker.stop_to_normal()
         if self.RunningStriker.is_stop:
             self.RunningStriker.stop_to_normal()
 
         if self.RunningStriker.is_normal:
-            rospy.logfatal("return :D")
-            if on_extended_attack_side(self.position, self.team_side):
+            if on_extended_attack_side(self.ball_position, self.team_side):
+                rospy.logfatal("Attack side")
                 if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
                     self.RunningStriker.normal_to_border()
                     # return self.RunningStriker.in_border()
@@ -158,9 +159,11 @@ class RunningStrikerController():
             return self.in_running()
         else:
             if on_extended_attack_side(self.ball_position, self.team_side):
+                rospy.logfatal("do univector")
                 self.RunningStriker.univector_to_univector()
-                left, right, _ = self.movement.do_univector(
-                    speed = 180,
+                # left, right, _ = self.movement.do_univector(
+                left, right = self.movement.do_univector(
+                    speed = 220,
                     robot_position=self.position,
                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                     robot_speed=[0, 0],
@@ -168,10 +171,12 @@ class RunningStrikerController():
                     obstacle_speed=[[0,0]]*5,
                     ball_position=self.ball_position
                 )
+                # rospy.logfatal(str(left)+" "+str(right))
                 return left, right
             else:
-                left, right, done = self.movement.move_to_point(
-                    speed = 60,
+                # left, right, done = self.movement.move_to_point( #SOFTWARE
+                left, right = self.movement.move_to_point( #hardware
+                    speed = 100,
                     robot_position = self.position,
                     robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                     goal_position = self.ball_position)
@@ -185,12 +190,13 @@ class RunningStrikerController():
             self.RunningStriker.running_to_normal()
             return 0,0
 
-        left, right, done = self.movement.move_to_point(
-            speed = 60,
+        # left, right, done = self.movement.move_to_point( #SOFTWARE
+        left, right = self.movement.move_to_point( #hardware
+            speed = 100,
             robot_position = self.position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
             goal_position = self.ball_position)
-        if notdone:
+        if not (left == 0 and right == 0):
             return left, right
 
         goal = goal_position(self.team_side) - self.position
@@ -206,20 +212,23 @@ class RunningStrikerController():
         rospy.logfatal("point")
         position_center = np.array([75,65])
         self.RunningStriker.point_to_point()
-        left, right, done = self.movement.move_to_point(
-            speed = 60,
+        # left, right, done = self.movement.move_to_point( #SOFTWARE
+        left, right = self.movement.move_to_point( #hardware
+            speed = 100,
             robot_position = self.position,
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position = position_center)
-        if done:
+            goal_position = np.array([150,65]))
+        rospy.logfatal("angle: "+str(left)+" speed: "+str(right))
+        if left == 0 and right == 0:
             self.RunningStriker.point_to_stop()
         return left, right
 
-    def in_border(self):
+    def in_border_state(self):
         rospy.logfatal("border")
         if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
-            left, right, done = self.movement.move_to_point(
-                speed = 60,
+            # left, right, done = self.movement.move_to_point( #SOFTWARE
+            left, right = self.movement.move_to_point( #hardware
+                speed = 100,
                 robot_position = self.position,
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                 goal_position = self.ball_position)
@@ -233,11 +242,12 @@ class RunningStrikerController():
         else:
             self.RunningStriker.border_to_normal()
             position_center = np.array([75,65])
-            left, right, done = self.movement.move_to_point(
-                speed = 60,
+            # left, right, done = self.movement.move_to_point( #SOFTWARE
+            left, right = self.movement.move_to_point( #hardware
+                speed = 100,
                 robot_position = self.position,
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
                 goal_position = position_center)
-            if done:
+            if left == 0 and right == 0:
                 self.RunningStriker.point_to_stop()
             return left, right

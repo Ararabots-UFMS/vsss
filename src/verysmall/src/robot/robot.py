@@ -52,7 +52,7 @@ class Robot():
         self.left_side = 0
         self.right_side = not self.left_side
 
-        self.pid_type = SOFTWARE
+        self.pid_type = HARDWARE
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
@@ -80,7 +80,7 @@ class Robot():
         self.state_machine = RunningStrikerController(self.team_side, self.subsAndPubs)
 
     def run(self):
-        # rospy.logfatal(str(self.stat:e_machine))
+        #rospy.logfatal(str(self.robot_body))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)

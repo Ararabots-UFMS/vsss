@@ -2,6 +2,7 @@ import bluetooth
 import math
 import struct
 from ctypes import *
+import rospy
 
 # DIRECTION values are in range 4 to 7
 # SPEED values both are in range 0 to 255
@@ -71,7 +72,7 @@ class Sender():
         try:
             correct_theta, orientation = self.get_angle_orientation_and_correction(theta, rad)
             self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
-            print "c", correct_theta, " ", speed
+            # print "c", correct_theta, " ", speed
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(speed))
         except:
@@ -82,9 +83,9 @@ class Sender():
         if rad:
             tmp = 180.0*angle/math.pi
         if 0 <= tmp <= 180:
-            return int(tmp), CW_BYTE
+            return int(tmp), CCW_BYTE
         else:
-            return abs(int(tmp)), CCW_BYTE
+            return abs(int(tmp)), CW_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""
