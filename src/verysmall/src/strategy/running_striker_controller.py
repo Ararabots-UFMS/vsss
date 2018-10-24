@@ -74,6 +74,7 @@ class RunningStrikerController():
 
         :return: int, int
         """
+        rospy.logfatal("return")
         # if self.RunningStriker.is_stop:
         #     self.RunningStriker.stop_to_normal()
 
@@ -148,6 +149,7 @@ class RunningStrikerController():
 
         :return: int, int
         """
+        rospy.logfatal("univector")
         self.RunningStriker.univector_to_univector()
         # if in
         # if inside_range(self.ball_position[0], self.ball_position[0]+ ROBOT_SIZE, self.robot_position[0]):
@@ -177,10 +179,11 @@ class RunningStrikerController():
                 return left, right
 
     def in_running(self):
+        rospy.logfatal("running")
         self.RunningStriker.running_to_running()
         if not behind_ball(self.ball_position, self.robot_position, self.team_side):
             self.RunningStriker.running_to_normal()
-            return
+            return 0,0
 
         left, right, done = self.movement.move_to_point(
             speed = 60,
@@ -200,6 +203,7 @@ class RunningStrikerController():
         return left, right
 
     def in_point(self):
+        rospy.logfatal("point")
         position_center = np.array([75,65])
         self.RunningStriker.point_to_point()
         left, right, done = self.movement.move_to_point(
@@ -212,6 +216,7 @@ class RunningStrikerController():
         return left, right
 
     def in_border(self):
+        rospy.logfatal("border")
         if section(self.ball_position) in [UP_BORDER, DOWN_BORDER]:
             left, right, done = self.movement.move_to_point(
                 speed = 60,
@@ -236,6 +241,3 @@ class RunningStrikerController():
             if done:
                 self.RunningStriker.point_to_stop()
             return left, right
-
-
-#fazer as transições no in_normal_game e retornar o valor das velocidades em cada função de ação dos estados

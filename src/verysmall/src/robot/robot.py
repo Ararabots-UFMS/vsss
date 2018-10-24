@@ -73,6 +73,7 @@ class Robot():
         self.state_machine = RunningStrikerController(self.team_side)
 
     def run(self):
+        # rospy.logfatal(str(self.stat:e_machine))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
@@ -80,11 +81,12 @@ class Robot():
             param_A, param_B = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
             param_A, param_B = self.state_machine.in_normal_game()
+            # rospy.logfatal(str(param_A)+" "+ str(param_B))
         elif self.game_state == 2:  # Freeball
             param_A, param_B = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
             param_A, param_B = self.state_machine.in_penalty_game()
-        elif self.game_state == 4:  # meta        
+        elif self.game_state == 4:  # meta
             param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")
