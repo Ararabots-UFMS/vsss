@@ -24,6 +24,7 @@ class Sender():
         self.bluetoothId = bluetoothId
         self.port = port
         self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        self.sock.setblocking(False)
 
     def connect(self):
         """Connect to the robot"""
