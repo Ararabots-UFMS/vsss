@@ -33,10 +33,11 @@ class RunningStrikerController():
 
         self.stop = Striker(state='Stop')
         self.RunningStriker = RunningStriker(self.stop)
-        if (self.team_side == LEFT):
-            self.attack_goal = RIGHT
-        else:
-            self.attack_goal = LEFT
+        self.attack_goal = not self.team_side
+        # if (self.team_side == LEFT):
+        #     self.attack_goal = RIGHT
+        # else:
+        #     self.attack_goal = LEFT
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
 
@@ -73,8 +74,8 @@ class RunningStrikerController():
 
         :return: int, int
         """
-        if self.RunningStriker.is_stop:
-            self.RunningStriker.stop_to_normal()
+        # if self.RunningStriker.is_stop:
+        #     self.RunningStriker.stop_to_normal()
 
         if self.RunningStriker.is_normal:
             if on_extended_attack_side(self.position, self.team_side):
@@ -86,17 +87,14 @@ class RunningStrikerController():
             else:
                 self.RunningStriker.normal_to_point()
 
-            if self.RunningStriker.is_border:
-                self.RunningStriker.normal_to_border()
-
-            # if self.RunningStriker.is_normal:
-            #     self.RunningStriker.normal_to_univector()
+        if self.RunningStriker.is_border:
+            return self.RunningStriker.in_border_state()
 
         if self.RunningStriker.is_univector:
-            return self.in_univector_state()
+            return self.RunningStriker.in_univector_state()
 
-        if self.RunningStriker.is_border:
-            return self.in_border()
+        if self.RunningStriker.is_point:
+            return self.RunningStriker.in_point_state()
 
 
     def in_freeball_game(self):
@@ -157,17 +155,26 @@ class RunningStrikerController():
             self.RunningStriker.univector_to_running()
             return self.in_running()
         else:
-            self.RunningStriker.univector_to_univector()
-            left, right, _ = self.movement.do_univector(
-                speed = 180,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=[0, 0],
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
-            )
-            return left, right
+            if on_extended_attack_side(self.ball_position):
+                self.RunningStriker.univector_to_univector()
+                left, right, _ = self.movement.do_univector(
+                    speed = 180,
+                    robot_position=self.position,
+                    robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                    robot_speed=[0, 0],
+                    obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                    obstacle_speed=[[0,0]]*5,
+                    ball_position=self.ball_position
+                )
+                return left, right
+            else:
+                left, right, done = self.movement.move_to_point(
+                    speed = 60,
+                    robot_position = self.robot_position,
+                    robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
+                    goal_position = self.ball_position)
+                self.RunningStriker.univector_to_normal()
+                return left, right
 
     def in_running(self):
         self.RunningStriker.running_to_running()
@@ -229,3 +236,6 @@ class RunningStrikerController():
             if done:
                 self.RunningStriker.point_to_stop()
             return left, right
+
+
+#fazer as transições no in_normal_game e retornar o valor das velocidades em cada função de ação dos estados

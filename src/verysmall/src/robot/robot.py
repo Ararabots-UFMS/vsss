@@ -84,27 +84,9 @@ class Robot():
             param_A, param_B = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
             param_A, param_B = self.state_machine.in_penalty_game()
-        elif self.game_state == 4:  # univector
-            param_A, param_B = self.state_machine.in_univector_game()
-        elif self.game_state == 5:  # runnin
-            param_A, param_B = self.state_machine.in_running_game()
-        elif self.game_state == 6:  # border
-            param_A, param_B = self.state_machine.in_border_game()
-        elif self.game_state == 7:  # go to fixed point
-            param_A, param_B = self.state_machine.in_point_game()
-        elif self.game_state == 8:  # Meta
+        elif self.game_state == 4:  # meta        
             param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
-
-        stop = State('Stop', initial=True)
-        normal = State('Normal')
-        freeball = State('FreeBall')
-        penalty = State('Penalty')
-        univector = State('Univector')
-        running = State('Running')
-        border = State('Border')
-        point = State('Point')
-        meta = State('Meta')
             print("wut")
         # ========================================================
         #             SOFTWARE        |    HARDWARE
