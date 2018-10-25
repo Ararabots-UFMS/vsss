@@ -52,7 +52,7 @@ class Robot():
         self.left_side = 0
         self.right_side = not self.left_side
 
-        self.pid_type = HARDWARE
+        self.pid_type = SOFTWARE
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)

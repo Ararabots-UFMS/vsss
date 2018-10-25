@@ -139,9 +139,8 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
-        left, right, r =  self.movement.follow_vector(speed=180,
+        left, right, _ =  self.movement.follow_vector(speed=200,
                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                     goal_vector=np.array([1,0]))
 
-        rospy.logfatal("L "+str(left)+" R "+str(right))
         return left, right
