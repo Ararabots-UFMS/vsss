@@ -8,6 +8,7 @@ sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.base_controller import RobotStateMachineController
+from strategy.set_pid_machine_controller import SetPIDMachineController
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -69,7 +70,7 @@ class Robot():
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
         ]
 
         self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
