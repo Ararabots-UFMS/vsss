@@ -32,7 +32,6 @@ class NaiveAttacker(StateMachine):
     reach_ball  = State('Reach_Ball')
     spin        = State('Spin')
     border      = State('Border')
-    walk_border = State('Walk')
 
 
     # Stop to freeball game
@@ -55,8 +54,8 @@ class NaiveAttacker(StateMachine):
     border_to_normal = border.to(normal)
     # border to go to point
     border_to_point = border.to(go_to_point)
-    #border to walk border
-    border_to_walk_border = border.to(walk_border)
+    # Border to SPIN
+    border_to_spin = border.to(spin)
     #border to reach ball
     border_to_reach_ball = border.to(reach_ball)
     # Normal to reach ball
@@ -75,10 +74,6 @@ class NaiveAttacker(StateMachine):
     spin_to_normal = spin.to(normal)
     #spin to reach ball
     spin_to_reach_ball = spin.to(reach_ball)
-    #walk border to normal
-    walk_border_to_normal = walk_border.to(normal)
-    #walk border to point
-    walk_border_to_point = walk_border.to(go_to_point)
     #reach ball to point
     reach_ball_to_point = reach_ball.to(go_to_point)
     #reach ball to border
