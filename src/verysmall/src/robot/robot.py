@@ -23,7 +23,7 @@ class Robot():
         self.mac_address = _mac_address # Mac address
         self.robot_body = _robot_body
         self.tag = int(_tag)
-        self.should_debug = _should_debug 
+        self.should_debug = _should_debug
 
         # Receive from vision
         self.ball_position = None
@@ -52,7 +52,7 @@ class Robot():
         self.left_side = 0
         self.right_side = not self.left_side
 
-        self.pid_type = SOFTWARE
+        self.pid_type = HARDWARE
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
@@ -61,10 +61,14 @@ class Robot():
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, _should_debug)
 
         self.changed_game_state = True
-        self.game_state_string = ["Stopped",
+        self.game_state_string = ["stop",
                                   "Normal Play",
                                   "Freeball",
                                   "Penaly",
+                                  "Univector",
+                                  "Running",
+                                  "Border",
+                                  "Point",
                                   "Meta"]
         self.strategies = [
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
@@ -76,6 +80,7 @@ class Robot():
         self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
 
     def run(self):
+        #rospy.logfatal(str(self.robot_body))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
@@ -83,11 +88,12 @@ class Robot():
             param_A, param_B = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
             param_A, param_B = self.state_machine.in_normal_game()
+            # rospy.logfatal(str(param_A)+" "+ str(param_B))
         elif self.game_state == 2:  # Freeball
             param_A, param_B = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
             param_A, param_B = self.state_machine.in_penalty_game()
-        elif self.game_state == 4:  # Meta
+        elif self.game_state == 4:  # meta
             param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")

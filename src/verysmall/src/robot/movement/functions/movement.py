@@ -30,15 +30,15 @@ HARDWARE = 1
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
-    def __init__(self, PID_list, error=10, attack_goal=RIGHT, _pid_type=SOFTWARE, _debug_topic = None):
+    def __init__(self, PID_list, error=10, attack_goal=RIGHT, _pid_type=HARDWARE, _debug_topic = None):
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
         self.last_pos = np.array([0, 0])
         self.error_margin = error
         self.attack_goal = attack_goal
-        if len(attack_goal) > 1:
-            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
-        else:
+        if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
+        else:
+            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
 
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         self.pid_type = _pid_type
@@ -126,7 +126,6 @@ class Movement():
             self.debug_topic.debug_publish(goal_vector.tolist())
 
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
-        logfatal("DIFF "+str(diff_angle)+" SPEED "+str(speed))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:

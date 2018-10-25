@@ -9,7 +9,17 @@ from utils.json_handler import JsonHandler
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
+<<<<<<< HEAD
 bodies_unpack = jsonHandler.read(path, escape = True)
+=======
+univector_list = jsonHandler.read(path)
+HARDWARE = 1
+
+KP = univector_list['robot_1']['KP']
+KD = univector_list['robot_1']['KD']
+KI = univector_list['robot_1']['KI']
+
+>>>>>>> running-update
 
 class AttackerWithUnivectorController():
 
@@ -26,12 +36,16 @@ class AttackerWithUnivectorController():
                          bodies_unpack[self.robot_body]['KI']]
 
         #Attack_in left side
-        self.attack_goal = np.array([0.0, 65.0])
+        self.attack_goal = np.array([150.0, 65.0])
 
         self.stop = MyModel(state='stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
+<<<<<<< HEAD
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
+=======
+        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal,_pid_type = HARDWARE, _debug_topic = _debug_topic)
+>>>>>>> running-update
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
@@ -52,6 +66,7 @@ class AttackerWithUnivectorController():
         self.team_side = team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
+<<<<<<< HEAD
 
     def update_pid(self):
         """
@@ -62,6 +77,8 @@ class AttackerWithUnivectorController():
         self.movement.update_pid(self.pid_list)
 
         
+=======
+>>>>>>> running-update
     def set_to_stop_game(self):
         """
         Set state stop in the state machine
@@ -138,8 +155,13 @@ class AttackerWithUnivectorController():
         :return: int, int
         """
         self.AttackerWithUnivector.univector_to_univector()
+<<<<<<< HEAD
         left, right, _ = self.movement.do_univector(
             speed = 100,
+=======
+        left, right= self.movement.do_univector(
+            speed = 180,
+>>>>>>> running-update
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
