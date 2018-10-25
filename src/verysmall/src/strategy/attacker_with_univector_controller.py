@@ -22,11 +22,12 @@ class AttackerWithUnivectorController():
         self.ball_position = None
         self.robot_body = _robot_body
         rospy.logfatal(self.robot_body)
-        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'],
-                         bodies_unpack[self.robot_body]['KI']]
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'],
+                         bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
 
         #Attack_in left side
-        self.attack_goal = np.array([0.0, 65.0])
+        self.attack_goal = np.array([150.0, 65.0])
 
         self.stop = MyModel(state='stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
@@ -52,16 +53,14 @@ class AttackerWithUnivectorController():
         self.team_side = team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
-
     def update_pid(self):
         """
         Update pid
         :return:
         """
-        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
         self.movement.update_pid(self.pid_list)
 
-        
     def set_to_stop_game(self):
         """
         Set state stop in the state machine

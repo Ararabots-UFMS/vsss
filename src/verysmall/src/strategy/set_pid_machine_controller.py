@@ -22,8 +22,8 @@ class SetPIDMachineController():
         self.ball_position = None
         self.robot_body = _robot_body
         rospy.logfatal(self.robot_body)
-        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'],
-                         bodies_unpack[self.robot_body]['KI']]
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
 
         #Attack_in left side
         self.attack_goal = np.array([0.0, 65.0])
@@ -62,7 +62,7 @@ class SetPIDMachineController():
         self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
         self.movement.update_pid(self.pid_list)
 
-        
+
     def set_to_stop_game(self):
         """
         Set state stop in the state machine
@@ -139,12 +139,7 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
-        rospy.logfatal(self.attack_goal)
-        rospy.logfatal(self.position)
-        left, right, _ = self.movement.move_to_point(
-            speed = 100,
-            robot_position=self.position,
-            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position=self.attack_goal
-        )
+        left, right, _ =  self.movement.follow_vector(speed=200,
+                    robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                    goal_vector=np.array([1,0]))
         return left, right

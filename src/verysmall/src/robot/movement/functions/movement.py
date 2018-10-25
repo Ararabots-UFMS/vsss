@@ -35,10 +35,10 @@ class Movement():
         self.last_pos = np.array([0, 0])
         self.error_margin = error
         self.attack_goal = attack_goal
-        if len(attack_goal) > 1:
-            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
-        else:
+        if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
+        else:
+            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
 
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         self.pid_type = _pid_type
@@ -125,7 +125,8 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        diff_angle = angleBetween(robot_vector, goal_vector, ccw=True)
+        logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
@@ -174,15 +175,13 @@ class Movement():
         :return: returns int, int, boolean
         """
         if speed < 0: #backwards
+            # TODO: Change here when use backwards
             if correction > 0:
                 return int(speed), int(speed - correction), False
             else:
                 return int(speed + correction), int(speed), False
         else: #forward
-            if correction > 0:
-                return self.normalize(int(speed - correction)), int(speed), False
-            else:
-                return int(speed), self.normalize(int(speed + correction)), False
+            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed
