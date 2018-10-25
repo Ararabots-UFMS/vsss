@@ -37,9 +37,9 @@ class Sender():
             try:
                 self.sock.connect((self.bluetoothId, self.port))
             except IOError:
-                logfatal("Unable to connect to "+self.bluetoothId+", waiting 20 seconds")
+                logfatal("Unable to connect to "+self.bluetoothId+", waiting 5 seconds")
                 self.sock.close()
-                sleep(20)
+                sleep(5)
             else:
                 self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
