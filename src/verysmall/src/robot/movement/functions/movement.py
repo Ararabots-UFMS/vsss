@@ -126,6 +126,7 @@ class Movement():
             self.debug_topic.debug_publish(goal_vector.tolist())
 
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        logfatal("DIFF "+str(diff_angle)+" SPEED "+str(speed))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
@@ -179,10 +180,11 @@ class Movement():
             else:
                 return int(speed + correction), int(speed), False
         else: #forward
-            if correction > 0:
-                return self.normalize(int(speed - correction)), int(speed), False
-            else:
-                return int(speed), self.normalize(int(speed + correction)), False
+            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+            #if correction > 0:
+            #    return self.normalize(int(speed - correction)), int(speed), False
+            #else:
+            #    return int(speed), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed
