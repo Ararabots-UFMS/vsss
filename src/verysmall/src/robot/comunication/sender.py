@@ -17,7 +17,7 @@ WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
 WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
 WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 6
-MAX_CONNECTION_ATTEMPT = 3
+MAX_CONNECTION_ATTEMPT = 20
 
 class Sender():
 
@@ -28,19 +28,21 @@ class Sender():
         self.bluetoothId = bluetoothId
         self.port = port
         self.sock = None
+        self.closed = False
+        self.excp = -1
 
     def connect(self):
         """Connect to the robot"""
 
     	attempt = 1
-        while (attempt <= MAX_CONNECTION_ATTEMPT):
+        while (attempt <= MAX_CONNECTION_ATTEMPT) and not self.closed:
             self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
             try:
                 self.sock.connect((self.bluetoothId, self.port))
             except IOError:
-                logfatal("Unable to connect to "+self.bluetoothId+", waiting 5 seconds")
+                logfatal("Unable to connect to "+self.bluetoothId+", waiting 1 second")
                 self.sock.close()
-                sleep(5)
+                sleep(1)
             else:
                 self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
@@ -66,7 +68,7 @@ class Sender():
             self.sock.send(c_ubyte(left))
             self.sock.send(c_ubyte(right))
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
 
 
     def send_float(self, n_float):
@@ -80,7 +82,7 @@ class Sender():
             self.send_float(KI)
             self.send_float(KD)
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0],"Packet error robot: "+self.robotId+" E: "+str(e))
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
@@ -90,7 +92,7 @@ class Sender():
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(speed))
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
 
     def get_angle_orientation_and_correction(self, angle, rad=True):
         tmp = angle
@@ -115,8 +117,14 @@ class Sender():
     def closeSocket(self):
         """Close the socket"""
         self.sendPacket(0, 0)
+        self.closed = True
         self.sock.close()
 
     def normalizeWheels(self, leftWheel, rightWheel):
         """Normalize speed to 255"""
         return 255 if abs(leftWheel) > 255 else abs(leftWheel), 255 if abs(rightWheel) > 255 else abs(rightWheel)
+
+    def printError(self, _excp, str):
+        if self.excp != _excp:
+            logfatal(str)
+            self.excp = _excp

@@ -17,7 +17,7 @@ Instantiates all the windows, robots, topics and services
 
 if __name__ == '__main__':
     
-    ProcessKiller(["vision_node","robot"])
+    ProcessKiller(["robot"])
     
     rospy.init_node('virtual_field', anonymous=True)
     # Load the database
@@ -39,7 +39,8 @@ if __name__ == '__main__':
         # be a file or another camera
         lc.stop()
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
-        lc.start("Carregando nó da visão")
+        
+	lc.start("Carregando nó da visão")
         # Launch Vision with another Topic
         arguments = str(device_index) + " " + str(model.game_opt['time'])
 
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         vision_process = launch.launch(vision_node)
         vision_owner = True
 
-    game_topic_id = RosUtils.number_of_topic_instances('verysmall/game_topic')
+    game_topic_id = RosUtils.number_of_topic_instances('/game_topic_')
 
     game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
 
@@ -62,6 +63,6 @@ if __name__ == '__main__':
 
     if vision_owner:
         vision_process.stop()
-
+    
     model.save_params()
     lc.stop()
