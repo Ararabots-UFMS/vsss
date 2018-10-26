@@ -139,6 +139,7 @@ class MainWindowController:
 
         if not the_same:
             self.coach.set_robot_parameters(ptr.id)
+            self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
 
     def top_menu_choice(self, ptr):
         """

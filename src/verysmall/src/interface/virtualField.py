@@ -432,9 +432,10 @@ class virtualField():
 
     def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_'+str(x) for x in range(1, 6)]
+        self.robot_draw_list = [0]*20
         for id in xrange(5):
-          tag_id = robot_params[faster_hash[id]]['tag_number']
-          self.robot_draw_list[tag_id] = robot_list[faster_hash[id]]
+            tag_id = robot_params[faster_hash[id]]['tag_number']
+            self.robot_draw_list[tag_id] = robot_list[faster_hash[id]]
 
     def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0], robot_params = None):
         self.univetField.update_attack_side(attack_side)
