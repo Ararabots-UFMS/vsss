@@ -58,6 +58,28 @@ class Movement():
         """
         self.pid.set_constants(PID_list[0], PID_list[1], PID_list[2])
 
+    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
+        """Recive players positions and speed and return the speed to follow univector
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param robot_speed : np.array([float, float])
+         :param obstacle_position : np.array([float, float])
+         :param obstacle_speed : np.array([float, float])
+         :param ball_position : np.array([float, float])
+
+        :return: returns nothing
+        """
+        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec_result = np.array([0.0, 0.0])
+        robot_position_aux = robot_position
+        for i in range(number_of_predictions):
+            vec = self.univet_field.getVec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
+            vec_result += np.array(vec)
+            robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
+
+        return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
+
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
          :param speed : int
