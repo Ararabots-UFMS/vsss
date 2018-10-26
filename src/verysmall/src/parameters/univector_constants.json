@@ -1,6 +1,6 @@
 {
-"RADIUS":3,
-"KR":15,
+"RADIUS":10,
+"KR":30,
 "K0":40,
 "DMIN":8.5,
 "LDELTA":4.5
