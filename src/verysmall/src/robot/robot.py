@@ -7,8 +7,7 @@ import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
-from strategy.base_controller import RobotStateMachineController
-from strategy.set_pid_machine_controller import SetPIDMachineController
+from strategy.naive_keeper_controller import NaiveGKController
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -77,7 +76,8 @@ class Robot():
             SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
         ]
 
-        self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+        self.state_machine = NaiveGKController()
+
 
     def run(self):
         #rospy.logfatal(str(self.robot_body))
