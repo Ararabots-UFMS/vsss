@@ -139,7 +139,8 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
-        left, right, _ =  self.movement.follow_vector(speed=100,
-                    robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                    goal_vector=np.array([1,0]))
+        # left, right, _ =  self.movement.follow_vector(speed=100,
+        #             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+        #             goal_vector=np.array([1 + -2*self.team_side,0]))
+        left, right, _ =  self.movement.move_to_point(100, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([75, 65]))
         return left, right
