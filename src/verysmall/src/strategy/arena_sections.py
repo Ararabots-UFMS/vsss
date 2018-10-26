@@ -25,6 +25,9 @@ LEFT_UP_BOTTOM_LINE    = 12
 RIGHT_DOWN_BOTTOM_LINE = 13
 RIGHT_UP_BOTTOM_LINE   = 14
 
+BALL_SIZE = 4
+ROBOT_SIZE = 7
+
 
 def on_attack_side(pos, team_side):
    """
@@ -35,6 +38,16 @@ def on_attack_side(pos, team_side):
    :return: bool
    """
    return (pos[0] > 75 and team_side == LEFT) or (pos[0] < 75 and team_side == RIGHT)
+
+def on_extended_attack_side(pos, team_side):
+    """
+    Verify if the object is in attack side plus a quarter of field (True) or in defense side(False)
+
+    :param pos: np.array([x, y])
+    :param team_side: int 0 ou 1
+    :return: bool
+    """
+    return (pos[0] > 55 and team_side == LEFT) or (pos[0] < 95 and team_side == RIGHT)
 
 def inside_range(a, b, num):
     """
@@ -109,3 +122,14 @@ def side_section(pos,team_side):
     """
 
     return (on_attack_side(pos,team_side), section(pos))
+
+def goal_position(team_side):
+    """
+    Return the position of the goal, given attacking side  and section of the object
+    :param team_side: int
+    :return: np.array([x,y])
+    """
+
+    if team_side == LEFT:
+        return np.array([150, 65])
+    return np.array([0, 65])

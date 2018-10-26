@@ -1,7 +1,10 @@
+from rospy import logfatal
 import bluetooth
 import math
 import struct
+from time import sleep
 from ctypes import *
+import rospy
 
 # DIRECTION values are in range 4 to 7
 # SPEED values both are in range 0 to 255
@@ -14,6 +17,7 @@ WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
 WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
 WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 6
+MAX_CONNECTION_ATTEMPT = 3
 
 class Sender():
 
@@ -23,14 +27,25 @@ class Sender():
         # bluetooth mac
         self.bluetoothId = bluetoothId
         self.port = port
-        self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        self.sock = None
 
     def connect(self):
         """Connect to the robot"""
-        try:
-            self.sock.connect((self.bluetoothId, self.port))
-        except:
-            print "Connect error robot: ", self.robotId
+
+    	attempt = 1
+        while (attempt <= MAX_CONNECTION_ATTEMPT):
+            self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+            try:
+                self.sock.connect((self.bluetoothId, self.port))
+            except IOError:
+                logfatal("Unable to connect to "+self.bluetoothId+", waiting 5 seconds")
+                self.sock.close()
+                sleep(5)
+            else:
+                self.sock.setblocking(False)
+                logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
+                break;
+            attempt += 1
 
     def send_movement_package(self, package_array, isHardwareCorretion = False):
         """
@@ -50,8 +65,8 @@ class Sender():
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
             self.sock.send(c_ubyte(right))
-        except:
-            print "Packet error robot: ", self.robotId
+        except Exception as e:
+            print "Packet error robot: ", self.robotId, " E: ", e
 
 
     def send_float(self, n_float):
@@ -64,27 +79,27 @@ class Sender():
             self.send_float(KP)
             self.send_float(KI)
             self.send_float(KD)
-        except:
-            print "Packet error robot: ", self.robotId
+        except Exception as e:
+            print "Packet error robot: ", self.robotId, " E: ", e
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
             correct_theta, orientation = self.get_angle_orientation_and_correction(theta, rad)
             self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
-            print "c", correct_theta, " ", speed
+            # print "c", correct_theta, " ", speed
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(speed))
-        except:
-            print "Packet error robot: ", self.robotId
+        except Exception as e:
+            print "Packet error robot: ", self.robotId, " E: ", e
 
     def get_angle_orientation_and_correction(self, angle, rad=True):
         tmp = angle
         if rad:
             tmp = 180.0*angle/math.pi
         if 0 <= tmp <= 180:
-            return int(tmp), CW_BYTE
+            return int(tmp), CCW_BYTE
         else:
-            return abs(int(tmp)), CCW_BYTE
+            return abs(int(tmp)), CW_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""

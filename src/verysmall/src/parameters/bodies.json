@@ -1,7 +1,47 @@
 {
-  "Flash" : {"Template" : 0,"de" : 0, "estrutura" : 0.0 },
-  "Matador" : {"Template" : 0,"de" : 0, "estrutura" : 0.0 },
-  "Tank" : {"Template" : 0,"de" : 0, "estrutura" : 0.0 },
-  "Leve" : {"Template" : 0,"de" : 0, "estrutura" : 0.0 },
-  "HighLander" : {"Template" : 0,"de" : 0, "estrutura" : 0.0 }
+  "HighLander" : {
+    "KP" : 115.0,
+    "KD" : 0.005,
+    "KI" : 10
+  },
+
+  "Leve" : {
+    "KP" : 1.0,
+    "KD" : 1.0,
+    "KI" : 1.0
+  },
+
+  "Tank" : {
+    "KP" : 1.0,
+    "KD" : 1.0,
+    "KI" : 1.0
+  },
+  "Matador" : {
+    "KP" : 1.0,
+    "KD" : 1.0,
+    "KI" : 1.0
+  },
+  "Flash" : {
+    "KP" : 1.0,
+    "KD" : 1.0,
+    "KI" : 1.0
+  },
+
+  "Nenhum" : {
+    "KP" : 0.0,
+    "KD" : 0.0,
+    "KI" : 0.0
+  },
+
+  "Araraquara" : {
+    "KP" : 20.0,
+    "KD" : 0.0,
+    "KI" : 0.0
+  },
+
+  "Umbabarauma" : {
+    "KP" : 50.5,
+    "KD" : 3.0,
+    "KI" : 0.0
+  }
 }

@@ -6,32 +6,31 @@ from base_state_machine import RobotStateMachine, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
+bodies_unpack = jsonHandler.read(path)
 
 
 class RobotStateMachineController():
 
-    def __init__(self):
+    def __init__(self, _robot_body, _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
+        self.pid_list = [0, 0, 0]
+        self.robot_body = _robot_body
+        self.update_pid()
 
         self.stop = MyModel(state='Stop')
         self.RobotStateMachine = RobotStateMachine(self.stop)
 
-        self.movement = Movement([KP, KD, KI], 10)
+        self.movement = Movement(self.pid_list, 10)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
+    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position , team_side):
         """
         Update game variables
         :param position:
@@ -47,6 +46,16 @@ class RobotStateMachineController():
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
+        self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
+
+    def update_pid(self):
+        """
+        Update pid
+        :return:
+        """
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
+        self.movement.update_pid(self.pid_list)
 
     def set_to_stop_game(self):
         """

@@ -6,35 +6,35 @@ from attacker_with_univector import AttackerWithUnivector, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
-
+bodies_unpack = jsonHandler.read(path, escape = True)
 
 class AttackerWithUnivectorController():
 
-    def __init__(self):
+    def __init__(self, _robot_body = "Nenhum", _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
+        self.robot_body = _robot_body
+        rospy.logfatal(self.robot_body)
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'],
+                         bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
 
         #Attack_in left side
-        self.attack_goal = 0
+        self.attack_goal = np.array([150.0, 65.0])
 
-        self.stop = MyModel(state='Stop')
+        self.stop = MyModel(state='stop')
         self.AttackerWithUnivector = AttackerWithUnivector(self.stop)
 
-        self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal)
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position):
+    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:
@@ -50,6 +50,16 @@ class AttackerWithUnivectorController():
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
+        self.team_side = team_side
+        self.movement.univet_field.update_attack_side(not self.team_side)
+
+    def update_pid(self):
+        """
+        Update pid
+        :return:
+        """
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
+        self.movement.update_pid(self.pid_list)
 
     def set_to_stop_game(self):
         """
@@ -128,11 +138,11 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         left, right, _ = self.movement.do_univector(
-            speed = 180,
+            speed = 100,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=[0, 0],
-            obstacle_position=np.resize(self.enemies_position, (5, 2)),
+            obstacle_position=self.enemies_position,
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position
         )

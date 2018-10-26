@@ -121,8 +121,8 @@ class RobotParamsController:
             value += 1
 
         # Add tags to tag input
-        for x in xrange(1, 21):
-            if self.tag_is_owned_by[x-1] is not None:
+        for x in xrange(20):
+            if self.tag_is_owned_by[x] is not None:
                 self.view.tag_field.add(str(x)+'*')
             else:
                 self.view.tag_field.add(str(x))
@@ -153,7 +153,7 @@ class RobotParamsController:
         :param ptr: button pointer
         :return: nothing
         """
-        self.current_robot["tag_number"] = int(self.view.tag_field.text().strip('*'))-1
+        self.current_robot["tag_number"] = int(self.view.tag_field.text().strip('*'))
         self.current_robot["bluetooth_mac_address"] = self.view.bluetooth_field.text().strip('*')
         self.current_robot["body_id"] = self.view.body_field.text().strip('*')
         self.hide(None)

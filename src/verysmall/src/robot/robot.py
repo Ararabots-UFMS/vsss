@@ -5,9 +5,11 @@ import random
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-from ROS.ros_robot_subscriber import RosRobotSubscriber
-#from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
-#from strategy.naive_keeper_controller import NaiveGKController
+
+from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
+from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
+from strategy.base_controller import RobotStateMachineController
+from strategy.set_pid_machine_controller import SetPIDMachineController
 
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 
@@ -18,13 +20,14 @@ HARDWARE = 1
 class Robot():
     """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, _game_topic_name):
+    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, _game_topic_name, _should_debug = 0):
         # Parameters
         self.robot_name = _robot_name
         self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
         self.mac_address = _mac_address # Mac address
         self.robot_body = _robot_body
         self.tag = int(_tag)
+        self.should_debug = _should_debug
 
         # Receive from vision
         self.ball_position = None
@@ -59,18 +62,29 @@ class Robot():
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
         self.bluetooth_sender.connect()
 
-        self.subs = RosRobotSubscriber(self, _game_topic_name)
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, _should_debug)
 
         self.changed_game_state = True
-        self.game_state_string = ["Stopped",
+        self.game_state_string = ["stop",
                                   "Normal Play",
                                   "Freeball",
                                   "Penaly",
+                                  "Univector",
+                                  "Running",
+                                  "Border",
+                                  "Point",
                                   "Meta"]
-
-        self.state_machine = NaiveAttackerController()
+        self.strategies = [
+            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+        ]
+        
+        # self.state_machine = NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
 
     def run(self):
+        #rospy.logfatal(str(self.robot_body))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
                                                    robot_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
@@ -78,11 +92,12 @@ class Robot():
             param_A, param_B = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
             param_A, param_B = self.state_machine.in_normal_game()
+            # rospy.logfatal(str(param_A)+" "+ str(param_B))
         elif self.game_state == 2:  # Freeball
             param_A, param_B = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
             param_A, param_B = self.state_machine.in_penalty_game()
-        elif self.game_state == 4:  # Meta
+        elif self.game_state == 4:  # meta
             param_A, param_B = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")
@@ -92,6 +107,9 @@ class Robot():
         # Param B :    RIGHT          |      Speed
         # ========================================================
         self.bluetooth_sender.send_movement_package([param_A, param_B], self.pid_type)
+
+        if self.should_debug:
+            pass
 
         if self.changed_game_state:
             rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
