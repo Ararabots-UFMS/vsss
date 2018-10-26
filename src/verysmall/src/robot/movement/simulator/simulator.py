@@ -70,7 +70,7 @@ class Simulator():
         # angle between vec and [1,0]
         angle = angleBetween([1,0], vec)*180/(math.pi)
         # get the robot contour
-        rect  = (pos, robotSize, angle)
+        rect = (pos, robotSize, angle)
         box = cv2.boxPoints(rect)
         box = np.int0(box)
         if self.arenaLimit(pos):

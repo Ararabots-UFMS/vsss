@@ -38,7 +38,7 @@ class Movement():
         if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
         else:
-            self.univet_field = univectorField(attack_goal=attack_goal, _rotation = True)
+            self.univet_field = univectorField(attack_goal=attack_goal, _rotation=True)
 
         self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         self.pid_type = _pid_type
@@ -57,6 +57,28 @@ class Movement():
         :return:
         """
         self.pid.set_constants(PID_list[0], PID_list[1], PID_list[2])
+
+    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
+        """Recive players positions and speed and return the speed to follow univector
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param robot_speed : np.array([float, float])
+         :param obstacle_position : np.array([float, float])
+         :param obstacle_speed : np.array([float, float])
+         :param ball_position : np.array([float, float])
+
+        :return: returns nothing
+        """
+        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec_result = np.array([0.0, 0.0])
+        robot_position_aux = robot_position
+        for i in range(number_of_predictions):
+            vec = self.univet_field.getVec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
+            vec_result += np.array(vec)
+            robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
+
+        return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
@@ -92,7 +114,7 @@ class Movement():
 
          :return: returns : boolean
         """
-        if abs(angleBetween(robot_vector, goal_vector, ccw=False)) <= 0.087266463: #5 degrees error
+        if abs(angleBetween(robot_vector, goal_vector, abs=False)) <= 0.087266463: #5 degrees error
             return True
         return False
 
@@ -125,11 +147,12 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        diff_angle = angleBetween(robot_vector, goal_vector, ccw=True)
+        diff_angle = angleBetween(robot_vector, goal_vector, abs=False)
+        #logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
-            return (diff_angle, speed)
+            return diff_angle, speed, False
 
         correction = self.pid.update(diff_angle)
         return self.return_speed(speed, correction)
@@ -142,9 +165,10 @@ class Movement():
 
          :return: returns int, int, boolean
         """
+        #logfatal("SPIN " + str(speed) + " " + str(ccw))
         if ccw:
-            return int(-speed), int(speed), False
-        return int(speed), int(-speed), False
+            return int(speed), int(-speed), False
+        return int(-speed), int(speed), False
 
     def head_to(self, robot_vector, goal_vector):
         """Recives robot direction vector, goal vector and a speed. Return the left wheels speed,
@@ -154,7 +178,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        diff_angle = angleBetween(robot_vector, goal_vector, ccw=False)
+        diff_angle = angleBetween(robot_vector, goal_vector, abs=False)
         #logfatal(str(diff_angle))
 
         if self.in_goal_vector(robot_vector, goal_vector):
@@ -164,7 +188,7 @@ class Movement():
             return diff_angle, 0, False
 
         correction = self.pid.update(diff_angle)
-        return self.normalize(int(correction)), self.normalize(int(-correction)), False
+        return self.normalize(int(-correction)), self.normalize(int(correction)), False
 
     def return_speed(self, speed, correction):
         """Recives the robot speed and the PID correction, and return each wheel speed.
