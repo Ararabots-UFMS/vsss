@@ -101,7 +101,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.follow_vector(np.array(sim.robotVector) ,np.array(vec), 200)
+        leftSpeed, rightSpeed, done = movement.follow_vector(np.array(sim.robotVector), np.array(vec), 200)
 
         if not done:
             # move function

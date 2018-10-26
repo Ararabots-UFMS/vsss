@@ -10,9 +10,6 @@ from strategy.attacker_with_univector_controller import AttackerWithUnivectorCon
 from strategy.base_controller import RobotStateMachineController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 
-SOFTWARE = 0
-HARDWARE = 1
-
 class Robot():
     """docstring for Robot"""
 
@@ -37,9 +34,6 @@ class Robot():
         self.enemies_orientation = None
         self.enemies_speed = None
 
-        # Calculated inside robot
-        self.PID = None
-
         # Receive from game topic
         self.behaviour_type = None
         self.game_state = 0
@@ -51,8 +45,6 @@ class Robot():
         # right(1) or left(0)
         self.left_side = 0
         self.right_side = not self.left_side
-
-        self.pid_type = SOFTWARE
 
         # Open bluetooth socket
         self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
@@ -74,27 +66,27 @@ class Robot():
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+            SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
         ]
 
-        self.state_machine = AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+        self.state_machine = AttackerWithUnivectorController(_robot_body=self.robot_body, _debug_topic = self.subsAndPubs)
 
     def run(self):
         #rospy.logfatal(str(self.robot_body))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
-                                                   robot_speed=[0, 0], enemies_position=self.enemies_position,
+                                                   team_speed=[0, 0], enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
         if self.game_state == 0:  # Stopped
-            param_A, param_B = self.state_machine.set_to_stop_game()
+            param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
-            param_A, param_B = self.state_machine.in_normal_game()
+            param_A, param_B, param_C = self.state_machine.in_normal_game()
             # rospy.logfatal(str(param_A)+" "+ str(param_B))
         elif self.game_state == 2:  # Freeball
-            param_A, param_B = self.state_machine.in_freeball_game()
+            param_A, param_B, param_C = self.state_machine.in_freeball_game()
         elif self.game_state == 3:  # Penalty
-            param_A, param_B = self.state_machine.in_penalty_game()
+            param_A, param_B, param_C = self.state_machine.in_penalty_game()
         elif self.game_state == 4:  # meta
-            param_A, param_B = self.state_machine.in_meta_game()
+            param_A, param_B, param_C = self.state_machine.in_meta_game()
         else:  # I really really really Dont Know
             print("wut")
         # ========================================================
@@ -102,7 +94,7 @@ class Robot():
         # Param A :    LEFT           |      Theta
         # Param B :    RIGHT          |      Speed
         # ========================================================
-        self.bluetooth_sender.send_movement_package([param_A, param_B], self.pid_type)
+        self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
 
         if self.should_debug:
             pass
