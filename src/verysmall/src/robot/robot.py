@@ -75,13 +75,15 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
+            NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
         ]
+
+        self.state_machine = NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
+
         
-        # self.state_machine = NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
 
     def run(self):
         #rospy.logfatal(str(self.robot_body))

@@ -9,14 +9,10 @@ from naive_attacker_strategy import NaiveAttacker, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_5']['KP']
-KD = univector_list['robot_5']['KD']
-KI = univector_list['robot_5']['KI']
+bodies_unpack = jsonHandler.read(path, escape = True)
 
 CENTER_Y = 65
 CENTER_X = 75
@@ -25,7 +21,7 @@ MAX_X = 150
 
 class NaiveAttackerController():
 
-    def __init__(self):
+    def __init__(self, _robot_body = "Nenhum", _debug_topic = None):
         self.position = None
         self.orientation = None
         self.robot_speed = None
@@ -35,11 +31,19 @@ class NaiveAttackerController():
         self.team_side = None
         self.borders = [UP_BORDER, DOWN_BORDER, LEFT_DOWN_BOTTOM_LINE, LEFT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE]
 
+        self.robot_body = _robot_body
+        rospy.logfatal(self.robot_body)
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'],
+                         bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
 
-        self.stop = MyModel(state='Stop')
+        self.stop = MyModel(state='stop')
         self.NaiveAttacker = NaiveAttacker(self.stop)
 
-        self.movement = Movement([KP, KD, KI], 10)
+        self.attack_goal = np.array([150.0, 65.0])
+
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
+
 
     def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
