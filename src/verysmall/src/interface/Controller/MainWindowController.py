@@ -32,7 +32,8 @@ class MainWindowController:
         self.view = MainWindowView(_game_topic_publisher.get_name())
         self.view.virtualField.set_univector_debug_params(not self.game_opt['side'],
                                                           model.debug_params['robot_vector'],
-                                                          model.debug_params['things'])
+                                                          model.debug_params['things'],
+                                                          self.robot_params)
 
         # The coach object class control the active and the activities of robots
         self.coach = _coach
@@ -136,7 +137,7 @@ class MainWindowController:
 
         the_same = self.robot_params[self.faster_hash[ptr.id]] == old
 
-        if (not the_same) and self.robot_params[self.faster_hash[ptr.id]]['active']:
+        if not the_same:
             self.coach.set_robot_parameters(ptr.id)
 
     def top_menu_choice(self, ptr):
@@ -158,7 +159,7 @@ class MainWindowController:
             if ptr.value() == 13:
                 self.wait_window_close(self.debug_controller)
                 self.view.virtualField.set_draw_vectors(self.debug_params['robot_vector'])
-                self.view.virtualField.set_visible_vectors(self.debug_params['things'])
+                self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
             elif ptr.value() == 14:
                 self.wait_window_close(self.connection_controller)
 

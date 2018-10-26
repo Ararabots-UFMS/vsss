@@ -141,5 +141,5 @@ class SetPIDMachineController():
         self.SetPIDMachine.univector_to_univector()
         left, right, _ =  self.movement.follow_vector(speed=100,
                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                    goal_vector=np.array([1,0]))
+                    goal_vector=np.array([1 + -2*self.team_side,0]))
         return left, right

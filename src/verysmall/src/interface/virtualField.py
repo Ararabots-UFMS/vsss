@@ -69,7 +69,7 @@ class virtualField():
 
         self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
         self.draw_vectors = False
-        self.robot_draw_list = [0]*5
+        self.robot_draw_list = [0]*20
 
         self.field_origin = (self.proportion_width(5.882), self.proportion_height(99.9))
         self.ball_radius = self.proportion_average(1.5)
@@ -430,15 +430,16 @@ class virtualField():
             it+=1
             distance = np.linalg.norm(currentPos - end)
 
-    def set_visible_vectors(self, robot_list):
+    def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_'+str(x) for x in range(1, 6)]
-        for id in xrange(len(self.robot_draw_list)):
-            self.robot_draw_list[id] = robot_list[faster_hash[id]]
+        for id in xrange(5):
+          tag_id = robot_params[faster_hash[id]]['tag_number']
+          self.robot_draw_list[tag_id] = robot_list[faster_hash[id]]
 
-    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0]):
+    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0], robot_params = None):
         self.univetField.update_attack_side(attack_side)
         self.draw_vectors = plot_vector
-        self.set_visible_vectors(robot_list)
+        self.set_visible_vectors(robot_list, robot_params)
 
     def set_draw_vectors(self, plot_vector = 0):
         self.draw_vectors = plot_vector

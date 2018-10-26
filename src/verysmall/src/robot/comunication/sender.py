@@ -28,6 +28,7 @@ class Sender():
         self.bluetoothId = bluetoothId
         self.port = port
         self.sock = None
+        self.excp = -1
 
     def connect(self):
         """Connect to the robot"""
@@ -66,7 +67,7 @@ class Sender():
             self.sock.send(c_ubyte(left))
             self.sock.send(c_ubyte(right))
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
 
 
     def send_float(self, n_float):
@@ -80,7 +81,7 @@ class Sender():
             self.send_float(KI)
             self.send_float(KD)
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0],"Packet error robot: "+self.robotId+" E: "+str(e))
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
@@ -90,7 +91,7 @@ class Sender():
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(speed))
         except Exception as e:
-            print "Packet error robot: ", self.robotId, " E: ", e
+            self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
 
     def get_angle_orientation_and_correction(self, angle, rad=True):
         tmp = angle
@@ -120,3 +121,8 @@ class Sender():
     def normalizeWheels(self, leftWheel, rightWheel):
         """Normalize speed to 255"""
         return 255 if abs(leftWheel) > 255 else abs(leftWheel), 255 if abs(rightWheel) > 255 else abs(rightWheel)
+
+    def printError(self, _excp, str):
+        if self.excp != _excp:
+            logfatal(str)
+            self.excp = _excp

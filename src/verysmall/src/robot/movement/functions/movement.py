@@ -126,7 +126,6 @@ class Movement():
             self.debug_topic.debug_publish(goal_vector.tolist())
 
         diff_angle = angleBetween(robot_vector, goal_vector, ccw=True)
-        logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
