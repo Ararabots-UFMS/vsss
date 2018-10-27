@@ -32,7 +32,8 @@ class MainWindowController:
         self.view = MainWindowView(_game_topic_publisher.get_name())
         self.view.virtualField.set_univector_debug_params(not self.game_opt['side'],
                                                           model.debug_params['robot_vector'],
-                                                          model.debug_params['things'])
+                                                          model.debug_params['things'],
+                                                          self.robot_params)
 
         # The coach object class control the active and the activities of robots
         self.coach = _coach
@@ -46,7 +47,10 @@ class MainWindowController:
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
         self.assigned_robot_text = ["Jogador "+str(x) for x in range(1, 6)]
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
+        
         self.view.team_color.value(self.game_opt["time"])
+        self.set_robot_plot_color(self.game_opt["time"])
+
         self.view.team_side.value(self.game_opt["side"])
 
         # Creates the game topic
@@ -136,8 +140,9 @@ class MainWindowController:
 
         the_same = self.robot_params[self.faster_hash[ptr.id]] == old
 
-        if (not the_same) and self.robot_params[self.faster_hash[ptr.id]]['active']:
+        if not the_same:
             self.coach.set_robot_parameters(ptr.id)
+            self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
 
     def top_menu_choice(self, ptr):
         """
@@ -158,7 +163,7 @@ class MainWindowController:
             if ptr.value() == 13:
                 self.wait_window_close(self.debug_controller)
                 self.view.virtualField.set_draw_vectors(self.debug_params['robot_vector'])
-                self.view.virtualField.set_visible_vectors(self.debug_params['things'])
+                self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
             elif ptr.value() == 14:
                 self.wait_window_close(self.connection_controller)
 
@@ -248,6 +253,16 @@ class MainWindowController:
         """
         self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
         self.game_opt["time"] = ptr.value()
+        self.set_robot_plot_color(ptr.value())
+
+    def set_robot_plot_color(self, is_yellow = True):
+        if is_yellow:
+            self.view.home_color = self.view.virtualField.colors["yellow"]  # home team color
+            self.view.away_color = self.view.virtualField.colors["blue"]    # away team color
+        else:
+            self.view.home_color = self.view.virtualField.colors["blue"]  # home team color
+            self.view.away_color = self.view.virtualField.colors["yellow"]    # away team color
+
 
     def on_side_change(self, ptr):
         """

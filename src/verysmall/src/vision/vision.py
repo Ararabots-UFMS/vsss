@@ -55,7 +55,7 @@ class Vision:
         self.adv_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
-        rospy.Subscriber('game_topic_0', game_topic, self.on_game_state_change)
+        rospy.Subscriber('game_topic_1', game_topic, self.on_game_state_change)
 
         self.game_state = None
 
@@ -75,9 +75,9 @@ class Vision:
         self.warp_matrix = None
         self.pipeline = None
         self.fps = None
-        self.t0 = None
-
-        self.computed_frames = 0
+        self.last_time = None
+        self.new_time = None
+        ##self. computed_frames = 0
 
         # Super necessary to compute the robots positions
         self.origin = None
@@ -149,7 +149,9 @@ class Vision:
         self.finish = True
 
     def update_fps(self):
-        self.fps = self.computed_frames / (time.time() - self.t0)
+        self.new_time = time.time()
+        self.fps =  1/(self.new_time - self.last_time)##self.computed_frames / (time.time() - self.t0)
+        self.last_time = self.new_time 
 
     def set_origin_and_factor(self):
         """ This function calculates de conversion factor between pixel to centimeters
@@ -241,7 +243,7 @@ class Vision:
 
         while not self.finish:
 
-            self.t0 = time.time()
+            self.last_time = time.time()
             while self.game_on:
                 self.raw_image = self.camera.read()
 
@@ -260,7 +262,7 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
-                self.computed_frames += 1
+                #self.computed_frames += 1
 
                 self.update_fps()
 
@@ -321,7 +323,7 @@ if __name__ == "__main__":
     t.start()
 
     i = 0
-    t0 = time.time()
+    last_time = time.time()
     cv2.namedWindow('control')
     show = False
 

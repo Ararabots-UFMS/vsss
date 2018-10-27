@@ -69,7 +69,6 @@ class virtualField():
 
         self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
         self.draw_vectors = False
-        self.robot_draw_list = [0]*5
 
         self.field_origin = (self.proportion_width(5.882), self.proportion_height(99.9))
         self.ball_radius = self.proportion_average(1.5)
@@ -79,6 +78,10 @@ class virtualField():
         self.text_offset = (self.proportion_width(3.5), self.proportion_height(3.5))
         self.text_font = cv.FONT_HERSHEY_SIMPLEX
 
+        # saved tags
+        self.robot_draw_list = [0]*5
+        self.robot_tags = [0] * 5
+        self.tag_debug_vector= [0] * 20
 
         # univector
         self.RADIUS = univector_list['RADIUS']
@@ -339,7 +342,6 @@ class virtualField():
         length = len(robot_list)
 
         while index < length:
-
             if robot_list[index][0] != 0 or robot_list[index][1] != 0:
 
                 if is_away:
@@ -363,12 +365,12 @@ class virtualField():
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
                     cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
-                    if self.draw_vectors and self.robot_draw_list[index]:
+                    if self.draw_vectors and self.tag_debug_vector[index]:
                         self.drawPath(robot_list[index], ball_center)
 
             index = index + 1
 
-            ''' metodo unico para unificar os plots, recebe todas as informacoes necessarias para plot de cada um dos times e 
+            ''' metodo unint(ico para unificar os plots), recebe todas as informacoes necessarias para plot de cada um dos times e 
                 e da bola. tambem recebe informacoes de fps do topico e da visao 
 
                 entrada
@@ -430,15 +432,23 @@ class virtualField():
             it+=1
             distance = np.linalg.norm(currentPos - end)
 
-    def set_visible_vectors(self, robot_list):
+    def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_'+str(x) for x in range(1, 6)]
-        for id in xrange(len(self.robot_draw_list)):
-            self.robot_draw_list[id] = robot_list[faster_hash[id]]
+        self.robot_draw_list = [0]*5
+        self.robot_tags = [0]*5
+        self.tag_debug_vector = [0]*20
 
-    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0]):
+        for id in xrange(5):
+          tag_id = robot_params[faster_hash[id]]['tag_number']
+          self.robot_tags[id] = int(tag_id)
+          self.robot_draw_list[id]|= int(robot_list[faster_hash[id]])
+          self.tag_debug_vector[int(tag_id)]+= int(robot_list[faster_hash[id]])
+
+
+    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0], robot_params = None):
         self.univetField.update_attack_side(attack_side)
         self.draw_vectors = plot_vector
-        self.set_visible_vectors(robot_list)
+        self.set_visible_vectors(robot_list, robot_params)
 
     def set_draw_vectors(self, plot_vector = 0):
         self.draw_vectors = plot_vector
@@ -457,7 +467,7 @@ class virtualField():
     def plot_debug_vectors(self, robot_positions, debug_vectors):
         for index in xrange(5):
             if self.robot_draw_list[index]:
-                currentPos = robot_positions[index]
+                currentPos = robot_positions[self.robot_tags[index]]
                 _currentPos = position_from_origin(unit_convert( currentPos, self.width_conv, self.height_conv), self.field_origin)
                 newPos =  currentPos + 7 * debug_vectors[index]
                 _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)

@@ -1,1 +1,1 @@
-{"penalty_player": 0, "meta_player": 2, "ROS_IP": ["wlp7s0", "10.0.0.100"], "camera": {"product": "9230", "vendor": "05a3", "name": "USB 2.0 Camera", "file": "/home/marquesman/Downloads/record.avi"}, "ROS_MASTER_URI": "http://10.0.0.1:11311", "time": 1, "freeball_player": 1, "side": 0}
+{"penalty_player": 0, "meta_player": 2, "ROS_IP": ["enp0s25", "10.0.0.2"], "camera": {"product": "9230", "vendor": "05a3", "name": "USB 2.0 Camera", "file": "/home/marquesman/Downloads/record.avi"}, "ROS_MASTER_URI": "http://10.0.0.1:11311", "time": 1, "freeball_player": 1, "side": 1}
