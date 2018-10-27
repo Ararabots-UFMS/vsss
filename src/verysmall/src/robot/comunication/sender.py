@@ -31,7 +31,7 @@ class Sender():
         self.closed = False
         self.excp = -1
 
-    def connect(self):
+    def connect(self, should_wait = False):
         """Connect to the robot"""
 
     	attempt = 1
@@ -42,7 +42,8 @@ class Sender():
             except IOError:
                 logfatal("Unable to connect to "+self.bluetoothId+", waiting 1 second")
                 self.sock.close()
-                sleep(1)
+                if should_wait:
+                    sleep(1)
             else:
                 self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")

@@ -366,7 +366,7 @@ class virtualField():
                     cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
                     if self.draw_vectors and self.tag_debug_vector[index]:
-                        self.drawPath(robot_list[self.robot_tags[index]], ball_center)
+                        self.drawPath(robot_list[index], ball_center)
 
             index = index + 1
 
@@ -435,14 +435,15 @@ class virtualField():
     def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_'+str(x) for x in range(1, 6)]
         self.robot_draw_list = [0]*5
-        self.robot_tags = [0]*20
+        self.robot_tags = [0]*5
         self.tag_debug_vector = [0]*20
 
         for id in xrange(5):
           tag_id = robot_params[faster_hash[id]]['tag_number']
           self.robot_tags[id] = int(tag_id)
           self.robot_draw_list[id]|= int(robot_list[faster_hash[id]])
-          self.tag_debug_vector[int(tag_id)]|= self.robot_draw_list[id]
+          self.tag_debug_vector[int(tag_id)]+= int(robot_list[faster_hash[id]])
+
 
     def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0], robot_params = None):
         self.univetField.update_attack_side(attack_side)
