@@ -29,7 +29,18 @@ class NaiveAttackerController():
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = None
-        self.borders = [UP_BORDER, DOWN_BORDER, LEFT_DOWN_BOTTOM_LINE, LEFT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE]
+        self.borders = [
+            UP_BORDER, 
+            DOWN_BORDER, 
+            LEFT_DOWN_BOTTOM_LINE, 
+            LEFT_UP_BOTTOM_LINE, 
+            RIGHT_DOWN_BOTTOM_LINE, 
+            RIGHT_UP_BOTTOM_LINE, 
+            LEFT_UP_CORNER,
+            LEFT_DOWN_CORNER,
+            RIGHT_UP_CORNER,
+            RIGHT_DOWN_CORNER
+            ]
 
         self.robot_body = _robot_body
         rospy.logfatal(self.robot_body)
@@ -82,11 +93,13 @@ class NaiveAttackerController():
         if self.NaiveAttacker.is_stop:
             self.NaiveAttacker.stop_to_normal()
 
+        rospy.logfatal(self.NaiveAttacker.current_state)
+
         if self.NaiveAttacker.is_normal:
             # Caso a bola esteja no campo de ataque
             if on_attack_side(self.ball_position, self.team_side):
                 # Verifica se a bola esta nas bordas
-                if (section(self.position) in self.borders):
+                if (section(self.ball_position) in self.borders):
                     self.NaiveAttacker.normal_to_border() 
                 else:
                     self.NaiveAttacker.normal_to_reach_ball()
@@ -129,7 +142,7 @@ class NaiveAttackerController():
             return self.in_point()
 
         # Caso o robo esteja na borda
-        if(section(self.position) in self.borders):
+        if(section(self.ball_position) in self.borders):
 
             self.NaiveAttacker.reach_ball_to_border()
             return self.in_border()
@@ -166,7 +179,7 @@ class NaiveAttackerController():
             return self.in_point()
         else:
             # Caso o robo ainda esteja na borda
-            if(section(self.position) in self.borders):
+            if(section(self.ball_position) in self.borders):
                 
             	if (behind_ball(self.ball_position, self.position, self.team_side)):
             		self.NaiveAttacker.border_to_spin()
@@ -262,7 +275,7 @@ class NaiveAttackerController():
         spin_side = spin_direction(self.ball_position, self.position, self.team_side)  
 
         # Chama a funcao de spin
-        left, right, _ = self.movement.spin(255, not spin_side) 
+        left, right, _ = self.movement.spin(255, spin_side) 
         return left, right
 
     def in_freeball_game(self):

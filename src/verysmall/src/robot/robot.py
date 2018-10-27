@@ -88,7 +88,7 @@ class Robot():
     def run(self):
         #rospy.logfatal(str(self.robot_body))
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
-                                                   robot_speed=[0, 0], enemies_position=self.enemies_position,
+                                                   robot_speed=self.team_speed, enemies_position=self.enemies_position,
                                                    enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
         if self.game_state == 0:  # Stopped
             param_A, param_B = self.state_machine.set_to_stop_game()

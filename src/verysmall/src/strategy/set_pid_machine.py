@@ -24,6 +24,8 @@ class SetPIDMachine(StateMachine):
         meta_to_normal      {[Transition]} -- [Transition meta to normal]
         normal_to_univector {[Transition]} -- [Transition normal to univector]
         univector_to_univector {[Transition]} -- [univector normal to univector]
+        univector_to_head {[Transition]} -- [univector normal to head]
+        head_to_univector {[Transition]} -- [head normal to univector]
     """
     # Base States
     stop = State('Stop', initial=True)

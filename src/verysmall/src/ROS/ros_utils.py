@@ -35,4 +35,4 @@ class RosUtils:
                 if current_topic.find(topic) != -1:
                     count+=1
         
-        return count
+        return count + 1
