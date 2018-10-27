@@ -274,13 +274,13 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
-        for thing in things:
+        for i,thing in enumerate(things):
             # The id of the thing will be its index in the lists
             id = thing.id
             if id >= 0:
-                positions_list[id] = thing.pos
-                orientations_list[id] = thing.orientation
-                speeds_list[id] = thing.speed
+                positions_list[i] = thing.pos
+                orientations_list[i] = thing.orientation
+                speeds_list[i] = thing.speed
 
     def send_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be

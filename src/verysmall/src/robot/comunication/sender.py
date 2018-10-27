@@ -78,7 +78,7 @@ class Sender():
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
             rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
-            self.update_time()
+            #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
             #self.update_time()
