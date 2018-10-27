@@ -1,6 +1,7 @@
 from rospy import logfatal
 import bluetooth
 import math
+import time
 import struct
 from time import sleep
 from ctypes import *
@@ -30,6 +31,17 @@ class Sender():
         self.sock = None
         self.closed = False
         self.excp = -1
+
+        # =====================
+        self.last_time = time.time()
+        self.new_time = None
+        # =====================
+
+    def update_time(self):
+        self.new_time = time.time()
+        rospy.logfatal(1/(self.new_time-self.last_time))
+        self.last_time = self.new_time
+
 
     def connect(self, should_wait = False):
         """Connect to the robot"""
@@ -65,9 +77,13 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
+            rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
+            self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
+            #self.update_time()
             self.sock.send(c_ubyte(right))
+            #self.update_time()
         except Exception as e:
             self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
 
