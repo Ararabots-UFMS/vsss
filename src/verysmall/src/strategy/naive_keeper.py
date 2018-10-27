@@ -25,7 +25,7 @@ class NaiveGK(StateMachine):
         meta_to_normal      {[Transition]} -- [Transition meta to normal]
     """
     # Base States
-    stop = State('Stop', initial=True)
+    stop = State('stop', initial=True)
     normal    = State('Normal')
     freeball  = State('FreeBall')
     penalty   = State('Penalty')

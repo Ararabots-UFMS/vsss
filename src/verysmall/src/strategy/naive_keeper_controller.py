@@ -20,7 +20,15 @@ KD = univector_list['robot_1']['KD']
 KI = univector_list['robot_1']['KI']
 
 
-GOALKEEPER_SPEED = 100
+GOALKEEPER_SPEED    = 100
+MIN_X               = 5.0
+
+MIN_Y               = 45.0
+MAX_Y               = 85.0
+
+GG_DIFF             = 140.0
+
+SPIN_DIST           = 7.0
 
 class NaiveGKController():
 
@@ -35,7 +43,7 @@ class NaiveGKController():
 
         self.defend_position = np.array([0,0])
 
-        self.stop = MyModel(state='Stop')
+        self.stop = MyModel(state='stop')
         self.NaiveGK = NaiveGK(self.stop)
         self.movement = Movement([KP, KD, KI], 10)
 
@@ -112,19 +120,20 @@ class NaiveGKController():
     def push_ball(self):
 
         #if behind_ball(self.ball_position, self.position, self.team_side):
-        if near_ball(self.ball_position, self.position):
+        if (distance_point(self.ball_position, self.position) <= SPIN_DIST):
             rospy.logfatal("SPIN")
-            param1, param2, bool = self.movement.spin(GOALKEEPER_SPEED,not spin_direction(self.ball_position, self.position, self.team_side))
+            param1, param2, bool = self.movement.spin(GOALKEEPER_SPEED, not spin_direction(self.ball_position, self.position, self.team_side))
             return param1, param2
         else:
             rospy.logfatal("MVTP")
 
-            param_1, param_2 , _ = self.movement.follow_vector(
-                GOALKEEPER_SPEED,
-                robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
-                goal_vector = [[np.cos(self.ball_position), np.sin(self.ball_position)]]
-            )
 
+            param_1, param_2 , _ = self.movement.move_to_point(
+                GOALKEEPER_SPEED,
+                self.position,
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                self.ball_position
+                )
             return param_1, param_2
 
 
@@ -146,19 +155,19 @@ class NaiveGKController():
 
     def follow_ball(self):
 
-        self.defend_position[0] = 15.0 + 118.0*self.team_side
+        self.defend_position[0] = MIN_X + GG_DIFF*self.team_side
     
-        if self.ball_position[1] >= 38.0 and self.ball_position[1] <= 92.0:
+        if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
             rospy.logfatal("frente area")
             self.defend_position[1] = self.ball_position[1]
         else:
-            if self.ball_position[1] > 92.0:
+            if self.ball_position[1] > MAX_Y:
                 rospy.logfatal("esq area")
-                self.defend_position[1] = 92.0
+                self.defend_position[1] = MAX_Y
 
             else: #self.defend_position[1] < 38:
                 rospy.logfatal("dir area")
-                self.defend_position[1] = 38.0
+                self.defend_position[1] = MIN_Y
 
         param_1, param_2 , _ = self.movement.move_to_point(
             speed = GOALKEEPER_SPEED,
