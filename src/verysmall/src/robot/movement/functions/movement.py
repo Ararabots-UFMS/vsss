@@ -200,6 +200,8 @@ class Movement():
 
         :return: returns int, int, boolean
         """
+        if speed < 0:
+            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
         return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):

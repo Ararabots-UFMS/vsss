@@ -67,7 +67,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            AttackerWithUnivectorController(_robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
