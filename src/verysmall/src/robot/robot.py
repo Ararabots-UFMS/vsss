@@ -47,8 +47,12 @@ class Robot():
         self.right_side = not self.left_side
 
         # Open bluetooth socket
-        self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
-        self.bluetooth_sender.connect()
+        if self.mac_address == '-1':
+            rospy.logfatal("Using fake bluetooth")
+            self.bluetooth_sender = None
+        else:
+            self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
+            self.bluetooth_sender.connect()
 
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, _should_debug)
 
@@ -94,7 +98,8 @@ class Robot():
         # Param A :    LEFT           |      Theta
         # Param B :    RIGHT          |      Speed
         # ========================================================
-        self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
+        if self.bluetooth_sender:
+            self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
 
         if self.should_debug:
             pass
