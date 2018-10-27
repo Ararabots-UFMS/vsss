@@ -2,10 +2,10 @@ import numpy as np
 import numpy.linalg as la
 import math
 
-MINCHANGE = 0.349066
+MINCHANGE = 0.5
 
-FORWARD = 1
-BACKWARDS = 0
+FORWARD = True
+BACKWARDS = False
 
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
@@ -63,7 +63,7 @@ def min_diff_vec_and_opposite(orientation, vec, goal):
     :return: boolean
     """
     if abs(angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
-        return bool(orientation)
+        return orientation
 
     if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
         return True

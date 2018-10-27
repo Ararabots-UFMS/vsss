@@ -27,8 +27,8 @@ LEFT = 0
 SOFTWARE = 0
 HARDWARE = 1
 
-FORWARD = 1
-BACKWARDS = 0
+FORWARD = True
+BACKWARDS = False
 
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
@@ -152,6 +152,7 @@ class Movement():
             self.debug_topic.debug_publish(goal_vector.tolist())
 
         forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector)
+        self.orientation = forward
 
         #logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
