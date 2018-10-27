@@ -27,6 +27,9 @@ LEFT = 0
 SOFTWARE = 0
 HARDWARE = 1
 
+FORWARD = 1
+BACKWARDS = 0
+
 class Movement():
     """Movement class return leftWheelSpeed(int), rightWheelSpeed(int), done(boolean)"""
 
@@ -34,6 +37,7 @@ class Movement():
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
         self.last_pos = np.array([0, 0])
         self.error_margin = error
+        self.orientation = FORWARD
         self.attack_goal = attack_goal
         if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
@@ -147,7 +151,7 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        forward, diff_angle = forward_min_diff(robot_vector, goal_vector)
+        forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector)
 
         #logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
@@ -200,8 +204,8 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        if speed < 0:
-            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+#        if speed < 0:
+#            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
         return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):

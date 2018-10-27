@@ -2,6 +2,11 @@ import numpy as np
 import numpy.linalg as la
 import math
 
+MINCHANGE = 0.174533
+
+FORWARD = 1
+BACKWARDS = 0
+
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
@@ -50,25 +55,28 @@ def opposite_vector(vec):
     """
     return [-vec[0], -vec[1]]
 
-def min_diff_vec_and_opposite(vec, goal):
+def min_diff_vec_and_opposite(orientation, vec, goal):
     """
     Return true if the angle difference between vec and goal is less then opposite vec and goa
     :param vec: [float, float]
     :param goal: [float, float]
     :return: boolean
     """
+    if (angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
+        return bool(orientation)
+
     if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
         return True
     return False
 
-def forward_min_diff(vec, goal):
+def forward_min_diff(orientation, vec, goal):
     """
     Return True if forward and the min difference angle
     :param vec: [float, float]
     :param goal: [float, float]
     :return: boolean, float
     """
-    tmp = min_diff_vec_and_opposite(vec, goal)
+    tmp = min_diff_vec_and_opposite(orientation, vec, goal)
     if tmp:
         return True, angleBetween(vec, goal)
     return False, angleBetween(opposite_vector(vec), goal)

@@ -21,7 +21,7 @@ LDELTA = 50
 RIGHT = 1
 LEFT = 0
 
-robotInitPosition = (200, 200)
+robotInitPosition = (500, 200)
 ballInitPosition = (500, 500)
 advRobotPosition = (350, 350)
 
@@ -32,7 +32,7 @@ sim = Simulator(img)
 # initialize arena
 sim.initArena()
 # initialize robot
-sim.drawRobot(robotInitPosition, [1,-1])
+sim.drawRobot(robotInitPosition, [1,0])
 # initialize ball
 sim.drawBall(ballInitPosition)
 # initialize adversary robot
