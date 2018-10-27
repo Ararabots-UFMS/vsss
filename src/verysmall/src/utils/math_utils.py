@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.linalg as la
 import math
-import rospy
 
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
@@ -42,3 +41,34 @@ def maxAbs(x, y):
 
 def gaussian(m, v):
     return math.exp(-(m**2) / (2 * (v**2)))
+
+def opposite_vector(vec):
+    """
+    Return the opposite vector
+    :param vec: [float, float]
+    :return: [float, float]
+    """
+    return [-vec[0], -vec[1]]
+
+def min_diff_vec_and_opposite(vec, goal):
+    """
+    Return true if the angle difference between vec and goal is less then opposite vec and goa
+    :param vec: [float, float]
+    :param goal: [float, float]
+    :return: boolean
+    """
+    if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
+        return True
+    return False
+
+def forward_min_diff(vec, goal):
+    """
+    Return True if forward and the min difference angle
+    :param vec: [float, float]
+    :param goal: [float, float]
+    :return: boolean, float
+    """
+    tmp = min_diff_vec_and_opposite(vec, goal)
+    if tmp:
+        return True, angleBetween(vec, goal)
+    return False, angleBetween(opposite_vector(vec), goal)

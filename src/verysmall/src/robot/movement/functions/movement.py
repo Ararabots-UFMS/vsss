@@ -4,7 +4,7 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector
+from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
@@ -147,7 +147,8 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        diff_angle = angleBetween(robot_vector, goal_vector, abs=False)
+        forward, diff_angle = forward_min_diff(robot_vector, goal_vector)
+
         #logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
@@ -155,7 +156,9 @@ class Movement():
             return diff_angle, speed, False
 
         correction = self.pid.update(diff_angle)
-        return self.return_speed(speed, correction)
+        if forward:
+            return self.return_speed(speed, correction)
+        return self.return_speed(-speed, correction)
 
     def spin(self, speed, ccw=True):
         """Recives a speed and a boolean counterclockwise and return the left wheel speed,
@@ -197,14 +200,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        if speed < 0: #backwards
-            # TODO: Change here when use backwards
-            if correction > 0:
-                return int(speed), int(speed - correction), False
-            else:
-                return int(speed + correction), int(speed), False
-        else: #forward
-            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+        return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed
