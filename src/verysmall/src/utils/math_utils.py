@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as la
 import math
 
-MINCHANGE = 0.174533
+MINCHANGE = 0.349066
 
 FORWARD = 1
 BACKWARDS = 0
@@ -62,7 +62,7 @@ def min_diff_vec_and_opposite(orientation, vec, goal):
     :param goal: [float, float]
     :return: boolean
     """
-    if (angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
+    if abs(angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
         return bool(orientation)
 
     if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
