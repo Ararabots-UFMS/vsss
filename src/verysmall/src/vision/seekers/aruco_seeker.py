@@ -14,7 +14,7 @@ class ArucoSeeker:
 
         # Hyper params to create the aruco markers dictionary
         # self.num_markers = num_markers
-        self.num_markers = 35
+        self.num_markers = 68
         self.num_bits = num_bits
 
         # This variable will keep how many tags must be identified
@@ -69,8 +69,8 @@ class ArucoSeeker:
             sorted_ids = np.sort(ids)
 
             i = 0
-            rospy.logfatal('ids.size: '+str(ids.size))
-            rospy.logfatal('sorted[i]: ' + str(sorted_ids[i]))
+            # rospy.logfatal('ids.size: '+str(ids.size))
+            # rospy.logfatal('sorted[i]: ' + str(sorted_ids[i]))
 
             while(i < ids.size and i < self.num_tags):
 
