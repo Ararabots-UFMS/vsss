@@ -151,7 +151,7 @@ class Vision:
     def update_fps(self):
         self.new_time = time.time()
         self.fps =  1/(self.new_time - self.last_time)##self.computed_frames / (time.time() - self.t0)
-        self.last_time = self.new_time 
+        self.last_time = self.new_time
 
     def set_origin_and_factor(self):
         """ This function calculates de conversion factor between pixel to centimeters
@@ -274,13 +274,18 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
-        for i,thing in enumerate(things):
+        _tags = [9, 18, 23, 28, 34]
+        tags = {}
+        for i,tag in enumerate(_tags):
+            tags[_tags[i]] = i
+
+        for thing in enumerate(things):
             # The id of the thing will be its index in the lists
-            id = thing.id
+            id = tags[thing.id]
             if id >= 0:
-                positions_list[i] = thing.pos
-                orientations_list[i] = thing.orientation
-                speeds_list[i] = thing.speed
+                positions_list[id] = thing.pos
+                orientations_list[id] = thing.orientation
+                speeds_list[id] = thing.speed
 
     def send_message(self, ball=False, home_team=False, adv_team=False):
         """ This function will return the message in the right format to be
