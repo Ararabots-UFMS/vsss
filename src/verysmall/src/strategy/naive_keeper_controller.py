@@ -10,17 +10,18 @@ from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 from arena_sections import *
 
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
+bodies_unpack = jsonHandler.read(path, escape=True)
 
 
-GOALKEEPER_SPEED    = 100
+
+SOFTWARE = 0
+HARDWARE = 1
+
+
+GOALKEEPER_SPEED    = 70
 MIN_X               = 5.0
 
 MIN_Y               = 45.0
@@ -28,43 +29,75 @@ MAX_Y               = 85.0
 
 GG_DIFF             = 140.0
 
-SPIN_DIST           = 7.0
+SPIN_DIST           = 9.0
 
 class NaiveGKController():
 
-    def __init__(self):
+    def __init__(self, _robot_body="Nenhum", _debug_topic = None):
+        self.pid_type = SOFTWARE
         self.position = None
         self.orientation = None
-        self.robot_speed = None
+        self.team_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = None
-
+        self.robot_body = _robot_body
         self.defend_position = np.array([0,0])
+
+         #Attack_in right side
+        self.attack_goal = np.array([150.0, 65.0])
+         #Attack_in left side
+        self.attack_goal = np.array([0.0, 65.0])
+
+
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'],
+                         bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
+
 
         self.stop = MyModel(state='stop')
         self.NaiveGK = NaiveGK(self.stop)
-        self.movement = Movement([KP, KD, KI], 10)
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
+    
+    def set_pid_type(self, _type):
+        """
+        Change pid type
+        :return:
+        """
+        self.pid_type = _type
+        self.movement.set_pid_type(_type=self.pid_type)
+
+
+    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:
         :param orientation:
-        :param robot_speed:
+        :param team_speed:
         :param enemies_position:
         :param enemies_speed:
         :param ball_position:
         """
         self.position = position
         self.orientation = orientation
-        self.robot_speed = robot_speed
+        self.team_speed = team_speed
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
         self.team_side = team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
+
+
+    def update_pid(self):
+        """
+        Update pid
+        :return:
+        """
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
+        self.movement.update_pid(self.pid_list)
+
 
     def set_to_stop_game(self):
         """
@@ -74,7 +107,7 @@ class NaiveGKController():
         """
 
         self.stop.state = 'stop'
-        return 0, 0
+        return 0, 0, 0
 
     def in_normal_game(self):
         """
@@ -119,26 +152,25 @@ class NaiveGKController():
 
     def push_ball(self):
 
-        #if behind_ball(self.ball_position, self.position, self.team_side):
-        if (distance_point(self.ball_position, self.position) <= SPIN_DIST):
+        if (near_ball(self.ball_position, self.position)):
             rospy.logfatal("SPIN")
-            param1, param2, bool = self.movement.spin(GOALKEEPER_SPEED, not spin_direction(self.ball_position, self.position, self.team_side))
-            return param1, param2
+            param1, param2, param3 = self.movement.spin(255, not spin_direction(self.ball_position, self.position, self.team_side))
+            return param1, param2, param3
         else:
             rospy.logfatal("MVTP")
 
 
-            param_1, param_2 , _ = self.movement.move_to_point(
+            param_1, param_2 , param3 = self.movement.move_to_point(
                 GOALKEEPER_SPEED,
                 self.position,
                 [np.cos(self.orientation), np.sin(self.orientation)],
                 self.ball_position
                 )
-            return param_1, param_2
+            return param_1, param_2, param3
 
 
     def in_track_ball(self):
-        rospy.logfatal(self.NaiveGK.current_state)
+        #rospy.logfatal(self.NaiveGK.current_state)
 
         if section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
             if not on_attack_side(self.ball_position, self.team_side):
@@ -148,7 +180,7 @@ class NaiveGKController():
                 return self.follow_ball()    
         elif section(self.ball_position) in [LEFT_GOAL,RIGHT_GOAL]:
             rospy.logfatal("GOL!!")
-            return 0,0
+            return 0,0,0
         else:
             return self.follow_ball()
 
@@ -169,14 +201,14 @@ class NaiveGKController():
                 rospy.logfatal("dir area")
                 self.defend_position[1] = MIN_Y
 
-        param_1, param_2 , _ = self.movement.move_to_point(
+        param_1, param_2 , param3 = self.movement.move_to_point(
             speed = GOALKEEPER_SPEED,
             robot_position = self.position,
             robot_vector = [np.cos(self.orientation),np.sin(self.orientation)],
             goal_position = self.defend_position
 
             )
-        return param_1, param_2 
+        return param_1, param_2, param3
 
 
     def in_freeball_game(self):
