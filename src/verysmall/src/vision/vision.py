@@ -280,7 +280,7 @@ class Vision:
             if thing.id in tags:
                 id = tags.index(thing.id)
             else:
-                id = -1
+                id = 0
 
             if id >= 0:
                 positions_list[id] = thing.pos
