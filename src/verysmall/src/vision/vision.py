@@ -274,14 +274,14 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
-        _tags = [9, 18, 23, 28, 34]
-        tags = {}
-        for i,tag in enumerate(_tags):
-            tags[_tags[i]] = i
+        tags = [9, 18, 23, 28, 34]
 
-        for thing in enumerate(things):
-            # The id of the thing will be its index in the lists
-            id = tags[thing.id]
+        for thing in things:
+            if thing.id in tags:
+                id = tags.index(thing.id)
+            else:
+                id = -1
+
             if id >= 0:
                 positions_list[id] = thing.pos
                 orientations_list[id] = thing.orientation
