@@ -158,7 +158,9 @@ class Movement():
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
-            return diff_angle, speed, False
+        	if forward:
+            	return diff_angle, speed, False
+            return diff_angle, -speed, False
 
         correction = self.pid.update(diff_angle)
         if forward:
