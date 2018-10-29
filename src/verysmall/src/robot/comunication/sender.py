@@ -46,7 +46,7 @@ class Sender():
     def connect(self, should_wait = False):
         """Connect to the robot"""
 
-    	attempt = 1
+        attempt = 1
         while (attempt <= MAX_CONNECTION_ATTEMPT) and not self.closed:
             self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
             try:
@@ -77,7 +77,7 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
-            rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
+            #rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
             #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
