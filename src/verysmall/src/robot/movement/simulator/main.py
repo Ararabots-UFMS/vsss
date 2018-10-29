@@ -9,14 +9,6 @@ import random
 sys.path.append('../../')
 from utils.json_handler import JsonHandler
 
-pathPIDList = '../../../parameters/PID.json'
-
-ERROR = random.randint(0, 20)
-jsonHandler = JsonHandler()
-PIDLIST = jsonHandler.read(pathPIDList)
-ATTACKERPID = PIDLIST['attacker']
-
-
 # define when use the mouse
 mouseMode = False
 
@@ -29,7 +21,7 @@ LDELTA = 50
 RIGHT = 1
 LEFT = 0
 
-robotInitPosition = (200, 200)
+robotInitPosition = (500, 200)
 ballInitPosition = (500, 500)
 advRobotPosition = (350, 350)
 
@@ -40,20 +32,20 @@ sim = Simulator(img)
 # initialize arena
 sim.initArena()
 # initialize robot
-sim.drawRobot(robotInitPosition, [-1,1])
+sim.drawRobot(robotInitPosition, [1,0])
 # initialize ball
 sim.drawBall(ballInitPosition)
 # initialize adversary robot
 sim.drawAdv(np.array(advRobotPosition))
 # movement class
-movement = Movement(ATTACKERPID, 10)
+movement = Movement([30, 0, 0], 10)
 
 # obstacles
 obstacle = np.array(advRobotPosition)
 vObstacle = np.array([0, 0])
 
 # creates the univector field
-univetField = univectorField(atack_goal=RIGHT)
+univetField = univectorField(attack_goal=RIGHT)
 univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 univetField.updateBall(np.array(sim.ball))
 univetField.updateObstacles(obstacle, vObstacle)
@@ -101,11 +93,10 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.follow_vector(np.array(sim.robotVector) ,np.array(vec), 200)
-
+        leftSpeed, rightSpeed, done = movement.follow_vector(150, np.array(sim.robotVector), np.array(vec))
         if not done:
             # move function
-            sim.move(leftSpeed+ERROR, rightSpeed)
+            sim.move(leftSpeed, rightSpeed)
 
         # 60fps
         key = cv2.waitKey(16)

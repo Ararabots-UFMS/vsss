@@ -95,6 +95,9 @@ class MainWindowView:
         # Define colors
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
+        self.home_color = self.virtualField.colors["yellow"]  # home team color
+        self.away_color = self.virtualField.colors["blue"]    # away team color
+
 
     def redraw_field(self):
 
@@ -103,8 +106,8 @@ class MainWindowView:
         if data_item is not None:
 
             self.virtualField.plot(data_item,
-                                   self.virtualField.colors["yellow"],  # home team color
-                                   self.virtualField.colors["blue"],    # away team color
+                                   self.home_color,  # home team color
+                                   self.away_color,    # away team color
                                    int(data_item.vision_fps*10)/10.0,
                                    int((self.computed_frames / (time.time() - self.t0))*10)/10.0,
                                    is_away=True)  # vision_fps, topic_fps, is_away flag

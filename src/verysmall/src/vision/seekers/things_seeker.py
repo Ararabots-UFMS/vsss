@@ -14,6 +14,7 @@ import rospy
 ID = 0
 POS = 1
 ANGLE = 2
+SPEED_QUEUE_SIZE = 60.0
 
 class Things:
     # This is an auxiliary class to hold the variables from the things identified
@@ -36,7 +37,7 @@ class Things:
         self.speedWindow = []
 
     def add_speed_to_queue(self, speed):
-        if len(self.speedWindow) == 10:
+        if len(self.speedWindow) == SPEED_QUEUE_SIZE:
             self.speedWindow.pop(0)
         self.speedWindow.append(speed)
 
@@ -47,7 +48,7 @@ class Things:
         for speed in self.speedWindow:
             avg_speed += speed
 
-        return avg_speed / 10.0
+        return avg_speed / SPEED_QUEUE_SIZE
 
     def update(self, id, pos, orientation=None):
         last_up = None
@@ -111,12 +112,18 @@ class HawkEye:
             of Things objects to store the info """
 
         robots = self.home_team_seeker.seek(img, degree=False)
-
+        tags = [9, 18, 23, 28, 34]
         k = 0
+
         len_robots = len(robots)
+        # rospy.logfatal(str(len_robots))
         for i in xrange(self.num_robots_home_team):
             id = None if k >= len_robots else robots[k][ID];
-            if i == id:
+            # if k < len_robots:
+            #     rospy.logfatal('SHALALALA'+str(robots[k][ID]))
+            # rospy.logfatal(tags[i])
+            # rospy.logfatal(self.num_robots_home_team)
+            if tags[i] == id:
                 pos = self.pixel_to_real_world(robots[k][POS])
                 robots_list[i].update(id, pos, orientation=robots[k][ANGLE])
                 k += 1

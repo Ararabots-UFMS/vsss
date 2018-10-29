@@ -16,7 +16,7 @@ bodies_unpack = jsonHandler.read(path, escape = True)
 
 CENTER_Y = 65
 CENTER_X = 75
-SPEED_DEFAULT = 180
+SPEED_DEFAULT = 200
 MAX_X = 150
 
 class NaiveAttackerController():
@@ -29,6 +29,7 @@ class NaiveAttackerController():
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = None
+        self.team_speed = None
         self.borders = [
             UP_BORDER, 
             DOWN_BORDER, 
@@ -56,24 +57,25 @@ class NaiveAttackerController():
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:
         :param orientation:
-        :param robot_speed:
+        :param team_speed:
         :param enemies_position:
         :param enemies_speed:
         :param ball_position:
-        :param team_side:
         """
         self.position = position
         self.orientation = orientation
-        self.robot_speed = robot_speed
+        self.team_speed = team_speed
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
         self.ball_position = ball_position
         self.team_side = team_side
+        self.attack_goal[0] = 0.0 + (not self.team_side)*150
+        self.movement.univet_field.update_attack_side(not self.team_side)
 
     def set_to_stop_game(self):
         """
@@ -82,7 +84,7 @@ class NaiveAttackerController():
         :return: int, int
         """
         self.stop.state = 'stop'
-        return 0, 0
+        return 0, 0, 0
 
     def in_normal_game(self):
         """
@@ -97,7 +99,7 @@ class NaiveAttackerController():
 
         if self.NaiveAttacker.is_normal:
             # Caso a bola esteja no campo de ataque
-            if on_attack_side(self.ball_position, self.team_side):
+            if on_attack_side(self.ball_position, self.team_side, 40):
                 # Verifica se a bola esta nas bordas
                 if (section(self.ball_position) in self.borders):
                     self.NaiveAttacker.normal_to_border() 
@@ -137,7 +139,7 @@ class NaiveAttackerController():
 
         :return: int, int
         """
-        if not on_attack_side(self.ball_position, self.team_side):
+        if not on_attack_side(self.ball_position, self.team_side, 40): 
             self.NaiveAttacker.reach_ball_to_point()
             return self.in_point()
 
@@ -154,49 +156,59 @@ class NaiveAttackerController():
         else:
             
             # Trata um parte do erro do univector apenas passando um ponto anterior ao real
-            if (self.ball_position[0] > self.position[0]):
-                self.position[0] -= 30
+            # if (self.ball_position[0] > self.position[0]):
+            #     self.position[0] -= 30
 
 
             # Segue a bola com o univector
-            left, right, _ = self.movement.do_univector(
+            left, right, done = self.movement.do_univector(
                 speed = SPEED_DEFAULT,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=[0, 0],
+                robot_speed=self.team_speed,
                 obstacle_position=np.resize(self.enemies_position, (5, 2)),
                 obstacle_speed=[[0,0]]*5,
                 ball_position=self.ball_position
             )
 
-            return left, right
+            return left, right, done
 
     def in_border(self):
 
         # Caso a bola esteja na defesa, manda o robo para o estado de espera
-        if not (on_attack_side(self.ball_position, self.team_side)):
+        if not (on_attack_side(self.ball_position, self.team_side, 40)):
             self.NaiveAttacker.border_to_point()
             return self.in_point()
         else:
             # Caso o robo ainda esteja na borda
             if(section(self.ball_position) in self.borders):
-                
-            	if (behind_ball(self.ball_position, self.position, self.team_side)):
-            		self.NaiveAttacker.border_to_spin()
-            		return self.in_spin()
+
+                if (distance_point(self.ball_position, self.position) < 8):
+                    self.NaiveAttacker.border_to_spin()
+                    return self.in_spin()
 
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
                 goal_vector  = [self.ball_position[0]-self.position[0], self.ball_position[1]-self.position[1]]
 
                 #turn the front side to face the ball
-                left, right, done = self.movement.move_to_point(
+                # left, right, done = self.movement.move_to_point(
+                #     speed = SPEED_DEFAULT,
+                #     robot_position=self.position,
+                #     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                #     goal_position = self.ball_position
+                # )
+
+                left, right, done = self.movement.do_univector_ball(
 		            speed = SPEED_DEFAULT,
-		            robot_position=self.position,
-		            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-		            goal_position = self.ball_position
+                    robot_position=self.position,
+                    robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                    robot_speed=self.team_speed,
+                    obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                    obstacle_speed=[[0,0]]*5,
+                    ball_position=self.ball_position
 		        )
                 
-                return left, right
+                return left, right, done
 
             # Caso a bola nao esteja na borda
             else:
@@ -210,15 +222,15 @@ class NaiveAttackerController():
         position_center = [wait_position_x, CENTER_Y]
 
         # Caso a bola estja no ataque muda o estado para o reach ball
-        if on_attack_side(self.ball_position, self.team_side):
+        if on_attack_side(self.ball_position, self.team_side, 40):
             self.NaiveAttacker.point_to_reach_ball()
 
         # Verifica se a posicao atual do robo esta em uma margem de erro aceitavel
         if (distance_point(self.position, position_center) < 10):
-            if not on_attack_side(self.ball_position, self.team_side):
+            if not on_attack_side(self.ball_position, self.team_side, 40): 
                 self.NaiveAttacker.point_to_wait_ball()
         else:
-            if not on_attack_side(self.ball_position, self.team_side):
+            if not on_attack_side(self.ball_position, self.team_side, 40):
                 # Manda o robo para a posicao de espera com o univector
 
                 left, right, done = self.movement.move_to_point(
@@ -228,7 +240,7 @@ class NaiveAttackerController():
                     goal_position = position_center
                 )
                 
-                return left, right
+                return left, right, done
 
         if self.NaiveAttacker.is_reach_ball:
             return self.in_reach_ball()
@@ -239,7 +251,7 @@ class NaiveAttackerController():
     def in_wait_ball(self):
 
         # Caso a bola passe para o ataque, troca de espado para ataque
-        if on_attack_side(self.ball_position, self.team_side):
+        if on_attack_side(self.ball_position, self.team_side, 40):
             self.NaiveAttacker.wait_to_reach_ball()
             return self.in_reach_ball()
 
@@ -253,7 +265,7 @@ class NaiveAttackerController():
             robot_vector=(robot_vector),
             goal_vector=(goal_vector)
         )
-        return left, right
+        return left, right, done
 
 
     def in_spin(self):
@@ -265,7 +277,7 @@ class NaiveAttackerController():
     		[array (angle, speed)] -- [Returns to spin the robbies]
     	"""
         # Caso a bola nao estaja no range de chute persegue a bola
-        if not (behind_ball(self.ball_position, self.position, self.team_side)):
+        if (distance_point(self.ball_position, self.position) > 10):
             self.NaiveAttacker.spin_to_reach_ball()
 
         if self.NaiveAttacker.is_reach_ball:
@@ -275,8 +287,8 @@ class NaiveAttackerController():
         spin_side = spin_direction(self.ball_position, self.position, self.team_side)  
 
         # Chama a funcao de spin
-        left, right, _ = self.movement.spin(255, spin_side) 
-        return left, right
+        left, right, done = self.movement.spin(255, spin_side) 
+        return left, right, done
 
     def in_freeball_game(self):
         """

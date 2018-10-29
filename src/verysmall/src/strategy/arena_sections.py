@@ -29,7 +29,7 @@ BALL_SIZE = 4
 ROBOT_SIZE = 7
 
 
-def on_attack_side(pos, team_side):
+def on_attack_side(pos, team_side, bias = 0):
    """
    Verify if the object is in attack side (True) or in defense side(False)
 
@@ -37,7 +37,7 @@ def on_attack_side(pos, team_side):
    :param team_side: int 0 ou 1
    :return: bool
    """
-   return (pos[0] > 75 and team_side == LEFT) or (pos[0] < 75 and team_side == RIGHT)
+   return (pos[0] > (75 - bias) and team_side == LEFT) or (pos[0] < (75 + bias) and team_side == RIGHT)
 
 def on_extended_attack_side(pos, team_side):
     """

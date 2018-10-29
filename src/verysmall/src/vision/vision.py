@@ -55,7 +55,7 @@ class Vision:
         self.adv_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
-        rospy.Subscriber('game_topic_0', game_topic, self.on_game_state_change)
+        rospy.Subscriber('game_topic_1', game_topic, self.on_game_state_change)
 
         self.game_state = None
 
@@ -151,7 +151,7 @@ class Vision:
     def update_fps(self):
         self.new_time = time.time()
         self.fps =  1/(self.new_time - self.last_time)##self.computed_frames / (time.time() - self.t0)
-        self.last_time = self.new_time 
+        self.last_time = self.new_time
 
     def set_origin_and_factor(self):
         """ This function calculates de conversion factor between pixel to centimeters
@@ -274,9 +274,14 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
+        tags = [9, 18, 23, 28, 34]
+
         for thing in things:
-            # The id of the thing will be its index in the lists
-            id = thing.id
+            if thing.id in tags:
+                id = tags.index(thing.id)
+            else:
+                id = 0
+
             if id >= 0:
                 positions_list[id] = thing.pos
                 orientations_list[id] = thing.orientation

@@ -1,22 +1,24 @@
 import numpy as np
 import numpy.linalg as la
 import math
-import rospy
+
+MINCHANGE = 0.5
+
+FORWARD = True
+BACKWARDS = False
 
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
 
-def angleBetween(v1, v2, ccw=True):
+def angleBetween(v1, v2, abs=True):
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
+    cosang = np.dot(v1, v2)
+    sinang = np.cross(v1, v2)
+    if abs:
+        sinang = la.norm(np.cross(v1, v2))
+    return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
 
-    if ccw:
-        cosang = np.dot(v1,v2)
-        sinang = np.cross(v1, v2)
-    else:
-        cosang = np.dot(v2,v1)
-        sinang = np.cross(v2,v1)
-    return np.arctan2(sinang, cosang)
 
 def rotateVector(x, angle):
     """Rotate vector x anticlockwise around the origin by angle degrees, return angle in format [x, y]"""
@@ -44,3 +46,37 @@ def maxAbs(x, y):
 
 def gaussian(m, v):
     return math.exp(-(m**2) / (2 * (v**2)))
+
+def opposite_vector(vec):
+    """
+    Return the opposite vector
+    :param vec: [float, float]
+    :return: [float, float]
+    """
+    return [-vec[0], -vec[1]]
+
+def min_diff_vec_and_opposite(orientation, vec, goal):
+    """
+    Return true if the angle difference between vec and goal is less then opposite vec and goa
+    :param vec: [float, float]
+    :param goal: [float, float]
+    :return: boolean
+    """
+    if abs(angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
+        return orientation
+
+    if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
+        return True
+    return False
+
+def forward_min_diff(orientation, vec, goal):
+    """
+    Return True if forward and the min difference angle
+    :param vec: [float, float]
+    :param goal: [float, float]
+    :return: boolean, float
+    """
+    tmp = min_diff_vec_and_opposite(orientation, vec, goal)
+    if tmp:
+        return True, angleBetween(vec, goal)
+    return False, angleBetween(opposite_vector(vec), goal)

@@ -7,6 +7,7 @@ from math import pi
 from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
+from strategy.arena_sections import section, CENTER
 from rospy import logfatal
 
 LEFT = 0
@@ -226,8 +227,19 @@ class univectorField:
 
         # Subfields
         self.univector_rotation_axis = _rotation
-        self.avdObsField = avoidObstacle([None, None], [None, None], [None, None], [None, None], self.K0)
-        self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal, rotation_support=self.univector_rotation_axis)
+        self.avdObsField = avoidObstacle([None, None], [None, None], 
+                                         [None, None], [None, None], self.K0)
+        
+
+        self.mv2Goal_without_rotation = move2Goal(self.KR, self.RADIUS, attack_goal=0, rotation_support=False)
+
+        self.mv2Goal_with_rotation = move2Goal(self.KR, self.RADIUS, 
+        attack_goal=np.array([0,0]), rotation_support=True)
+
+        if _rotation:
+            self.mv2GoalField = self.mv2Goal_with_rotation
+        else:
+            self.mv2GoalField = self.mv2Goal_without_rotation
 
     def update_attack_side(self, attack_goal):
         """
@@ -235,10 +247,9 @@ class univectorField:
         :param attack_goal: int
         :return: nothing
         """
-        if self.univector_rotation_axis:
-            self.mv2GoalField = move2Goal(self.KR, self.RADIUS, np.array([0.0 + attack_goal*150, 65.0]), self.univector_rotation_axis)
-        else:
-            self.mv2GoalField = move2Goal(self.KR, self.RADIUS, attack_goal=attack_goal)
+        #if self.univector_rotation_axis:
+        self.mv2Goal_with_rotation.attack_goal = np.array([0.0 + attack_goal*150, 65.0])
+        self.mv2Goal_without_rotation.attack_goal = attack_goal
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
@@ -246,7 +257,8 @@ class univectorField:
 
     def updateBall(self, _ballPos):
         self.ballPos = np.array(_ballPos)
-        self.mv2GoalField.updateOrigin(_ballPos)
+        self.mv2Goal_with_rotation.updateOrigin(_ballPos)
+        self.mv2Goal_without_rotation.updateOrigin(_ballPos)
 
     def updateRobot(self, _robotPos, _vRobot):
         self.robotPos = np.array(_robotPos)
@@ -257,6 +269,16 @@ class univectorField:
         self.mv2GoalField.attack_goal = attack_goal
         self.mv2GoalField.rotation_support = rotation
 
+    def setRotation(self, _rotation):
+        
+        self.univector_rotation_axis = _rotation
+
+        if self.univector_rotation_axis:
+            self.mv2GoalField = self.mv2Goal_with_rotation
+        else:
+            self.mv2GoalField = self.mv2Goal_without_rotation
+
+
     def updateConstants(self, _RADIUS, _KR, _K0, _DMIN, _LDELTA):
         self.RADIUS = _RADIUS
         self.KR = _KR
@@ -265,7 +287,8 @@ class univectorField:
         self.LDELTA = _LDELTA
 
         self.avdObsField.updateParam(self.K0)
-        self.mv2GoalField.updateParams(self.KR, self.RADIUS)
+        self.mv2Goal_with_rotation.updateParams(self.KR, self.RADIUS)
+        self.mv2Goal_without_rotation.updateParams(self.KR, self.RADIUS)
 
     def getAngleVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
 
@@ -322,5 +345,12 @@ class univectorField:
                 return fi_tuf
 
     def getVec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
+        angle = self.getAngleVec(_robotPos, _vRobot, _ball)
+        return np.asarray([np.cos(angle), np.sin(angle)])
+
+    def getVecWithBall(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
+        #logfatal(_ball)
+        #logfatal(section(_ball) == CENTER)
+        self.setRotation(section(_ball) == CENTER)
         angle = self.getAngleVec(_robotPos, _vRobot, _ball)
         return np.asarray([np.cos(angle), np.sin(angle)])
