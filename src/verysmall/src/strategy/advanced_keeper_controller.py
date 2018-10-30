@@ -64,7 +64,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
+        self.movement = Movement(self.pid_list, error=3, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
 
     
     def set_pid_type(self, _type):
@@ -134,7 +134,7 @@ class AdvancedGKController():
             ball_section = section(self.ball_position)
             keeper_section = section(self.position)
 
-            if keeper_section not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
+            if keeper_section not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] or keeper_section in [LEFT_GOAL, RIGHT_GOAL]:
                 self.AdvancedGK.normal_to_out_of_area()  
             
             elif ball_section in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
