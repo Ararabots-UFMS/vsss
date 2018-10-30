@@ -20,9 +20,9 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-DISTANCE = 9.0
+DISTANCE = 8.0
 
-GOALKEEPER_SPEED    = 70
+GOALKEEPER_SPEED    = 110
 MIN_X               = 5.0
 
 MIN_Y               = 45.0
