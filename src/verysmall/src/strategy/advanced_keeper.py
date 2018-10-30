@@ -71,16 +71,17 @@ class AdvancedGK(StateMachine):
     defend_ball_to_go_to_ball       = defend_ball.to(go_to_ball)
 
     seek_ball_to_defend_ball        = seek_ball.to(defend_ball)
-    seek_ball_to_goal               = seek_ball.to(goal)
+    
     seek_ball_to_out_of_area        = seek_ball.to(out_of_area)
 
     goal_to_defend_ball             = goal.to(defend_ball)
-    goal_to_seek_ball               = goal.to(seek_ball)
+    
 
     out_of_area_to_defend_ball      = out_of_area.to(defend_ball)
     out_of_area_to_seek_ball        = out_of_area.to(seek_ball)
 
-
+    spin_to_defend_ball             = spin.to(defend_ball) 
+    go_to_ball_to_defend_ball       = go_to_ball.to(defend_ball)
     
         
 

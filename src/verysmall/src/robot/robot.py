@@ -8,6 +8,7 @@ sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.naive_keeper_controller import NaiveGKController
+from strategy.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 
 class Robot():
@@ -67,13 +68,13 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            NaiveGKController(_robot_body = self.robot_body),
-            NaiveGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            NaiveGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            AdvancedGKController(_robot_body = self.robot_body),
+            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
         ]
 
-        self.state_machine = NaiveGKController()
+        self.state_machine = AdvancedGKController()
 
 
     def run(self):
