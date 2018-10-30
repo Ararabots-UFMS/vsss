@@ -116,18 +116,17 @@ class AdvancedGKController():
         return 0, 0, 0
 
     def in_normal_game(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         """
         Transitions in normal game state
 
         :return: int, int
         """
         if self.AdvancedGK.is_stop:
-            rospy.logfatal(self.AdvancedGK.current_state)
             self.AdvancedGK.stop_to_normal()
 
         if self.AdvancedGK.is_normal:
-            rospy.logfatal(self.AdvancedGK.current_state)
-
             ball_section = section(self.ball_position)
             keeper_section = section(self.position)
 
@@ -157,6 +156,7 @@ class AdvancedGKController():
             return self.in_out_of_area()
 
     def in_defend_ball(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
         
         ball_section = section(self.ball_position)
 
@@ -184,6 +184,8 @@ class AdvancedGKController():
             return self.in_seek_ball()#trackeia
 
     def in_seek_ball(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         #rospy.logfatal(self.AdvancedGK.current_state)
 
         if section(self.position) not in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]    
@@ -205,10 +207,14 @@ class AdvancedGKController():
             return self.follow_ball()
 
     def in_spin(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         return self.movement.spin(SPIN_SPEED, not spin_direction(self.ball_position, self.position, self.team_side))       
 
 
     def in_go_to_ball(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         return self.movement.move_to_point(GOALKEEPER_SPEED, 
                                             self.position, 
                                             [np.cos(self.orientation),np.sin(self.orientation)], 
@@ -216,6 +222,8 @@ class AdvancedGKController():
 
 
     def follow_ball(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
 
         self.defend_position[0] = MIN_X + GG_DIFF*self.team_side
     
@@ -241,9 +249,13 @@ class AdvancedGKController():
         return param_1, param_2, param3
 
     def in_goal(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         return 0,0,0
 
     def in_out_of_area(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         goal_position = np.array([0,0])
         goal_position[0] = MIN_X + GG_DIFF*self.team_side
 
