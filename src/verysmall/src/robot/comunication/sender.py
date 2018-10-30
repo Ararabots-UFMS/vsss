@@ -126,9 +126,9 @@ class Sender():
                 return int(tmp), CCW_BACKWARD_BYTE
         else:
             if speed > 0:
-                return int(tmp), CW_FORWARD_BYTE
+                return abs(int(tmp)), CW_FORWARD_BYTE
             else:
-                return int(tmp), CW_BACKWARD_BYTE
+                return abs(int(tmp)), CW_BACKWARD_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""
