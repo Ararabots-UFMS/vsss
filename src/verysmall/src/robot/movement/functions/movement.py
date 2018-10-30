@@ -154,7 +154,7 @@ class Movement():
         forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector)
         self.orientation = forward
 
-        #logfatal("DIFF "+str(diff_angle))
+        logfatal("DIFF "+str(diff_angle)+" "+str(forward))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:

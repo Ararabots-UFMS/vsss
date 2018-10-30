@@ -18,7 +18,7 @@ HARDWARE = 1
 class AttackerWithUnivectorController():
 
     def __init__(self, _robot_body="Nenhum", _debug_topic = None):
-        self.pid_type = SOFTWARE
+        self.pid_type = HARDWARE
         self.position = None
         self.orientation = None
         self.team_speed = None
