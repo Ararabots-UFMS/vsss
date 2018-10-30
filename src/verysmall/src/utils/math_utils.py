@@ -69,7 +69,7 @@ def min_diff_vec_and_opposite(orientation, vec, goal):
         return True
     return False
 
-def forward_min_diff(orientation, vec, goal):
+def forward_min_diff(orientation, vec, goal, only_forward=False):
     """
     Return True if forward and the min difference angle
     :param vec: [float, float]
@@ -77,6 +77,6 @@ def forward_min_diff(orientation, vec, goal):
     :return: boolean, float
     """
     tmp = min_diff_vec_and_opposite(orientation, vec, goal)
-    if tmp:
+    if tmp or only_forward:
         return True, angleBetween(vec, goal)
     return False, angleBetween(opposite_vector(vec), goal)
