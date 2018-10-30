@@ -277,10 +277,9 @@ class Vision:
         tags = [9, 18, 23, 28, 34]
 
         for thing in things:
-            if thing.id in tags:
+            id = thing.id
+            if id > 0 and id in tags: # sorry
                 id = tags.index(thing.id)
-            else:
-                id = 0
 
             if id >= 0:
                 positions_list[id] = thing.pos
