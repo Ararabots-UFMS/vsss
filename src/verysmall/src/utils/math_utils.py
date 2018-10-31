@@ -79,7 +79,7 @@ def min_diff_vec_and_opposite(num, orientation, vec, goal):
     if rand < gamma_value:
         if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
             return True, 0
-        return False, 0
+        return False, num-1
     else:
         return orientation, num+1
 
