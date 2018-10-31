@@ -274,7 +274,7 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
-        tags = [9, 18, 23, 28, 34]
+        tags = [9, 14, 18, 23, 28]
 
         for thing in things:
             id = thing.id
