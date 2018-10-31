@@ -59,7 +59,9 @@ class SetPIDMachineController():
         Update pid
         :return:
         """
-        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KD'], bodies_unpack[self.robot_body]['KI']]
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
+
         self.movement.update_pid(self.pid_list)
 
 
@@ -139,8 +141,8 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
-        # left, right, _ =  self.movement.follow_vector(speed=100,
-        #             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-        #             goal_vector=np.array([1 + -2*self.team_side,0]))
-        left, right, param_c =  self.movement.move_to_point(100, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([140, 65]))
-        return left, right, param_c
+        left, right, _ =  self.movement.follow_vector(speed=200,
+                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                     goal_vector=np.array([1 + -2*self.team_side,0]))
+        #left, right, param_c =  self.movement.move_to_point(250, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([140, 65]))
+        return left, right, 0
