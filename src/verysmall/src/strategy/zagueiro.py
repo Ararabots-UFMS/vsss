@@ -1,8 +1,6 @@
 from statemachine import StateMachine, State
 
-
-class NaiveGK(StateMachine):
-
+class Zagueiro(StateMachine):
     """
     Class for creation of the state machine of robberies,
     consisting of basic states of each robbery
@@ -25,18 +23,11 @@ class NaiveGK(StateMachine):
         meta_to_normal      {[Transition]} -- [Transition meta to normal]
     """
     # Base States
-    stop = State('stop', initial=True)
+    stop      = State('Stop', initial=True)
     normal    = State('Normal')
     freeball  = State('FreeBall')
     penalty   = State('Penalty')
     meta      = State('Meta')
-
-    defend_ball     =   State('DEFEND')
-    
-    track_ball      =   State('TRACK_BALL')
-
-
-
 
     # Stop to freeball game
     stop_to_freeball = stop.to(freeball)
@@ -55,14 +46,24 @@ class NaiveGK(StateMachine):
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
-    normal_to_defend_ball       = normal.to(defend_ball)
-    normal_to_track_ball        = normal.to(track_ball) 
-    
-    defend_ball_to_track        = defend_ball.to(track_ball)
-    track_to_defend_ball        = track_ball.to(defend_ball)
 
+    defend      = State('Defend ball')
+    wait_ball   = State('Wait ball')
+    do_spin     = State('Spin')
+    move        = State('Move')
+
+    normal_to_defend        = normal.to(defend)
+    normal_to_wait_ball     = normal.to(wait_ball)
+
+    defend_to_wait_ball     = defend.to(wait_ball)
+    defend_to_spin          = defend.to(do_spin)
+    spin_to_defend          = do_spin.to(defend)
+    defend_to_move          = defend.to(move)
+    move_to_defend          = move.to(defend)
+    wait_ball_to_defend     = wait_ball.to(defend)
     
-    
+
+
 
 class MyModel(object):
     def __init__(self, state):
