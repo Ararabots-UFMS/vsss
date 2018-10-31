@@ -9,6 +9,7 @@ from advanced_keeper import AdvancedGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT'] + "src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
+from utils.math_utils import angleBetween
 from arena_sections import *
 
 path += '../parameters/bodies.json'
@@ -21,7 +22,7 @@ HARDWARE = 1
 
 DISTANCE = 8.0
 
-GOALKEEPER_SPEED = 180
+GOALKEEPER_SPEED = 100
 MIN_X = 10.0
 
 MIN_Y = 45.0
@@ -63,7 +64,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=3, attack_goal=self.attack_goal, _pid_type=self.pid_type,
+        self.movement = Movement(self.pid_list, error=5, attack_goal=self.attack_goal, _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
     def set_pid_type(self, _type):
@@ -126,7 +127,7 @@ class AdvancedGKController():
         :return: int, int
         """
         if self.AdvancedGK.is_stop:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.stop_to_normal()
 
         if self.AdvancedGK.is_normal:
@@ -134,23 +135,23 @@ class AdvancedGKController():
             keeper_section = section(self.position)
 
             if keeper_section not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] or keeper_section in [LEFT_GOAL, RIGHT_GOAL]:
-                self.last_state = self.current_state
+                self.last_state = self.AdvancedGK.current_state
                 self.AdvancedGK.normal_to_out_of_area()
 
             elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
                 if not on_attack_side(self.ball_position, self.team_side):
-                    self.last_state = self.current_state
+                    self.last_state = self.AdvancedGK.current_state
                     self.AdvancedGK.normal_to_defend_ball()  # defend
                 else:
-                    self.last_state = self.current_state
+                    self.last_state = self.AdvancedGK.current_state
                     self.AdvancedGK.normal_to_seek_ball()  # seekeia
 
             elif ball_section in [LEFT_GOAL, RIGHT_GOAL]:
-                self.last_state = self.current_state
+                self.last_state = self.AdvancedGK.current_state
                 self.AdvancedGK.normal_to_goal()
 
             else:
-                self.last_state = self.current_state
+                self.last_state = self.AdvancedGK.current_state
                 self.AdvancedGK.normal_to_seek_ball()  # trackeia
 
         if self.AdvancedGK.is_defend_ball:
@@ -168,31 +169,31 @@ class AdvancedGKController():
         ball_section = section(self.ball_position)
 
         if section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.defend_ball_to_out_of_area()
             return self.in_out_of_area()
 
         elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
             if not on_attack_side(self.ball_position, self.team_side):
                 if near_ball(self.ball_position, self.position, DISTANCE):
-                    self.last_state = self.current_state
+                    self.last_state = self.AdvancedGK.current_state
                     self.AdvancedGK.defend_ball_to_spin()
                     return self.in_spin()
                 else:
-                    self.last_state = self.current_state
+                    self.last_state = self.AdvancedGK.current_state
                     self.AdvancedGK.defend_ball_to_go_to_ball()
                     return self.in_go_to_ball()
             else:
-                self.last_state = self.current_state
+                self.last_state = self.AdvancedGK.current_state
                 self.AdvancedGK.defend_ball_to_seek_ball()
                 return self.in_seek_ball()
 
         elif ball_section in [LEFT_GOAL, RIGHT_GOAL]:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.defend_ball_to_goal()
             return self.in_goal()
         else:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.defend_ball_to_seek_ball()  # trackeia
             return self.in_seek_ball()  # trackeia
 
@@ -203,14 +204,14 @@ class AdvancedGKController():
 
         if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
             if not on_attack_side(self.ball_position, self.team_side):
-                self.last_state = self.current_state
+                self.last_state = self.AdvancedGK.current_state
                 self.AdvancedGK.seek_ball_to_defend_ball()
                 return self.in_defend_ball()  # defend
             else:
                 return self.follow_ball()
 
-        elif(( section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]) and ((self.team_side == LEFT and self.position[0] > 18.0 ) | (self.team_side == RIGHT and self.position < 132.0 )) ):
-            self.last_state = self.current_state
+        elif(( section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]) and ((self.team_side == LEFT and self.position[0] > 35.0 ) | (self.team_side == RIGHT and self.position < 115.0 )) ):
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
 
@@ -219,52 +220,60 @@ class AdvancedGKController():
 
     def in_spin(self):
         rospy.logfatal(self.AdvancedGK.current_state)
-        self.last_state = self.current_state
+        self.last_state = self.AdvancedGK.current_state
         self.AdvancedGK.spin_to_defend_ball()
-        return self.movement.spin(SPIN_SPEED, not spin_direction(self.ball_position, self.position, self.team_side))
+
+        param1, param2, param3 = self.movement.spin(SPIN_SPEED, not spin_direction(self.ball_position, self.position, self.team_side))
+
+
+        return param1, param2, self.pid_type
 
     def in_go_to_ball(self):
         rospy.logfatal(self.AdvancedGK.current_state)
-        self.last_state = self.current_state
+        self.last_state = self.AdvancedGK.current_state
         self.AdvancedGK.go_to_ball_to_defend_ball()
-        return self.movement.move_to_point(GOALKEEPER_SPEED,
+
+        param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED,
                                            self.position,
                                            [np.cos(self.orientation), np.sin(self.orientation)],
                                            np.array([self.position[0], self.ball_position[1]]))
 
+        return param1, param2, self.pid_type
+
     def follow_ball(self):
-        rospy.logfatal(self.AdvancedGK.current_state)
 
-        if abs(1.5 - abs(self.orientation)) < 0.2:
-            self.defend_position[0] = MIN_X + GG_DIFF * self.team_side
+        self.defend_position[0] = MIN_X + GG_DIFF * self.team_side
 
-            if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
-                self.defend_position[1] = self.ball_position[1]
-            else:
-                if self.ball_position[1] > MAX_Y:
-                    self.defend_position[1] = MAX_Y
-
-                else:  # self.defend_position[1] < 38:
-                    self.defend_position[1] = MIN_Y
-
-            param_1, param_2, param3 = self.movement.move_to_point(
-                speed=GOALKEEPER_SPEED,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                goal_position=self.defend_position
-            )
-
+        if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
+            self.defend_position[1] = self.ball_position[1]
         else:
-            param_1, param_2, param3 = self.movement.head_to([np.cos(self.orientation), np.sin(self.orientation)],
-                                                             np.array([0, 1]))
-        return param_1, param_2, param3
+            if self.ball_position[1] > MAX_Y:
+                self.defend_position[1] = MAX_Y
+
+            else:  # self.defend_position[1] < 38:
+                self.defend_position[1] = MIN_Y
+
+        param_1, param_2, param3 = self.movement.move_to_point(
+            speed=GOALKEEPER_SPEED,
+            robot_position=self.position,
+            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+            goal_position=self.defend_position
+        )
+
+
+
+
+        rospy.logfatal(param_1)
+        rospy.logfatal(param_2)
+        rospy.logfatal(param3)
+        return param_1, param_2, self.pid_type
 
     def in_goal(self):
         rospy.logfatal(self.AdvancedGK.current_state)
 
         # if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
         if section(self.ball_position) not in [LEFT_GOAL, RIGHT_GOAL]:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.goal_to_defend_ball()
         return 0, 0, 0
 
@@ -295,10 +304,10 @@ class AdvancedGKController():
         )
 
         if param3:
-            self.last_state = self.current_state
+            self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.out_of_area_to_seek_ball()
 
-        return param1, param2, param3
+        return param1, param2, self.pid_type
 
     def in_freeball_game(self):
         """
