@@ -1,6 +1,7 @@
 from rospy import logfatal
 import bluetooth
 import math
+import time
 import struct
 from time import sleep
 from ctypes import *
@@ -11,8 +12,12 @@ import rospy
 
 SET_PID_OP_BYTE = 12
 ANGLE_CORRECTION_OP_BYTE = 8
-CW_BYTE = 0
-CCW_BYTE = 3
+
+CW_FORWARD_BYTE     =   0
+CW_BACKWARD_BYTE    =   1
+CCW_FORWARD_BYTE    =   2
+CCW_BACKWARD_BYTE   =   3
+
 WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
 WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
@@ -30,6 +35,17 @@ class Sender():
         self.sock = None
         self.closed = False
         self.excp = -1
+
+        # =====================
+        self.last_time = time.time()
+        self.new_time = None
+        # =====================
+
+    def update_time(self):
+        self.new_time = time.time()
+        rospy.logfatal(1/(self.new_time-self.last_time))
+        self.last_time = self.new_time
+
 
     def connect(self, should_wait = False):
         """Connect to the robot"""
@@ -65,9 +81,13 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
+            rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
+            #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
+            #self.update_time()
             self.sock.send(c_ubyte(right))
+            #self.update_time()
         except Exception as e:
             self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
 
@@ -87,22 +107,28 @@ class Sender():
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
-            correct_theta, orientation = self.get_angle_orientation_and_correction(theta, rad)
+            correct_theta, orientation = self.get_angle_orientation_and_correction(theta, speed, rad)
+
             self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
-            # print "c", correct_theta, " ", speed
             self.sock.send(c_ubyte(correct_theta))
-            self.sock.send(c_ubyte(speed))
+            self.sock.send(c_ubyte(abs(speed)))
         except Exception as e:
             self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
 
-    def get_angle_orientation_and_correction(self, angle, rad=True):
+    def get_angle_orientation_and_correction(self, angle, speed, rad=True):
         tmp = angle
         if rad:
             tmp = 180.0*angle/math.pi
         if 0 <= tmp <= 180:
-            return int(tmp), CCW_BYTE
+            if speed > 0:
+                return int(tmp), CCW_FORWARD_BYTE
+            else:
+                return int(tmp), CCW_BACKWARD_BYTE
         else:
-            return abs(int(tmp)), CW_BYTE
+            if speed > 0:
+                return int(tmp), CW_FORWARD_BYTE
+            else:
+                return int(tmp), CW_BACKWARD_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""

@@ -57,7 +57,7 @@ class VisionNode:
             model = Model()
             return_type, device = CameraLoader(model.game_opt['camera']).get_index()
 
-        self.camera = Camera(device, root_path + "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+        self.camera = Camera(device, root_path + "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
 
         self.vision = Vision(self.camera, self.adv_robots, self.home_color, self.home_robots, self.home_tag,
                              arena_params, colors_params, method="color_segmentation")
