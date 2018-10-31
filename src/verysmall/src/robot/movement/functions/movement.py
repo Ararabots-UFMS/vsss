@@ -154,12 +154,11 @@ class Movement():
         forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector)
         self.orientation = forward
 
-        #logfatal("DIFF "+str(diff_angle))
+       # logfatal("DIFF "+str(diff_angle))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
             return diff_angle, speed, False
-
         correction = self.pid.update(diff_angle)
         if forward:
             return self.return_speed(speed, correction)
@@ -205,9 +204,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        if speed < 0:
-            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
-        return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
+        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed

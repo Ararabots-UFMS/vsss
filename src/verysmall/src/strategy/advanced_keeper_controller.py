@@ -22,7 +22,7 @@ HARDWARE = 1
 
 DISTANCE = 8.0
 
-GOALKEEPER_SPEED = 100
+GOALKEEPER_SPEED = 80
 MIN_X = 10.0
 
 MIN_Y = 45.0
@@ -64,7 +64,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=5, attack_goal=self.attack_goal, _pid_type=self.pid_type,
+        self.movement = Movement(self.pid_list, error=7, attack_goal=self.attack_goal, _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
     def set_pid_type(self, _type):
@@ -263,9 +263,7 @@ class AdvancedGKController():
 
 
 
-        rospy.logfatal(param_1)
-        rospy.logfatal(param_2)
-        rospy.logfatal(param3)
+        rospy.logfatal(self.defend_position)
         return param_1, param_2, self.pid_type
 
     def in_goal(self):
