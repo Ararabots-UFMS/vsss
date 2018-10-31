@@ -39,6 +39,7 @@ class Movement():
         self.error_margin = error
         self.orientation = FORWARD
         self.attack_goal = attack_goal
+        self.gamma_count = 0
         if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
         else:
@@ -143,7 +144,7 @@ class Movement():
         # logfatal(str(direction_vector))
         return self.follow_vector(speed, robot_vector, direction_vector, only_forward)
 
-    def follow_vector(self,  speed, robot_vector, goal_vector, only_forward=False):
+    def follow_vector(self, speed, robot_vector, goal_vector, only_forward=False):
         """Recives the robot vector, goal vector and a speed and return the speed
         of the wheels to follow the goal vector
          :param speed : int
@@ -156,7 +157,7 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector, only_forward)
+        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
         self.orientation = forward
 
         logfatal("DIFF "+str(diff_angle)+" "+str(forward))

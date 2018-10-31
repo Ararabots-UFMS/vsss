@@ -1,15 +1,19 @@
 import numpy as np
 import numpy.linalg as la
 import math
+import scipy.stats as stats
+import random
 
 MINCHANGE = 0.5
 
 FORWARD = True
 BACKWARDS = False
 
+
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
+
 
 def angleBetween(v1, v2, abs=True):
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
@@ -26,6 +30,7 @@ def rotateVector(x, angle):
     y2 = math.sin(angle)*x[0] + math.cos(angle)*x[1]
     return [y1, y2]
 
+
 def rotatePoint(origin, point, angle):
     """Rotate a point counterclockwise by a given angle around a given origin.
     The angle should be given in radians."""
@@ -36,16 +41,20 @@ def rotatePoint(origin, point, angle):
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return (int(qx),int(qy))
 
+
 def distancePoints(a, b):
     """Distance between two points"""
     return ((a[0]-b[0])**2 + (a[1]-b[1])**2)**0.5
+
 
 def maxAbs(x, y):
     """Return the maximum absolute value"""
     return max(abs(x), abs(y))
 
+
 def gaussian(m, v):
     return math.exp(-(m**2) / (2 * (v**2)))
+
 
 def opposite_vector(vec):
     """
@@ -55,28 +64,37 @@ def opposite_vector(vec):
     """
     return [-vec[0], -vec[1]]
 
-def min_diff_vec_and_opposite(orientation, vec, goal):
+
+def min_diff_vec_and_opposite(num, orientation, vec, goal):
     """
-    Return true if the angle difference between vec and goal is less then opposite vec and goa
+    Return true if the angle difference between vec and goal is less then opposite vec and goal
+    :param num: int
+    :param orientation: boolean
     :param vec: [float, float]
     :param goal: [float, float]
-    :return: boolean
+    :return: boolean, int
     """
-    if abs(angleBetween(vec, goal) - angleBetween(opposite_vector(vec), goal)) <= MINCHANGE:
-        return orientation
+    rand = random.random()
+    gamma_value = stats.gamma.cdf(num, a=90, scale=0.8)
+    if rand < gamma_value:
+        if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
+            return True, 0
+        return False, 0
+    else:
+        return orientation, num+1
 
-    if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
-        return True
-    return False
 
-def forward_min_diff(orientation, vec, goal, only_forward=False):
+def forward_min_diff(num, orientation, vec, goal, only_forward=False):
     """
-    Return True if forward and the min difference angle
+     Return True if forward and the min difference angle
+    :param num: int
+    :param orientation: boolean
     :param vec: [float, float]
     :param goal: [float, float]
-    :return: boolean, float
+    :param only_forward: boolean
+    :return: boolean, float,
     """
-    tmp = min_diff_vec_and_opposite(orientation, vec, goal)
+    tmp, new_gamma_count = min_diff_vec_and_opposite(num, orientation, vec, goal)
     if tmp or only_forward:
-        return True, angleBetween(vec, goal)
-    return False, angleBetween(opposite_vector(vec), goal)
+        return True, angleBetween(vec, goal), new_gamma_count
+    return False, angleBetween(opposite_vector(vec), goal), new_gamma_count
