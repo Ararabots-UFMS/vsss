@@ -218,7 +218,7 @@ class AdvancedGKController():
     def follow_ball(self):
         rospy.logfatal(self.AdvancedGK.current_state)
 
-        if (1.5 - abs(self.orientation)) < 0.2:
+        if abs(1.5 - abs(self.orientation)) < 0.2:
             self.defend_position[0] = MIN_X + GG_DIFF * self.team_side
 
             if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
