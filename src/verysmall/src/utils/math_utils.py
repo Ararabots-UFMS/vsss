@@ -78,5 +78,5 @@ def forward_min_diff(orientation, vec, goal):
     """
     tmp = min_diff_vec_and_opposite(orientation, vec, goal)
     if tmp:
-        return True, angleBetween(vec, goal)
-    return False, angleBetween(opposite_vector(vec), goal)
+        return True, angleBetween(vec, goal, abs=False)
+    return False, angleBetween(opposite_vector(vec), goal, abs=False)

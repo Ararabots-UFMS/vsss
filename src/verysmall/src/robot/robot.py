@@ -8,7 +8,8 @@ sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
-from strategy.base_controller import RobotStateMachineController
+from strategy.naive_keeper_controller import NaiveGKController
+from strategy.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
@@ -38,6 +39,7 @@ class Robot():
         self.team_speed = None
         self.position = None
         self.orientation = None
+        self.speed = None
         self.enemies_position = None
         self.enemies_orientation = None
         self.enemies_speed = None
@@ -83,11 +85,15 @@ class Robot():
 
         self.state_machine = NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
 
+        # self.state_machine = AdvancedGKController()
+
     def run(self):
-        #rospy.logfatal(str(self.robot_body))
+
         self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
-                                                   team_speed=[0, 0], enemies_position=self.enemies_position,
-                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position, team_side = self.team_side)
+                                                   speed=self.speed, team_speed=self.team_speed,
+                                                   enemies_position=self.enemies_position,
+                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position,
+                                                   team_side=self.team_side)
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
