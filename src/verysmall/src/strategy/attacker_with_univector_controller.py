@@ -21,6 +21,7 @@ class AttackerWithUnivectorController():
         self.pid_type = SOFTWARE
         self.position = None
         self.orientation = None
+        self.speed = None
         self.team_speed = None
         self.enemies_position = None
         self.enemies_speed = None
@@ -49,18 +50,22 @@ class AttackerWithUnivectorController():
         self.pid_type = _type
         self.movement.set_pid_type(_type=self.pid_type)
 
-    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, position, orientation, speed, team_speed, enemies_position, enemies_speed,
+                                ball_position, team_side):
         """
         Update game variables
         :param position:
         :param orientation:
+        :param speed:
         :param team_speed:
         :param enemies_position:
         :param enemies_speed:
         :param ball_position:
+        :param team_side:
         """
         self.position = position
         self.orientation = orientation
+        self.speed = speed
         self.team_speed = team_speed
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
