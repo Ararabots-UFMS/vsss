@@ -58,7 +58,7 @@ class NaiveAttackerController():
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
 
-    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, position, orientation, speed, team_speed, enemies_position, enemies_speed, ball_position, team_side):
         """
         Update game variables
         :param position:
@@ -70,6 +70,7 @@ class NaiveAttackerController():
         """
         self.position = position
         self.orientation = orientation
+        self.speed = speed
         self.team_speed = team_speed
         self.enemies_position = enemies_position
         self.enemies_speed = enemies_speed
