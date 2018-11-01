@@ -14,6 +14,8 @@ path += '../parameters/bodies.json'
 jsonHandler = JsonHandler()
 bodies_unpack = jsonHandler.read(path, escape = True)
 
+HARDWARE = 1
+SOFTWARE = 0
 CENTER_Y = 65
 CENTER_X = 75
 SPEED_DEFAULT = 200
@@ -23,6 +25,7 @@ class NaiveAttackerController():
 
     def __init__(self, _robot_body = "Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
+        self.speed = 0
         self.position = None
         self.orientation = None
         self.robot_speed = None
@@ -57,15 +60,17 @@ class NaiveAttackerController():
 
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
-
-    def update_game_information(self, position, orientation, speed, team_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, position, orientation, speed, team_speed, enemies_position, enemies_speed,
+                                ball_position, team_side):
         """
         Update game variables
         :param position:
         :param orientation:
+        :param speed
         :param team_speed:
         :param enemies_position:
         :param enemies_speed:
+        :param team_side
         :param ball_position:
         """
         self.position = position
