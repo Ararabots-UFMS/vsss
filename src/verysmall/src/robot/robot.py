@@ -69,7 +69,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            AdvancedGKController(_robot_body = self.robot_body),
+            AttackerWithUnivectorController(_robot_body = self.robot_body),
             AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
