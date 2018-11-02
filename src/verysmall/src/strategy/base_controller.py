@@ -21,6 +21,7 @@ class RobotStateMachineController():
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
+        self.team_side = None
         self.pid_list = [0, 0, 0]
         self.robot_body = _robot_body
         self.update_pid()
@@ -30,7 +31,7 @@ class RobotStateMachineController():
 
         self.movement = Movement(self.pid_list, 10)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position , team_side):
+    def update_game_information(self, robot):
         """
         Update game variables
         :param position:
@@ -40,13 +41,13 @@ class RobotStateMachineController():
         :param enemies_speed:
         :param ball_position:
         """
-        self.position = position
-        self.orientation = orientation
-        self.robot_speed = robot_speed
-        self.enemies_position = enemies_position
-        self.enemies_speed = enemies_speed
-        self.ball_position = ball_position
-        self.team_side = team_side
+        self.position = robot.position
+        self.orientation = robot.orientation
+        self.robot_speed = robot.robot_speed
+        self.enemies_position = robot.enemies_position
+        self.enemies_speed = robot.enemies_speed
+        self.ball_position = robot.ball_position
+        self.team_side = robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
     def update_pid(self):
