@@ -298,6 +298,10 @@ class ZagueiroController():
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.border_to_area()
             return self.in_area()
+        sr = section(self.position)
+        if not near_ball(self.position, self.ball_position, 7.5) and sr in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, UP_BORDER, DOWN_BORDER]:
+            self.zagueiro.border_to_locked()
+            return in_locked()
         sb = section(self.ball_position)
         if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
             rospy.logfatal("to na borda")
