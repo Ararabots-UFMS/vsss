@@ -136,20 +136,21 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
-
-        left, right, _ = self.movement.do_univector(
-            speed=100,
-            robot_position=self.position,
-            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            robot_speed=np.array([0, 0]),
-            obstacle_position=self.enemies_position,
-            obstacle_speed=[[0,0]]*5,
-            ball_position=self.ball_position
-        )
+        #
+        # left, right, _ = self.movement.do_univector(
+        #     speed=100,
+        #     robot_position=self.position,
+        #     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+        #     robot_speed=np.array([0, 0]),
+        #     obstacle_position=self.enemies_position,
+        #     obstacle_speed=[[0,0]]*5,
+        #     ball_position=self.ball_position
+        # )
         #left, right, _ =  self.movement.follow_vector(speed=200,
         #             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
         #             goal_vector=np.array([1 + -2*self.team_side,0]))
 
-        #left, right, param_c = self.movement.move_to_point(100, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([10, 30]))
+        left, right, param_c = self.movement.move_to_point(160, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([130, 50]))
         rospy.logfatal("Speed " + str(left)+" "+str(right))
         return left, right, 0
+        # return 100, 0, 0
