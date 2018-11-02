@@ -102,21 +102,24 @@ class Things:
     def update(self, id, pos, orientation=None):
         now = time.time()
 
-        if self.last_update == None and np.all(pos != None) and orientation != None: #first run
+        if self.last_update == None and np.all(pos != None): #first run
             self.init_kalman()
             # A initialization state must be provided to the kalman filter
             self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0., 0., 0.]]).reshape(6,1)
-            self.angular_kalman.statePost = np.array([[0., 0., 0.]]).reshape(3,1)
             self.lost_counter = 0
             self.speed = np.array([0, 0])
         else:
             self.kalman.predict()
-            self.angular_kalman.predict()
+            if orientation != None:
+                self.angular_kalman.predict()
+
             # updates the kalman filter
-            if np.all(pos != None) and orientation != None and self.lost_counter < 60:
+            if np.all(pos != None) and self.lost_counter < 60:
                 self.kalman.correct(pos.reshape(2,1))
-                self.angular_kalman.correct(np.array([orientation]).reshape(1,1))
+                if orientation != None:
+                    self.angular_kalman.correct(np.array([orientation]).reshape(1,1))
                 self.lost_counter = 0
+
             else: # updates the lost counter
                 self.lost_counter += 1
 
@@ -190,6 +193,8 @@ class HawkEye:
                 pos = self.pixel_to_real_world(robots[k][POS])
                 robots_list[i].update(id, pos, orientation=robots[k][ANGLE])
                 k += 1
+            else:
+                robots[i].update(tags[i], None, None)
 
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to

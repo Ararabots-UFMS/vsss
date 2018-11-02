@@ -251,7 +251,7 @@ class Vision:
                 self.warp_perspective()
 
                 self.set_dark_border()
-                
+
                 """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
                     self.home_seg, self.adv_seg and self.ball_seg """
                 self.pipeline()
