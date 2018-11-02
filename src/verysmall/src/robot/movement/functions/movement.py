@@ -204,7 +204,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+        return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed
