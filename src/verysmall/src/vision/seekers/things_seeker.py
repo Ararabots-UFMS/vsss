@@ -39,28 +39,48 @@ class Things:
         # This variable is used as the kalman filter object
         self.kalman = None
 
+        self.init_kalman()
+
     def init_kalman(self):
         #estimated frame rate
         dt = 1.0
-        # State variable will be [[pos_x,pos_y, speed_x, speed_y]]
+        # State variable will be [[pos_x,pos_y, speed_x, speed_y, acc_x, acc_y]]
         # measurement will be [[pos_x, pos_y]]
         # TODO: the control matrix should be zero
 
-        self.kalman = cv2.KalmanFilter(4, 2, 0)
+        # self.kalman = cv2.KalmanFilter(4, 2, 0)
 
-        self.kalman.transitionMatrix = np.array([[1., 0., dt, 0],
-                                                 [0., 1., 0., dt],
-                                                 [0., 0., 1., 0.],
-                                                 [0., 0., 0., 1.]]).reshape(4,4)
+        # self.kalman.transitionMatrix = np.array([[1., 0., dt, 0],
+                                                 # [0., 1., 0., dt],
+                                                 # [0., 0., 1., 0.],
+                                                 # [0., 0., 0., 1.]]).reshape(4,4)
 
-        self.kalman.processNoiseCov = 1e-5 * np.eye(4)
+        # self.kalman.processNoiseCov = 1e-5 * np.eye(4)
+        # self.kalman.measurementNoiseCov = 1e-1 * np.ones((2, 2))
+
+        # self.kalman.measurementMatrix = 0. * np.zeros((2, 4))
+        # self.kalman.measurementMatrix[0,0] = 1.
+        # self.kalman.measurementMatrix[1,1] = 1.
+
+        # self.kalman.errorCovPost = 1. * np.ones((4, 4))
+        self.kalman = cv2.KalmanFilter(6, 2, 0)
+
+        self.kalman.transitionMatrix = np.array([[1., 0., dt, 0, .5*dt**2, 0.],
+                                                 [0., 1., 0., dt, 0., .5*dt**2],
+                                                 [0., 0., 1., 0., dt, 0.],
+                                                 [0., 0., 0., 1., 0., dt],
+                                                 [0., 0., 0., 0., 1., 0.],
+                                                 [0., 0., 0., 0., 0., 1.]]).reshape(6,6)
+
+        self.kalman.processNoiseCov = 1e-5 * np.eye(6)
         self.kalman.measurementNoiseCov = 1e-1 * np.ones((2, 2))
 
-        self.kalman.measurementMatrix = 0. * np.zeros((2, 4))
+        self.kalman.measurementMatrix = 0. * np.zeros((2, 6))
         self.kalman.measurementMatrix[0,0] = 1.
         self.kalman.measurementMatrix[1,1] = 1.
 
-        self.kalman.errorCovPost = 1. * np.ones((4, 4))
+        self.kalman.errorCovPost = 1. * np.ones((6, 6))
+        self.kalman.statePost = np.array([[0., 0., 0., 0., 0., 0.]]).reshape(6,1)
 
     def set_dt(self, time_now):
         dt = time_now - self.last_update
@@ -73,7 +93,7 @@ class Things:
         if self.last_update == None and np.all(pos != None): #first run
             self.init_kalman()
             # A initialization state must be provided to the kalman filter
-            self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0.]]).reshape(4,1)
+            self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0., 0., 0.]]).reshape(6,1)
             self.lost_counter = 0
             self.speed = np.array([0, 0])
         else:
