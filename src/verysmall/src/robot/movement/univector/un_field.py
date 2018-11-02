@@ -78,7 +78,7 @@ class repulsive:
         self.origin = np.copy(newOrigin)
 
     def fi_r(self, _p, _origin=None, _theta=True):
-        if all(_origin != None):
+        if np.all(_origin != None):
             self.updateOrigin(_origin)
 
         p = np.array(_p) - self.origin
@@ -192,7 +192,7 @@ class avoidObstacle:
         return vPos
 
     def fi_auf(self, _robotPos, _vPos=[None, None], _theta=True):
-        if all(_vPos == None):
+        if np.all(_vPos == None):
             vPos = self.getVirtualPos()
         else:
             vPos = _vPos
