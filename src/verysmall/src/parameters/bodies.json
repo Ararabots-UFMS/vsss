@@ -1,53 +1,25 @@
 {
-  "HighLander" : {
-    "KP" : 115.0,
-    "KD" : 0.005,
-    "KI" : 10
-  },
-
-  "Leve" : {
-    "KP" : 1.0,
-    "KD" : 1.0,
-    "KI" : 1.0
-  },
-
-  "Tank" : {
-    "KP" : 1.0,
-    "KD" : 1.0,
-    "KI" : 1.0
-  },
-  "Matador" : {
-    "KP" : 1.0,
-    "KD" : 1.0,
-    "KI" : 1.0
-  },
-  "Flash" : {
-    "KP" : 1.0,
-    "KD" : 1.0,
-    "KI" : 1.0
-  },
-
   "Nenhum" : {
     "KP" : 0.0,
     "KD" : 0.0,
     "KI" : 0.0
   },
 
-  "Araraquara" : {
-    "KP" : 10.0,
+  "Tijolinho" : {
+    "KP" : 0.0,
     "KD" : 0.0,
     "KI" : 0.0
   },
 
-  "Umbabarauma" : {
+  "Jeremias" : {
     "KP" : 0.8,
     "KD" : 0.0,
     "KI" : 0.0
   },
   
-  "Jeremias" : {
-    "KP" : 50.5,
-    "KD" : 0.5,
+  "Et Bilu" : {
+    "KP" : 0.0,
+    "KD" : 0.0,
     "KI" : 0.0
   }
 }
