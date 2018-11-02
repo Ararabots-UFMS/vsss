@@ -150,7 +150,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         param_a, param_b, _ = self.movement.do_univector(
-            speed=100,
+            speed=130,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=np.array([0, 0]),
@@ -158,5 +158,8 @@ class AttackerWithUnivectorController():
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position
         )
+        # param_a, param_b, _ = self.movement.move_to_point(100, self.position, [np.cos(self.orientation), np.sin(self.orientation)], [65, 65])
+        # logfatal(str(param_a))
+        # logfatal(str(param_b))
 
         return param_a, param_b, self.pid_type

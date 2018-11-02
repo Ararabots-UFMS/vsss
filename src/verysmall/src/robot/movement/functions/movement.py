@@ -39,6 +39,7 @@ class Movement():
         self.error_margin = error
         self.orientation = FORWARD
         self.attack_goal = attack_goal
+        self.gamma_count = 0
         if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
         else:
@@ -54,15 +55,15 @@ class Movement():
         """
         self.pid_type = _pid_type
 
-    def update_pid(self, PID_list):
+    def update_pid(self, pid_list):
         """
         Update pid paramters
-        :param PID_list: [float, float, float]
+        :param pid_list: [float, float, float]
         :return:
         """
-        self.pid.set_constants(PID_list[0], PID_list[1], PID_list[2])
+        self.pid.set_constants(pid_list[0], pid_list[1], pid_list[2])
 
-    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
+    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
         """Recive players positions and speed and return the speed to follow univector
          :param speed : int
          :param robot_position : np.array([float, float])
@@ -71,6 +72,8 @@ class Movement():
          :param obstacle_position : np.array([float, float])
          :param obstacle_speed : np.array([float, float])
          :param ball_position : np.array([float, float])
+         :param number_of_predictions: int
+        :param only_forward: boolean
 
         :return: returns nothing
         """
@@ -84,8 +87,8 @@ class Movement():
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
 
-    def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
-        """Recive players positions and speed and return the speed to follow univector
+    def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
+        """Receive players positions and speed and return the speed to follow univector
          :param speed : int
          :param robot_position : np.array([float, float])
          :param robot_vector : np.array([float, float])
@@ -93,12 +96,13 @@ class Movement():
          :param obstacle_position : np.array([float, float])
          :param obstacle_speed : np.array([float, float])
          :param ball_position : np.array([float, float])
+         :param only_forward : boolean
 
         :return: returns nothing
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
+        return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result
@@ -122,13 +126,14 @@ class Movement():
             return True
         return False
 
-    def move_to_point(self, speed, robot_position, robot_vector, goal_position):
+    def move_to_point(self, speed, robot_position, robot_vector, goal_position, only_forward=False):
         """Recives robot position, robot direction vector, goal position and a speed.
         Return the speed os the wheel to follow the vector (goal - robot)
          :param speed : int
          :param robot_position : np.array([float, float])
          :param robot_vector : np.array([float, float])
          :param goal_position : np.array([float, float])
+         :param only_forward : boolean
 
         :return: returns int, int, boolean
         """
@@ -137,28 +142,32 @@ class Movement():
         direction_vector = unitVector(goal_position - robot_position)
 
         # logfatal(str(direction_vector))
-        return self.follow_vector(speed, robot_vector, direction_vector)
+        return self.follow_vector(speed, robot_vector, direction_vector, only_forward)
 
-    def follow_vector(self,  speed, robot_vector, goal_vector):
+    def follow_vector(self, speed, robot_vector, goal_vector, only_forward=False):
         """Recives the robot vector, goal vector and a speed and return the speed
         of the wheels to follow the goal vector
          :param speed : int
          :param robot_vector : np.array([float, float])
          :param goal_vector : np.array([float, float])
+         :param only_forward : boolean
 
         :return: returns int, int, boolean
         """
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        forward, diff_angle = forward_min_diff(self.orientation, robot_vector, goal_vector)
+        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
         self.orientation = forward
 
-       # logfatal("DIFF "+str(diff_angle))
+        #logfatal("DIFF "+str(diff_angle)+" "+str(forward))
         # Return the speed and angle if the PID is in hardware, otherwise
         # returns both wheels speed and its correction
         if self.pid_type == HARDWARE:
-            return diff_angle, speed, False
+            if forward:
+                return diff_angle, speed, False
+            return diff_angle, -speed, False
+
         correction = self.pid.update(diff_angle)
         if forward:
             return self.return_speed(speed, correction)
@@ -204,7 +213,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+        return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed
