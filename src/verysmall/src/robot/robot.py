@@ -79,11 +79,7 @@ class Robot():
 
     def run(self):
 
-        self.state_machine.update_game_information(position=self.position, orientation=self.orientation,
-                                                   speed=self.speed, team_speed=self.team_speed,
-                                                   enemies_position=self.enemies_position,
-                                                   enemies_speed=self.enemies_speed, ball_position=self.ball_position,
-                                                   team_side=self.team_side)
+        self.state_machine.update_game_information(self)
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
