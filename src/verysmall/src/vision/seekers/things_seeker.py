@@ -186,7 +186,6 @@ class HawkEye:
         k = 0
 
         len_robots = len(robots)
-        # rospy.logfatal(str(len_robots))
         for i in xrange(self.num_robots_home_team):
             id = None if k >= len_robots else robots[k][ID]
             if tags[i] == id:
