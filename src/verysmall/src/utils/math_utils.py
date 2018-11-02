@@ -75,7 +75,7 @@ def min_diff_vec_and_opposite(num, orientation, vec, goal):
     :return: boolean, int
     """
     rand = random.random()
-    gamma_value = stats.gamma.cdf(num, a=90, scale=0.8)
+    gamma_value = stats.gamma.cdf(num, a=35, scale=0.8)
     if rand < gamma_value:
         if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
             return True, 0
@@ -96,5 +96,5 @@ def forward_min_diff(num, orientation, vec, goal, only_forward=False):
     """
     tmp, new_gamma_count = min_diff_vec_and_opposite(num, orientation, vec, goal)
     if tmp or only_forward:
-        return True, angleBetween(vec, goal), new_gamma_count
-    return False, angleBetween(opposite_vector(vec), goal), new_gamma_count
+        return True, angleBetween(vec, goal, abs=False), new_gamma_count
+    return False, angleBetween(opposite_vector(vec), goal, abs=False), new_gamma_count
