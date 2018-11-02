@@ -22,6 +22,8 @@ class Things:
     def __init__(self):
         self.id = -1
 
+        self.lost_counter = 0
+
         # Stores the (x,y) pos from the rebot
         self.pos = np.array([None, None])
 
@@ -34,40 +36,69 @@ class Things:
         # Saves the time of the last update
         self.last_update = None
 
-        self.speedWindow = []
+        # This variable is used as the kalman filter object
+        self.kalman = None
 
-    def add_speed_to_queue(self, speed):
-        if len(self.speedWindow) == SPEED_QUEUE_SIZE:
-            self.speedWindow.pop(0)
-        self.speedWindow.append(speed)
+    def init_kalman(self):
+        #estimated frame rate
+        dt = 1.0
+        # State variable will be [[pos_x,pos_y, speed_x, speed_y]]
+        # measurement will be [[pos_x, pos_y]]
+        # TODO: the control matrix should be zero
 
-    def get_avg_speed(self, instant_speed):
-        self.add_speed_to_queue(instant_speed)
-        avg_speed = np.array([0.0, 0.0])
+        self.kalman = cv2.KalmanFilter(4, 2, 0)
 
-        for speed in self.speedWindow:
-            avg_speed += speed
+        self.kalman.transitionMatrix = np.array([[1., 0., dt, 0],
+                                                 [0., 1., 0., dt],
+                                                 [0., 0., 1., 0.],
+                                                 [0., 0., 0., 1.]]).reshape(4,4)
 
-        return avg_speed / SPEED_QUEUE_SIZE
+        self.kalman.processNoiseCov = 1e-5 * np.eye(4)
+        self.kalman.measurementNoiseCov = 1e-1 * np.ones((2, 2))
+
+        self.kalman.measurementMatrix = 0. * np.zeros((2, 4))
+        self.kalman.measurementMatrix[0,0] = 1.
+        self.kalman.measurementMatrix[1,1] = 1.
+
+        self.kalman.errorCovPost = 1. * np.ones((4, 4))
+
+    def set_dt(self, time_now):
+        dt = time_now - self.last_update
+        self.kalman.transitionMatrix[0,2] = dt
+        self.kalman.transitionMatrix[1,3] = dt
 
     def update(self, id, pos, orientation=None):
-        last_up = None
         now = time.time()
 
-        # Checkes if this is not the first update
-        if self.last_update != None and np.all(self.pos != None) and np.all(pos != None):
-            # If it is not the first update, calculate the robot speed
-            #pos = (self.pos + pos) / 2.0 # tentando diminuir erro
-            instant_speed = (pos - self.pos) / (now - self.last_update)
-            self.speed = self.get_avg_speed(instant_speed)
+        if self.last_update == None and np.all(pos != None): #first run
+            self.init_kalman()
+            # A initialization state must be provided to the kalman filter
+            self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0.]]).reshape(4,1)
+            self.lost_counter = 0
+            self.speed = np.array([0, 0])
         else:
-            self.speed = 0
+            self.kalman.predict()
+            # updates the kalman filter
+            if np.all(pos != None) and self.lost_counter < 60:
+                self.kalman.correct(pos.reshape(2,1))
+                self.lost_counter = 0
+            else: # updates the lost counter
+                self.lost_counter += 1
 
-        # Updates the robot's state variables
-        self.id = id
-        self.last_update = now
-        self.pos = pos
-        self.orientation = orientation
+            # uses the kalman info
+            state = self.kalman.predict()
+            pos = np.array([state[0,0], state[1,0]])
+            self.speed = np.array([state[2,0], state[3,0]])
+
+        if self.lost_counter >= 60: # if the thing was lost in all previous 10 frames
+            self.reset()
+        else:
+            # Updates the robot's state variables
+            self.id = id
+            self.last_update = now
+            self.pos = pos
+            self.orientation = orientation
+
 
     def reset(self):
         self.pos = np.array([None, None])
@@ -118,28 +149,21 @@ class HawkEye:
         len_robots = len(robots)
         # rospy.logfatal(str(len_robots))
         for i in xrange(self.num_robots_home_team):
-            id = None if k >= len_robots else robots[k][ID];
-            # if k < len_robots:
-            #     rospy.logfatal('SHALALALA'+str(robots[k][ID]))
-            # rospy.logfatal(tags[i])
-            # rospy.logfatal(self.num_robots_home_team)
+            id = None if k >= len_robots else robots[k][ID]
             if tags[i] == id:
                 pos = self.pixel_to_real_world(robots[k][POS])
                 robots_list[i].update(id, pos, orientation=robots[k][ANGLE])
                 k += 1
-            else:
-                robots_list[i].reset()
 
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to
             store the info """
 
-        px_pos = self.ball_seeker.seek(img)
-        if np.all(px_pos != None):
-            pos = self.pixel_to_real_world(px_pos)
-            ball.update(0, pos)
-        else:
-            ball.reset()
+        pos = self.ball_seeker.seek(img)
+        if np.all(pos != None):
+            pos = self.pixel_to_real_world(pos)
+
+        ball.update(0, pos)
 
     def seek_adv_team(self, img, robots_list):
 
