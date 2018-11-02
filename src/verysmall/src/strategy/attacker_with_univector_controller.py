@@ -18,7 +18,7 @@ HARDWARE = 1
 class AttackerWithUnivectorController():
 
     def __init__(self, _robot_body="Nenhum", _debug_topic = None):
-        self.pid_type = HARDWARE
+        self.pid_type = SOFTWARE
         self.position = None
         self.orientation = None
         self.team_speed = None
@@ -161,5 +161,8 @@ class AttackerWithUnivectorController():
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position
         )
+        #param_a, param_b, _ = self.movement.move_to_point(100, self.position, [np.cos(self.orientation), np.sin(self.orientation)], [65, 65], only_forward=True)
+        logfatal(str(param_a))
+        logfatal(str(param_b))
 
         return param_a, param_b, self.pid_type
