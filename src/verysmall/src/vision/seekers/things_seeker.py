@@ -46,25 +46,6 @@ class Things:
     def init_kalman(self):
         #estimated frame rate
         dt = 1.0
-        # State variable will be [[pos_x,pos_y, speed_x, speed_y, acc_x, acc_y]]
-        # measurement will be [[pos_x, pos_y]]
-        # TODO: the control matrix should be zero
-
-        # self.kalman = cv2.KalmanFilter(4, 2, 0)
-
-        # self.kalman.transitionMatrix = np.array([[1., 0., dt, 0],
-                                                 # [0., 1., 0., dt],
-                                                 # [0., 0., 1., 0.],
-                                                 # [0., 0., 0., 1.]]).reshape(4,4)
-
-        # self.kalman.processNoiseCov = 1e-5 * np.eye(4)
-        # self.kalman.measurementNoiseCov = 1e-1 * np.ones((2, 2))
-
-        # self.kalman.measurementMatrix = 0. * np.zeros((2, 4))
-        # self.kalman.measurementMatrix[0,0] = 1.
-        # self.kalman.measurementMatrix[1,1] = 1.
-
-        # self.kalman.errorCovPost = 1. * np.ones((4, 4))
         self.kalman = cv2.KalmanFilter(6, 2, 0)
         self.kalman.transitionMatrix = np.array([[1., 0., dt, 0, .5*dt**2, 0.],
                                                  [0., 1., 0., dt, 0., .5*dt**2],
@@ -126,7 +107,7 @@ class Things:
             # uses the kalman info
             state = self.kalman.predict()
             pos = np.array([state[0,0], state[1,0]])
-            self.speed = np.array([state[2,0], state[3,0]])
+            self.speed = np.array([state[2,0], state[3,0]]) * 60.0
             orientation = self.angular_kalman.predict()[0,0]
 
         if self.lost_counter >= 60: # if the thing was lost in all previous 10 frames
@@ -189,11 +170,12 @@ class HawkEye:
         for i in xrange(self.num_robots_home_team):
             id = None if k >= len_robots else robots[k][ID]
             if tags[i] == id:
+                id = tags.index
                 pos = self.pixel_to_real_world(robots[k][POS])
-                robots_list[i].update(id, pos, orientation=robots[k][ANGLE])
+                robots_list[i].update(i, pos, orientation=robots[k][ANGLE])
                 k += 1
             else:
-                robots[i].update(tags[i], None, None)
+                robots_list[i].update(i, None, None)
 
     def seek_ball(self, img, ball):
         """ Expects a binary image with just the ball and a Thing object to
