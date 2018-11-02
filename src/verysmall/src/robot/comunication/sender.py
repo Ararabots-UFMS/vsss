@@ -81,7 +81,6 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
-            #rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
             #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
