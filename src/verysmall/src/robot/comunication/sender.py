@@ -61,7 +61,7 @@ class Sender():
                 if should_wait:
                     sleep(1)
             else:
-                self.sock.setblocking(False)
+                #self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
                 break;
             attempt += 1

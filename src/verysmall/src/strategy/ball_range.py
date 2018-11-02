@@ -6,7 +6,7 @@ CCW = 1
 def distance_point(position_one, position_two):
     return np.linalg.norm(position_one-position_two)
 
-def near_ball(ball_position, robot_position):
+def near_ball(ball_position, robot_position, _distance = 9.5):
     """
     Returns if the robot is near to the ball
     :params ball_position: np.array([x,y])
@@ -14,7 +14,7 @@ def near_ball(ball_position, robot_position):
     :return: boolean
     """
     distance = np.linalg.norm(ball_position-robot_position)
-    return (distance <= 7.5)
+    return (distance <= _distance)
 
 def behind_ball(ball_position, robot_position, team_side):
     """

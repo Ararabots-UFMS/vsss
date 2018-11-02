@@ -1,7 +1,7 @@
 from statemachine import StateMachine, State
 
 
-class NaiveGK(StateMachine):
+class AdvancedGK(StateMachine):
 
     """
     Class for creation of the state machine of robberies,
@@ -31,9 +31,12 @@ class NaiveGK(StateMachine):
     penalty   = State('Penalty')
     meta      = State('Meta')
 
-    defend_ball     =   State('DEFEND')
-    
-    track_ball      =   State('TRACK_BALL')
+    defend_ball         =   State('DEFEND')
+    seek_ball           =   State('SEEK_BALL')
+    goal                =   State('GOAL')
+    out_of_area         =   State('OUT_OF_AREA')
+    spin                =   State('SPIN')
+    go_to_ball          =   State('GO_TO_BALL')
 
 
 
@@ -56,13 +59,31 @@ class NaiveGK(StateMachine):
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 
     normal_to_defend_ball       = normal.to(defend_ball)
-    normal_to_track_ball        = normal.to(track_ball) 
-    
-    defend_ball_to_track        = defend_ball.to(track_ball)
-    track_to_defend_ball        = track_ball.to(defend_ball)
+    normal_to_seek_ball         = normal.to(seek_ball) 
+    normal_to_goal              = normal.to(goal)
+    normal_to_out_of_area       = normal.to(out_of_area)
 
+
+    defend_ball_to_seek_ball        = defend_ball.to(seek_ball)
+    defend_ball_to_goal             = defend_ball.to(goal)
+    defend_ball_to_out_of_area      = defend_ball.to(out_of_area)
+    defend_ball_to_spin             = defend_ball.to(spin)
+    defend_ball_to_go_to_ball       = defend_ball.to(go_to_ball)
+
+    seek_ball_to_defend_ball        = seek_ball.to(defend_ball)
     
+    seek_ball_to_out_of_area        = seek_ball.to(out_of_area)
+
+    goal_to_defend_ball             = goal.to(defend_ball)
     
+
+    out_of_area_to_defend_ball      = out_of_area.to(defend_ball)
+    out_of_area_to_seek_ball        = out_of_area.to(seek_ball)
+
+    spin_to_defend_ball             = spin.to(defend_ball) 
+    go_to_ball_to_defend_ball       = go_to_ball.to(defend_ball)
+    
+        
 
 class MyModel(object):
     def __init__(self, state):

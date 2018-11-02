@@ -8,55 +8,89 @@ from naive_keeper import NaiveGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-import arena_sections as sections
+from arena_sections import *
 
-path += '../parameters/robots_pid.json'
+path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
-
-KP = univector_list['robot_1']['KP']
-KD = univector_list['robot_1']['KD']
-KI = univector_list['robot_1']['KI']
+bodies_unpack = jsonHandler.read(path, escape=True)
 
 
-GOAL_KEEPER_SPEED = 180
+
+SOFTWARE = 0
+HARDWARE = 1
+
+
+GOALKEEPER_SPEED    = 70
+MIN_X               = 5.0
+
+MIN_Y               = 45.0
+MAX_Y               = 85.0
+
+GG_DIFF             = 140.0
+
+SPIN_DIST           = 9.0
 
 class NaiveGKController():
 
-    def __init__(self):
+    def __init__(self, _robot_body="Nenhum", _debug_topic = None):
+        self.pid_type = SOFTWARE
         self.position = None
         self.orientation = None
-        self.robot_speed = None
+        self.team_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = None
-
+        self.robot_body = _robot_body
         self.defend_position = np.array([0,0])
 
-        self.stop = MyModel(state='Stop')
-        self.NaiveGK = NaiveGK(self.stop)
-        self.movement = Movement([KP, KD, KI], 10)
+         #Attack_in right side
+        self.attack_goal = np.array([150.0, 65.0])
+         #Attack_in left side
+        self.attack_goal = np.array([0.0, 65.0])
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
+
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'],
+                         bodies_unpack[self.robot_body]['KI'],
+                         bodies_unpack[self.robot_body]['KD']]
+
+
+        self.stop = MyModel(state='stop')
+        self.NaiveGK = NaiveGK(self.stop)
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
+
+    def set_pid_type(self, _type):
+        """
+        Change pid type
+        :return:
+        """
+        self.pid_type = _type
+        self.movement.set_pid_type(_type=self.pid_type)
+
+    def update_game_information(self, robot):
         """
         Update game variables
-        :param position:
-        :param orientation:
-        :param robot_speed:
-        :param enemies_position:
-        :param enemies_speed:
-        :param ball_position:
+        :param robot: robot object
         """
-        self.position = position
-        self.orientation = orientation
-        self.robot_speed = robot_speed
-        self.enemies_position = enemies_position
-        self.enemies_speed = enemies_speed
-        self.ball_position = ball_position
-        self.team_side = team_side
+        self.position = robot.position
+        self.orientation = robot.orientation
+        self.team_speed = robot.team_speed
+        self.enemies_position = robot.enemies_position
+        self.enemies_speed = robot.enemies_speed
+        self.ball_position = robot.ball_position
+        self.team_side = robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
+
+
+    def update_pid(self):
+        """
+        Update pid
+        :return:
+        """
+        self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
+        self.movement.update_pid(self.pid_list)
+
 
     def set_to_stop_game(self):
         """
@@ -66,7 +100,7 @@ class NaiveGKController():
         """
 
         self.stop.state = 'stop'
-        return 0, 0
+        return 0, 0, 0
 
     def in_normal_game(self):
         """
@@ -75,81 +109,100 @@ class NaiveGKController():
         :return: int, int
         """
         if self.NaiveGK.is_stop:
+            rospy.logfatal(self.NaiveGK.current_state)
             self.NaiveGK.stop_to_normal()
 
         if self.NaiveGK.is_normal:
+            rospy.logfatal(self.NaiveGK.current_state)
 
-            if section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
-                self.NaiveGK.normal_to_defend_ball() #defend
+            if section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+                if not on_attack_side(self.ball_position, self.team_side):
+                    self.NaiveGK.normal_to_defend_ball() #defend
+                else:
+                    self.NaiveGK.normal_to_track_ball()#trackeia    
             else:
                 self.NaiveGK.normal_to_track_ball()#trackeia
 
         if self.NaiveGK.is_defend_ball:
-            return self.defend_ball()
+            #rospy.logfatal(self.NaiveGK.current_state)
+            #return 0,0
+            return self.in_defend_ball()
         else:
-            return self.track_ball()
+            #rospy.logfatal(self.NaiveGK.current_state)    
+            #return 0,0
+            return self.in_track_ball()
 
-
-    def defend_ball(self):
-
-        if near_ball(self.ball_position, self.position):
-            self.NaiveGK.defend_ball_to_push_ball()
-            return self.push_ball()
+    def in_defend_ball(self):
+        rospy.logfatal(self.NaiveGK.current_state)
+        
+        if section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+           return self.push_ball()
         else:
-            param_1, param_2 , _ = self.movement.do_univector(
-                speed = GOAL_KEEPER_SPEED,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=[0, 0],
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
-            )
-            return param_1, param_2 
+            self.NaiveGK.defend_ball_to_track()#trackeia    
+            return self.in_track_ball()#trackeia
+
+
 
     def push_ball(self):
-        
-        if near_ball(self.ball_position, self.position):
-            return movement.spin(255,ball_range.spin_direction(self.ball_position, self.position, self.team_side))
-        elif (not near_ball(self.ball_position, self.position)) and (section.section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]):
-            param_1, param_2 , _ = self.movement.do_univector(
-                speed = GOAL_KEEPER_SPEED,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=[0, 0],
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
-            )
-            return param_1, param_2             
+
+        if (near_ball(self.ball_position, self.position)):
+            rospy.logfatal("SPIN")
+            param1, param2, param3 = self.movement.spin(255, not spin_direction(self.ball_position, self.position, self.team_side))
+            return param1, param2, param3
         else:
-            self.NaiveGK.push_ball_to_normal()
-            return self.in_normal_game()
+            rospy.logfatal("MVTP")
 
 
-    def track_ball(self):
+            param_1, param_2 , param3 = self.movement.move_to_point(
+                GOALKEEPER_SPEED,
+                self.position,
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                self.ball_position
+                )
+            return param_1, param_2, param3
 
-        self.defend_position[0] = 17.5 + 120*self.team_side
-        
-        if self.ball_position[1] > 92:
-            self.defend_position[1] = 92
 
-        elif self.defend_position[1] < 38:
-            self.defend_position[1] = 38
+    def in_track_ball(self):
+        #rospy.logfatal(self.NaiveGK.current_state)
 
+        if section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
+            if not on_attack_side(self.ball_position, self.team_side):
+                self.NaiveGK.track_to_defend_ball()
+                return self.in_defend_ball() #defend
+            else:
+                return self.follow_ball()    
+        elif section(self.ball_position) in [LEFT_GOAL,RIGHT_GOAL]:
+            rospy.logfatal("GOL!!")
+            return 0,0,0
         else:
+            return self.follow_ball()
+
+
+    def follow_ball(self):
+
+        self.defend_position[0] = MIN_X + GG_DIFF*self.team_side
+    
+        if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
+            rospy.logfatal("frente area")
             self.defend_position[1] = self.ball_position[1]
+        else:
+            if self.ball_position[1] > MAX_Y:
+                rospy.logfatal("esq area")
+                self.defend_position[1] = MAX_Y
 
-        param_1, param_2 , _ = self.movement.do_univector(
-            speed = GOAL_KEEPER_SPEED,
+            else: #self.defend_position[1] < 38:
+                rospy.logfatal("dir area")
+                self.defend_position[1] = MIN_Y
+
+        param_1, param_2 , param3 = self.movement.move_to_point(
+            speed = GOALKEEPER_SPEED,
             robot_position = self.position,
-            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)],
-            robot_speed = [0, 0],
-            obstacle_position = np.resize(self.enemies_position, (5, 2)),
-            obstacle_speed = [[0,0]]*5,
-            ball_position = self.defend_position
-        )
-        return param_1, param_2             
+            robot_vector = [np.cos(self.orientation),np.sin(self.orientation)],
+            goal_position = self.defend_position
+
+            )
+        return param_1, param_2, param3
+
 
     def in_freeball_game(self):
         """
@@ -157,6 +210,9 @@ class NaiveGKController():
 
         :return: int, int
         """
+
+        rospy.logfatal(self.NaiveGK.current_state)
+
         if self.NaiveGK.is_stop:
             self.NaiveGK.stop_to_freeball()
 

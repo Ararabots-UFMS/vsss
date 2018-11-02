@@ -112,7 +112,7 @@ class HawkEye:
             of Things objects to store the info """
 
         robots = self.home_team_seeker.seek(img, degree=False)
-        tags = [9, 18, 23, 28, 34]
+        tags = [9, 14, 18, 23, 28]
         k = 0
 
         len_robots = len(robots)
