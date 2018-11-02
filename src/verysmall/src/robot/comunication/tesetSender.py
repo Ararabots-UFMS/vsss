@@ -3,9 +3,9 @@ from time import sleep
 import cv2
 
 # initialize the client
-robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:93:16") # umbabarauma
+# robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:93:16") # umbabarauma
 # robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:92:A2") # araraquara
-# robot = Sender(robotId=1, bluetoothId="84:0D:8E:0D:BA:32") # jeremias
+robot = Sender(robotId=1, bluetoothId="84:0D:8E:0D:BA:32") # jeremias
 robot.connect()
 
 speed0 = 70
