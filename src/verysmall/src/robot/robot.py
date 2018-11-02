@@ -9,6 +9,7 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper_controller import AdvancedGKController
+from strategy.zagueiro_controller import ZagueiroController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 
 class Robot():
@@ -71,7 +72,7 @@ class Robot():
         self.strategies = [
             AdvancedGKController(_robot_body = self.robot_body),
             AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
+            ZagueiroController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
             SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
         ]
 
