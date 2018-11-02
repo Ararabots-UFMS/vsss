@@ -150,7 +150,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         param_a, param_b, _ = self.movement.do_univector(
-            speed=100,
+            speed=130,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=np.array([0, 0]),
