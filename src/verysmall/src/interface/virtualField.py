@@ -423,7 +423,7 @@ class virtualField():
         it = 0
         while (distance >= beta) and it < 45:
 
-            v = self.univetField.getVecWithBall(_robotPos=currentPos, _vRobot=[0, 0], end)
+            v = self.univetField.getVecWithBall(_robotPos=currentPos, _vRobot=[0, 0], _ball = end)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
             cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
