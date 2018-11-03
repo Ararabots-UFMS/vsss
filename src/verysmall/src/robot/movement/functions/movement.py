@@ -4,7 +4,7 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff
+from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
@@ -103,6 +103,27 @@ class Movement():
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
+
+    def do_univector_velo(self, speed,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
+        """Receive players positions and speed and return the speed to follow univector
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param robot_speed : np.array([float, float])
+         :param obstacle_position : np.array([float, float])
+         :param obstacle_speed : np.array([float, float])
+         :param ball_position : np.array([float, float])
+         :param only_forward : boolean
+
+        :return: returns nothing
+        """
+        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        raio = raio_vetores(255, robot_position, robot_vector, ball_position, np.array([150, 65]- ball_position))
+        cte = 0.02
+        ratio = (raio * cte)**0.5
+        logfatal(speed*ratio)
+        return self.follow_vector(speed*ratio, np.array(robot_vector), np.array(vec), only_forward)
 
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result

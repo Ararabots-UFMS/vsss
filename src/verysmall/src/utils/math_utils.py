@@ -98,3 +98,17 @@ def forward_min_diff(num, orientation, vec, goal, only_forward=False):
     if tmp or only_forward:
         return True, angleBetween(vec, goal, abs=False), new_gamma_count
     return False, angleBetween(opposite_vector(vec), goal, abs=False), new_gamma_count
+
+def raio_vetores(_ret, p1,v1,p2,v2):
+    p1 = np.array(p1)
+    p2 = np.array(p2)
+    v1 = np.array(v1)
+    v2 = np.array(v2)
+    ret = _ret
+
+    cos = np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
+    r1 =2*(1-cos)
+    d = np.linalg.norm(p1-p2)
+    if (cos < 1):
+        ret = d/(np.sqrt(float(r1)))
+    return ret
