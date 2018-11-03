@@ -77,20 +77,9 @@ class AdvancedGKController():
         self.movement = Movement(self.pid_list, error=7, attack_goal=self.attack_goal, _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
-        self.fixed_positions = [
-                                [10.0+self.team_side*130.0, 40.0],
-                                [10.0+self.team_side*130.0, 42.5],
-                                [10.0+self.team_side*130.0, 47.5],
-                                [10.0+self.team_side*130.0, 52.5],
-                                [10.0+self.team_side*130.0, 57.5],
-                                [10.0+self.team_side*130.0, 62.5],
-                                [10.0+self.team_side*130.0, 67.5],
-                                [10.0+self.team_side*130.0, 72.5],
-                                [10.0+self.team_side*130.0, 77.5],
-                                [10.0+self.team_side*130.0, 82.5],
-                                [10.0+self.team_side*130.0, 87.5],
-                                [10.0+self.team_side*130.0, 90.0],
-                                ]
+        self.buffer = []
+        self.buffer_size = 50
+
 
     def set_pid_type(self, _type):
         """
@@ -121,20 +110,10 @@ class AdvancedGKController():
         
         self.movement.univet_field.update_attack_side(not self.team_side)
 
-        self.fixed_positions = [
-                                [10.0+self.team_side*130.0, 40.0],
-                                [10.0+self.team_side*130.0, 42.5],
-                                [10.0+self.team_side*130.0, 47.5],
-                                [10.0+self.team_side*130.0, 52.5],
-                                [10.0+self.team_side*130.0, 57.5],
-                                [10.0+self.team_side*130.0, 62.5],
-                                [10.0+self.team_side*130.0, 67.5],
-                                [10.0+self.team_side*130.0, 72.5],
-                                [10.0+self.team_side*130.0, 77.5],
-                                [10.0+self.team_side*130.0, 82.5],
-                                [10.0+self.team_side*130.0, 87.5],
-                                [10.0+self.team_side*130.0, 90.0],
-                                ]
+        self.defend_position = np.array([10.0+self.team_side*130.0, 0.0])
+                                
+
+        self.robot.add_to_bufffer(self.buffer, self.buffer_size, self.ball_position)
 
     def update_pid(self):
         """
@@ -237,7 +216,7 @@ class AdvancedGKController():
     def in_seek_ball(self):
         rospy.logfatal(self.AdvancedGK.current_state)
 
-        # rospy.logfatal(self.AdvancedGK.current_state)
+        
 
         if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
             if not on_attack_side(self.ball_position, self.team_side):
@@ -279,39 +258,42 @@ class AdvancedGKController():
 
     def follow_ball(self):
 
-#        if self.ball_speed[1] > (0.5):    discount = PLUS
- #       elif self.ball_speed[1] < (-0.5):  discount = MINUS
-  #      else:   discount = SAME
+#       if self.ball_speed[1] > (0.5):    discount = PLUS
+#      elif self.ball_speed[1] < (-0.5):  discount = MINUS
+#     else:   discount = SAME
 
-        if self.ball_speed[1] > (0.0):    discount = PLUS
-        elif self.ball_speed[1] < (0.0):  discount = MINUS
-        else:   discount = SAME
+#       if self.ball_speed[1] > (0.0):    discount = PLUS
+#       elif self.ball_speed[1] < (0.0):  discount = MINUS
+#       else:   discount = SAME
 
+        polynom = self.robot.buffer_polyfit(self.buffer, 1)
+
+        self.defend_position[1] = polynom(MIN_X) 
         
-        if inside_range(0.0,40.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[0 if (0+discount <= 0) else discount]
-        elif inside_range(40.1,45.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[1+discount]
-        elif inside_range(45.1,50.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[2+discount]
-        elif inside_range(50.1,55.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[3+discount]
-        elif inside_range(55.1,60.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[4+discount]
-        elif inside_range(60.1,65.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[5+discount]
-        elif inside_range(65.1,70.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[6+discount]
-        elif inside_range(70.1,75.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[7+discount]
-        elif inside_range(75.1,80.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[8+discount]
-        elif inside_range(80.1,85.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[9+discount]
-        elif inside_range(85.1,90.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[10+discount]
-        else:# inside_range(90.1,130.0,self.ball_position[1]):
-            self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11+discount]
+        # if inside_range(0.0,40.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[0 if (0+discount <= 0) else discount]
+        # elif inside_range(40.1,45.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[1+discount]
+        # elif inside_range(45.1,50.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[2+discount]
+        # elif inside_range(50.1,55.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[3+discount]
+        # elif inside_range(55.1,60.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[4+discount]
+        # elif inside_range(60.1,65.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[5+discount]
+        # elif inside_range(65.1,70.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[6+discount]
+        # elif inside_range(70.1,75.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[7+discount]
+        # elif inside_range(75.1,80.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[8+discount]
+        # elif inside_range(80.1,85.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[9+discount]
+        # elif inside_range(85.1,90.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[10+discount]
+        # else:# inside_range(90.1,130.0,self.ball_position[1]):
+        #     self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11+discount]
 
         param_1, param_2, param3 = self.movement.move_to_point(
             speed=GOALKEEPER_SPEED,
