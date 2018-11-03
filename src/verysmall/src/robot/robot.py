@@ -9,6 +9,7 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper_controller import AdvancedGKController
+from strategy.zagueiro_controller import ZagueiroController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.ball_range import behind_ball
