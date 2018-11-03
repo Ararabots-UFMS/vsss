@@ -22,7 +22,7 @@ HARDWARE = 1
 
 DISTANCE = 8.0
 
-GOALKEEPER_SPEED = 80
+GOALKEEPER_SPEED = 160
 MIN_X = 10.0
 
 MIN_Y = 45.0
@@ -40,8 +40,9 @@ SPIN_SPEED = 255
 
 class AdvancedGKController():
 
-    def __init__(self, _robot_body="Nenhum", _debug_topic=None):
+    def __init__(self, _robot_obj ,_robot_body="Nenhum", _debug_topic=None):
         self.pid_type = SOFTWARE
+        self.robot = _robot_obj
         self.position = [None, None]
         self.orientation = None
         self.team_speed = None
@@ -75,22 +76,22 @@ class AdvancedGKController():
         self.pid_type = _type
         self.movement.set_pid_type(_type=self.pid_type)
 
-    def update_game_information(self, robot):
+    def update_game_information(self):
         """
         Update game variables
         :param robot: robot object
         """
-        if (robot.position[0] != 0.0) and (robot.position[1] != 0.0):
-            self.position = robot.position
+        if (self.robot.position[0] != 0.0) and (self.robot.position[1] != 0.0):
+            self.position = self.robot.position
         # else:
         #     rospy.logfatal("Deu ruim")
 
-        self.orientation = robot.orientation
-        self.team_speed = robot.team_speed
-        self.enemies_position = robot.enemies_position
-        self.enemies_speed = robot.enemies_speed
-        self.ball_position = robot.ball_position
-        self.team_side = robot.team_side
+        self.orientation = self.robot.orientation
+        self.team_speed = self.robot.team_speed
+        self.enemies_position = self.robot.enemies_position
+        self.enemies_speed = self.robot.enemies_speed
+        self.ball_position = self.robot.ball_position
+        self.team_side = self.robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
     def update_pid(self):

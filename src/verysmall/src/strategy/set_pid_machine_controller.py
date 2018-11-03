@@ -13,8 +13,9 @@ bodies_unpack = jsonHandler.read(path, escape = True)
 
 class SetPIDMachineController():
 
-    def __init__(self, _robot_body = "Nenhum", _debug_topic = None):
+    def __init__(self, _robot_obj ,_robot_body = "Nenhum", _debug_topic = None):
         self.position = None
+        self.robot = _robot_obj
         self.orientation = None
         self.robot_speed = None
         self.enemies_position = None
@@ -33,18 +34,18 @@ class SetPIDMachineController():
 
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _debug_topic = _debug_topic)
 
-    def update_game_information(self, robot):
+    def update_game_information(self):
         """
         Update game variables
         :param robot: robot object
         """
-        self.position = robot.position
-        self.orientation = robot.orientation
-        self.team_speed = robot.team_speed
-        self.enemies_position = robot.enemies_position
-        self.enemies_speed = robot.enemies_speed
-        self.ball_position = robot.ball_position
-        self.team_side = robot.team_side
+        self.position = self.robot.position
+        self.orientation = self.robot.orientation
+        self.team_speed = self.robot.team_speed
+        self.enemies_position = self.robot.enemies_position
+        self.enemies_speed = self.robot.enemies_speed
+        self.ball_position = self.robot.ball_position
+        self.team_side = self.robot.team_side
         self.attack_goal[0] = 0.0 + (not self.team_side)*150
         self.movement.univet_field.update_attack_side(not self.team_side)
 
@@ -136,9 +137,21 @@ class SetPIDMachineController():
         :return: int, int
         """
         self.SetPIDMachine.univector_to_univector()
+        #
+        # left, right, _ = self.movement.do_univector(
+        #     speed=100,
+        #     robot_position=self.position,
+        #     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+        #     robot_speed=np.array([0, 0]),
+        #     obstacle_position=self.enemies_position,
+        #     obstacle_speed=[[0,0]]*5,
+        #     ball_position=self.ball_position
+        # )
         #left, right, _ =  self.movement.follow_vector(speed=200,
-#                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-#                     goal_vector=np.array([1 + -2*self.team_side,0]))
-        left, right, param_c = self.movement.move_to_point(100, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([75, 65]))
+        #             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+        #             goal_vector=np.array([1 + -2*self.team_side,0]))
+
+        left, right, param_c = self.movement.move_to_point(160, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([130, 50]))
         rospy.logfatal("Speed " + str(left)+" "+str(right))
         return left, right, 0
+        # return 100, 0, 0

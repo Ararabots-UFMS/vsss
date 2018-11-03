@@ -11,6 +11,7 @@ from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper_controller import AdvancedGKController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.set_pid_machine_controller import SetPIDMachineController
+from strategy.zagueiro_controller import ZagueiroController
 
 class Robot():
     """docstring for Robot"""
@@ -70,17 +71,18 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            AdvancedGKController(_robot_body = self.robot_body),
-            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            ZagueiroController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
+            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
+            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
+            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
-        self.state_machine = AdvancedGKController()
+        self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
 
     def run(self):
 
-        self.state_machine.update_game_information(self)
+        self.state_machine.update_game_information()
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
@@ -120,3 +122,28 @@ class Robot():
     def bluetooth_detach(self):
         if self.bluetooth_sender is not None:
             self.bluetooth_sender.closeSocket()
+
+    def add_to_buffer(self, buffer, buffer_size, element):
+        if(len(buffer) > buffer_size):
+            buffer.pop(0)
+
+        buffer.append(element)
+
+    # ATTENTION: for now pass just np arrays or numbers please !!
+    def buffer_mean(self, buffer):
+        sum = 0.
+        length = len(buffer)
+        for i in xrange(length):
+            sum += buffer[i]
+
+        return sum/length
+
+    # ATTENTION: just use if you have a list of np.arrays of dim 2 !!
+    def buffer_polyfit(self, buffer, degree):
+        x = []
+        y = []
+        for element in buffer:
+            x.append(element[0])
+            y.append(element[1])
+
+        return np.poly1d(np.polyfit(np.asarray(x), np.asarray(y), degree))
