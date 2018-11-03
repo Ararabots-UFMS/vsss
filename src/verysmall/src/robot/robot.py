@@ -10,6 +10,7 @@ from strategy.attacker_with_univector_controller import AttackerWithUnivectorCon
 from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
+from strategy.zagueiro_controller import ZagueiroController
 
 class Robot():
     """docstring for Robot"""
@@ -69,17 +70,18 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            AttackerWithUnivectorController(_robot_body = self.robot_body),
-            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AdvancedGKController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            SetPIDMachineController(_robot_body=self.robot_body, _debug_topic=self.subsAndPubs)
+            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
+            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
+            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
-        self.state_machine = AdvancedGKController()
+        self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
 
     def run(self):
 
-        self.state_machine.update_game_information(self)
+        self.state_machine.update_game_information()
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
