@@ -21,8 +21,9 @@ DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 
 class ZagueiroController():
 
-    def __init__(self, _robot_body="Nenhum", _debug_topic = None):
+    def __init__(self, _robot_obj, _robot_body="Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
+        self.robot = _robot_obj
         self.position = None
         self.orientation = None
         self.team_speed = None
@@ -62,7 +63,7 @@ class ZagueiroController():
 
 
 
-    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self):
         """
         Update game variables
         :param position:
@@ -72,13 +73,13 @@ class ZagueiroController():
         :param enemies_speed:
         :param ball_position:
         """
-        self.position = position
-        self.orientation = orientation
-        self.team_speed = team_speed
-        self.enemies_position = enemies_position
-        self.enemies_speed = enemies_speed
-        self.ball_position = ball_position
-        self.team_side = team_side
+        self.position = self.robot.position
+        self.orientation = self.robot.orientation
+        self.team_speed = self.robot.team_speed
+        self.enemies_position = self.robot.enemies_position
+        self.enemies_speed = self.robot.enemies_speed
+        self.ball_position = self.robot.ball_position
+        self.team_side = self.robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
     def update_pid(self):
@@ -298,6 +299,10 @@ class ZagueiroController():
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.border_to_area()
             return self.in_area()
+        sr = section(self.position)
+        if not near_ball(self.position, self.ball_position, 7.5) and sr in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, UP_BORDER, DOWN_BORDER]:
+            self.zagueiro.border_to_locked()
+            return in_locked()
         sb = section(self.ball_position)
         if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
             rospy.logfatal("to na borda")

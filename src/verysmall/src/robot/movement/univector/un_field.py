@@ -274,9 +274,9 @@ class univectorField:
         vRobot = np.array(_vRobot)
         ball = np.array(_ball)
 
-        if all(robotPos != None) and all(vRobot != None):
+        if np.all(robotPos != None) and np.all(vRobot != None):
             self.updateRobot(robotPos, vRobot)
-        if all(ball != None):
+        if np.all(ball != None):
             self.updateBall(ball)
 
         closestCenter = np.array([None, None]) # array to store the closest center

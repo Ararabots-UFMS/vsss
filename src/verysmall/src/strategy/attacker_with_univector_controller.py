@@ -17,8 +17,9 @@ HARDWARE = 1
 
 class AttackerWithUnivectorController():
 
-    def __init__(self, _robot_body="Nenhum", _debug_topic = None):
+    def __init__(self, _robot_obj ,_robot_body="Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
+        self.robot = _robot_obj
         self.position = None
         self.orientation = None
         self.speed = None
@@ -50,19 +51,19 @@ class AttackerWithUnivectorController():
         self.pid_type = _type
         self.movement.set_pid_type(_type=self.pid_type)
 
-    def update_game_information(self,robot):
+    def update_game_information(self):
         """
         Update game variables
         :param robot: robot obj
         """
-        self.position = robot.position
-        self.orientation = robot.orientation
-        self.speed = robot.speed
-        self.team_speed = robot.team_speed
-        self.enemies_position = robot.enemies_position
-        self.enemies_speed = robot.enemies_speed
-        self.ball_position = robot.ball_position
-        self.team_side = robot.team_side
+        self.position = self.robot.position
+        self.orientation = self.robot.orientation
+        self.speed = self.robot.speed
+        self.team_speed = self.robot.team_speed
+        self.enemies_position = self.robot.enemies_position
+        self.enemies_speed = self.robot.enemies_speed
+        self.ball_position = self.robot.ball_position
+        self.team_side = self.robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
     def update_pid(self):
@@ -150,7 +151,7 @@ class AttackerWithUnivectorController():
         """
         self.AttackerWithUnivector.univector_to_univector()
         param_a, param_b, _ = self.movement.do_univector(
-            speed=100,
+            speed=130,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=np.array([0, 0]),
@@ -158,5 +159,8 @@ class AttackerWithUnivectorController():
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position
         )
+        # param_a, param_b, _ = self.movement.move_to_point(100, self.position, [np.cos(self.orientation), np.sin(self.orientation)], [65, 65])
+        # logfatal(str(param_a))
+        # logfatal(str(param_b))
 
         return param_a, param_b, self.pid_type

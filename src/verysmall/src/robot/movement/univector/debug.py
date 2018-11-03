@@ -132,7 +132,7 @@ if __name__ == "__main__":
         drawBall(imgField2, cm2pixel(ball))
 
         # Creates the univector field
-        univetField = univectorField(atack_goal=RIGHT)
+        univetField = univectorField(attack_goal=RIGHT)
         univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
         univetField.updateBall(ball)
         univetField.updateObstacles(obstacle, vObstacle)
