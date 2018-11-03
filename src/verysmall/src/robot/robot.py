@@ -28,6 +28,9 @@ class Robot():
         self.tag = int(_tag)
         self.should_debug = _should_debug
 
+        # True position for penalty
+        self.true_pos = np.array([.0,.0])
+
         # Receive from vision
         self.ball_position = None
         self.ball_speed = None
@@ -100,7 +103,7 @@ class Robot():
         elif self.game_state == 3:  # Penalty
 
             if self.robot_id_integer == self.penalty_robot:
-                rospy.logfatal(str(self.robot_id_integer)+"Vo bate penalty")
+                rospy.logfatal(str(self.robot_id_integer)+" Vo bate penalty")
                 param_A, param_B, param_C = self.penalty_routine()
             else:
                 self.game_state = 1
@@ -164,8 +167,17 @@ class Robot():
         return np.poly1d(np.polyfit(np.asarray(x), np.asarray(y), degree))
 
     def penalty_routine(self):
-        if behind_ball(self.ball_position, self.position, self.team_side):
-            return 0.0, 200, HARDWARE
+        if np.all(self.position):
+            self.true_pos = self.position
+
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance = 25):
+            param_1, param_2, param_c = self.state_machine.movement.move_to_point(
+                220, np.array(self.position),
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                np.array([(not self.team_side)*150, 65]))
+
+            return param_1, param_2, SOFTWARE #0.0, 250, HARDWARE
         else:
+            rospy.logfatal("Apareci aqui:"+str(self.position))
             self.game_state = 1
             return self.state_machine.in_penalty_game()
