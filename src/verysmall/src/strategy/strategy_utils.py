@@ -34,7 +34,7 @@ RIGHT_UP_BOTTOM_LINE   = 14
 BALL_SIZE = 4
 ROBOT_SIZE = 7
 
-BORDER_NORMALS = {4:[1.0,-1.0], 5:[1.0,1.0], 6:[-1.0,-1.0], 7:[-1.0,1.0] 8:[0.0,1.0], 9:[0.0,-1.0], 11:[1.0,0.0],
+BORDER_NORMALS = {4:[1.0,-1.0], 5:[1.0,1.0], 6:[-1.0,-1.0], 7:[-1.0,1.0], 8:[0.0,1.0], 9:[0.0,-1.0], 11:[1.0,0.0],
                   12:[1.0,0.0], 13:[-1.0,0.0], 14:[-1.0,0.0]}
 
 ############################
@@ -205,11 +205,17 @@ def border_stuck(position_buffer, orientation):
     :return: true or false
     """
     flag = 0
-    mean = sum(position_buffer[-5::])/5
+    mean = sum(position_buffer[-5::])/5.0
     if section(mean) == CENTER:
         return False
     else:
+        #orientation verify
         sec = section(position_buffer[-1])
+
+        if sec not in BORDER_NORMALS.keys():
+            return False
+
+        orientation = np.array([math.cos(orientation), math.sin(orientation)])
         front_angle = math_utils.angleBetween(orientation, BORDER_NORMALS[sec])
         back_angle = math_utils.angleBetween(-orientation, BORDER_NORMALS[sec])
 
@@ -219,14 +225,13 @@ def border_stuck(position_buffer, orientation):
 
             mean = sum(position_buffer)/len(position_buffer)
 
-            for x in position_buffer:
-                if x[0] not in range(mean-2,mean+2) or x[1] not in range(mean-2,mean+2):
-                    flag = 0
-                else:
+            for x in position_buffer[-10::]:
+                if not (mean[0]-2 < x[0] < mean[0]+2 or mean[1]-2 < x[1] < mean[1]+2):
                     flag = 1
-            if flag == 1:
-                return False
-            else:
+
+            if flag == 0:
                 return True
+            else:
+                return False
         else:
             return False
