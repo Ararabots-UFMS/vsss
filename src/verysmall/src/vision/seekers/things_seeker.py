@@ -115,6 +115,7 @@ class Things:
 
             if orientation != None and abs(abs(orientation) - math.pi) < 0.15:
                 self.init_angular_kalman()
+                self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
             elif orientation == None:
                 orientation = self.angular_kalman.predict()[0,0]
 
