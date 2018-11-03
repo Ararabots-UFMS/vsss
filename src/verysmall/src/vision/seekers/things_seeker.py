@@ -43,6 +43,19 @@ class Things:
 
         self.init_kalman()
 
+    def init_angular_kalman(self):
+        dt = 1.0
+        self.angular_kalman = cv2.KalmanFilter(3, 1, 0)
+        self.angular_kalman.transitionMatrix = np.array([[1., dt, .5*dt**2],
+                                                         [0., 1., dt],
+                                                         [0., 0., 1.]]).reshape(3,3)
+        self.angular_kalman.processNoiseCov = 1e-5 * np.eye(3)
+        self.angular_kalman.measurementNoiseCov = 1e-1 * np.ones((1, 1))
+        self.angular_kalman.measurementMatrix = 0. * np.zeros((1, 3))
+        self.angular_kalman.measurementMatrix[0,0] = 1.
+        self.angular_kalman.errorCovPost = 1. * np.ones((3, 3))
+        self.angular_kalman.statePost = np.array([[0., 0., 0.]]).reshape(3,1)
+
     def init_kalman(self):
         #estimated frame rate
         dt = 1.0
@@ -64,16 +77,8 @@ class Things:
         self.kalman.errorCovPost = 1. * np.ones((6, 6))
         self.kalman.statePost = np.array([[0., 0., 0., 0., 0., 0.]]).reshape(6,1)
 
-        self.angular_kalman = cv2.KalmanFilter(3, 1, 0)
-        self.angular_kalman.transitionMatrix = np.array([[1., dt, .5*dt**2],
-                                                         [0., 1., dt],
-                                                         [0., 0., 1.]]).reshape(3,3)
-        self.angular_kalman.processNoiseCov = 1e-5 * np.eye(3)
-        self.angular_kalman.measurementNoiseCov = 1e-1 * np.ones((1, 1))
-        self.angular_kalman.measurementMatrix = 0. * np.zeros((1, 3))
-        self.angular_kalman.measurementMatrix[0,0] = 1.
-        self.angular_kalman.errorCovPost = 1. * np.ones((3, 3))
-        self.angular_kalman.statePost = np.array([[0., 0., 0.]]).reshape(3,1)
+        self.init_angular_kalman()
+
 
     def set_dt(self, time_now):
         dt = time_now - self.last_update
@@ -87,12 +92,12 @@ class Things:
             self.init_kalman()
             # A initialization state must be provided to the kalman filter
             self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0., 0., 0.]]).reshape(6,1)
+            self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
             self.lost_counter = 0
             self.speed = np.array([0, 0])
         else:
             self.kalman.predict()
-            if orientation != None:
-                self.angular_kalman.predict()
+            self.angular_kalman.predict()
 
             # updates the kalman filter
             if np.all(pos != None) and self.lost_counter < 60:
@@ -100,7 +105,6 @@ class Things:
                 if orientation != None:
                     self.angular_kalman.correct(np.array([orientation]).reshape(1,1))
                 self.lost_counter = 0
-
             else: # updates the lost counter
                 self.lost_counter += 1
 
@@ -108,7 +112,12 @@ class Things:
             state = self.kalman.predict()
             pos = np.array([state[0,0], state[1,0]])
             self.speed = np.array([state[2,0], state[3,0]]) * 60.0
-            orientation = self.angular_kalman.predict()[0,0]
+
+            if orientation != None and abs(abs(orientation) - math.pi) < 0.15:
+                self.init_angular_kalman()
+                self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
+            elif orientation == None:
+                orientation = self.angular_kalman.predict()[0,0]
 
         if self.lost_counter >= 60: # if the thing was lost in all previous 10 frames
             self.reset()
