@@ -38,6 +38,13 @@ SPIN_DIST = 9.0
 SPIN_SPEED = 255
 
 
+PLUS = 1
+MINUS = -1
+SAME = 0
+
+
+
+
 class AdvancedGKController():
 
     def __init__(self, _robot_obj ,_robot_body="Nenhum", _debug_topic=None):
@@ -45,10 +52,12 @@ class AdvancedGKController():
         self.robot = _robot_obj
         self.position = [None, None]
         self.orientation = None
+        self.speed = None
         self.team_speed = None
         self.enemies_position = None
         self.enemies_speed = None
         self.ball_position = None
+        self.ball_speed
         self.team_side = None
         self.robot_body = _robot_body
         self.defend_position = np.array([0, 0])
@@ -87,11 +96,14 @@ class AdvancedGKController():
         #     rospy.logfatal("Deu ruim")
 
         self.orientation = self.robot.orientation
+        self.speed = self.robot.speed
         self.team_speed = self.robot.team_speed
         self.enemies_position = self.robot.enemies_position
         self.enemies_speed = self.robot.enemies_speed
         self.ball_position = self.robot.ball_position
+        self.ball_speed = self.robot.ball_speed
         self.team_side = self.robot.team_side
+        
         self.movement.univet_field.update_attack_side(not self.team_side)
 
     def update_pid(self):
@@ -237,16 +249,36 @@ class AdvancedGKController():
 
     def follow_ball(self):
 
-        self.defend_position[0] = MIN_X + GG_DIFF * self.team_side
+        
+        if self.ball_speed[1] > (1.0):    discount = PLUS
+        elif self.ball_speed[1] < (-1.0):  discount = MINUS
+        else:   discount = SAME
 
-        if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
-            self.defend_position[1] = self.ball_position[1]
-        else:
-            if self.ball_position[1] > MAX_Y:
-                self.defend_position[1] = MAX_Y
+        if self.ball_position[1] in np.arrange(0.0, 40.0):
+            self.defend_position = self.fixed_positions[0 if (0+discount <= 0) else discount]
+        elif self.ball_position[1] in np.arrange(40.1, 45.0):
+            self.defend_position = self.fixed_positions[1+discount]
+        elif self.ball_position[1] in np.arrange(45.1, 50.0):
+            self.defend_position = self.fixed_positions[2+discount]
+        elif self.ball_position[1] in np.arrange(50.1, 55.0):
+            self.defend_position = self.fixed_positions[3+discount]
+        elif self.ball_position[1] in np.arrange(55.1, 60.0):
+            self.defend_position = self.fixed_positions[4+discount]
+        elif self.ball_position[1] in np.arrange(60.1, 65.0):
+            self.defend_position = self.fixed_positions[5+discount]
+        elif self.ball_position[1] in np.arrange(65.1, 70.0):
+            self.defend_position = self.fixed_positions[6+discount]
+        elif self.ball_position[1] in np.arrange(70.1, 75.0):
+            self.defend_position = self.fixed_positions[7+discount]
+        elif self.ball_position[1] in np.arrange(75.5, 80.0):
+            self.defend_position = self.fixed_positions[8+discount]
+        elif self.ball_position[1] in np.arrange(80.1, 85.0):
+            self.defend_position = self.fixed_positions[9+discount]
+        elif self.ball_position[1] in np.arrange(85.1, 90.0):
+            self.defend_position = self.fixed_positions[10+discount]
+        else: #self.ball_position[1] in np.arrange(90.1, 130.0):
+            self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11-discount]
 
-            else:  # self.defend_position[1] < 38:
-                self.defend_position[1] = MIN_Y
 
         param_1, param_2, param3 = self.movement.move_to_point(
             speed=GOALKEEPER_SPEED,
