@@ -3,7 +3,7 @@ from time import sleep
 import cv2
 
 # initialize the client
-# robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:93:16") # umbabarauma
+#robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:93:16") # umbabarauma
 # robot = Sender(robotId=1, bluetoothId="84:0D:8E:0C:92:A2") # araraquara
 robot = Sender(robotId=1, bluetoothId="84:0D:8E:0D:BA:32") # jeremias
 robot.connect()
@@ -20,8 +20,14 @@ while True:
     elif key == ord('b'):
         robot.sendPacket(0, 0)
         sleep(0.2)
-        robot.send_angle_corretion(0, -150)
+        robot.send_angle_corretion(3.14/2, -100)
     elif key == ord('p'):
+        # for i in xrange(speed0, 255, 10):
+            # robot.sendPacket(i, i)
+            # print i
+            # sleep(0.05)
+            robot.sendPacket(0, 0)
+            sleep(0.2)
             robot.send_angle_corretion(0, 150)
     elif key == ord('r'):
         print "Rotating"
