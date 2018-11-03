@@ -3,6 +3,7 @@ import numpy.linalg as la
 import math
 import scipy.stats as stats
 import random
+import rospy
 
 MINCHANGE = 0.5
 
@@ -109,7 +110,7 @@ def raio_vetores(p1,v1,p2,v2,speed_max=255,upper_bound=800):
     cos = np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
     r1 =2*(1-cos)
     d = np.linalg.norm(p1-p2)
-    if (cos < 0.90):
-        ret = d/(np.sqrt(float(r1)))
+    if (cos < 0.95):
+        k = 0.05
+        ret = 10/(np.sqrt(float(r1*k)))
     return (ret/upper_bound) * speed_max
-
