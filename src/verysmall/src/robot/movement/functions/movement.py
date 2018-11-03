@@ -119,11 +119,11 @@ class Movement():
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        raio = raio_vetores(255, robot_position, robot_vector, ball_position, np.array([150, 65]- ball_position))
-        cte = 0.02
-        ratio = (raio * cte)**0.5
-        logfatal(speed*ratio)
-        return self.follow_vector(speed*ratio, np.array(robot_vector), np.array(vec), only_forward)
+        raio = raio_vetores(robot_position, robot_vector, ball_position, np.array([150, 65]- ball_position),200,800)
+        cte = 255
+        speed = (raio * cte)**0.5
+        logfatal(speed)
+        return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result
