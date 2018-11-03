@@ -53,7 +53,6 @@ class Zagueiro(StateMachine):
     move        = State('Move')
     border      = State('Border')
     area        = State('Area')
-    locked        = State('Locked')
 
     normal_to_defend      = normal.to(defend)
     normal_to_wait_ball   = normal.to(wait_ball)
@@ -61,7 +60,6 @@ class Zagueiro(StateMachine):
     normal_to_move        = normal.to(move)
     normal_to_border      = normal.to(border)
     normal_to_area        = normal.to(area)
-    normal_to_locked      = normal.to(locked)
 
     defend_to_wait_ball   = defend.to(wait_ball)
     defend_to_do_spin     = defend.to(do_spin)
@@ -69,7 +67,6 @@ class Zagueiro(StateMachine):
     defend_to_move        = defend.to(move)
     defend_to_border      = defend.to(border)
     defend_to_area        = defend.to(area)
-    defend_to_locked      = defend.to(locked)
 
     do_spin_to_normal     = do_spin.to(normal)
     do_spin_to_defend     = do_spin.to(defend)
@@ -77,7 +74,6 @@ class Zagueiro(StateMachine):
     do_spin_to_move       = do_spin.to(move)
     do_spin_to_border     = do_spin.to(border)
     do_spin_to_area       = do_spin.to(area)
-    do_spin_to_locked     = do_spin.to(locked)
 
     move_to_defend        = move.to(defend)
     move_to_normal        = move.to(normal)
@@ -85,7 +81,6 @@ class Zagueiro(StateMachine):
     move_to_do_spin       = move.to(do_spin)
     move_to_border        = move.to(border)
     move_to_area          = move.to(area)
-    move_to_locked        = move.to(locked)
 
     wait_ball_to_defend   = wait_ball.to(defend)
     wait_ball_to_normal   = wait_ball.to(normal)
@@ -93,7 +88,6 @@ class Zagueiro(StateMachine):
     wait_ball_to_do_spin  = wait_ball.to(do_spin)
     wait_ball_to_border   = wait_ball.to(border)
     wait_ball_to_area     = wait_ball.to(area)
-    wait_ball_to_locked   = wait_ball.to(locked)
 
     border_to_normal      = border.to(normal)
     border_to_defend      = border.to(defend)
@@ -101,21 +95,13 @@ class Zagueiro(StateMachine):
     border_to_do_spin     = border.to(do_spin)
     border_to_wait_ball   = border.to(normal)
     border_to_area        = border.to(area)
-    border_to_locked      = border.to(locked)
 
     area_to_normal        = area.to(normal)
     area_to_defend        = area.to(defend)
     area_to_move          = area.to(move)
     area_to_do_spin       = area.to(do_spin)
     area_to_wait_ball     = area.to(normal)
-    area_to_wait_locked   = area.to(locked)
 
-    locked_to_normal      = locked.to(normal)
-    locked_to_defend      = locked.to(defend)
-    locked_to_move        = locked.to(move)
-    locked_to_do_spin     = locked.to(do_spin)
-    locked_to_wait_ball   = locked.to(normal)
-    locked_to_wait_area   = locked.to(area)
 
 
 class MyModel(object):
