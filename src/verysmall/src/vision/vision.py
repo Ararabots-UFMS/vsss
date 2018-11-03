@@ -250,6 +250,8 @@ class Vision:
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
 
+                self.set_dark_border()
+
                 """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
                     self.home_seg, self.adv_seg and self.ball_seg """
                 self.pipeline()
@@ -274,13 +276,9 @@ class Vision:
     def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
-        tags = [9, 14, 18, 23, 28]
-
         for thing in things:
+            # The id of the thing will be its index in the lists
             id = thing.id
-            if id > 0 and id in tags: # sorry
-                id = tags.index(thing.id)
-
             if id >= 0:
                 positions_list[id] = thing.pos
                 orientations_list[id] = thing.orientation

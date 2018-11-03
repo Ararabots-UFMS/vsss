@@ -19,8 +19,11 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 120
+ZAGUEIRO_SPEED = 140
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
+
+def stuck_border(robot_position):
+    return False
 
 class ZagueiroController():
 
@@ -40,13 +43,15 @@ class ZagueiroController():
                          bodies_unpack[self.robot_body]['KI'],
                          bodies_unpack[self.robot_body]['KD']]
 
-        if(not self.team_side):
-            #Attack_in right side
-            self.attack_goal = np.array([150.0, 65.0])
-        else:
-            #Attack_in left side
-            self.attack_goal = np.array([0.0, 65.0])
+        # if(not self.team_side):
+        #     #Attack_in right side
+        #     self.attack_goal = np.array([150.0, 65.0])
+        # else:
+        #     #Attack_in left side
+        #     self.attack_goal = np.array([0.0, 65.0])
 
+        #univector without rotation
+        self.attack_goal = not self.team_side
 
         self.defend_position = np.array([0,0])
 
@@ -116,10 +121,17 @@ class ZagueiroController():
         if self.zagueiro.is_stop:
             self.zagueiro.stop_to_normal()
 
-        if self.zagueiro.is_normal:
+        # verify if the robot is on defense area
+        if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
+            self.zagueiro.normal_to_area()
 
-            if(not self.team_side): ############    team_side =  0
-                #rospy.logfatal("team side 0")
+        if self.zagueiro.is_normal:
+            #verify if the robot is stuck on border
+            if stuck_border(self.position):
+                self.zagueiro.normal_to_stuck()
+                return self.in_stuck()
+
+            if(self.team_side == LEFT):
                 if((section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0):
                     s = section(self.ball_position)
                     if s in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or s in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
@@ -129,7 +141,7 @@ class ZagueiroController():
                 else:
                      self.zagueiro.normal_to_wait_ball()
 
-            else:               ############    team_side = 1
+            else: # TEAM_SIDE == RIGHT
                 if((section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0):
                     if(near_ball(self.ball_position, self.position)):
                         self.zagueiro.normal_to_do_spin()
@@ -137,10 +149,6 @@ class ZagueiroController():
                         self.zagueiro.normal_to_defend()
                 else:
                      self.zagueiro.normal_to_wait_ball()
-
-            if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
-                self.zagueiro.normal_to_area()
-            sr = section(self.ball_position)
 
         if self.zagueiro.is_area:
             return self.in_area()
@@ -161,26 +169,30 @@ class ZagueiroController():
 
     def in_defend(self):
         rospy.logfatal(self.zagueiro.current_state)
+        #verify if the robot is stuck on border
+        if stuck_border(self.position):
+            self.zagueiro.normal_to_stuck()
+            return self.in_stuck()
+
+        #verify if the robot is in the area
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.defend_to_area()
             return self.in_area()
 
-        if(not ((not self.team_side) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0)):
+        if(not ((self.team_side == LEFT) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side == RIGHT) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0)):
             self.zagueiro.defend_to_wait_ball()
             return self.in_wait_ball()
         else:
-            s = section(self.ball_position)
-            if s in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or s in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
+            sb = section(self.ball_position)
+            if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
                 self.zagueiro.defend_to_border()
                 return self.in_border()
             if(near_ball(self.ball_position, self.position)):
                 self.zagueiro.defend_to_do_spin()
-                rospy.logfatal(self.zagueiro.current_state)
                 return self.in_spin()
             else:
                 self.zagueiro.defend_to_move()
-                rospy.logfatal(self.zagueiro.current_state)
-                return self.in_move();
+                return self.in_move()
 
 
     def in_spin(self):
@@ -203,17 +215,16 @@ class ZagueiroController():
         return param1, param2, self.pid_type
 
     def in_move(self):
-        # param1, param2, param3 = self.movement.move_to_point(
-        #     ZAGUEIRO_SPEED,
-        #     self.position,
-        #     [np.cos(self.orientation), np.sin(self.orientation)],
-        #     [75,65]
-        # )
-        # return param1, param2, self.pid_type
+        rospy.logfatal(self.zagueiro.current_state)
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.move_to_area()
             return self.in_area()
-        rospy.logfatal(self.zagueiro.current_state)
+
+        #verify if the robot is stuck on border
+        if stuck_border(self.position):
+            self.zagueiro.normal_to_stuck()
+            return self.in_stuck()
+
         # self.zagueiro.move_to_move()
         rospy.logfatal("A POSICAO DA BOLA EH: "+str(self.ball_position))
         param1, param2, param3 = self.movement.do_univector(
@@ -223,7 +234,8 @@ class ZagueiroController():
             robot_speed=np.array([0, 0]),
             obstacle_position=self.enemies_position,
             obstacle_speed=[[0,0]]*5,
-            ball_position=self.ball_position)
+            ball_position=self.ball_position,
+            only_forward)
         if near_ball(self.position, self.ball_position, 7.5):
             self.zagueiro.move_to_do_spin()
             return self.in_spin()
@@ -235,7 +247,7 @@ class ZagueiroController():
             self.zagueiro.wait_ball_to_area()
             return self.in_area()
 
-        if((not self.team_side) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0):
+        if((self.team_side == LEFT) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side == RIGHT) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0):
             self.zagueiro.wait_ball_to_defend()
             return self.in_defend()
         else:
@@ -298,7 +310,7 @@ class ZagueiroController():
             return self.in_normal_game()
 
     def in_border(self):
-        # rospy.logfatal(self.zagueiro.current_state)
+        rospy.logfatal(self.zagueiro.current_state)
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.border_to_area()
             return self.in_area()
@@ -326,3 +338,20 @@ class ZagueiroController():
         else:
             self.zagueiro.area_to_normal()
             return 0, 0, self.pid_type
+
+    def in_stuck(self):
+        rospy.logfatal(self.zagueiro.current_state)
+        robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
+        goal_vector = np.array(self.ball_position - self.position)
+        param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
+
+        #verify if the robot is aligned with the ball
+        if param3:
+            #go to the defense routine
+            self.zagueiro.stuck_to_defend()
+            return param1, param2, self.pid_type
+        else:
+            #keep turning
+            return param1, param2, self.pid_type
+
+        # def head_to(self, robot_vector, goal_vector):

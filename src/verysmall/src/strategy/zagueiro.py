@@ -53,6 +53,7 @@ class Zagueiro(StateMachine):
     move        = State('Move')
     border      = State('Border')
     area        = State('Area')
+    stuck       = State('Stuck')
 
     normal_to_defend      = normal.to(defend)
     normal_to_wait_ball   = normal.to(wait_ball)
@@ -60,6 +61,7 @@ class Zagueiro(StateMachine):
     normal_to_move        = normal.to(move)
     normal_to_border      = normal.to(border)
     normal_to_area        = normal.to(area)
+    normal_to_stuck        = normal.to(stuck)
 
     defend_to_wait_ball   = defend.to(wait_ball)
     defend_to_do_spin     = defend.to(do_spin)
@@ -67,6 +69,7 @@ class Zagueiro(StateMachine):
     defend_to_move        = defend.to(move)
     defend_to_border      = defend.to(border)
     defend_to_area        = defend.to(area)
+    defend_to_stuck        = defend.to(stuck)
 
     do_spin_to_normal     = do_spin.to(normal)
     do_spin_to_defend     = do_spin.to(defend)
@@ -81,6 +84,7 @@ class Zagueiro(StateMachine):
     move_to_do_spin       = move.to(do_spin)
     move_to_border        = move.to(border)
     move_to_area          = move.to(area)
+    move_to_stuck          = move.to(stuck)
 
     wait_ball_to_defend   = wait_ball.to(defend)
     wait_ball_to_normal   = wait_ball.to(normal)
@@ -88,6 +92,7 @@ class Zagueiro(StateMachine):
     wait_ball_to_do_spin  = wait_ball.to(do_spin)
     wait_ball_to_border   = wait_ball.to(border)
     wait_ball_to_area     = wait_ball.to(area)
+    wait_ball_to_stuck     = wait_ball.to(stuck)
 
     border_to_normal      = border.to(normal)
     border_to_defend      = border.to(defend)
@@ -95,6 +100,7 @@ class Zagueiro(StateMachine):
     border_to_do_spin     = border.to(do_spin)
     border_to_wait_ball   = border.to(normal)
     border_to_area        = border.to(area)
+    border_to_stuck        = border.to(stuck)
 
     area_to_normal        = area.to(normal)
     area_to_defend        = area.to(defend)
