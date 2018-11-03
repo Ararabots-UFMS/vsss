@@ -236,6 +236,7 @@ class ZagueiroController():
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position,
             only_forward=False)
+
         if near_ball(self.position, self.ball_position, 7.5):
             self.zagueiro.move_to_do_spin()
             return self.in_spin()
