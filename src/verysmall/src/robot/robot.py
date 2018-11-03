@@ -72,16 +72,16 @@ class Robot():
         self.strategies = [
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
-            ZagueiroController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
+            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
             SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
-        self.state_machine = AdvancedGKController()
+        self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
 
     def run(self):
 
-        self.state_machine.update_game_information(self)
+        self.state_machine.update_game_information()
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
         elif self.game_state == 1:  # Normal Play
