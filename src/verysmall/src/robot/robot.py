@@ -9,8 +9,13 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper_controller import AdvancedGKController
+from strategy.zagueiro_controller import ZagueiroController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
+from strategy.ball_range import behind_ball
+
+SOFTWARE = 0
+HARDWARE = 1
 
 class Robot():
     """docstring for Robot"""
@@ -23,6 +28,9 @@ class Robot():
         self.robot_body = _robot_body
         self.tag = int(_tag)
         self.should_debug = _should_debug
+
+        # True position for penalty
+        self.true_pos = np.array([.0,.0])
 
         # Receive from vision
         self.ball_position = None
@@ -82,17 +90,29 @@ class Robot():
     def run(self):
 
         self.state_machine.update_game_information()
+
         if self.game_state == 0:  # Stopped
             param_A, param_B, param_C = self.state_machine.set_to_stop_game()
+
         elif self.game_state == 1:  # Normal Play
             param_A, param_B, param_C = self.state_machine.in_normal_game()
             # rospy.logfatal(str(param_A)+" "+ str(param_B))
+
         elif self.game_state == 2:  # Freeball
             param_A, param_B, param_C = self.state_machine.in_freeball_game()
+
         elif self.game_state == 3:  # Penalty
-            param_A, param_B, param_C = self.state_machine.in_penalty_game()
+
+            if self.robot_id_integer == self.penalty_robot:
+                rospy.logfatal(str(self.robot_id_integer)+" Vo bate penalty")
+                param_A, param_B, param_C = self.penalty_routine()
+            else:
+                self.game_state = 1
+                param_A, param_B, param_C = self.state_machine.in_penalty_game()
+
         elif self.game_state == 4:  # meta
             param_A, param_B, param_C = self.state_machine.in_meta_game()
+
         else:  # I really really really Dont Know
             print("wut")
         # ========================================================
@@ -146,3 +166,19 @@ class Robot():
             y.append(element[1])
 
         return np.poly1d(np.polyfit(np.asarray(x), np.asarray(y), degree))
+
+    def penalty_routine(self):
+        if np.all(self.position):
+            self.true_pos = self.position
+
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance = 25):
+            param_1, param_2, param_c = self.state_machine.movement.move_to_point(
+                220, np.array(self.position),
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                np.array([(not self.team_side)*150, 65]))
+
+            return param_1, param_2, SOFTWARE #0.0, 250, HARDWARE
+        else:
+            rospy.logfatal("Apareci aqui:"+str(self.position))
+            self.game_state = 1
+            return self.state_machine.in_penalty_game()

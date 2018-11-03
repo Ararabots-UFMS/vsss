@@ -7,6 +7,7 @@ sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 from rospy import logfatal
+import strategy_utils
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
@@ -29,6 +30,7 @@ class AttackerWithUnivectorController():
         self.ball_position = None
         self.team_side = None
         self.robot_body = _robot_body
+        self.position_buffer = []
         rospy.logfatal(self.robot_body)
         self.pid_list = [bodies_unpack[self.robot_body]['KP'],
                          bodies_unpack[self.robot_body]['KI'],
@@ -65,6 +67,7 @@ class AttackerWithUnivectorController():
         self.ball_position = self.robot.ball_position
         self.team_side = self.robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
+        self.robot.add_to_buffer(self.position_buffer, 60, self.position)
 
     def update_pid(self):
         """
@@ -149,6 +152,7 @@ class AttackerWithUnivectorController():
 
         :return: int, int
         """
+        rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
         self.AttackerWithUnivector.univector_to_univector()
         self.AttackerWithUnivector.univector_to_univector()
         param_a, param_b, _ = self.movement.do_univector_velo(
