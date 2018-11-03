@@ -1,6 +1,7 @@
 {
   "Atacante" : 0,
-  "Goleiro"  : 1,
-  "Zagueiro" : 2,
-  "Set PID Machine" : 3
+  "Atacker With Univector" : 1,
+  "Goleiro"  : 2,
+  "Zagueiro" : 3,
+  "Set PID Machine" : 4
 }
