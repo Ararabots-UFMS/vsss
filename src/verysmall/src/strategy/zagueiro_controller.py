@@ -4,8 +4,10 @@ import rospy
 import numpy as np
 from zagueiro import Zagueiro, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
+from math import pi
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
+from utils.math_utils import angleBetween
 path += '../parameters/bodies.json'
 from arena_sections import *
 from ball_range import *
@@ -16,7 +18,7 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 169
+ZAGUEIRO_SPEED = 120
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 
 class ZagueiroController():
@@ -121,7 +123,8 @@ class ZagueiroController():
                     s = section(self.ball_position)
                     if s in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or s in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
                         self.zagueiro.normal_to_border()
-                    self.zagueiro.normal_to_defend()
+                    else:
+                        self.zagueiro.normal_to_defend()
                 else:
                      self.zagueiro.normal_to_wait_ball()
 
@@ -204,21 +207,27 @@ class ZagueiroController():
         return param1, param2, self.pid_type
 
     def in_move(self):
+        # param1, param2, param3 = self.movement.move_to_point(
+        #     ZAGUEIRO_SPEED,
+        #     self.position,
+        #     [np.cos(self.orientation), np.sin(self.orientation)],
+        #     [75,65]
+        # )
+        # return param1, param2, self.pid_type
         if section(self.position) in [LEFT_GOAL, LEFT_GOAL_AREA] or section(self.position) in [RIGHT_GOAL, RIGHT_GOAL_AREA]:
             self.zagueiro.move_to_area()
             return self.in_area()
         rospy.logfatal(self.zagueiro.current_state)
         # self.zagueiro.move_to_move()
         param1, param2, param3 = self.movement.do_univector(
-            ZAGUEIRO_SPEED,
-            self.position,
-            [np.cos(self.orientation), np.sin(self.orientation)],
-            self.team_speed,
-            self.enemies_position,
-            self.enemies_speed,
-            self.ball_position
-            )
-        if param3:
+            speed=ZAGUEIRO_SPEED,
+            robot_position=self.position,
+            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+            robot_speed=np.array([0, 0]),
+            obstacle_position=self.enemies_position,
+            obstacle_speed=[[0,0]]*5,
+            ball_position=self.ball_position)
+        if near_ball(self.position, self.ball_position, 7.5):
             self.zagueiro.move_to_do_spin()
             return self.in_spin()
         return param1, param2, self.pid_type
@@ -302,7 +311,7 @@ class ZagueiroController():
         sr = section(self.position)
         if not near_ball(self.position, self.ball_position, 7.5) and sr in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, UP_BORDER, DOWN_BORDER]:
             self.zagueiro.border_to_locked()
-            return in_locked()
+            return self.in_locked()
         sb = section(self.ball_position)
         if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
             rospy.logfatal("to na borda")
@@ -332,20 +341,20 @@ class ZagueiroController():
         if not near_ball(self.position, self.ball_position, 7.5):
             sr = section(self.ball_position)
             if sr == UP_BORDER:
-                if angleBetween(self.position, [self.position[0], 135],abs=True) <= 30.0:
+                if angleBetween(self.position, [self.position[0], 135],abs=True) <= pi/6.0:
                     self.zagueiro.locked_to_do_spin()
                     return self.in_spin()
             elif sr == DOWN_BORDER:
-                if angleBetween(self.position, [self.position[0], -5], abs=True) <= 30.0:
+                if angleBetween(self.position, [self.position[0], -5], abs=True) <= pi/6.0:
                     self.zagueiro.locked_to_do_spin()
                     return self.in_spin()
             elif sr in [LEFT_DOWN_BOTTOM_LINE, LEFT_UP_BOTTOM_LINE]:
-                if angleBetween(self.position, [0, self.position[1]],abs=True) <= 30.0:
+                if angleBetween(self.position, [0, self.position[1]],abs=True) <= pi/6.0:
                     self.zagueiro.locked_to_do_spin()
                     return self.in_spin()
             elif sr in [RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
-                if angleBetween(self.position, [self.position[0], 155],abs=True) <= 30.0:
+                if angleBetween(self.position, [self.position[0], 155],abs=True) <= pi/6.0:
                     self.zagueiro.locked_to_do_spin()
                     return self.in_spin()
-        self.zagueiro.area_to_normal()
+        self.zagueiro.locked_to_defend()
         return self.in_normal_game()
