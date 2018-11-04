@@ -154,7 +154,7 @@ class AttackerWithUnivectorController():
 
         :return: int, int
         """
-        rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
+        #rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
         if strategy_utils.border_stuck(self.position_buffer, self.orientation):
             param1, param2, _ = self.movement.move_to_point(speed=130, robot_position=self.position,
                                                              robot_vector= [np.cos(self.orientation), np.sin(self.orientation)],

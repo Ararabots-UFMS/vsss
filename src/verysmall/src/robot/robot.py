@@ -93,6 +93,7 @@ class Robot():
 
     def run(self):
         rospy.logfatal(self.get_stuck(self.position))
+
         self.state_machine.update_game_information()
 
         if self.game_state == 0:  # Stopped
@@ -194,8 +195,7 @@ class Robot():
 
     def get_stuck(self, position):
         if sum(self.velocity_buffer):
-            position_sum = self.buffer_mean(self.position_buffer)
-            if np.any( abs(position_sum - np.array(position)) < 3 ):
-                    return True
+            if np.all(self.speed) < 1:
+                return True
         
         return False

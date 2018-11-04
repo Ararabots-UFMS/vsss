@@ -47,6 +47,18 @@ class VisionNode:
         self.msg.team_pos[1] = (self.msg.team_pos[1] + 1)%120
         self.msg.team_pos[2] = (self.msg.team_pos[2] + 1)%120
         self.msg.team_pos[3] = 120
+        
+        if self.msg.team_pos[0] > 60:
+            self.msg.team_speed[0] = 100.0
+            self.msg.team_speed[1] = 100.0
+            self.msg.team_speed[2] = 100.0
+            self.msg.team_speed[3] = 100.0
+        else:
+            self.msg.team_speed[0] = .0
+            self.msg.team_speed[1] = .0
+            self.msg.team_speed[2] = .0
+            self.msg.team_speed[3] = .0
+
         self.mercury.pub.publish(self.msg)
 
 
