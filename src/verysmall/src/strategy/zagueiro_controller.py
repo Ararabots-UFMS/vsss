@@ -20,7 +20,7 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 140
+ZAGUEIRO_SPEED = 100
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 ENEMY_POS = np.array([[[7.5,38.0],[7.5, 51.0], [7.5, 64], [7.5, 77], [7.5, 92.0]],[[142.5,38.0],[142.5, 51.0], [142.5, 64], [142.5, 77], [142.5, 92.0]]])
 BOTTOM_LEFT_LINE_POS = [[5.0, 20.0],[5.0, 105.0]]
@@ -62,7 +62,7 @@ class ZagueiroController():
         self.stop = MyModel(state='stop')
         self.zagueiro = Zagueiro(self.stop)
 
-        self.movement = Movement(self.pid_list, error=8, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
+        self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
 
 
     def set_pid_type(self, _type):

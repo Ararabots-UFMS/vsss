@@ -83,8 +83,6 @@ if __name__ == "__main__":
         cv2.imshow('Robot Simulation',img)
         cv2.moveWindow('Robot Simulation', 400,0)
 
-        vec = univetField.getVec(np.array(sim.robot), np.array([0,0]), np.array(sim.ball))
-
         # use mouse
         if key == ord('m'):
             mouseMode = not mouseMode
@@ -93,7 +91,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.follow_vector(150, np.array(sim.robotVector), np.array(vec))
+        leftSpeed, rightSpeed, done = movement.do_univector_velo(speed=200,robot_position=self.position,robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],robot_speed=np.array([0, 0]),obstacle_position=self.enemies_position,obstacle_speed=[[0,0]]*5,ball_position=self.ball_position)
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
