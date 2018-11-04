@@ -118,11 +118,20 @@ class Movement():
         :return: returns nothing
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        raio = raio_vetores(robot_position, robot_vector, ball_position, np.array([150, 65]- ball_position),200,700)
+        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+
+        # central area speed
+        raio = raio_vetores(robot_position, robot_vector, ball_position, np.array(self.univet_field.get_attack_goal() - ball_position),speed,500)
         cte = 100
         speed = (raio * cte)**0.5 + 60
+
+        # border area speed
+        #raio2 = raio_vetores(robot_position, robot_vector, ball_position, np.array(vec - ball_position),200,700)
+        #cte2 = 100
+        #speed2 = (raio2 * cte2)**0.5 + 60
+
         #speed = raio
+        #logfatal("s1  %d s2 %d"%(speed,speed2))
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 

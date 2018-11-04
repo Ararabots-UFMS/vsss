@@ -107,10 +107,11 @@ def raio_vetores(p1,v1,p2,v2,speed_max=255,upper_bound=800):
     v2 = np.array(v2)
     ret = upper_bound
 
-    cos = np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2))
+    cos = abs(np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)))
     r1 =2*(1-cos)
     d = np.linalg.norm(p1-p2)
     if (cos < 0.95):
-        k = 0.05
+        k = 0.01
         ret = 10/(np.sqrt(float(r1*k)))
+    #rospy.logfatal("%4.3f %4.3f"%(cos,ret))
     return (ret/upper_bound) * speed_max
