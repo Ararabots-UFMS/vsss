@@ -13,6 +13,7 @@ from strategy.zagueiro_controller import ZagueiroController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.ball_range import behind_ball
+from strategy.hardware_goal_keeper.hardware_advanced_keeper_controller import Hardware_AdvancedGKController
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -82,9 +83,10 @@ class Robot():
         self.strategies = [
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            Hardware_AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
-            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
-            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
+            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
+            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body)
         ]
 
         self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
