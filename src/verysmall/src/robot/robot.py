@@ -128,7 +128,7 @@ class Robot():
 
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
-        self.add_to_buffer(self.position_buffer, 10, self.position)
+        #self.add_to_buffer(self.position_buffer, 10, self.position)
 
         if self.bluetooth_sender:
             self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
@@ -195,6 +195,11 @@ class Robot():
 
     def get_stuck(self, position):
         if sum(self.velocity_buffer):
+
+            # position_sum = self.buffer_mean(self.position_buffer)
+            # if np.any( abs(position_sum - np.array(position)) < 3 ):
+            #     return True
+
             if np.all(self.speed) < 1:
                 return True
         
