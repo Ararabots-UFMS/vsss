@@ -92,7 +92,10 @@ class Things:
             self.init_kalman()
             # A initialization state must be provided to the kalman filter
             self.kalman.statePost = np.array([[pos[0], pos[1], 0., 0., 0., 0.]]).reshape(6,1)
-            self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
+            if orientation != None:
+                self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
+            else:
+                self.angular_kalman.statePost = np.array([[0, 0., 0.]]).reshape(3,1)
             self.lost_counter = 0
             self.speed = np.array([0, 0])
         else:
