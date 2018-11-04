@@ -31,19 +31,17 @@ MAX_Y = 85.0
 MIN_Y_AREA = 30.0
 MAX_Y_AREA = 100.0
 
-GG_DIFF = 133.0
+GG_DIFF = 130.0
 
 SPIN_DIST = 9.0
 
 SPIN_SPEED = 255
 
 
-PLUS = 3
-MINUS = -3
+DEFENCE_THRESHOLD = 5.0 
+PLUS  = 1
+MINUS = -1
 SAME = 0
-
-
-
 
 class AdvancedGKController():
 
@@ -80,6 +78,22 @@ class AdvancedGKController():
         self.buffer = []
         self.buffer_size = 50
 
+        self.fixed_positions = [
+                                [10.0+self.team_side*130.0, 40.0],
+                                [10.0+self.team_side*130.0, 42.5],
+                                [10.0+self.team_side*130.0, 47.5],
+                                [10.0+self.team_side*130.0, 52.5],
+                                [10.0+self.team_side*130.0, 57.5],
+                                [10.0+self.team_side*130.0, 62.5],
+                                [10.0+self.team_side*130.0, 67.5],
+                                [10.0+self.team_side*130.0, 72.5],
+                                [10.0+self.team_side*130.0, 77.5],
+                                [10.0+self.team_side*130.0, 82.5],
+                                [10.0+self.team_side*130.0, 87.5],
+                                [10.0+self.team_side*130.0, 90.0],
+                                ]
+
+
 
     def set_pid_type(self, _type):
         """
@@ -113,7 +127,22 @@ class AdvancedGKController():
         self.defend_position = np.array([10.0+self.team_side*130.0, 0.0])
                                 
 
-        self.robot.add_to_bufffer(self.buffer, self.buffer_size, self.ball_position)
+        self.robot.add_to_buffer(self.buffer, self.buffer_size, self.ball_position)
+
+        self.fixed_positions = [
+                        [10.0+self.team_side*130.0, 40.0],
+                        [10.0+self.team_side*130.0, 42.5],
+                        [10.0+self.team_side*130.0, 47.5],
+                        [10.0+self.team_side*130.0, 52.5],
+                        [10.0+self.team_side*130.0, 57.5],
+                        [10.0+self.team_side*130.0, 62.5],
+                        [10.0+self.team_side*130.0, 67.5],
+                        [10.0+self.team_side*130.0, 72.5],
+                        [10.0+self.team_side*130.0, 77.5],
+                        [10.0+self.team_side*130.0, 82.5],
+                        [10.0+self.team_side*130.0, 87.5],
+                        [10.0+self.team_side*130.0, 90.0],
+                        ]
 
     def update_pid(self):
         """
@@ -226,7 +255,8 @@ class AdvancedGKController():
             else:
                 return self.follow_ball()
 
-        elif(( section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]) and ((self.team_side == LEFT and self.position[0] > 35.0 ) | (self.team_side == RIGHT and self.position < 115.0 )) ):
+        elif(section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] and ( (self.team_side == LEFT and self.ball_position[0] > 35.0) or (self.team_side == RIGHT and self.ball_position[0] < 115.0) ) ):
+            
             self.last_state = self.AdvancedGK.current_state
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
@@ -258,42 +288,51 @@ class AdvancedGKController():
 
     def follow_ball(self):
 
-#       if self.ball_speed[1] > (0.5):    discount = PLUS
-#      elif self.ball_speed[1] < (-0.5):  discount = MINUS
-#     else:   discount = SAME
+        mean = self.robot.buffer_mean(self.buffer)
 
-#       if self.ball_speed[1] > (0.0):    discount = PLUS
-#       elif self.ball_speed[1] < (0.0):  discount = MINUS
-#       else:   discount = SAME
+        if distance_point(self.ball_position, mean) > DEFENCE_THRESHOLD:
+            polynom = self.robot.buffer_polyfit(self.buffer, 1)
 
-        polynom = self.robot.buffer_polyfit(self.buffer, 1)
+            position = polynom(MIN_X + self.team_side*130)
 
-        self.defend_position[1] = polynom(MIN_X) 
+            if position > 90.0:
+                position = 90.0
+            elif position < 40.0:
+                position = 40.0
+
+            self.defend_position[0] = 10.0    
+            self.defend_position[1] = position
         
-        # if inside_range(0.0,40.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[0 if (0+discount <= 0) else discount]
-        # elif inside_range(40.1,45.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[1+discount]
-        # elif inside_range(45.1,50.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[2+discount]
-        # elif inside_range(50.1,55.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[3+discount]
-        # elif inside_range(55.1,60.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[4+discount]
-        # elif inside_range(60.1,65.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[5+discount]
-        # elif inside_range(65.1,70.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[6+discount]
-        # elif inside_range(70.1,75.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[7+discount]
-        # elif inside_range(75.1,80.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[8+discount]
-        # elif inside_range(80.1,85.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[9+discount]
-        # elif inside_range(85.1,90.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[10+discount]
-        # else:# inside_range(90.1,130.0,self.ball_position[1]):
-        #     self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11+discount]
+        else:
+
+            if self.ball_speed[1] > (0.5):    discount = PLUS
+            elif self.ball_speed[1] < (-0.5):  discount = MINUS
+            else:   discount = SAME
+
+            if inside_range(0.0,40.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[0 if (0+discount <= 0) else discount]
+            elif inside_range(40.1,45.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[1+discount]
+            elif inside_range(45.1,50.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[2+discount]
+            elif inside_range(50.1,55.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[3+discount]
+            elif inside_range(55.1,60.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[4+discount]
+            elif inside_range(60.1,65.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[5+discount]
+            elif inside_range(65.1,70.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[6+discount]
+            elif inside_range(70.1,75.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[7+discount]
+            elif inside_range(75.1,80.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[8+discount]
+            elif inside_range(80.1,85.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[9+discount]
+            elif inside_range(85.1,90.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[10+discount]
+            else:# inside_range(90.1,130.0,self.ball_position[1]):
+                self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11+discount]
 
         param_1, param_2, param3 = self.movement.move_to_point(
             speed=GOALKEEPER_SPEED,
@@ -301,11 +340,6 @@ class AdvancedGKController():
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             goal_position=self.defend_position
         )
-
-        rospy.logfatal(discount)
-        rospy.logfatal(self.ball_position)
-        rospy.logfatal(self.ball_speed)
-        rospy.logfatal(self.defend_position)
 
         return param_1, param_2, self.pid_type
 
@@ -322,20 +356,50 @@ class AdvancedGKController():
         rospy.logfatal(self.AdvancedGK.current_state)
         # rospy.logfatal(self.position)
 
-        goal_position = np.array([0, 0])
-        goal_position[0] = MIN_X + GG_DIFF * self.team_side
+        goal_position = [0, 0]
+        
 
-        if self.position[1] >= MIN_Y_AREA and self.position[1] <= MAX_Y_AREA:
-            # rospy.logfatal("frente area")
-            goal_position[1] = self.position[1]
+        if(self.position[0] <= self.ball_position[0] <= (MIN_X + GG_DIFF * self.team_side) ): 
+            goal_position[0] = MIN_X + GG_DIFF * self.team_side
+           
+            if self.team_side == LEFT: 
+                goal_position[1] = self.position[1]
+                rospy.logfatal(goal_position)
+            else:
+
+                if self.ball_position[1] >= 40.0 and self.ball_position[1] <= 90.0:
+                    goal_position[1] = self.ball_position[1] 
+                elif self.ball_position[1] > 90.0:
+                    goal_position[1] = 90.0
+                else:
+                    goal_position[1] = 40.0
+                rospy.logfatal(goal_position)
+                
         else:
-            if self.position[1] > MAX_Y_AREA:
-                # rospy.logfatal("esq area")
-                goal_position[1] = MAX_Y_AREA - 10
+            goal_position[0] = MIN_X + GG_DIFF * self.team_side
+            
+            if self.ball_position[1] >= 40.0 and self.ball_position[1] <= 90.0:
+                goal_position[1] = self.ball_position[1] 
+            elif self.ball_position[1] > 90.0:
+                goal_position[1] = 90.0
+            else:
+                goal_position[1] = 40.0
+            rospy.logfatal(goal_position)
 
-            else:  # self.defend_position[1] < 38:
-                # rospy.logfatal("dir area")
-                goal_position[1] = MIN_Y_AREA + 20
+
+        # goal_position[0] = MIN_X + GG_DIFF * self.team_side
+
+        # if self.position[1] >= MIN_Y_AREA and self.position[1] <= MAX_Y_AREA:
+        #     # rospy.logfatal("frente area")
+        #     goal_position[1] = self.position[1]
+        # else:
+        #     if self.position[1] > MAX_Y_AREA:
+        #         # rospy.logfatal("esq area")
+        #         goal_position[1] = MAX_Y_AREA - 10
+
+        #     else:  # self.defend_position[1] < 38:
+        #         # rospy.logfatal("dir area")
+        #         goal_position[1] = MIN_Y_AREA + 20
 
         param1, param2, param3 = self.movement.move_to_point(
             GOALKEEPER_SPEED,
@@ -351,6 +415,7 @@ class AdvancedGKController():
         return param1, param2, self.pid_type
 
     def in_freeball_game(self):
+        
         """
         Transitions in freeball state
 
@@ -369,6 +434,9 @@ class AdvancedGKController():
             return self.in_normal_game()
 
     def in_penalty_game(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
+
         """
         Transitions in penalty state
 
@@ -384,6 +452,9 @@ class AdvancedGKController():
             return self.in_normal_game()
 
     def in_meta_game(self):
+        rospy.logfatal(self.AdvancedGK.current_state)
+
+
         """
         Transitions in meta state
 
