@@ -23,7 +23,7 @@ HARDWARE = 1
 DISTANCE = 8.0
 
 GOALKEEPER_SPEED = 100
-MIN_X = 10.0
+MIN_X = 6.0
 
 MIN_Y = 45.0
 MAX_Y = 85.0
@@ -72,7 +72,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=7, attack_goal=self.attack_goal, _pid_type=self.pid_type,
+        self.movement = Movement(self.pid_list, error=5, attack_goal=self.attack_goal, _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
         self.buffer = []
@@ -220,7 +220,7 @@ class AdvancedGKController():
 
         elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
             if not on_attack_side(self.ball_position, self.team_side):
-                if near_ball(self.ball_position, self.position, DISTANCE):
+                if near_ball(self.ball_position, self.position, DISTANCE)  and (not inside_range(45.0, 85.0, self.ball_position[1]) ):
                     self.last_state = self.AdvancedGK.current_state
                     self.AdvancedGK.defend_ball_to_spin()
                     return self.in_spin()
