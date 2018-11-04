@@ -20,9 +20,11 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 160
+ZAGUEIRO_SPEED = 140
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 ENEMY_POS = np.array([[[7.5,38.0],[7.5, 51.0], [7.5, 64], [7.5, 77], [7.5, 92.0]],[[142.5,38.0],[142.5, 51.0], [142.5, 64], [142.5, 77], [142.5, 92.0]]])
+BOTTOM_LEFT_LINE_POS = [[5.0, 20.0],[5.0, 105.0]]
+BOTTOM_RIGHT_LINE_POS = [[145.0, 20.0],[145.0, 105.0]]
 
 
 class ZagueiroController():
@@ -343,6 +345,11 @@ class ZagueiroController():
 
     def in_border(self):
         rospy.logfatal(self.zagueiro.current_state)
+        robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
+        if(near_ball(self.ball_position, self.position)):
+            self.zagueiro.border_to_do_spin()
+            return self.in_spin()
+
         if extended_area(self.position, self.team_side)in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
             self.zagueiro.border_to_area()
             return self.in_area()
@@ -352,53 +359,53 @@ class ZagueiroController():
             return self.in_stuck()
 
         sb = section(self.ball_position)
-        if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
-            rospy.logfatal("to na borda")
-            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-            if(near_ball(self.ball_position, self.position, 7.5)):
-                self.zagueiro.border_to_do_spin()
-                return self.in_spin()
-            else:
-                if (self.position[1] <= 65.0): #DOWN
-                    if self.ball_position[1] <=65 and self.ball_position[0] <= 75:
-                        param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.ball_position)
-                    else:
-                        for i in xrange(ENEMY_POS[self.team_side].shape[0]):
-                            np.append(self.enemies_position, ENEMY_POS[self.team_side][i])
-                            np.append(self.enemies_speed, np.array([0,0]))
 
-                        param1, param2, param3 = self.movement.do_univector(
-                            speed=ZAGUEIRO_SPEED,
-                            robot_position=self.position,
-                            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                            robot_speed=np.array([0, 0]),
-                            obstacle_position=self.enemies_position,
-                            obstacle_speed=[[0,0]]*5,
-                            ball_position=self.ball_position)
+        if self.ball_position[0] < 75.0 and self.team_side == LEFT:
+            if sb in [LEFT_UP_CORNER, LEFT_DOWN_CORNER, LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE]:
+                if self.ball_position[1] < 65:
+                    point = BOTTOM_LEFT_LINE_POS[0]
                 else:
-                    if self.ball_position[1] >65 and self.ball_position[0] > 75:
-                        param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.ball_position)
-                    else:
-                        for i in xrange(ENEMY_POS[self.team_side].shape[0]):
-                            np.append(self.enemies_position, ENEMY_POS[self.team_side][i])
-                            np.append(self.enemies_speed, np.array([0,0]))
+                    point = BOTTOM_LEFT_LINE_POS[1]
+                param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, point)
+                if not param3:
+                    return param1, param2, self.pid_type
 
-                        param1, param2, param3 = self.movement.do_univector(
-                            speed=ZAGUEIRO_SPEED,
-                            robot_position=self.position,
-                            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                            robot_speed=np.array([0, 0]),
-                            obstacle_position=self.enemies_position,
-                            obstacle_speed=[[0,0]]*5,
-                            ball_position=self.ball_position)
-                return param1, param2, self.pid_type
-        else:
-            self.zagueiro.border_to_normal()
-            return self.in_normal_game()
+        elif self.ball_position[0] >= 75 and self.team_side == RIGHT:
+            if sb in [RIGHT_UP_CORNER, RIGHT_DOWN_CORNER, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
+                if self.ball_position[1] < 65:
+                    point = BOTTOM_RIGHT_LINE_POS[0]
+                else:
+                    point = BOTTOM_RIGHT_LINE_POS[1]
+                param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, point)
+                if not param3:
+                    return param1, param2, self.pid_type
+
+        if self.ball_position[0] < 75 and self.team_side == LEFT or self.ball_position[0] >=75 and self.team_side == RIGHT:
+            if sb in [UP_BORDER, DOWN_BORDER]:
+                if self.position[1] < 65 and self.ball_position[1] >=65 or self.position[1]> 65 and self.ball_position[1] <= 65:
+                    for i in xrange(ENEMY_POS[self.team_side].shape[0]):
+                        np.append(self.enemies_position, ENEMY_POS[self.team_side][i])
+                        np.append(self.enemies_speed, np.array([0,0]))
+
+                    param1, param2, param3 = self.movement.do_univector(
+                        speed=ZAGUEIRO_SPEED,
+                        robot_position=self.position,
+                        robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                        robot_speed=np.array([0, 0]),
+                        obstacle_position=self.enemies_position,
+                        obstacle_speed=[[0,0]]*5,
+                        ball_position=self.ball_position)
+                    return param1, param2, self.pid_type
+                else:
+                    param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.ball_position)
+                if not param3:
+                    return param1, param2, self.pid_type
+            else:
+                self.zagueiro.border_to_defend()
+        return 0, 0, self.pid_type
 
     def in_area(self):
         if extended_area(self.position, self.team_side) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
-            rospy.logfatal("move to point "+ str(self.zagueiro.current_state))
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
             param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.defend_position)
             return param1, param2, self.pid_type
@@ -408,16 +415,22 @@ class ZagueiroController():
 
     def in_stuck(self):
         rospy.logfatal(self.zagueiro.current_state)
-        robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-        goal_vector = np.array(self.ball_position - self.position)
-        param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
+        if border_stuck(self.position_buffer, self.orientation):
+            rospy.logfatal("if do stuck")
 
-        #verify if the robot is aligned with the ball
-        if param3:
-            #go to the defense routine
-            self.zagueiro.stuck_to_defend()
-            return param1, param2, self.pid_type
+            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
+            goal_vector = np.array(np.array([75,65]) - self.position)
+            param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
+
+            #verify if the robot is aligned with the ball
+            if param3:
+                #go to the defense routine
+                self.zagueiro.stuck_to_defend()
+                return param1, param2, self.pid_type
+            else:
+                #keep turning
+                rospy.logfatal(str(param1)+"  "+str(param2))
+                return param1, param2, self.pid_type
         else:
-            #keep turning
-            rospy.logfatal(str(param1)+"  "+str(param2))
-            return param1, param2, self.pid_type
+            self.zagueiro.stuck_to_defend()
+            return 0,0, self.pid_type
