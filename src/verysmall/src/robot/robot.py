@@ -31,6 +31,8 @@ class Robot():
 
         # True position for penalty
         self.true_pos = np.array([.0,.0])
+        self.velocity_buffer = np.array([])
+        self.position_buffer = np.array([])
 
         # Receive from vision
         self.ball_position = None
@@ -120,6 +122,11 @@ class Robot():
         # Param A :    LEFT           |      Theta
         # Param B :    RIGHT          |      Speed
         # ========================================================
+
+        self.add_to_buffer(velocity_buffer, param_A, 10)
+        self.add_to_buffer(velocity_buffer, param_B, 10)
+        self.add_to_buffer(position_buffer, self.position, 10)
+
         if self.bluetooth_sender:
             self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
 

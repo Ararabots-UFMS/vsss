@@ -246,3 +246,12 @@ def border_stuck(position_buffer, orientation):
                 return False
         else:
             return False
+
+def get_stuck(position, velocity_buffer, position_buffer):
+    
+    if np.any(velocity_buffer):
+        position_sum = np.sum(position_buffer, axis= 0)*0.1
+        if np.any( abs(position_sum - pos) < 1 ):
+                return True
+    
+    return False
