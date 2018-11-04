@@ -114,7 +114,7 @@ class MainWindowView:
             self.arena.image = self.virtualField.field
 
             if self.virtualField.draw_vectors:
-                
+
                 self.debug_counter = 0
                 self.last_index, self.debug_vector = self.reader.pop_item_debug()
 
@@ -123,9 +123,9 @@ class MainWindowView:
                     self.debug_counter+= 1
                     self.last_index, self.debug_vector = self.reader.pop_item_debug()
 
-                if self.debug_counter: 
+                if self.debug_counter:
                     self.virtualField.plot_debug_vectors(data_item.team_pos, self.debug_vector_array)
-            
+
             self.arena.redraw()
 
         self.computed_frames += 1
