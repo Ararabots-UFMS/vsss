@@ -34,6 +34,11 @@ class ParamsSetter:
         self.arena_size = None
         self.vertices_points = []
 
+        self.img_width = None
+        self.img_height = None
+        self.frame = None
+        self.mouse_last_pos = None
+
     def get_status_bar(self, h, w, status):
         font = cv2.FONT_HERSHEY_SIMPLEX
         status_bar = np.zeros((h, w, 3), np.uint8)
@@ -81,10 +86,19 @@ class ParamsSetter:
                 segment = np.array([sorted_points[j], sorted_points[0]]).reshape((-1, 1, 2))
                 cv2.polylines(img, [segment], True, COLORS.GREEN, 2)
 
+    def draw_guide_lines(self, img):
+        if self.mouse_last_pos != None:
+            x,y = self.mouse_last_pos
+            cv2.line(img, (x, 0), (x, self.img_width - 1), COLORS.GREEN, 1)
+            # horizontal line
+            cv2.line(img,  (0, y), (self.img_height - 1, y), COLORS.GREEN, 1)
+
     def onMouse_add_mode(self, event, x, y, flags, pts):
         if event == cv2.EVENT_LBUTTONUP:
             yt = y-self.BAR_HEIGHT
             pts.append((x, yt))
+
+        self.mouse_last_pos = (x,y-self.BAR_HEIGHT)
 
     def onMouse_delete_mode(self, event, x, y, flags, pts):
         i = self.inside_circle(pts, (x,y-self.BAR_HEIGHT), self.RADIUS)
@@ -230,26 +244,29 @@ class ParamsSetter:
         value_adjusted = False
         value_saved = False
 
-        frame = self.cam.read()
-
+        self.frame = self.cam.read()
+        self.img_width, self.img_height = self.frame.shape[:2]
         points = []
 
         while True:
-            frame = self.cam.read()
+            self.frame = self.cam.read()
 
             if warped:
-                frame = cv2.warpPerspective(frame, self.matrix_transform, self.arena_size)
+                self.frame = cv2.warpPerspective(self.frame, self.matrix_transform, self.arena_size)
 
-            h,w = frame.shape[:2]
+            h,w = self.frame.shape[:2]
             status_bar = self.get_status_bar(self.BAR_HEIGHT, w, mode)
 
             if not warped:
                 self.sort_clockwise(points)
-                self.draw_components(frame, points)
+                self.draw_components(self.frame, points)
             else:
-                self.draw_components(frame, points, sort=False)
+                self.draw_components(self.frame, points, sort=False)
 
-            cv2.imshow('cropper', np.vstack([status_bar, frame]))
+            if mode == self.ADD_MODE:
+                self.draw_guide_lines(self.frame)
+
+            cv2.imshow('cropper', np.vstack([status_bar, self.frame]))
 
 
             key = cv2.waitKey(1) & 0xFF
@@ -267,7 +284,7 @@ class ParamsSetter:
                 mode = self.EDIT_MODE
                 cv2.setMouseCallback('cropper', self.onMouse_edit_mode, points)
             elif key == ord('v'):
-                value_adjusted = self.valueAdjust(frame)
+                value_adjusted = self.valueAdjust(self.frame)
             elif key == 27:
                 mode = self.NO_MODE
                 cv2.setMouseCallback('cropper', self.onMouse_no_mode, points)
