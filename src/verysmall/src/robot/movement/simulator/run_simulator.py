@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('../')
 from simulator import Simulator
 from functions.movement import Movement
@@ -6,6 +7,7 @@ from univector.un_field import univectorField
 import cv2
 import numpy as np
 import random
+
 sys.path.append('../../')
 from utils.json_handler import JsonHandler
 
@@ -13,7 +15,7 @@ from utils.json_handler import JsonHandler
 mouseMode = False
 
 # univector
-RADIUS = 3.48 # Distance from ball
+RADIUS = 3.48  # Distance from ball
 KR = 1
 K0 = 0.12
 DMIN = 15
@@ -26,13 +28,13 @@ ballInitPosition = (500, 500)
 advRobotPosition = (350, 350)
 
 # window size
-img = np.zeros((600,800,3), np.uint8)
+img = np.zeros((600, 800, 3), np.uint8)
 # creating simulator
 sim = Simulator(img)
 # initialize arena
 sim.initArena()
 # initialize robot
-sim.drawRobot(robotInitPosition, [1,0])
+sim.drawRobot(robotInitPosition, [1, 0])
 # initialize ball
 sim.drawBall(ballInitPosition)
 # initialize adversary robot
@@ -51,7 +53,7 @@ univetField.updateBall(np.array(sim.ball))
 univetField.updateObstacles(obstacle, vObstacle)
 
 
-def updateBallPosition(event,x,y,flags,param):
+def updateBallPosition(event, x, y, flags, param):
     if mouseMode:
         sim.drawBall((x, y))
 
@@ -69,8 +71,8 @@ if __name__ == "__main__":
 
     printInformation()
     # show img
-    cv2.imshow('Robot Simulation',img)
-    cv2.moveWindow('Robot Simulation', 400,0)
+    cv2.imshow('Robot Simulation', img)
+    cv2.moveWindow('Robot Simulation', 400, 0)
 
     # define mouseCallBack
     cv2.setMouseCallback('Robot Simulation', updateBallPosition)
@@ -80,8 +82,8 @@ if __name__ == "__main__":
         # avoid to clear the adversary
         sim.drawAdv(np.array(advRobotPosition))
 
-        cv2.imshow('Robot Simulation',img)
-        cv2.moveWindow('Robot Simulation', 400,0)
+        cv2.imshow('Robot Simulation', img)
+        cv2.moveWindow('Robot Simulation', 400, 0)
 
         # use mouse
         if key == ord('m'):
@@ -91,7 +93,7 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.do_univector_velo(speed=200,robot_position=self.position,robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],robot_speed=np.array([0, 0]),obstacle_position=self.enemies_position,obstacle_speed=[[0,0]]*5,ball_position=self.ball_position)
+        leftSpeed, rightSpeed, done = movement.head_to(np.array(sim.robot), np.array([1, 0]), mult=2)
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
