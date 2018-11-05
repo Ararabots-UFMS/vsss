@@ -263,7 +263,9 @@ class ParamsSetter:
             else:
                 self.draw_components(self.frame, points, sort=False)
 
-            self.draw_guide_lines(self.frame)
+            if mode == self.ADD_MODE:
+                self.draw_guide_lines(self.frame)
+
             cv2.imshow('cropper', np.vstack([status_bar, self.frame]))
 
 
