@@ -125,6 +125,17 @@ def section(pos):
     else:
         return CENTER
 
+def extended_area(pos, team_side):
+    if inside_rectangle((0,28), (20,18), pos):
+        return LEFT_GOAL_AREA
+    elif inside_rectangle((130, 28), (150, 108), pos):
+        return RIGHT_GOAL_AREA
+    elif inside_range(-10,-0.1,pos[X]):
+        return LEFT_GOAL
+    elif inside_range(150.1,160,pos[X]):
+        return RIGHT_GOAL
+    return CENTER
+
 def side_section(pos,team_side):
     """
     Return Attack_side and section of the object
