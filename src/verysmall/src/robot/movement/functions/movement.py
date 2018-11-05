@@ -217,11 +217,13 @@ class Movement():
             return int(speed), int(-speed), False
         return int(-speed), int(speed), False
 
-    def head_to(self, robot_vector, goal_vector):
-        """Recives robot direction vector, goal vector and a speed. Return the left wheels speed,
-        right wheel speed and done. Robot vector and goal vector will be parallels vectors.
+    def head_to(self, robot_vector, goal_vector, multiplicator=1):
+        """Receive robot direction vector, goal vector and a speed. Return the left wheels speed,
+        right wheel speed and done. Robot vector and goal vector will be parallels vectors, mult will speed up
+        the correction velocity.
         :param robot_vector : np.array([float, float])
         :param goal_vector : np.array([float, float])
+        :param multiplicator : float
 
         :return: returns int, int, boolean
         """
@@ -234,7 +236,7 @@ class Movement():
         if self.pid_type == HARDWARE:
             return diff_angle, 0, False
 
-        correction = self.pid.update(diff_angle)
+        correction = multiplicator * self.pid.update(diff_angle)
         return self.normalize(int(-correction)), self.normalize(int(correction)), False
 
     def return_speed(self, speed, correction):
