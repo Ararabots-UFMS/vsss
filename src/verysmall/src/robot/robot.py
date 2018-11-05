@@ -81,7 +81,7 @@ class Robot():
             NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
-            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
+            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),   
             SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 

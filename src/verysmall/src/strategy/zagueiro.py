@@ -106,7 +106,10 @@ class Zagueiro(StateMachine):
     area_to_defend        = area.to(defend)
     area_to_move          = area.to(move)
     area_to_do_spin       = area.to(do_spin)
-    area_to_wait_ball     = area.to(normal)
+    area_to_wait_ball     = area.to(wait_ball)
+    area_to_stuck         = area.to(stuck)
+
+    stuck_to_defend       = stuck.to(defend)
 
 
 

@@ -94,7 +94,8 @@ class Things:
             if orientation != None:
                 self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3,1)
             else:
-                self.angular_kalman.statePost = np.array([[0, 0., 0.]]).reshape(3, 1)
+
+                self.angular_kalman.statePost = np.array([[0, 0., 0.]]).reshape(3,1)
             self.lost_counter = 0
             self.speed = np.array([0, 0])
         else:

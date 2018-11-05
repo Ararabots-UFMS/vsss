@@ -125,6 +125,17 @@ def section(pos):
     else:
         return CENTER
 
+def extended_area(pos, team_side):
+    if inside_rectangle((0,28), (20,18), pos):
+        return LEFT_GOAL_AREA
+    elif inside_rectangle((130, 28), (150, 108), pos):
+        return RIGHT_GOAL_AREA
+    elif inside_range(-10,-0.1,pos[X]):
+        return LEFT_GOAL
+    elif inside_range(150.1,160,pos[X]):
+        return RIGHT_GOAL
+    return CENTER
+
 def side_section(pos,team_side):
     """
     Return Attack_side and section of the object
@@ -205,33 +216,34 @@ def border_stuck(position_buffer, orientation):
     :return: true or false
     """
     flag = 0
+    error = 2
     mean = sum(position_buffer[-5::])/5.0
-    if section(mean) == CENTER:
+    #if section(mean) == CENTER:
+    #    return False
+    #else:
+    #orientation verify
+    sec = section(position_buffer[-1])
+
+    if sec not in BORDER_NORMALS.keys():
         return False
+
+    orientation = np.array([math.cos(orientation), math.sin(orientation)])
+    front_angle = math_utils.angleBetween(orientation, BORDER_NORMALS[sec])
+    back_angle = math_utils.angleBetween(-orientation, BORDER_NORMALS[sec])
+
+    angle = min(front_angle,back_angle)*180/math.pi
+
+    #if angle < 15:
+
+    mean = sum(position_buffer)/len(position_buffer)
+
+    for x in position_buffer[-10::]:
+        if not (mean[0]-error< x[0] < mean[0]+error or mean[1]-error < x[1] < mean[1]+error):
+            flag = 1
+
+    if flag == 0:
+        return True
     else:
-        #orientation verify
-        sec = section(position_buffer[-1])
-
-        if sec not in BORDER_NORMALS.keys():
-            return False
-
-        orientation = np.array([math.cos(orientation), math.sin(orientation)])
-        front_angle = math_utils.angleBetween(orientation, BORDER_NORMALS[sec])
-        back_angle = math_utils.angleBetween(-orientation, BORDER_NORMALS[sec])
-
-        angle = min(front_angle,back_angle)*180/math.pi
-
-        if 0 < angle < 10 :
-
-            mean = sum(position_buffer)/len(position_buffer)
-
-            for x in position_buffer[-10::]:
-                if not (mean[0]-2 < x[0] < mean[0]+2 or mean[1]-2 < x[1] < mean[1]+2):
-                    flag = 1
-
-            if flag == 0:
-                return True
-            else:
-                return False
-        else:
-            return False
+        return False
+    #else:
+        #    return False
