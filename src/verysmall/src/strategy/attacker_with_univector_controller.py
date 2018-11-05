@@ -154,17 +154,17 @@ class AttackerWithUnivectorController():
 
         :return: int, int
         """
-        rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
-        if strategy_utils.border_stuck(self.position_buffer, self.orientation):
-            param1, param2, _ = self.movement.move_to_point(speed=130, robot_position=self.position,
-                                                             robot_vector= [np.cos(self.orientation), np.sin(self.orientation)],
-                                                             goal_position=np.array([75,65]), only_forward=False)
+        #rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
+        #if strategy_utils.border_stuck(self.position_buffer, self.orientation):
+        #    param1, param2, _ = self.movement.move_to_point(speed=130, robot_position=self.position,
+        #                                                     robot_vector= [np.cos(self.orientation), np.sin(self.orientation)],
+        #                                                     goal_position=np.array([75,65]), only_forward=False)
             #if (np.random.random() > 0.40):
             #    param1,param2 = (100,100)
             #else:
             #    param1,param2 = (-100,100)
-            return param1, param2, SOFTWARE
-        if np.linalg.norm(self.position - self.ball_position) < 8 and (section(self.position) in [UP_BORDER, DOWN_BORDER] or ((self.team_side == LEFT and section(self.ball_position) in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_CORNER, RIGHT_DOWN_CORNER]) or (self.team_side==RIGHT and section(self.ball_position) in [RIGHT_DOWN_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, LEFT_DOWN_CORNER, LEFT_UP_CORNER]) )):
+        #    return param1, param2, SOFTWARE
+        if np.linalg.norm(self.position - self.ball_position) < 7.5 and (section(self.position) in [UP_BORDER, DOWN_BORDER] or ((self.team_side == LEFT and section(self.ball_position) in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_CORNER, RIGHT_DOWN_CORNER]) or (self.team_side==RIGHT and section(self.ball_position) in [RIGHT_DOWN_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, LEFT_DOWN_CORNER, LEFT_UP_CORNER]) )):
             self.AttackerWithUnivector.univector_to_spin()
             param_a, param_b, _ = self.in_spin()
 
