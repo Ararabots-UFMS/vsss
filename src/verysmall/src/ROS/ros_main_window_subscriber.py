@@ -19,7 +19,7 @@ class RosMainWindowSubscriber:
         rospy.Subscriber('things_position', things_position, self.read, queue_size=10)
 
         # Debug topic
-        rospy.Subscriber('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
+	rospy.Subscriber('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
 
         # Queue of data from Topic Things position
         msg = things_position()

@@ -12,8 +12,12 @@ import rospy
 
 SET_PID_OP_BYTE = 12
 ANGLE_CORRECTION_OP_BYTE = 8
-CW_BYTE = 0
-CCW_BYTE = 3
+
+CW_FORWARD_BYTE     =   0
+CW_BACKWARD_BYTE    =   1
+CCW_FORWARD_BYTE    =   2
+CCW_BACKWARD_BYTE   =   3
+
 WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
 WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
@@ -46,7 +50,7 @@ class Sender():
     def connect(self, should_wait = False):
         """Connect to the robot"""
 
-    	attempt = 1
+        attempt = 1
         while (attempt <= MAX_CONNECTION_ATTEMPT) and not self.closed:
             self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
             try:
@@ -57,7 +61,7 @@ class Sender():
                 if should_wait:
                     sleep(1)
             else:
-                self.sock.setblocking(False)
+                #self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
                 break;
             attempt += 1
@@ -77,7 +81,10 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
+<<<<<<< HEAD
             # rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
+=======
+>>>>>>> master
             #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
@@ -103,22 +110,28 @@ class Sender():
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
-            correct_theta, orientation = self.get_angle_orientation_and_correction(theta, rad)
+            correct_theta, orientation = self.get_angle_orientation_and_correction(theta, speed, rad)
+
             self.sock.send(c_ubyte(ANGLE_CORRECTION_OP_BYTE+orientation))
-            # print "c", correct_theta, " ", speed
             self.sock.send(c_ubyte(correct_theta))
-            self.sock.send(c_ubyte(speed))
+            self.sock.send(c_ubyte(abs(speed)))
         except Exception as e:
             self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
 
-    def get_angle_orientation_and_correction(self, angle, rad=True):
+    def get_angle_orientation_and_correction(self, angle, speed, rad=True):
         tmp = angle
         if rad:
             tmp = 180.0*angle/math.pi
         if 0 <= tmp <= 180:
-            return int(tmp), CCW_BYTE
+            if speed > 0:
+                return int(tmp), CCW_FORWARD_BYTE
+            else:
+                return int(tmp), CCW_BACKWARD_BYTE
         else:
-            return abs(int(tmp)), CW_BYTE
+            if speed > 0:
+                return abs(int(tmp)), CW_FORWARD_BYTE
+            else:
+                return abs(int(tmp)), CW_BACKWARD_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""

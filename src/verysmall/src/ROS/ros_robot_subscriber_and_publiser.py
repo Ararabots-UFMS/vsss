@@ -14,10 +14,10 @@ class RosRobotSubscriberAndPublisher:
         :param _robot: robot object
         """
         rospy.Subscriber('things_position', things_position, self.read_topic , queue_size=10)
-
         rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic , queue_size=10)
 
         if _should_debug:
+            rospy.logfatal(_game_topic_name)
             self.pub = rospy.Publisher('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, queue_size=1)
 
         self.robot = _robot
@@ -48,11 +48,15 @@ class RosRobotSubscriberAndPublisher:
         """
         self.robot.ball_position = np.nan_to_num(np.array(data.ball_pos))
         self.robot.ball_speed = np.nan_to_num(np.array(data.ball_speed))
+
         self.robot.team_pos = np.nan_to_num(np.array(data.team_pos)).reshape((5, 2))
         self.robot.team_orientation = np.nan_to_num(np.array(data.team_orientation))
         self.robot.team_speed = np.nan_to_num(np.array(data.team_speed)).reshape((5, 2))
+
         self.robot.position = self.robot.team_pos[self.robot.tag]
         self.robot.orientation = self.robot.team_orientation[self.robot.tag]
+        self.robot.speed = self.robot.team_speed[self.robot.tag]
+
         self.robot.enemies_position = np.nan_to_num(data.enemies_pos).reshape((5, 2))
         self.robot.enemies_orientation = np.nan_to_num(data.enemies_orientation)
         self.robot.enemies_speed = np.nan_to_num(data.enemies_pos).reshape((5, 2))

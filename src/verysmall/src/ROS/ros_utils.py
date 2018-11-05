@@ -1,5 +1,5 @@
 from rospy import get_published_topics
-
+import random
 
 class RosUtils:
     def __init__(self):
@@ -35,4 +35,4 @@ class RosUtils:
                 if current_topic.find(topic) != -1:
                     count+=1
         
-        return count + 1
+        return random.randint(0,99999)

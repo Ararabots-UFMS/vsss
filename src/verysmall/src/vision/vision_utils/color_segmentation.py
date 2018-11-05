@@ -96,11 +96,9 @@ class ColorSegmentation:
     def onMouse_no_mode(self, event, x, y, flags, arg):
         pass
 
-    def draw_visited(self):
-        if self.visited != []:
-            i = [p[0] for p in self.visited]
-            j = [p[1] for p in self.visited]
-            self.frame[i,j,:] = COLORS.RED
+    def draw_selected(self, mask):
+        pos = np.argwhere(mask == 255)
+        self.frame[pos[:, 0], pos[:, 1], :] = COLORS.RED
 
     def draw_mask(self):
         mask = cv2.inRange(self.hsv_frame, self.temp_min, self.temp_max)
@@ -132,9 +130,9 @@ class ColorSegmentation:
             key  = cv2.waitKey(1) & 0xFF
 
             if self.temp_min.size > 0 and self.temp_max.size > 0:
-                mask = self.draw_mask()
-                aux_mask[:,:,0],aux_mask[:,:,1], aux_mask[:,:,2] = mask, mask, mask
-                self.draw_visited()
+                self.mask = self.draw_mask()
+                aux_mask[:,:,0],aux_mask[:,:,1], aux_mask[:,:,2] = self.mask, self.mask, self.mask
+                self.draw_selected(self.mask)
                 cv2.imshow("Segment", aux_mask)
             else:
                 cv2.destroyWindow("Segment")
@@ -172,7 +170,7 @@ class ColorSegmentation:
                 self.visited = []
                 self.last_key = None
 
-        cv2.destroyWindow(window_name)
+        cv2.destroyAllWindows()
 
 CAMERA_ID = 0
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
