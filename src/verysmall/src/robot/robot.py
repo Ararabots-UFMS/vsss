@@ -12,7 +12,7 @@ from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKContro
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.ball_range import behind_ball
-
+from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 SOFTWARE = 0
 HARDWARE = 1
 
@@ -77,7 +77,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
             ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),   
