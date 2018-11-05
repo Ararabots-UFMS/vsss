@@ -123,7 +123,7 @@ class Movement():
         # central area speed
         raio = raio_vetores(robot_position, robot_vector, ball_position, np.array(self.univet_field.get_attack_goal() - ball_position),speed,500)
         cte = 100
-        speed = (raio * cte)**0.5 + 60
+        speed = (raio * cte)**0.5 + 30
 
         # border area speed
         #raio2 = raio_vetores(robot_position, robot_vector, ball_position, np.array(vec - ball_position),200,700)
