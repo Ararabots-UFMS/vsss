@@ -57,9 +57,25 @@ class RosRobotSubscriberAndPublisher:
         self.robot.orientation = self.robot.team_orientation[self.robot.tag]
         self.robot.speed = self.robot.team_speed[self.robot.tag]
 
-        self.robot.enemies_position = np.nan_to_num(data.enemies_pos).reshape((5, 2))
-        self.robot.enemies_orientation = np.nan_to_num(data.enemies_orientation)
-        self.robot.enemies_speed = np.nan_to_num(data.enemies_pos).reshape((5, 2))
+
+        enemies_position = np.nan_to_num(data.enemies_pos).reshape((5, 2))
+        enemies_orientation = np.nan_to_num(data.enemies_orientation)
+        enemies_speed = np.nan_to_num(data.enemies_speed).reshape((5, 2))
+
+        self.robot.enemies_position = []
+        self.robot.enemies_orientation = []
+        self.robot.enemies_speed = []
+
+        for i in xrange(5):
+            rospy.logfatal(np.any(enemies_position[i]))
+            if np.any(enemies_position[i]):
+                self.robot.enemies_position.append(enemies_position[i])
+                self.robot.enemies_orientation.append(enemies_orientation[i])
+                self.robot.enemies_speed.append(enemies_speed[i])
+
+        self.robot.enemies_position = np.asarray(self.robot.enemies_position)
+        self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
+        self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
 
         self.robot.run()
 

@@ -76,7 +76,7 @@ class VisionNode:
 if __name__ == "__main__":
 
     vision_node = VisionNode()
-    rate = rospy.Rate(10)  # 30hz
+    rate = rospy.Rate(30)  # 30hz
 
     while not rospy.is_shutdown():
         vision_node.tick()
