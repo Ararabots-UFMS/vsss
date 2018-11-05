@@ -40,7 +40,7 @@ BORDER_NORMALS = {4:[1.0,-1.0], 5:[1.0,1.0], 6:[-1.0,-1.0], 7:[-1.0,1.0], 8:[0.0
 ############################
 # arena sections functions #
 ############################
-def on_attack_side(pos, team_side):
+def on_attack_side(pos, team_side, side_limit=0):
    """
    Verify if the object is in attack side (True) or in defense side(False)
 
@@ -48,7 +48,7 @@ def on_attack_side(pos, team_side):
    :param team_side: int 0 ou 1
    :return: bool
    """
-   return (pos[0] > 75 and team_side == LEFT) or (pos[0] < 75 and team_side == RIGHT)
+   return (pos[0] > (75-side_limit) and team_side == LEFT) or (pos[0] < (75+side_limit) and team_side == RIGHT)
 
 def on_extended_attack_side(pos, team_side):
     """

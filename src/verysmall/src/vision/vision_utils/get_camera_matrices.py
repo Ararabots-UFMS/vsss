@@ -14,8 +14,8 @@ from camera import Camera
 CAMERA_ID = 1
 CAMERA_NAME = ""
 FRAME_SIZE = () #(width, height)
-H_CENTERS = 12
-V_CENTERS = 9
+H_CENTERS = 23
+V_CENTERS = 14
 SCALE = 0.8
 
 
