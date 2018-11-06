@@ -9,6 +9,8 @@ from utils.json_handler import JsonHandler
 from rospy import logfatal
 import strategy_utils
 from strategy_utils import *
+path_strategy = sys.path[0] = os.environ['ROS_ARARA_ROOT']+"src/strategy/"
+
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()

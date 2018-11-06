@@ -90,6 +90,7 @@ class ZagueiroController():
         self.enemies_speed = self.robot.enemies_speed
         self.ball_position = self.robot.ball_position
         self.team_side = self.robot.team_side
+        self.get_stuck = self.robot.get_stuck
         self.robot.add_to_buffer(self.position_buffer, 60, self.robot.position)
         self.movement.univet_field.update_attack_side(not self.team_side)
 
@@ -100,9 +101,6 @@ class ZagueiroController():
         """
         self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
         self.movement.update_pid(self.pid_list)
-
-
-
 
     def set_to_stop_game(self):
         """
@@ -133,7 +131,7 @@ class ZagueiroController():
                 self.zagueiro.normal_to_area()
                 return self.in_area()
             #verify if the robot is stuck on border
-            if border_stuck(self.position_buffer, self.orientation):
+            if self.get_stuck(self.position):
                 rospy.logfatal("if do stuck")
                 self.zagueiro.normal_to_stuck()
                 return self.in_stuck()
@@ -180,7 +178,7 @@ class ZagueiroController():
         rospy.logfatal(str(self.position))
         rospy.logfatal(self.zagueiro.current_state)
         #verify if the robot is stuck on border
-        if border_stuck(self.position_buffer, self.orientation):
+        if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
             self.zagueiro.defend_to_stuck()
             return self.in_stuck()
@@ -243,7 +241,7 @@ class ZagueiroController():
             return self.in_area()
 
         #verify if the robot is stuck on border
-        if border_stuck(self.position_buffer, self.orientation):
+        if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
             self.zagueiro.move_to_stuck()
             return self.in_stuck()
@@ -274,7 +272,7 @@ class ZagueiroController():
             return self.in_area()
 
         #verify if the robot is stuck on border
-        if border_stuck(self.position_buffer, self.orientation):
+        if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
             self.zagueiro.wait_ball_to_stuck()
             return self.in_stuck()
@@ -351,7 +349,7 @@ class ZagueiroController():
         if extended_area(self.position, self.team_side)in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
             self.zagueiro.border_to_area()
             return self.in_area()
-        if border_stuck(self.position_buffer, self.orientation):
+        if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
             self.zagueiro.border_to_stuck()
             return self.in_stuck()
@@ -425,22 +423,28 @@ class ZagueiroController():
                         return self.in_spin()
 
 
-        if border_stuck(self.position_buffer, self.orientation):
+        if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
 
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
             goal_vector = np.array(np.array([75,65]) - self.position)
-            param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
+            # param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
+            #
+            # #verify if the robot is aligned with the ball
+            # if param3:
+            #     #go to the defense routine
+            #     self.zagueiro.stuck_to_defend()
+            #     return param1, param2, self.pid_type
+            # else:
+            #     #keep turning
+            #     rospy.logfatal(str(param1)+"  "+str(param2))
+            #     return param1, param2, self.pid_type
 
-            #verify if the robot is aligned with the ball
-            if param3:
-                #go to the defense routine
-                self.zagueiro.stuck_to_defend()
-                return param1, param2, self.pid_type
+            # if angleBetween([self.position[0], 150], self.position) < pi/2 + error
+            if self.robot.velocity_buffer[-1] < 0:
+                return 0, 100, self.pid_type
             else:
-                #keep turning
-                rospy.logfatal(str(param1)+"  "+str(param2))
-                return param1, param2, self.pid_type
-        else:
+                return 0, -100, self.pid_type
+         else:
             self.zagueiro.stuck_to_defend()
             return 0,0, self.pid_type
