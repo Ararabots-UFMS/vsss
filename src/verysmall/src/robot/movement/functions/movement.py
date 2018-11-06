@@ -71,7 +71,7 @@ class Movement():
         """
         self.pid.set_constants(pid_list[0], pid_list[1], pid_list[2])
 
-    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
+    def predict_univector(self, speed, number_of_predictions, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
         """Recive players positions and speed and return the speed to follow univector
          :param speed : int
          :param robot_position : np.array([float, float])
@@ -85,6 +85,7 @@ class Movement():
 
         :return: returns nothing
         """
+        #TODO: Testar a predicao dos vetores
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec_result = np.array([0.0, 0.0])
         robot_position_aux = robot_position
