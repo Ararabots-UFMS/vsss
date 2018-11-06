@@ -74,6 +74,7 @@ class NaiveAttacker(StateMachine):
     spin_to_normal = spin.to(normal)
     #spin to reach ball
     spin_to_reach_ball = spin.to(reach_ball)
+    spin_to_border = spin.to(border)
     #reach ball to point
     reach_ball_to_point = reach_ball.to(go_to_point)
     #reach ball to border
