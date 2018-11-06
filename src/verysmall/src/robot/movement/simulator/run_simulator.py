@@ -1,68 +1,14 @@
+from simulator_definition import *
 import sys
-sys.path.append('../')
-from simulator import Simulator
-from functions.movement import Movement
-from univector.un_field import univectorField
-import cv2
+import os
 import numpy as np
-import random
-
-# define when use the mouse
-mouseMode = False
-
-# univector
-RADIUS = 3.48  # Distance from ball
-KR = 1
-K0 = 0.12
-DMIN = 15
-LDELTA = 50
-RIGHT = 1
-LEFT = 0
-
-robotInitPosition = (200, 200)
-ballInitPosition = (500, 500)
-advRobotPosition = (350, 350)
-lastRobotPosition = (200, 200)
-robotSpeed = np.array([0, 0])
-
-# window size
-img = np.zeros((600, 800, 3), np.uint8)
-# creating simulator
-sim = Simulator(img)
-# initialize arena
-sim.initArena()
-# initialize robot
-sim.drawRobot(robotInitPosition, [1, 0])
-# initialize ball
-sim.drawBall(ballInitPosition)
-# initialize adversary robot
-sim.drawAdv(np.array(advRobotPosition))
-# movement class
-movement = Movement([30, 0, 0], 10)
-movement.initialize_simulation()
-# obstacles
-obstacle = np.array(advRobotPosition)
-vObstacle = np.array([0, 0])
-
-# creates the univector field
-univetField = univectorField(attack_goal=RIGHT)
-univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
-univetField.updateBall(np.array(sim.ball))
-univetField.updateObstacles(obstacle, vObstacle)
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/strategy"
+from attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
 
 
 def updateBallPosition(event, x, y, flags, param):
     if mouseMode:
         sim.drawBall((x, y))
-
-
-def printInformation():
-    print "**********************************************"
-    print "         Initializing VSSS simulation         "
-    print "**********************************************"
-    print "Press any key to start:"
-    print "To draw the ball in mouse position use: m"
-    print "To exit the simulation press: q"
 
 
 if __name__ == "__main__":
@@ -84,17 +30,35 @@ if __name__ == "__main__":
         cv2.moveWindow('Robot Simulation', 400, 0)
 
         # use mouse
-        if key == ord('m'):
+        if key == ord('g'):
             mouseMode = not mouseMode
         # end simulation
-        if key == ord('q'):
+        elif key == ord('q'):
             cv2.destroyAllWindows()
+            print "***************Simulation finished***************"
             break
 
-        lastRobotPosition = sim.robot
-        
-        leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball), speed_prediction=True)
+        elif key == ord('s'):
+            game_state = "Stop"
+            #call state_machine
 
+        elif key == ord('p'):
+            game_state = "Penalty"
+            #call state_machine
+
+        elif key == ord('f'):
+            game_state = "Free Ball"
+
+        elif key == ord('n'):
+            game_state = "Normal game"
+
+        elif key == ord('m'):
+            game_state = "Meta"
+
+        lastRobotPosition = sim.robot
+
+        leftSpeed, rightSpeed, done = movement.move_to_point(100, np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball))
+        
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
