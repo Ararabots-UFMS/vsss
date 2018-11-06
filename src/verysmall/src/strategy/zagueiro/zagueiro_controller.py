@@ -9,8 +9,7 @@ from movement.functions.movement import Movement
 from utils.math_utils import angleBetween
 from utils.json_handler import JsonHandler
 path += '../parameters/bodies.json'
-# from arena_sections import *
-# from ball_range import *
+
 from strategy.strategy_utils import *
 
 jsonHandler = JsonHandler()
@@ -423,7 +422,7 @@ class ZagueiroController():
                 if self.team_side == RIGHT:
                     if self.ball_position[0] < self.position[0]:
                         self.stuck_to_spin()
-                        return self.in_spin()            
+                        return self.in_spin()
 
 
         if border_stuck(self.position_buffer, self.orientation):
