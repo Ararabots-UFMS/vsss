@@ -248,16 +248,12 @@ class univectorField:
         :return: nothing
         """
         #if self.univector_rotation_axis:
-<<<<<<< HEAD
-        self.mv2Goal_with_rotation.attack_goal = np.array([0.0 + attack_goal*150, 65.0])
-        self.mv2Goal_without_rotation.attack_goal = attack_goal
-=======
         self.mv2Goal_with_rotation.attack_goal = np.array([attack_goal*150, 65.0])
         self.mv2Goal_without_rotation.attack_goal = attack_goal
 
     def get_attack_goal(self):
         return self.mv2Goal_with_rotation.attack_goal
->>>>>>> master
+
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
@@ -286,10 +282,6 @@ class univectorField:
         else:
             self.mv2GoalField = self.mv2Goal_without_rotation
 
-<<<<<<< HEAD
-
-=======
->>>>>>> master
     def updateConstants(self, _RADIUS, _KR, _K0, _DMIN, _LDELTA):
         self.RADIUS = _RADIUS
         self.KR = _KR
@@ -364,8 +356,4 @@ class univectorField:
         #logfatal(section(_ball) == CENTER)
         self.setRotation(section(_ball) == CENTER)
         angle = self.getAngleVec(_robotPos, _vRobot, _ball)
-<<<<<<< HEAD
         return np.asarray([np.cos(angle), np.sin(angle)])
-=======
-        return np.asarray([np.cos(angle), np.sin(angle)])
->>>>>>> master
