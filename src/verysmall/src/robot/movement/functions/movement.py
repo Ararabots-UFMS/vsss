@@ -40,6 +40,7 @@ class Movement():
         self.orientation = FORWARD
         self.attack_goal = attack_goal
         self.gamma_count = 0
+        self.simulation = False
         if type(attack_goal) is int:
             self.univet_field = univectorField(attack_goal=self.attack_goal)
         else:
@@ -55,6 +56,13 @@ class Movement():
         """
         self.pid_type = _pid_type
 
+    def initialize_simulation(self):
+        """
+        Initialize flag for simulation
+        :return:
+        """
+        self.simulation = True
+
     def update_pid(self, pid_list):
         """
         Update pid paramters
@@ -63,7 +71,7 @@ class Movement():
         """
         self.pid.set_constants(pid_list[0], pid_list[1], pid_list[2])
 
-    def predict_univector(self, speed, number_of_predictions,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
+    def predict_univector(self, speed, number_of_predictions, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
         """Recive players positions and speed and return the speed to follow univector
          :param speed : int
          :param robot_position : np.array([float, float])
@@ -77,6 +85,7 @@ class Movement():
 
         :return: returns nothing
         """
+        #TODO: Testar a predicao dos vetores
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec_result = np.array([0.0, 0.0])
         robot_position_aux = robot_position
@@ -87,7 +96,7 @@ class Movement():
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
 
-    def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
+    def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False, speed_prediction=False):
         """Receive players positions and speed and return the speed to follow univector
          :param speed : int
          :param robot_position : np.array([float, float])
@@ -97,41 +106,19 @@ class Movement():
          :param obstacle_speed : np.array([float, float])
          :param ball_position : np.array([float, float])
          :param only_forward : boolean
+         :param speed_prediction : boolean
 
         :return: returns nothing
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
-    def do_univector_velo(self, speed,  robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False):
-        """Receive players positions and speed and return the speed to follow univector
-         :param speed : int
-         :param robot_position : np.array([float, float])
-         :param robot_vector : np.array([float, float])
-         :param robot_speed : np.array([float, float])
-         :param obstacle_position : np.array([float, float])
-         :param obstacle_speed : np.array([float, float])
-         :param ball_position : np.array([float, float])
-         :param only_forward : boolean
-
-        :return: returns nothing
-        """
-        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-
-        # central area speed
-        raio = raio_vetores(robot_position, robot_vector, ball_position, np.array(self.univet_field.get_attack_goal() - ball_position),speed,500)
-        cte = 100
-        speed = (raio * cte)**0.5 + 30
-
-        # border area speed
-        #raio2 = raio_vetores(robot_position, robot_vector, ball_position, np.array(vec - ball_position),200,700)
-        #cte2 = 100
-        #speed2 = (raio2 * cte2)**0.5 + 60
-
-        #speed = raio
-        #logfatal("s1  %d s2 %d"%(speed,speed2))
+        if speed_prediction:
+            # central area speed
+            raio = raio_vetores(robot_position, robot_vector, ball_position,
+                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500)
+            cte = 100
+            speed = (raio * cte) ** 0.5 + 30
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
@@ -262,7 +249,9 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+        if not self.simulation:
+            return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
+        return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
     def normalize(self, speed):
         """Normalize robot speed

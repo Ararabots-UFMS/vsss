@@ -1,5 +1,4 @@
 import sys
-
 sys.path.append('../')
 from simulator import Simulator
 from functions.movement import Movement
@@ -7,9 +6,6 @@ from univector.un_field import univectorField
 import cv2
 import numpy as np
 import random
-
-sys.path.append('../../')
-from utils.json_handler import JsonHandler
 
 # define when use the mouse
 mouseMode = False
@@ -26,6 +22,8 @@ LEFT = 0
 robotInitPosition = (200, 200)
 ballInitPosition = (500, 500)
 advRobotPosition = (350, 350)
+lastRobotPosition = (200, 200)
+robotSpeed = np.array([0, 0])
 
 # window size
 img = np.zeros((600, 800, 3), np.uint8)
@@ -41,7 +39,7 @@ sim.drawBall(ballInitPosition)
 sim.drawAdv(np.array(advRobotPosition))
 # movement class
 movement = Movement([30, 0, 0], 10)
-
+movement.initialize_simulation()
 # obstacles
 obstacle = np.array(advRobotPosition)
 vObstacle = np.array([0, 0])
@@ -93,10 +91,14 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.head_to(np.array(sim.robot), np.array([1, 0]), mult=2)
+        lastRobotPosition = sim.robot
+        
+        leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball), speed_prediction=True)
+
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
+            robotSpeed = np.array(sim.robot) - np.array(lastRobotPosition)
 
         # 60fps
         key = cv2.waitKey(16)
