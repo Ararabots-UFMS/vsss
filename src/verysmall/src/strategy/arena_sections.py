@@ -1,9 +1,3 @@
-import numpy as np
-from utils import math_utils
-import math
-CW = 0
-CCW = 1
-
 X = 0
 Y = 1
 SQUARE_SIDE = 15.0 * 2 ** 0.5
@@ -34,13 +28,8 @@ RIGHT_UP_BOTTOM_LINE   = 14
 BALL_SIZE = 4
 ROBOT_SIZE = 7
 
-BORDER_NORMALS = {4:[1.0,-1.0], 5:[1.0,1.0], 6:[-1.0,-1.0], 7:[-1.0,1.0], 8:[0.0,1.0], 9:[0.0,-1.0], 11:[1.0,0.0],
-                  12:[1.0,0.0], 13:[-1.0,0.0], 14:[-1.0,0.0]}
 
-############################
-# arena sections functions #
-############################
-def on_attack_side(pos, team_side, side_limit=0):
+def on_attack_side(pos, team_side, bias = 0):
    """
    Verify if the object is in attack side (True) or in defense side(False)
 
@@ -48,7 +37,7 @@ def on_attack_side(pos, team_side, side_limit=0):
    :param team_side: int 0 ou 1
    :return: bool
    """
-   return (pos[0] > (75-side_limit) and team_side == LEFT) or (pos[0] < (75+side_limit) and team_side == RIGHT)
+   return (pos[0] > (75 - bias) and team_side == LEFT) or (pos[0] < (75 + bias) and team_side == RIGHT)
 
 def on_extended_attack_side(pos, team_side):
     """
@@ -125,17 +114,6 @@ def section(pos):
     else:
         return CENTER
 
-def extended_area(pos, team_side):
-    if inside_rectangle((0,28), (20,18), pos):
-        return LEFT_GOAL_AREA
-    elif inside_rectangle((130, 28), (150, 108), pos):
-        return RIGHT_GOAL_AREA
-    elif inside_range(-10,-0.1,pos[X]):
-        return LEFT_GOAL
-    elif inside_range(150.1,160,pos[X]):
-        return RIGHT_GOAL
-    return CENTER
-
 def side_section(pos,team_side):
     """
     Return Attack_side and section of the object
@@ -155,95 +133,3 @@ def goal_position(team_side):
     if team_side == LEFT:
         return np.array([150, 65])
     return np.array([0, 65])
-
-######################
-# distance functions #
-######################
-
-def distance_point(position_one, position_two):
-    return np.linalg.norm(position_one-position_two)
-
-def near_ball(ball_position, robot_position, _distance = 9.5):
-    """
-    Returns if the robot is near to the ball
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
-    :return: boolean
-    """
-    distance = distance_point(ball_position, robot_position)
-    return (distance <= _distance)
-
-def behind_ball(ball_position, robot_position, team_side, _distance = 9.5):
-    """
-    Returns if the robot is behind to the ball
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
-    :params team_side: int
-    :return: boolean
-    """
-    if (team_side == LEFT):
-        if (near_ball(ball_position, robot_position, _distance)):
-            return robot_position[0] < ball_position[0]
-    else:
-        if (near_ball(ball_position, robot_position, _distance)):
-            return robot_position[0] > ball_position[0]
-    return False
-
-def spin_direction(ball_position, robot_position, team_side):
-    """
-    Returns the direction of the spin
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
-    :params team_side: int
-
-    :return: int
-    """
-    if (team_side == LEFT):
-        if (robot_position[1] >=65 ):
-            return  CCW
-        return CW
-    else:
-        if (robot_position[1] < 65 ):
-            return CW
-        return CCW
-
-
-def border_stuck(position_buffer, orientation):
-    """
-
-    :param position_buffer:
-    :param orientation
-    :return: true or false
-    """
-    flag = 0
-    error = 2
-    mean = sum(position_buffer[-5::])/5.0
-    #if section(mean) == CENTER:
-    #    return False
-    #else:
-    #orientation verify
-    sec = section(position_buffer[-1])
-
-    if sec not in BORDER_NORMALS.keys():
-        return False
-
-    orientation = np.array([math.cos(orientation), math.sin(orientation)])
-    front_angle = math_utils.angleBetween(orientation, BORDER_NORMALS[sec])
-    back_angle = math_utils.angleBetween(-orientation, BORDER_NORMALS[sec])
-
-    angle = min(front_angle,back_angle)*180/math.pi
-
-    #if angle < 15:
-
-    mean = sum(position_buffer)/len(position_buffer)
-
-    for x in position_buffer[-10::]:
-        if not (mean[0]-error< x[0] < mean[0]+error or mean[1]-error < x[1] < mean[1]+error):
-            flag = 1
-
-    if flag == 0:
-        return True
-    else:
-        return False
-    #else:
-        #    return False

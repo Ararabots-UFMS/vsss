@@ -34,19 +34,34 @@ class VisionNode:
 
         self.mercury = RosVisionPublisher(True)
         self.msg = things_position()
-        self.msg.ball_pos = [75,75]
-        self.msg.team_pos[0] = 0
-        self.msg.team_pos[1] = 0
-
+        self.msg.team_pos[0] = 75
+        self.msg.team_pos[1] = 75
+        self.msg.ball_pos[0] = 5
+        self.msg.ball_pos[1] = 2
+        self.state = 0
 
         # Creates the service responsible for vision modes and operations
         self.service = RosVisionService(self.vision_management)
 
     def tick(self):
-        self.msg.team_pos[0] = (self.msg.team_pos[0] + 1)%120
-        self.msg.team_pos[1] = (self.msg.team_pos[1] + 1)%120
-        self.msg.team_pos[2] = (self.msg.team_pos[2] + 1)%120
-        self.msg.team_pos[3] = 120
+
+        if self.state == 0:
+            self.msg.ball_pos[0] += 1
+            if self.msg.ball_pos[0] == 145:
+                self.state = 1
+        elif self.state == 1:
+            self.msg.ball_pos[1]+= 1
+            if self.msg.ball_pos[1] == 130:
+                self.state = 2
+        elif self.state == 2:
+            self.msg.ball_pos[0]-=1
+            if self.msg.ball_pos[0] == 5:
+                self.state = 3
+        else:
+            self.msg.ball_pos[1]-=1
+            if self.msg.ball_pos[1] == 2:
+                self.state = 0 
+
         self.mercury.pub.publish(self.msg)
 
 
@@ -64,7 +79,7 @@ class VisionNode:
 if __name__ == "__main__":
 
     vision_node = VisionNode()
-    rate = rospy.Rate(10)  # 30hz
+    rate = rospy.Rate(30)  # 30hz
 
     while not rospy.is_shutdown():
         vision_node.tick()

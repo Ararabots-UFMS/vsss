@@ -7,7 +7,7 @@ from math import pi
 from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
-from strategy.arena_sections import section, CENTER
+from strategy.strategy_utils import section, CENTER
 from rospy import logfatal
 
 LEFT = 0
@@ -253,6 +253,7 @@ class univectorField:
 
     def get_attack_goal(self):
         return self.mv2Goal_with_rotation.attack_goal
+
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)

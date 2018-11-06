@@ -9,7 +9,7 @@ from utils.json_handler import JsonHandler
 from rospy import logfatal
 import strategy_utils
 from ball_range import *
-from arena_sections import *
+from strategy_utils import *
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
@@ -155,6 +155,7 @@ class AttackerWithUnivectorController():
         :return: int, int
         """
         #rospy.logfatal(strategy_utils.border_stuck(self.position_buffer, self.orientation))
+        
         #if strategy_utils.border_stuck(self.position_buffer, self.orientation):
         #    param1, param2, _ = self.movement.move_to_point(speed=130, robot_position=self.position,
         #                                                     robot_vector= [np.cos(self.orientation), np.sin(self.orientation)],
