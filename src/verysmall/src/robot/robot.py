@@ -11,7 +11,7 @@ from strategy.attacker_with_univector.attacker_with_univector_controller import 
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro.zagueiro_controller import ZagueiroController
-from strategy.strategy_utils import behind_ball
+from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 
 SOFTWARE = 0
@@ -105,7 +105,13 @@ class Robot():
             # rospy.logfatal(str(param_A)+" "+ str(param_B))
 
         elif self.game_state == 2:  # Freeball
-            param_A, param_B, param_C = self.state_machine.in_freeball_game()
+
+            if self.robot_id_integer == self.freeball_robot:
+                rospy.logfatal(str(self.robot_id_integer)+" Vo bate freeball")
+                param_A, param_B, param_C = self.freeball_routine()
+            else:
+                self.game_state = 1
+                param_A, param_B, param_C = self.state_machine.in_penalty_game()
 
         elif self.game_state == 3:  # Penalty
 
@@ -199,6 +205,30 @@ class Robot():
         else:
             self.game_state = 1
             return self.state_machine.in_penalty_game()
+
+    def freeball_routine(self):
+        if np.all(self.position):
+            self.true_pos = self.position
+
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=25):
+            if on_attack_side(self.true_pos, self.team_side):
+                param_1, param_2, param_3 = self.state_machine.movement.move_to_point(
+                    220, np.array(self.position),
+                    [np.cos(self.orientation), np.sin(self.orientation)],
+                    np.array(self.ball_position))
+                if param_3:
+                    spin = spin_direction(ball_position=self.ball_position, robot_position=self.position, team_side=self.team_side)
+                    param_1, param_2, _ = self.state_machine.movement.spin(200, ccw=spin)
+                return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
+            else:
+                param_1, param_2, param_3 = self.state_machine.movement.move_to_point(
+                    150, np.array(self.position),
+                    [np.cos(self.orientation), np.sin(self.orientation)],
+                    np.array(self.ball_position))
+                return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
+        else:
+            self.game_state = 1
+            return self.state_machine.in_freeball_game()
 
     def get_stuck(self, position):
         """
