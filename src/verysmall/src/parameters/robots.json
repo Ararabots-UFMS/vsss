@@ -1,17 +1,1 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-{"robot_2": {"active": 0, "bluetooth_mac_address": "Umbabarauma", "body_id": "Umbabarauma", "role": "Atacante", "tag_number": 3}, "robot_3": {"active": 0, "bluetooth_mac_address": "Araraquara", "body_id": "Araraquara", "role": "Goleiro", "tag_number": 2}, "robot_1": {"active": 1, "bluetooth_mac_address": "Jeremias", "body_id": "Jeremias", "role": "Atacante", "tag_number": 3}, "robot_4": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Zagueiro", "tag_number": 3}, "robot_5": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 4}}
-=======
-{"robot_2": {"active": 0, "bluetooth_mac_address": "Et_Bilu", "body_id": "Et_Bilu", "role": "Set PID Machine", "tag_number": 4}, "robot_3": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Goleiro", "tag_number": 7}, "robot_1": {"active": 1, "bluetooth_mac_address": "Et_Bilu", "body_id": "Et_Bilu", "role": "Goleiro", "tag_number": 4}, "robot_4": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Zagueiro", "tag_number": 2}, "robot_5": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 1}}
->>>>>>> master
-=======
-<<<<<<< HEAD
-{"robot_2": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Set PID Machine", "tag_number": 18}, "robot_3": {"active": 0, "bluetooth_mac_address": "Jeremias", "body_id": "Jeremias", "role": "Atacker With Univector", "tag_number": 2}, "robot_1": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 17}, "robot_4": {"active": 0, "bluetooth_mac_address": "Tijolinho", "body_id": "Tijolinho", "role": "Atacante", "tag_number": 19}, "robot_5": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 16}}
-=======
 {"robot_2": {"active": 0, "bluetooth_mac_address": "Tijolinho", "body_id": "Tijolinho", "role": "Atacker With Univector", "tag_number": 0}, "robot_3": {"active": 1, "bluetooth_mac_address": "Tijolinho", "body_id": "Tijolinho", "role": "Atacker With Univector", "tag_number": 0}, "robot_1": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 17}, "robot_4": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 19}, "robot_5": {"active": 1, "bluetooth_mac_address": "Tijolinho", "body_id": "Tijolinho", "role": "Atacker With Univector", "tag_number": 0}}
->>>>>>> 080d83cde567b9b6e6370b2627980ea5146ac72a
-<<<<<<< HEAD
->>>>>>> master
-=======
->>>>>>> c95a6df884cf1f7a5813bbf2332d3d571ec0cb61
->>>>>>> master

@@ -85,15 +85,6 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-<<<<<<< HEAD
-            NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            AttackerWithUnivectorController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-            SetPIDMachineController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs),
-        ]
-
-        self.state_machine = NaiveAttackerController(_robot_body = self.robot_body, _debug_topic = self.subsAndPubs)
-=======
             NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
@@ -102,7 +93,6 @@ class Robot():
         ]
 
         self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
->>>>>>> master
 
     def run(self):
 

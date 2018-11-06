@@ -1,14 +1,1 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-{"things": {"robot_2": 0, "robot_3": 0, "robot_1": 1, "robot_4": 0, "robot_5": 0, "ball": 0}, "robot_vector": 0, "movement_predict_simulation": 1}
-=======
 {"things": {"robot_2": 0, "robot_3": 1, "robot_1": 0, "robot_4": 0, "robot_5": 0, "ball": 0}, "robot_vector": 0, "movement_predict_simulation": 0}
->>>>>>> 080d83cde567b9b6e6370b2627980ea5146ac72a
->>>>>>> master
-=======
-{"things": {"robot_2": 0, "robot_3": 0, "robot_1": 1, "robot_4": 0, "robot_5": 0, "ball": 0}, "robot_vector": 0, "movement_predict_simulation": 0}
-=======
-{"things": {"robot_2": 0, "robot_3": 1, "robot_1": 0, "robot_4": 0, "robot_5": 0, "ball": 0}, "robot_vector": 0, "movement_predict_simulation": 0}
->>>>>>> 080d83cde567b9b6e6370b2627980ea5146ac72a
->>>>>>> c95a6df884cf1f7a5813bbf2332d3d571ec0cb61
->>>>>>> master
