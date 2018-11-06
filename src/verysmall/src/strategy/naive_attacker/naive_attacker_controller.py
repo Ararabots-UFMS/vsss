@@ -29,7 +29,7 @@ class NaiveAttackerController():
     def __init__(self,_robot_obj,  _robot_body = "Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
         self.robot = _robot_obj
-        self.speed = 0
+        self.speed = None
         self.position = None
         self.orientation = None
         self.robot_speed = None
@@ -103,15 +103,15 @@ class NaiveAttackerController():
         angle = 300
         robot_orientation = np.array([math.cos(self.orientation), math.sin(self.orientation)])
         # Verifica em qual eixo de borda o robo se encontra
-        if (strategy_utils(self.position) in [
+        if (strategy_utils.section(self.position) in [
             LEFT_DOWN_BOTTOM_LINE,
             LEFT_UP_BOTTOM_LINE,
             RIGHT_DOWN_BOTTOM_LINE,
             RIGHT_UP_BOTTOM_LINE
         ]):
-            angle = math_utils.angleBetween([1,0], robot_orientation)
+            angle = math.degrees(math_utils.angleBetween([1,0], robot_orientation))
         else:
-            angle = math_utils.angleBetween([0,1], robot_orientation)
+            angle = math.degrees(math_utils.angleBetween([0,1], robot_orientation))
 
         if (angle > 10) and (angle < 10):
             self.model.state = 'normal'
