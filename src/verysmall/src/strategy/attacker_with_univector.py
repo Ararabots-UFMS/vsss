@@ -1,5 +1,6 @@
 from statemachine import StateMachine, State
 
+
 class AttackerWithUnivector(StateMachine):
     """
     Class for creation of the state machine of robberies,
@@ -31,6 +32,7 @@ class AttackerWithUnivector(StateMachine):
     penalty = State('Penalty')
     univector = State('Univector')
     meta = State('Meta')
+    spin = State('Spin')
 
     # Stop to freeball game
     stop_to_freeball = stop.to(freeball)
@@ -49,6 +51,10 @@ class AttackerWithUnivector(StateMachine):
 
     normal_to_univector = normal.to(univector)
     univector_to_univector = univector.to(univector)
+
+    univector_to_spin = univector.to(spin)
+
+    spin_to_univector = spin.to(univector)
 
     go = stop_to_freeball | stop_to_normal | stop_to_penalty | freeball_to_normal | penalty_to_normal
 

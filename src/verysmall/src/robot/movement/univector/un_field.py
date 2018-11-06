@@ -79,7 +79,7 @@ class repulsive:
         self.origin = np.copy(newOrigin)
 
     def fi_r(self, _p, _origin=None, _theta=True):
-        if all(_origin != None):
+        if np.all(_origin != None):
             self.updateOrigin(_origin)
 
         p = np.array(_p) - self.origin
@@ -193,7 +193,7 @@ class avoidObstacle:
         return vPos
 
     def fi_auf(self, _robotPos, _vPos=[None, None], _theta=True):
-        if all(_vPos == None):
+        if np.all(_vPos == None):
             vPos = self.getVirtualPos()
         else:
             vPos = _vPos
@@ -225,7 +225,7 @@ class univectorField:
         self.DMIN = None
         self.LDELTA = None
 
-        # Subfields
+                # Subfields
         self.univector_rotation_axis = _rotation
         self.avdObsField = avoidObstacle([None, None], [None, None], 
                                          [None, None], [None, None], self.K0)
@@ -248,8 +248,12 @@ class univectorField:
         :return: nothing
         """
         #if self.univector_rotation_axis:
-        self.mv2Goal_with_rotation.attack_goal = np.array([0.0 + attack_goal*150, 65.0])
+        self.mv2Goal_with_rotation.attack_goal = np.array([attack_goal*150, 65.0])
         self.mv2Goal_without_rotation.attack_goal = attack_goal
+
+    def get_attack_goal(self):
+        return self.mv2Goal_with_rotation.attack_goal
+
 
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
@@ -278,7 +282,6 @@ class univectorField:
         else:
             self.mv2GoalField = self.mv2Goal_without_rotation
 
-
     def updateConstants(self, _RADIUS, _KR, _K0, _DMIN, _LDELTA):
         self.RADIUS = _RADIUS
         self.KR = _KR
@@ -297,9 +300,9 @@ class univectorField:
         vRobot = np.array(_vRobot)
         ball = np.array(_ball)
 
-        if all(robotPos != None) and all(vRobot != None):
+        if np.all(robotPos != None) and np.all(vRobot != None):
             self.updateRobot(robotPos, vRobot)
-        if all(ball != None):
+        if np.all(ball != None):
             self.updateBall(ball)
 
         closestCenter = np.array([None, None]) # array to store the closest center

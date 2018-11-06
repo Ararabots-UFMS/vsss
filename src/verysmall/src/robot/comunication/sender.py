@@ -61,7 +61,7 @@ class Sender():
                 if should_wait:
                     sleep(1)
             else:
-                self.sock.setblocking(False)
+                #self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
                 break;
             attempt += 1
@@ -81,7 +81,6 @@ class Sender():
         directionByte = self.getDirectionByte(leftWheel, rightWheel)
         left, right = self.normalizeWheels(leftWheel, rightWheel)
         try:
-            # rospy.logfatal("=-=-=-=-=-=-=-=-=-=-=-=-")
             #self.update_time()
             self.sock.send(c_ubyte(directionByte))
             self.sock.send(c_ubyte(left))
@@ -126,9 +125,9 @@ class Sender():
                 return int(tmp), CCW_BACKWARD_BYTE
         else:
             if speed > 0:
-                return int(tmp), CW_FORWARD_BYTE
+                return abs(int(tmp)), CW_FORWARD_BYTE
             else:
-                return int(tmp), CW_BACKWARD_BYTE
+                return abs(int(tmp)), CW_BACKWARD_BYTE
 
     def getDirectionByte(self, leftWheel, rightWheel):
         """Return the first byte that represents the robot direction"""

@@ -39,23 +39,18 @@ class RunningStrikerController():
 
         self.movement = Movement([KP, KD, KI], error=10, attack_goal=self.attack_goal, _debug_topic=self.debug_topic)
 
-    def update_game_information(self, position, orientation, robot_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self, robot):
         """
         Update game variables
-        :param position:
-        :param orientation:
-        :param robot_speed:
-        :param enemies_position:
-        :param enemies_speed:
-        :param ball_position:
+        :param robot: robot object
         """
-        self.position = position
-        self.orientation = orientation
-        self.robot_speed = robot_speed
-        self.enemies_position = enemies_position
-        self.enemies_speed = enemies_speed
-        self.ball_position = ball_position
-        self.team_side = team_side
+        self.position = robot.position
+        self.orientation = robot.orientation
+        self.robot_speed = robot.robot_speed
+        self.enemies_position = robot.enemies_position
+        self.enemies_speed = robot.enemies_speed
+        self.ball_position = robot.ball_position
+        self.team_side = robot.team_side
 
     def set_to_stop_game(self):
         """

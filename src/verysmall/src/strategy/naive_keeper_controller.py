@@ -33,8 +33,9 @@ SPIN_DIST           = 9.0
 
 class NaiveGKController():
 
-    def __init__(self, _robot_body="Nenhum", _debug_topic = None):
+    def __init__(self, _robot_obj ,_robot_body="Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
+        self.robot = _robot_obj
         self.position = None
         self.orientation = None
         self.team_speed = None
@@ -60,7 +61,6 @@ class NaiveGKController():
         self.NaiveGK = NaiveGK(self.stop)
         self.movement = Movement(self.pid_list, error=10, attack_goal=self.attack_goal, _pid_type=self.pid_type, _debug_topic=_debug_topic)
 
-    
     def set_pid_type(self, _type):
         """
         Change pid type
@@ -69,24 +69,18 @@ class NaiveGKController():
         self.pid_type = _type
         self.movement.set_pid_type(_type=self.pid_type)
 
-
-    def update_game_information(self, position, orientation, team_speed, enemies_position, enemies_speed, ball_position, team_side):
+    def update_game_information(self):
         """
         Update game variables
-        :param position:
-        :param orientation:
-        :param team_speed:
-        :param enemies_position:
-        :param enemies_speed:
-        :param ball_position:
+        :param robot: robot object
         """
-        self.position = position
-        self.orientation = orientation
-        self.team_speed = team_speed
-        self.enemies_position = enemies_position
-        self.enemies_speed = enemies_speed
-        self.ball_position = ball_position
-        self.team_side = team_side
+        self.position = self.robot.position
+        self.orientation = self.robot.orientation
+        self.team_speed = self.robot.team_speed
+        self.enemies_position = self.robot.enemies_position
+        self.enemies_speed = self.robot.enemies_speed
+        self.ball_position = self.robot.ball_position
+        self.team_side = self.robot.team_side
         self.movement.univet_field.update_attack_side(not self.team_side)
 
 
