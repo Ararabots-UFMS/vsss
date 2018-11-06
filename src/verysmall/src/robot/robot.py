@@ -111,7 +111,7 @@ class Robot():
                 param_A, param_B, param_C = self.freeball_routine()
             else:
                 self.game_state = 1
-                param_A, param_B, param_C = self.state_machine.in_penalty_game()
+                param_A, param_B, param_C = self.state_machine.in_freeball_game()
 
         elif self.game_state == 3:  # Penalty
 
@@ -209,23 +209,19 @@ class Robot():
     def freeball_routine(self):
         if np.all(self.position):
             self.true_pos = self.position
-
-        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=25):
-            if on_attack_side(self.true_pos, self.team_side):
-                param_1, param_2, param_3 = self.state_machine.movement.move_to_point(
-                    220, np.array(self.position),
-                    [np.cos(self.orientation), np.sin(self.orientation)],
-                    np.array(self.ball_position))
-                if param_3:
-                    spin = spin_direction(ball_position=self.ball_position, robot_position=self.position, team_side=self.team_side)
-                    param_1, param_2, _ = self.state_machine.movement.spin(200, ccw=spin)
-                return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
-            else:
-                param_1, param_2, param_3 = self.state_machine.movement.move_to_point(
-                    150, np.array(self.position),
-                    [np.cos(self.orientation), np.sin(self.orientation)],
-                    np.array(self.ball_position))
-                return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=15):
+            param_a, param_b, _ = self.state_machine.movement.do_univector(
+                speed=160,
+                robot_position=self.position,
+                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                robot_speed=np.array([0, 0]),
+                obstacle_position=self.enemies_position,
+                obstacle_speed=[[0,0]]*5,
+                ball_position=self.ball_position,
+                only_forward=False,
+                speed_prediction=False)
+            rospy.logfatal(str(param_a))
+            return param_a, param_b, SOFTWARE  # 0.0, 250, HARDWARE
         else:
             self.game_state = 1
             return self.state_machine.in_freeball_game()

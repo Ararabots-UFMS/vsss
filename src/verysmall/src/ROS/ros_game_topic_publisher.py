@@ -126,7 +126,7 @@ class GameTopicPublisher:
             game_state,
             team_side,
             tuple(robot_roles),
-            penalty_robot,
+                penalty_robot,
             freeball_robot,
             meta_robot
         )
