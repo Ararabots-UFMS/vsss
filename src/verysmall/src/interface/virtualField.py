@@ -24,7 +24,7 @@ vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5)/10.0
 # ================
 
 class virtualField():
-    """ class constructor 
+    """ class constructor
 
         constroi um objeto campo virtual com tamanho padrao,
         se tamanho nao informado, de 850 x 650 pixels e flag rbg
@@ -53,7 +53,7 @@ class virtualField():
 
           saida:
             objeto campo virtual
-        
+
         """
 
     def __init__(self, width=850, height=650, is_rgb=False):
@@ -128,17 +128,17 @@ class virtualField():
 
 
     ''' recebe uma imagem preta e faz nela, o plot de todas as linhas do campo, markers e etc.
-        
+
         entrada
-          field eh a imagem que recebera o plot 
-        
+          field eh a imagem que recebera o plot
+
 
           cada retangulo recebe dois vertices opostos e uma cor
           cada linha recebe dois pontos e uma cor
           cada ciculo recebe o centro, o raio e a cor
-       
+
         saida
-          uma imagem de fundo preto com todas as linhas do campo desenhadas 
+          uma imagem de fundo preto com todas as linhas do campo desenhadas
 
 
         '''
@@ -250,7 +250,7 @@ class virtualField():
 
         self.field = copy.deepcopy(field)
 
-        ''' plot_ball 
+        ''' plot_ball
 
              recebe a coordenada do centro da bola,
              verifica onde a bola esta e caso esteja
@@ -330,13 +330,13 @@ class virtualField():
             - color - cor, dentro do dicionario da classe (ou tupla de cor) que os robos devem ser plotados
             - is_away - flag para diferenciar nosso time do time adversario e plotar cada time de forma diferente
           funcionamento
-            percorre a lista de robos, verifica se a posicao e valida, diferencia o robo pela flag is_away, 
-            converte a informacao recebida para pixels e faz o plot do robo no campo 
+            percorre a lista de robos, verifica se a posicao e valida, diferencia o robo pela flag is_away,
+            converte a informacao recebida para pixels e faz o plot do robo no campo
 
           saida
             imagem do campo com os robos impressos na mesma '''
 
-    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[0, 0]):
+    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[[0, 0]]):
         """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
@@ -349,7 +349,7 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)                    
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
 
                 else:
                     angle = robot_vector[index]
@@ -370,8 +370,8 @@ class virtualField():
 
             index = index + 1
 
-            ''' metodo unint(ico para unificar os plots), recebe todas as informacoes necessarias para plot de cada um dos times e 
-                e da bola. tambem recebe informacoes de fps do topico e da visao 
+            ''' metodo unint(ico para unificar os plots), recebe todas as informacoes necessarias para plot de cada um dos times e
+                e da bola. tambem recebe informacoes de fps do topico e da visao
 
                 entrada
                   valores de leitura do ros (centro, lista de robos(ambos os times), lista de vetores (ambos os times), cores dos robos (ambos os times), leitura de fps
@@ -398,11 +398,11 @@ class virtualField():
             self.univetField.updateObstacles(robotlistA,robot_speed_away)
 
         self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
-        self.plot_robots(robotlistA, robotvecA, colorA, is_away, robot_speed_away)
+        self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=robot_speed_away)
 
 
-        ''' usar no maximo 1 casa decimal, substituir os parametros 
-            de entrada do metodo pelos lidos no topico e substituir os 
+        ''' usar no maximo 1 casa decimal, substituir os parametros
+            de entrada do metodo pelos lidos no topico e substituir os
             valores de exemplo no plot abaixo '''
 
         cv.putText(self.field, str(fps_topic), (self.proportion_width(0.2), self.proportion_height(7.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
