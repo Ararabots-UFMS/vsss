@@ -22,6 +22,7 @@ MAX_X = 150
 
 class NaiveAttackerController():
 
+
     def __init__(self,_robot_obj,  _robot_body = "Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
         self.robot = _robot_obj
@@ -34,6 +35,7 @@ class NaiveAttackerController():
         self.ball_position = None
         self.team_side = None
         self.team_speed = None
+
         self.position_buffer =[]
         self.borders = [
             UP_BORDER,
@@ -209,15 +211,13 @@ class NaiveAttackerController():
                 # )
 
                 left, right, done = self.movement.do_univector(
-		            speed = SPEED_DEFAULT,
-                robot_position=self.position,
-                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=self.speed,
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
-
-
+    	            speed = SPEED_DEFAULT,
+                    robot_position=self.position,
+                    robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                    robot_speed=self.speed,
+                    obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                    obstacle_speed=[[0,0]]*5,
+                    ball_position=self.ball_position
 		        )
 
                 return left, right, self.pid_type
@@ -300,6 +300,8 @@ class NaiveAttackerController():
 
         # Chama a funcao de spin
         left, right, done = self.movement.spin(255, not spin_side)
+
+
         return left, right, SOFTWARE
 
     def in_freeball_game(self):

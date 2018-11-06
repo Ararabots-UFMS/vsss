@@ -135,6 +135,22 @@ class Movement():
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
+    def do_univector_ball(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
+        """Recive players positions and speed and return the speed to follow univector
+         :param speed : int
+         :param robot_position : np.array([float, float])
+         :param robot_vector : np.array([float, float])
+         :param robot_speed : np.array([float, float])
+         :param obstacle_position : np.array([float, float])
+         :param obstacle_speed : np.array([float, float])
+         :param ball_position : np.array([float, float])
+
+        :return: returns nothing
+        """
+        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
+
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result
          :param robot_position : np.array([float, float])
