@@ -11,7 +11,7 @@ from strategy.attacker_with_univector.attacker_with_univector_controller import 
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro.zagueiro_controller import ZagueiroController
-from strategy.strategy_utils import behind_ball
+from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 
 SOFTWARE = 0
@@ -105,7 +105,13 @@ class Robot():
             # rospy.logfatal(str(param_A)+" "+ str(param_B))
 
         elif self.game_state == 2:  # Freeball
-            param_A, param_B, param_C = self.state_machine.in_freeball_game()
+
+            if self.robot_id_integer == self.freeball_robot:
+                rospy.logfatal(str(self.robot_id_integer)+" Vo bate freeball")
+                param_A, param_B, param_C = self.freeball_routine()
+            else:
+                self.game_state = 1
+                param_A, param_B, param_C = self.state_machine.in_freeball_game()
 
         elif self.game_state == 3:  # Penalty
 
@@ -199,6 +205,26 @@ class Robot():
         else:
             self.game_state = 1
             return self.state_machine.in_penalty_game()
+
+    def freeball_routine(self):
+        if np.all(self.position):
+            self.true_pos = self.position
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=15):
+            param_a, param_b, _ = self.state_machine.movement.do_univector(
+                speed=160,
+                robot_position=self.position,
+                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                robot_speed=np.array([0, 0]),
+                obstacle_position=self.enemies_position,
+                obstacle_speed=[[0,0]]*5,
+                ball_position=self.ball_position,
+                only_forward=False,
+                speed_prediction=False)
+            rospy.logfatal(str(param_a))
+            return param_a, param_b, SOFTWARE  # 0.0, 250, HARDWARE
+        else:
+            self.game_state = 1
+            return self.state_machine.in_freeball_game()
 
     def get_stuck(self, position):
         """

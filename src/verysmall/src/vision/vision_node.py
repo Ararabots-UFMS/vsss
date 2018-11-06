@@ -39,7 +39,7 @@ class VisionNode:
         self.team_colors = ['blue', 'yellow']
         self.home_color = self.team_colors[color]  # blue or yellow
         self.home_robots = 5
-        self.adv_robots = 3
+        self.adv_robots = 1
         self.home_tag = "aruco"
         self.show = False
         self.state_changed = 0
