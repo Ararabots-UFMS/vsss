@@ -6,7 +6,7 @@ from zagueiro import Zagueiro, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from math import pi
 from movement.functions.movement import Movement
-from utils.math_utils import angleBetween
+from utils.math_utils import angleBetween, distancePoints
 from utils.json_handler import JsonHandler
 path += '../parameters/bodies.json'
 
@@ -175,7 +175,6 @@ class ZagueiroController():
 
 
     def in_defend(self):
-        rospy.logfatal(str(self.position))
         rospy.logfatal(self.zagueiro.current_state)
         #verify if the robot is stuck on border
         if self.get_stuck(self.position):
@@ -188,6 +187,7 @@ class ZagueiroController():
             self.zagueiro.defend_to_area()
             return self.in_area()
 
+        # se a bola esta dentro da area ou do gol, vou para o wait ball trackear a bola
         if(not ((self.team_side == LEFT) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side == RIGHT) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0)):
             self.zagueiro.defend_to_wait_ball()
             return self.in_wait_ball()
@@ -205,7 +205,6 @@ class ZagueiroController():
 
 
     def in_spin(self):
-        rospy.logfatal(str(self.position))
         rospy.logfatal(self.zagueiro.current_state)
         self.zagueiro.do_spin_to_defend()
         if self.team_side == LEFT:
@@ -226,6 +225,19 @@ class ZagueiroController():
 
     def in_move(self):
         rospy.logfatal(self.zagueiro.current_state)
+
+        # Se eu estiver struck, saio do struck com in_struck()
+        if self.get_stuck(self.position):
+            rospy.logfatal("if do stuck")
+            self.zagueiro.move_to_stuck()
+            return self.in_stuck()
+
+        # Se nao to stuck posso estar na area e sai correndo!
+        if extended_area(self.position, self.team_side)in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
+            self.zagueiro.move_to_area()
+            return self.in_area()
+
+        # Se a bola esta somente no ataque eu sigo a posicao y dela
         if self.team_side == LEFT:
             if self.ball_position[0] > 75:
                 self.zagueiro.move_to_wait_ball()
@@ -235,21 +247,21 @@ class ZagueiroController():
                 self.zagueiro.move_to_wait_ball()
                 return self.in_wait_ball()
 
-        if extended_area(self.position, self.team_side)in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
-            self.zagueiro.move_to_area()
+        # Se eu estiver perto da bola, spin na danada!
+        if near_ball(self.position, self.ball_position, 7.5):
+            self.zagueiro.move_to_do_spin()
+            return self.in_spin()
 
-            return self.in_area()
-
-        #verify if the robot is stuck on border
-        if self.get_stuck(self.position):
-            rospy.logfatal("if do stuck")
-            self.zagueiro.move_to_stuck()
-            return self.in_stuck()
-
-        # self.zagueiro.move_to_move()
+        # Se n estou na area e nem stuck e nem perto da bola monto os inimigos
+        # imaginarios para seguir o univector e possivelmente nunca entrar na area
+        enemies_position = list(self.enemies_position)
+        enemies_speed = list(self.enemies_speed)
         for i in xrange(ENEMY_POS[self.team_side].shape[0]):
-            np.append(self.enemies_position, ENEMY_POS[self.team_side][i])
-            np.append(self.enemies_speed, np.array([0,0]))
+            enemies_position.append(ENEMY_POS[self.team_side][i])
+            enemies_speed.append(np.array([0,0]))
+
+        self.enemies_position = np.asarray(enemies_position)
+        self.enemies_speed = np.asarray(enemies_speed)
 
         param1, param2, param3 = self.movement.do_univector(
             speed=ZAGUEIRO_SPEED,
@@ -257,11 +269,8 @@ class ZagueiroController():
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=np.array([0, 0]),
             obstacle_position=self.enemies_position,
-            obstacle_speed=[[0,0]]*5,
+            obstacle_speed=self.enemies_speed,
             ball_position=self.ball_position)
-        if near_ball(self.position, self.ball_position, 7.5):
-            self.zagueiro.move_to_do_spin()
-            return self.in_spin()
         return param1, param2, self.pid_type
 
     def in_wait_ball(self):
@@ -277,6 +286,7 @@ class ZagueiroController():
             self.zagueiro.wait_ball_to_stuck()
             return self.in_stuck()
 
+        # bola na defesa e nao esta na area
         if((self.team_side == LEFT) and (section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0 or (self.team_side == RIGHT) and(section(self.ball_position) not in [RIGHT_GOAL, RIGHT_GOAL_AREA]) and self.ball_position[0] > 75.0):
             self.zagueiro.wait_ball_to_defend()
             return self.in_defend()
@@ -284,8 +294,13 @@ class ZagueiroController():
             self.defend_position[0] = DEF_X_POS[self.team_side]
             self.defend_position[1] = self.ball_position[1]
 
+            speed =ZAGUEIRO_SPEED
+            self.movement.error_margin = 5.0
+            if distancePoints(self.position, self.defend_position) < 1.5 * self.movement.error_margin:
+                speed = ZAGUEIRO_SPEED / 2.0
+
             param1, param2, param3 = self.movement.move_to_point(
-                ZAGUEIRO_SPEED,
+                speed,
                 self.position,
                 [np.cos(self.orientation), np.sin(self.orientation)],
                 self.defend_position
