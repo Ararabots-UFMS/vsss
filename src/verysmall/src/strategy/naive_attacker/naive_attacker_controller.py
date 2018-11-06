@@ -117,12 +117,6 @@ class NaiveAttackerController():
 
         return left, right, self.pid_type
 
-        # if self.robot.velocity_buffer[-1] < 0:
-        #     return 200, 200, self.pid_type
-        # else:    
-        #     return -200, -200, self.pid_type
-
-
 
     def in_normal_game(self):
         """
