@@ -41,7 +41,7 @@ sim.drawBall(ballInitPosition)
 sim.drawAdv(np.array(advRobotPosition))
 # movement class
 movement = Movement([30, 0, 0], 10)
-
+movement.initialize_simulation()
 # obstacles
 obstacle = np.array(advRobotPosition)
 vObstacle = np.array([0, 0])
@@ -93,7 +93,8 @@ if __name__ == "__main__":
             cv2.destroyAllWindows()
             break
 
-        leftSpeed, rightSpeed, done = movement.head_to(np.array(sim.robot), np.array([1, 0]), mult=2)
+        leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), np.array([0, 0]), np.array(obstacle), np.array(vObstacle), np.array(sim.ball), speed_prediction=True)
+        
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
