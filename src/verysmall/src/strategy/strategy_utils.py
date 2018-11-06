@@ -173,7 +173,7 @@ def near_ball(ball_position, robot_position, _distance = 9.5):
     distance = distance_point(ball_position, robot_position)
     return (distance <= _distance)
 
-def behind_ball(ball_position, robot_position, team_side):
+def behind_ball(ball_position, robot_position, team_side, _distance = 9.5):
     """
     Returns if the robot is behind to the ball
     :params ball_position: np.array([x,y])
@@ -182,10 +182,10 @@ def behind_ball(ball_position, robot_position, team_side):
     :return: boolean
     """
     if (team_side == LEFT):
-        if (near_ball(ball_position, robot_position)):
+        if (near_ball(ball_position, robot_position, _distance)):
             return robot_position[0] < ball_position[0]
     else:
-        if (near_ball(ball_position, robot_position)):
+        if (near_ball(ball_position, robot_position, _distance)):
             return robot_position[0] > ball_position[0]
     return False
 
