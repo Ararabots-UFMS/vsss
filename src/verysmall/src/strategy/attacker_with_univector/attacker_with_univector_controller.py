@@ -171,14 +171,16 @@ class AttackerWithUnivectorController():
 
         else:
             self.AttackerWithUnivector.univector_to_univector()
-            param_a, param_b, _ = self.movement.do_univector_velo(
+            param_a, param_b, _ = self.movement.do_univector(
                 speed=250,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=np.array([0, 0]),
                 obstacle_position=self.enemies_position,
                 obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position
+                ball_position=self.ball_position,
+                only_forward=False,
+                speed_prediction=True
             )
             # param_a, param_b, _ = self.movement.do_univector(
             #    speed=100,

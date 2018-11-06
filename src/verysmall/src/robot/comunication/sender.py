@@ -20,8 +20,8 @@ CCW_BACKWARD_BYTE   =   3
 
 WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
-WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 5
-WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 6
+WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 6
+WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 5
 MAX_CONNECTION_ATTEMPT = 20
 
 class Sender():
@@ -89,7 +89,9 @@ class Sender():
             #self.update_time()
         except Exception as e:
             self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
-
+            if e[0] == 107 or e[0] == 110:
+                self.printError("-1", "Tentando reconexao")
+                self.sock.connect(False)
 
     def send_float(self, n_float):
         for byte in struct.pack("!f", n_float):
@@ -113,6 +115,9 @@ class Sender():
             self.sock.send(c_ubyte(abs(speed)))
         except Exception as e:
             self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
+            if e[0] == 107 or e[0] == 110:
+                self.printError("-1", "Tentando reconexao")
+                self.sock.connect(False)
 
     def get_angle_orientation_and_correction(self, angle, speed, rad=True):
         tmp = angle
