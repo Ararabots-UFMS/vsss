@@ -3,8 +3,7 @@ import os
 import rospy
 import numpy as np
 from running_striker import RunningStriker, Striker
-from strategy_utils import *
-from ball_range import *
+from strategy.strategy_utils import *
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler

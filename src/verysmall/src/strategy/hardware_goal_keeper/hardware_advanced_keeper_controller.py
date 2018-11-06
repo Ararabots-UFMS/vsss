@@ -3,7 +3,6 @@ import os
 import rospy
 import numpy as np
 from ..strategy_utils import *
-from ..ball_range import *
 from hardware_advanced_keeper import Hardware_AdvancedGK, MyModel
 
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT'] + "src/robot/"

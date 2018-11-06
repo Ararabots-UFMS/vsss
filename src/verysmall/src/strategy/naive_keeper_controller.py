@@ -2,7 +2,6 @@ import sys
 import os
 import rospy
 import numpy as np
-from ball_range import *
 from naive_keeper import NaiveGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
@@ -119,7 +118,7 @@ class NaiveGKController():
                 if not on_attack_side(self.ball_position, self.team_side):
                     self.NaiveGK.normal_to_defend_ball() #defend
                 else:
-                    self.NaiveGK.normal_to_track_ball()#trackeia    
+                    self.NaiveGK.normal_to_track_ball()#trackeia
             else:
                 self.NaiveGK.normal_to_track_ball()#trackeia
 
@@ -128,17 +127,17 @@ class NaiveGKController():
             #return 0,0
             return self.in_defend_ball()
         else:
-            #rospy.logfatal(self.NaiveGK.current_state)    
+            #rospy.logfatal(self.NaiveGK.current_state)
             #return 0,0
             return self.in_track_ball()
 
     def in_defend_ball(self):
         rospy.logfatal(self.NaiveGK.current_state)
-        
+
         if section(self.ball_position) in [LEFT_GOAL_AREA,RIGHT_GOAL_AREA]:
            return self.push_ball()
         else:
-            self.NaiveGK.defend_ball_to_track()#trackeia    
+            self.NaiveGK.defend_ball_to_track()#trackeia
             return self.in_track_ball()#trackeia
 
 
@@ -170,7 +169,7 @@ class NaiveGKController():
                 self.NaiveGK.track_to_defend_ball()
                 return self.in_defend_ball() #defend
             else:
-                return self.follow_ball()    
+                return self.follow_ball()
         elif section(self.ball_position) in [LEFT_GOAL,RIGHT_GOAL]:
             rospy.logfatal("GOL!!")
             return 0,0,0
@@ -181,7 +180,7 @@ class NaiveGKController():
     def follow_ball(self):
 
         self.defend_position[0] = MIN_X + GG_DIFF*self.team_side
-    
+
         if self.ball_position[1] >= MIN_Y and self.ball_position[1] <= MAX_Y:
             rospy.logfatal("frente area")
             self.defend_position[1] = self.ball_position[1]

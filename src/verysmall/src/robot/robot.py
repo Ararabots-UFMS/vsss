@@ -11,7 +11,7 @@ from strategy.attacker_with_univector_controller import AttackerWithUnivectorCon
 from strategy.naive_keeper_controller import NaiveGKController
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
 from strategy.set_pid_machine_controller import SetPIDMachineController
-from strategy.zagueiro_controller import ZagueiroController
+from strategy.zagueiro.zagueiro_controller import ZagueiroController
 from strategy.strategy_utils import behind_ball
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 
@@ -61,7 +61,7 @@ class Robot():
         self.right_side = not self.left_side
 
         # wheels speed
-        self.left_speed = self.right_speed = 0 
+        self.left_speed = self.right_speed = 0
 
         # Open bluetooth socket
         if self.mac_address == '-1':
