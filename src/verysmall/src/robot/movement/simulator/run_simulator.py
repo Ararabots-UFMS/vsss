@@ -92,8 +92,8 @@ if __name__ == "__main__":
             break
 
         lastRobotPosition = sim.robot
-        leftSpeed, rightSpeed, done = movement.predict_univector(120, 10, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball))
-        #leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball))
+        
+        leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball), speed_prediction=True)
 
         if not done:
             # move function
