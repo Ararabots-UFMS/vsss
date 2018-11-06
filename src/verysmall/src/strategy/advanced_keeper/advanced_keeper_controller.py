@@ -364,13 +364,15 @@ class AdvancedGKController():
         
         goal_position = np.array([0, 0])
         
+        range_left = inside_range(self.position[0], 0.0, self.ball_position[0])
+        range_right = inside_range(self.position[0], 150.0, self.ball_position[0])
+
         # bola entre goleiro e gol, 
-        if ( (inside_range(self.position[0], 0.0, self.ball_position[0]) and self.team_side == LEFT) )
-            || ((inside_range(self.position[0], 150.0, self.ball_position[0]) and self.team_side == RIGHT)):
+        if (( range_left and self.team_side == LEFT) or ( range_right and self.team_side == RIGHT)):
 
 
             ## bola alianhada com goleiro, volta para ponto fixo
-            if (inside_range(self.ball_position[1] + 4, self.ball_position[1] - 4, self.position[1]) )
+            if (inside_range(self.ball_position[1] + 4, self.ball_position[1] - 4, self.position[1]) ):
                 goal_position = np.array[MIN_X + self.team_side*GG_DIFF, 40.0]
 
             ## bola acima/abaixo do goleiro, volta reto pro gol
