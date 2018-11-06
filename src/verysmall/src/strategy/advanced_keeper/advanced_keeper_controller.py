@@ -54,22 +54,25 @@ class AdvancedGKController():
                                  _debug_topic=_debug_topic)
 
         self.buffer = []
+        self.position_buffer = []
+
+        self.position_buffer_size = 10
         #self.buffer_size = 50
         self.buffer_size = 20
 
         self.fixed_positions = [
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 40.0],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 42.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 47.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 52.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 57.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 62.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 67.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 72.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 77.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 82.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 87.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 90.0],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 40.0],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 42.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 47.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 52.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 57.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 62.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 67.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 72.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 77.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 82.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 87.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 90.0],
                                 ]
 
 
@@ -92,6 +95,8 @@ class AdvancedGKController():
         # else:
         #     rospy.logfatal("Deu ruim")
 
+        rospy.logfatal(self.AdvancedGK.current_state)
+
         self.orientation = self.robot.orientation
         self.speed = self.robot.speed
         self.team_speed = self.robot.team_speed
@@ -104,20 +109,21 @@ class AdvancedGKController():
         self.movement.univet_field.update_attack_side(not self.team_side)
 
         self.robot.add_to_buffer(self.buffer, self.buffer_size, self.ball_position)
+        self.robot.add_to_buffer(self.position_buffer, self.position_buffer_size, self.position)
 
         self.fixed_positions = [
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 40.0],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 42.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 47.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 52.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 57.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 62.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 67.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 72.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 77.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 82.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 87.5],
-                                [MAX_X*self.team_side + ((-1)**(self.team_side)*self.MIN_X), 90.0],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 40.0],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 42.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 47.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 52.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 57.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 62.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 67.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 72.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 77.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 82.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 87.5],
+                                [MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 90.0],
                                 ]
 
     def update_pid(self):
@@ -147,9 +153,26 @@ class AdvancedGKController():
 
         :return: int, int
         """
+
+       
+
         if self.AdvancedGK.is_stop:
 
             self.AdvancedGK.stop_to_normal()
+
+         if self.robot.get_stuck(self.position):
+
+            goal_position = np.array([0,0])
+
+            goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
+            goal_position[1] = 65.0
+
+            
+
+            param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED, self.position, [np.cos(self.orientation), np.sin(self.orientation)], goal_position)
+
+            return param1, param2, self.pid_type
+
 
         if self.AdvancedGK.is_normal:
             ball_section = section(self.ball_position)
@@ -236,6 +259,11 @@ class AdvancedGKController():
     def in_seek_ball(self):
         #rospy.logfatal(self.AdvancedGK.current_state)
 
+        not_inside_left_limit = (self.team_side == LEFT and self.ball_position[0] > 30.0)
+        not_inside_right_limit = (self.team_side == RIGHT and self.ball_position[0] < 120.0)
+
+        keeper_is_out_of_area = section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]
+
         # quando a bola entra em uma das area
         if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
 
@@ -250,7 +278,7 @@ class AdvancedGKController():
                 return self.follow_ball()
 
         # goleiro fora da area com histerese de 15 cm (TESTAR FUNCIONAMENTO da HISTERESE)
-        elif(section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] and ( (self.team_side == LEFT and self.ball_position[0] > 30.0) or (self.team_side == RIGHT and self.ball_position[0] < 120.0) ) ):
+        elif(keeper_is_out_of_area and ( not_inside_right_limit or not_inside_left_limit ) ):
             
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
@@ -352,10 +380,9 @@ class AdvancedGKController():
 
         # if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
         if section(self.ball_position) not in [LEFT_GOAL, RIGHT_GOAL]:
-
             self.AdvancedGK.goal_to_defend_ball()
-        else:
-            return 0, 0, 0
+        
+        return 0, 0, 0
 
  
 
