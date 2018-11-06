@@ -164,13 +164,19 @@ class Vision:
         # the goal vertices
         xo = x[2]
 
-        # the yo origin is the most bottom vertice
-        yo = np.sort(self.arena_vertices[:,1])[-1]
+        y_sorted = np.sort(self.arena_vertices[:,1])
 
+        upper_y = y_sorted[0]
+
+        # the yo origin is the most bottom vertice
+        yo = y_sorted[-1]
         self.origin = np.array([xo, yo])
 
+        # The height in pixels is the diff between yo and ymax
+        height_px = abs(yo - upper_y)
+
         # now just calculate the pixel to cm factor
-        self.conversion_factor = 130.0 / self.arena_size[HEIGHT]
+        self.conversion_factor = 130.0 / height_px
 
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""
