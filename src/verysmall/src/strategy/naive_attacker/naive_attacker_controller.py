@@ -96,6 +96,12 @@ class NaiveAttackerController():
         self.model.state = 'stop'
         return 0, 0, 0
 
+    def in_stuck(self):
+
+        # Verifica em qual eixo de borda o robo se encontra
+        # if (self.position)
+
+
     def in_normal_game(self):
         """
         Transitions in normal game state
@@ -105,9 +111,9 @@ class NaiveAttackerController():
         if self.NaiveAttacker.is_stop:
             self.NaiveAttacker.stop_to_normal()
 
-        # if self.robot.get_stack:
-        #     self.model.state = "stack"
-        #     return self.in_stack()
+        if self.robot.get_stuck():
+            self.model.state = "stack"
+            return self.in_stuck()
 
         rospy.logfatal(self.NaiveAttacker.current_state)
 
