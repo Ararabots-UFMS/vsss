@@ -50,7 +50,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=5, attack_goal= np.array([0,0]), _pid_type=self.pid_type,
+        self.movement = Movement(self.pid_list, error=7, attack_goal= np.array([0,0]), _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
         self.buffer = []
@@ -160,19 +160,17 @@ class AdvancedGKController():
 
             self.AdvancedGK.stop_to_normal()
 
-         if self.robot.get_stuck(self.position):
+
+        if self.robot.get_stuck(self.position):
 
             goal_position = np.array([0,0])
 
             goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
             goal_position[1] = 65.0
 
-            
-
             param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED, self.position, [np.cos(self.orientation), np.sin(self.orientation)], goal_position)
 
             return param1, param2, self.pid_type
-
 
         if self.AdvancedGK.is_normal:
             ball_section = section(self.ball_position)
@@ -323,14 +321,14 @@ class AdvancedGKController():
         if distance_point(self.ball_position, mean) > DEFENCE_THRESHOLD:
             polynom = self.robot.buffer_polyfit(self.buffer, 1)
 
-            position = polynom(MIN_X + self.team_side*GG_DIFF)
+            position = polynom(MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X))
 
             if position > 90.0:
                 position = 90.0
             elif position < 40.0:
                 position = 40.0
 
-            self.defend_position[0] = MIN_X
+            self.defend_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
             self.defend_position[1] = position
 
         else:
@@ -486,5 +484,7 @@ class AdvancedGKController():
 
 
     def half_speed(self, position, goal_position, base_speed):
-        if distance_point(position, goal_position) <= self.movement.error*1.5:
-            
+        if distance_point(position, goal_position) <= self.movement.error_margin*1.5:
+            return base_speed*0.5
+        else:
+            return base_speed
