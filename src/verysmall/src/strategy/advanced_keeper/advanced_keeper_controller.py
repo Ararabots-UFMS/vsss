@@ -22,7 +22,7 @@ GOALKEEPER_SPEED = 100
 MIN_X = 10.0
 GG_DIFF = 130.0
 SPIN_SPEED = 255
-DEFENCE_THRESHOLD = 5.0 
+DEFENCE_THRESHOLD = 5.0
 PLUS  = 1
 MINUS = -1
 SAME = 0
@@ -98,7 +98,7 @@ class AdvancedGKController():
         self.ball_position = self.robot.ball_position
         self.ball_speed = self.robot.ball_speed
         self.team_side = self.robot.team_side
-        
+
         self.movement.univet_field.update_attack_side(not self.team_side)
 
         self.robot.add_to_buffer(self.buffer, self.buffer_size, self.ball_position)
@@ -154,23 +154,23 @@ class AdvancedGKController():
             keeper_section = section(self.position)
 
             if keeper_section not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] or keeper_section in [LEFT_GOAL, RIGHT_GOAL]:
-    
+
                 self.AdvancedGK.normal_to_out_of_area()
 
             elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
                 if not on_attack_side(self.ball_position, self.team_side):
-        
+
                     self.AdvancedGK.normal_to_defend_ball()  # defend
                 else:
-        
+
                     self.AdvancedGK.normal_to_seek_ball()  # seekeia
 
             elif ball_section in [LEFT_GOAL, RIGHT_GOAL]:
-    
+
                 self.AdvancedGK.normal_to_goal()
 
             else:
-    
+
                 self.AdvancedGK.normal_to_seek_ball()  # trackeia
 
         if self.AdvancedGK.is_defend_ball:
@@ -197,21 +197,21 @@ class AdvancedGKController():
 
         # quando a bola entra na area
         elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
-            
+
             # quando bola na area de ataque
             if not on_attack_side(self.ball_position, self.team_side):
 
                 if near_ball(self.ball_position, self.position, DISTANCE)  and (not inside_range(45.0, 85.0, self.ball_position[1]) ):
-        
+
                     self.AdvancedGK.defend_ball_to_spin()
                     return self.in_spin() # proximo a bola
                 else:
-        
+
                     self.AdvancedGK.defend_ball_to_go_to_ball()
                     return self.in_go_to_ball() #loge da bola
             else:
                 #quando bola na area de defesa
-    
+
                 self.AdvancedGK.defend_ball_to_seek_ball()
                 return self.in_seek_ball()
 
@@ -231,26 +231,26 @@ class AdvancedGKController():
 
         # quando a bola entra em uma das area
         if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
-            
+
             # quando a bola esta na area de defesa
             if not on_attack_side(self.ball_position, self.team_side):
-    
+
                 self.AdvancedGK.seek_ball_to_defend_ball()
-                return self.in_defend_ball()  
-            
+                return self.in_defend_ball()
+
             else:
                 # caso generico, tracking de bola
                 return self.follow_ball()
 
         # goleiro fora da area com histerese de 15 cm (TESTAR FUNCIONAMENTO da HISTERESE)
         elif(section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA] and ( (self.team_side == LEFT and self.ball_position[0] > 30.0) or (self.team_side == RIGHT and self.ball_position[0] < 120.0) ) ):
-            
+
 
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
 
         else:
-            # caso geral, tracking de bola 
+            # caso geral, tracking de bola
             return self.follow_ball()
 
     def in_spin(self):
@@ -280,9 +280,9 @@ class AdvancedGKController():
     ## - melhorar andamento
     ## - head_to antes de andar ou depois de atingir objetivo
     ## - implementar empurrar bola dentro da area na frente do gol
-    ## - 
+    ## -
 
-    
+
     def follow_ball(self):
 
         mean = self.robot.buffer_mean(self.buffer)
@@ -299,7 +299,7 @@ class AdvancedGKController():
 
             self.defend_position[0] = MIN_X
             self.defend_position[1] = position
-        
+
         else:
 
             if self.ball_speed[1] > (2.0):    discount = PLUS
@@ -356,37 +356,37 @@ class AdvancedGKController():
     ####### TODO:
     ## - verificar calculo de poisicao da volta
     ## - verificar lado da posicao de volta
-    ## - validar posiçoes de volta
-    ## - 
-    ## - 
+    ## - validar posicoes de volta
+    ## -
+    ## -
 
     def in_out_of_area(self):
         #rospy.logfatal(self.AdvancedGK.current_state)
-        
-        goal_position = [0, 0]
-        
 
-        if(self.position[0] <= self.ball_position[0] <= (MIN_X + GG_DIFF * self.team_side) ): 
+        goal_position = [0, 0]
+
+
+        if(self.position[0] <= self.ball_position[0] <= (MIN_X + GG_DIFF * self.team_side) ):
             goal_position[0] = MIN_X + GG_DIFF * self.team_side
-           
-            if self.team_side == LEFT: 
+
+            if self.team_side == LEFT:
                 goal_position[1] = self.position[1]
                 #rospy.logfatal(goal_position)
             else:
 
                 if self.ball_position[1] >= 40.0 and self.ball_position[1] <= 90.0:
-                    goal_position[1] = self.ball_position[1] 
+                    goal_position[1] = self.ball_position[1]
                 elif self.ball_position[1] > 90.0:
                     goal_position[1] = 90.0
                 else:
                     goal_position[1] = 40.0
                 #rospy.logfatal(goal_position)
-                
+
         else:
             goal_position[0] = MIN_X + GG_DIFF * self.team_side
-            
+
             if self.ball_position[1] >= 40.0 and self.ball_position[1] <= 90.0:
-                goal_position[1] = self.ball_position[1] 
+                goal_position[1] = self.ball_position[1]
             elif self.ball_position[1] > 90.0:
                 goal_position[1] = 90.0
             else:
@@ -409,7 +409,7 @@ class AdvancedGKController():
         return param1, param2, self.pid_type
 
     def in_freeball_game(self):
-        
+
         """
         Transitions in freeball state
 
