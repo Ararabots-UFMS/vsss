@@ -60,6 +60,9 @@ class Robot():
         self.left_side = 0
         self.right_side = not self.left_side
 
+        # wheels speed
+        self.left_speed = self.right_speed = 0 
+
         # Open bluetooth socket
         if self.mac_address == '-1':
             rospy.logfatal("Using fake bluetooth")
@@ -128,6 +131,12 @@ class Robot():
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
         #self.add_to_buffer(self.position_buffer, 10, self.position)
+        if param_C: # if is hardware
+            self.left_speed = param_B
+            self.right_speed = param_B
+        else:
+            self.left_speed = param_A
+            self.right_speed = param_B
 
         if self.bluetooth_sender:
             self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
