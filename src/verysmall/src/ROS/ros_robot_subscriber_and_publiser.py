@@ -67,7 +67,6 @@ class RosRobotSubscriberAndPublisher:
         self.robot.enemies_speed = []
 
         for i in xrange(5):
-            rospy.logfatal(np.any(enemies_position[i]))
             if np.any(enemies_position[i]):
                 self.robot.enemies_position.append(enemies_position[i])
                 self.robot.enemies_orientation.append(enemies_orientation[i])

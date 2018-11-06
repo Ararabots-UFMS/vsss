@@ -92,7 +92,6 @@ class Robot():
         self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
 
     def run(self):
-        rospy.logfatal(self.get_stuck(self.position))
 
         self.state_machine.update_game_information()
 
@@ -194,6 +193,12 @@ class Robot():
             return self.state_machine.in_penalty_game()
 
     def get_stuck(self, position):
+        """
+        Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
+        the vision node
+        :param position: int
+        :return: nothing
+        """
         if sum(self.velocity_buffer):
 
             # position_sum = self.buffer_mean(self.position_buffer)
