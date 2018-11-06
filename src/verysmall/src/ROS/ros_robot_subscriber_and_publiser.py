@@ -46,12 +46,12 @@ class RosRobotSubscriberAndPublisher:
         :param data: ROS Things position message
         :return: nothing
         """
-        self.robot.ball_position = np.nan_to_num(np.array(data.ball_pos))
-        self.robot.ball_speed = np.nan_to_num(np.array(data.ball_speed))
+        self.robot.ball_position = np.nan_to_num(data.ball_pos)
+        self.robot.ball_speed = np.nan_to_num(data.ball_speed)
 
-        self.robot.team_pos = np.nan_to_num(np.array(data.team_pos)).reshape((5, 2))
-        self.robot.team_orientation = np.nan_to_num(np.array(data.team_orientation))
-        self.robot.team_speed = np.nan_to_num(np.array(data.team_speed)).reshape((5, 2))
+        self.robot.team_pos = np.nan_to_num(data.team_pos).reshape((5, 2))
+        self.robot.team_orientation = np.nan_to_num(data.team_orientation)
+        self.robot.team_speed = np.nan_to_num(data.team_speed).reshape((5, 2))
 
         self.robot.position = self.robot.team_pos[self.robot.tag]
         self.robot.orientation = self.robot.team_orientation[self.robot.tag]
@@ -75,6 +75,8 @@ class RosRobotSubscriberAndPublisher:
         self.robot.enemies_position = np.asarray(self.robot.enemies_position)
         self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
         self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
+
+        rospy.logfatal(data)
 
         self.robot.run()
 

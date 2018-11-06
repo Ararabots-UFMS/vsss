@@ -72,14 +72,14 @@ class RosMainWindowSubscriber:
 
         try:
             data_item = self.data.popleft()
-            data_item.ball_pos = nan_to_num(array(data_item.ball_pos))  # ball position
-            data_item.team_pos = nan_to_num(array(data_item.team_pos)).reshape((5, 2))  # home team position
-            data_item.team_orientation = nan_to_num(array(data_item.team_orientation))  # home team vectors
-            data_item.team_speed = nan_to_num(array(data_item.team_speed)).reshape((5, 2))  # away team speed    
+            data_item.ball_pos = nan_to_num(data_item.ball_pos)  # ball position
+            data_item.team_pos = nan_to_num(data_item.team_pos).reshape((5, 2))  # home team position
+            data_item.team_orientation = nan_to_num(data_item.team_orientation)  # home team vectors
+            data_item.team_speed = nan_to_num(data_item.team_speed).reshape((5, 2))  # away team speed    
             
             data_item.enemies_pos = nan_to_num(data_item.enemies_pos).reshape((5, 2))  # away team position
             data_item.enemies_orientation = nan_to_num(data_item.enemies_orientation)  # away team vectors
-            data_item.enemies_speed = nan_to_num(array(data_item.enemies_speed)).reshape((5, 2))  # away team speed
+            data_item.enemies_speed = nan_to_num(data_item.enemies_speed).reshape((5, 2))  # away team speed
 
             enemies_position = []
             enemies_orientation = []
