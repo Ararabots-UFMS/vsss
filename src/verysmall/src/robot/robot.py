@@ -213,7 +213,8 @@ class Robot():
             # if np.any( abs(position_sum - np.array(position)) < 3 ):
             #     return True
 
-            if np.all(self.speed) < 1:
+            if (self.speed[0] < 1) and (self.speed[1] < 1):
                 return True
 
         return False
+
