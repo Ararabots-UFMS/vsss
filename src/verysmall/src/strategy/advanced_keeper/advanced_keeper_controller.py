@@ -483,3 +483,8 @@ class AdvancedGKController():
 
         if self.AdvancedGK.is_normal:
             return self.in_normal_game()
+
+
+    def half_speed(self, position, goal_position, base_speed):
+        if distance_point(position, goal_position) <= self.movement.error*1.5:
+            
