@@ -18,7 +18,7 @@ SOFTWARE = 0
 HARDWARE = 1
 
 DISTANCE = 8.0
-GOALKEEPER_SPEED = 100
+GOALKEEPER_SPEED = 110
 MIN_X = 7.0
 MAX_X = 150.0
 GG_DIFF = 136.0
@@ -161,16 +161,16 @@ class AdvancedGKController():
             self.AdvancedGK.stop_to_normal()
 
 
-        if self.robot.get_stuck(self.position):
+        # if self.robot.get_stuck(self.position):
 
-            goal_position = np.array([0,0])
+        #     goal_position = np.array([0,0])
 
-            goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
-            goal_position[1] = 65.0
+        #     goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
+        #     goal_position[1] = 65.0
 
-            param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED, self.position, [np.cos(self.orientation), np.sin(self.orientation)], goal_position)
+        #     param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED, self.position, [np.cos(self.orientation), np.sin(self.orientation)], goal_position)
 
-            return param1, param2, self.pid_type
+        #     return param1, param2, self.pid_type
 
         if self.AdvancedGK.is_normal:
             ball_section = section(self.ball_position)
@@ -362,6 +362,7 @@ class AdvancedGKController():
             else:# inside_range(90.1,130.0,self.ball_position[1]):
                 self.defend_position = self.fixed_positions[11 if (11+discount >= 11) else 11+discount]
 
+        rospy.logfatal(self.defend_position)
         param_1, param_2, param3 = self.movement.move_to_point(
             speed=GOALKEEPER_SPEED,
             robot_position=self.position,
