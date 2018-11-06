@@ -102,9 +102,6 @@ class ZagueiroController():
         self.pid_list = [bodies_unpack[self.robot_body]['KP'], bodies_unpack[self.robot_body]['KI'], bodies_unpack[self.robot_body]['KD']]
         self.movement.update_pid(self.pid_list)
 
-
-
-
     def set_to_stop_game(self):
         """
         Set state stop in the state machine
@@ -443,7 +440,11 @@ class ZagueiroController():
             #     rospy.logfatal(str(param1)+"  "+str(param2))
             #     return param1, param2, self.pid_type
 
-            if angleBetween([self.position[0], 150], self.position) < pi/2 + error 
+            # if angleBetween([self.position[0], 150], self.position) < pi/2 + error
+            if self.robot.velocity_buffer[-1] < 0:
+                return 0, 100, self.pid_type
+            else:
+                return 0, -100, self.pid_type
          else:
             self.zagueiro.stuck_to_defend()
             return 0,0, self.pid_type
