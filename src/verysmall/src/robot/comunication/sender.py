@@ -89,7 +89,8 @@ class Sender():
             #self.update_time()
         except Exception as e:
             self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
-
+            if e == 107 or e == 110:
+                self.sock.connect(False)
 
     def send_float(self, n_float):
         for byte in struct.pack("!f", n_float):
@@ -113,6 +114,8 @@ class Sender():
             self.sock.send(c_ubyte(abs(speed)))
         except Exception as e:
             self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
+            if e == 107 or e == 110:
+                self.sock.connect(False)
 
     def get_angle_orientation_and_correction(self, angle, speed, rad=True):
         tmp = angle
