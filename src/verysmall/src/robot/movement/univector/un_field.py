@@ -7,7 +7,7 @@ from math import pi
 from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
-from strategy.arena_sections import section, CENTER
+from strategy.strategy_utils import section, CENTER
 from rospy import logfatal
 
 LEFT = 0

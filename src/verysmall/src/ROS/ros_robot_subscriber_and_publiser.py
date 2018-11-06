@@ -76,8 +76,6 @@ class RosRobotSubscriberAndPublisher:
         self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
         self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
 
-        rospy.logfatal(data)
-
         self.robot.run()
 
     def debug_publish(self, _vector):
