@@ -217,8 +217,8 @@ class Movement():
         """
         #logfatal("SPIN " + str(speed) + " " + str(ccw))
         if ccw:
-            return int(speed), int(-speed), False
-        return int(-speed), int(speed), False
+            return int(-speed), int(speed), False
+        return int(speed), int(-speed), False
 
     def head_to(self, robot_vector, goal_vector, multiplicator=1):
         """Receive robot direction vector, goal vector and a speed. Return the left wheels speed,
