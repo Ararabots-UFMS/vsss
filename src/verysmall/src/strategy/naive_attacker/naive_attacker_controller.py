@@ -56,7 +56,7 @@ class NaiveAttackerController():
                          bodies_unpack[self.robot_body]['KI'],
                          bodies_unpack[self.robot_body]['KD']]
 
-        self.stop = MyModel(state='stop')
+        self.model = MyModel(state='stop')
         self.NaiveAttacker = NaiveAttacker(self.stop)
 
         self.attack_goal = np.array([150.0, 65.0])
@@ -93,7 +93,7 @@ class NaiveAttackerController():
 
         :return: int, int
         """
-        self.stop.state = 'stop'
+        self.model.state = 'stop'
         return 0, 0, 0
 
     def in_normal_game(self):
@@ -104,6 +104,10 @@ class NaiveAttackerController():
         """
         if self.NaiveAttacker.is_stop:
             self.NaiveAttacker.stop_to_normal()
+
+        # if self.robot.get_stack:
+        #     self.model.state = "stack"
+        #     return self.in_stack()
 
         rospy.logfatal(self.NaiveAttacker.current_state)
 
