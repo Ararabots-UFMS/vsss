@@ -18,7 +18,7 @@ SOFTWARE = 0
 HARDWARE = 1
 
 DISTANCE = 8.0
-GOALKEEPER_SPEED = 100
+GOALKEEPER_SPEED = 80
 MIN_X = 10.0
 GG_DIFF = 130.0
 SPIN_SPEED = 255
@@ -53,7 +53,8 @@ class AdvancedGKController():
                                  _debug_topic=_debug_topic)
 
         self.buffer = []
-        self.buffer_size = 50
+        #self.buffer_size = 50
+        self.buffer_size = 30
 
         self.fixed_positions = [
                                 [MIN_X+self.team_side*GG_DIFF, 40.0],
