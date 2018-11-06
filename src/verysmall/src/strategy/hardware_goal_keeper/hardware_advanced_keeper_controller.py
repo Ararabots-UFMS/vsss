@@ -2,7 +2,7 @@
 import os
 import rospy
 import numpy as np
-from ..arena_sections import *
+from ..strategy_utils import *
 from ..ball_range import *
 from hardware_advanced_keeper import Hardware_AdvancedGK, MyModel
 
