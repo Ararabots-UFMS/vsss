@@ -1,6 +1,8 @@
 import sys
-sys.path.append('../')
-from simulator import Simulator
+import os
+import numpy as np
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/robot/movement/"
+from simulator.simulator import Simulator
 from functions.movement import Movement
 from univector.un_field import univectorField
 import cv2
@@ -53,16 +55,19 @@ univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 univetField.updateBall(np.array(sim.ball))
 univetField.updateObstacles(obstacle, vObstacle)
 
+leftSpeed = 0
+rightSpeed = 0
+done = False
 
 def printInformation():
     print "**********************************************"
     print "         Initializing VSSS simulation         "
     print "**********************************************"
     print "Press any key to start:"
-    print "To change the game state to normal game: n"
-    print "To change the game state to stop: s"
-    print "To change the game state to meta: m"
-    print "To change the game state to penalty: p"
-    print "To change the game state to free ball: f"
+    # print "To change the game state to normal game: n"
+    # print "To change the game state to stop: s"
+    # print "To change the game state to meta: m"
+    # print "To change the game state to penalty: p"
+    # print "To change the game state to free ball: f"
     print "To draw the ball in mouse position use: g"
     print "To exit the simulation press: q"

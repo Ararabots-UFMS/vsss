@@ -1,4 +1,10 @@
 from simulator_definition import *
+import sys
+import os
+import numpy as np
+sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/strategy"
+from attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
+
 
 def updateBallPosition(event, x, y, flags, param):
     if mouseMode:
@@ -50,9 +56,9 @@ if __name__ == "__main__":
             game_state = "Meta"
 
         lastRobotPosition = sim.robot
-        
-        leftSpeed, rightSpeed, done = movement.do_univector(120, np.array(sim.robot), np.array(sim.robotVector), robotSpeed, np.array(obstacle), np.array(vObstacle), np.array(sim.ball), speed_prediction=True)
 
+        leftSpeed, rightSpeed, done = movement.move_to_point(100, np.array(sim.robot), np.array(sim.robotVector), np.array(sim.ball))
+        
         if not done:
             # move function
             sim.move(leftSpeed, rightSpeed)
