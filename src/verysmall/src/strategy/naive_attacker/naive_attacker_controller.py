@@ -8,6 +8,7 @@ sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 import strategy.strategy_utils as strategy_utils
+from strategy.strategy_utils import *
 from utils import math_utils
 
 path += '../parameters/bodies.json'
@@ -19,7 +20,7 @@ HARDWARE = 1
 SOFTWARE = 0
 CENTER_Y = 65
 CENTER_X = 75
-SPEED_DEFAULT = 150
+SPEED_DEFAULT = 170
 MAX_X = 150
 
 class NaiveAttackerController():
@@ -59,7 +60,7 @@ class NaiveAttackerController():
                          bodies_unpack[self.robot_body]['KD']]
 
         self.model = MyModel(state='stop')
-        self.NaiveAttacker = NaiveAttacker(self.stop)
+        self.NaiveAttacker = NaiveAttacker(self.model)
 
         self.attack_goal = np.array([150.0, 65.0])
 
@@ -99,23 +100,38 @@ class NaiveAttackerController():
         return 0, 0, 0
 
     def in_stuck(self):
-        angle = 300
-        robot_orientation = np.array([math.cos(self.orientation), math.sin(self.orientation)])
-        # Verifica em qual eixo de borda o robo se encontra
-        if (strategy_utils.section(self.position) in [
-            LEFT_DOWN_BOTTOM_LINE,
-            LEFT_UP_BOTTOM_LINE,
-            RIGHT_DOWN_BOTTOM_LINE,
-            RIGHT_UP_BOTTOM_LINE
-        ]):
-            angle = math.degrees(math_utils.angleBetween([1,0], robot_orientation))
-        else:
-            angle = math.degrees(math_utils.angleBetween([0,1], robot_orientation))
 
-        if (angle > 10) and (angle < 10):
+        
+        
+        # angle = 300
+        # robot_orientation = np.array([math.cos(self.orientation), math.sin(self.orientation)])
+        # # Verifica em qual eixo de borda o robo se encontra
+        # if (strategy_utils.section(self.position) in [
+        #     LEFT_DOWN_BOTTOM_LINE,
+        #     LEFT_UP_BOTTOM_LINE,
+        #     RIGHT_DOWN_BOTTOM_LINE,
+        #     RIGHT_UP_BOTTOM_LINE
+        # ]):
+        #     angle = math.degrees(math_utils.angleBetween([0,1], robot_orientation))
+        # elif (strategy_utils.section(self.position) in [
+        #     UP_BORDER,
+        #     DOWN_BORDER
+        # ]):
+        #     angle = math.degrees(math_utils.angleBetween([1,0], robot_orientation))
+
+
+        # left, right, done = self.movement.move_to_point(
+        #         speed = SPEED_DEFAULT,
+        #         robot_position=self.position,
+        #         robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+        #         goal_position = [65,65]
+        #     )
+
+        rospy.logfatal(angle)
+        if (strategy_utils.section(self.position) not in self.borders):
             self.model.state = 'normal'
 
-        return 130, 0, self.pid_type
+        return -150, -150, self.pid_type
 
 
     def in_normal_game(self):
@@ -127,8 +143,10 @@ class NaiveAttackerController():
         if self.NaiveAttacker.is_stop:
             self.NaiveAttacker.stop_to_normal()
 
-        if self.robot.get_stuck():
+        if self.robot.get_stuck(self.position):
             self.model.state = "stuck"
+
+        
 
         rospy.logfatal(self.NaiveAttacker.current_state)
 
