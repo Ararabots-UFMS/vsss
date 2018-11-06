@@ -9,8 +9,7 @@ from movement.functions.movement import Movement
 from utils.math_utils import angleBetween
 from utils.json_handler import JsonHandler
 path += '../parameters/bodies.json'
-# from arena_sections import *
-# from ball_range import *
+
 from strategy.strategy_utils import *
 
 jsonHandler = JsonHandler()
@@ -414,6 +413,18 @@ class ZagueiroController():
 
     def in_stuck(self):
         rospy.logfatal(self.zagueiro.current_state)
+        if near_ball(self.ball_position, self.team_side):
+            if section(self.ball_position) == UP_BORDER or DOWN_BORDER:
+                if self.team_side == LEFT:
+                    if self.ball_position[0] > self.position[0]:
+                        self.stuck_to_spin()
+                        return self.in_spin()
+                if self.team_side == RIGHT:
+                    if self.ball_position[0] < self.position[0]:
+                        self.stuck_to_spin()
+                        return self.in_spin()
+
+
         if border_stuck(self.position_buffer, self.orientation):
             rospy.logfatal("if do stuck")
 
