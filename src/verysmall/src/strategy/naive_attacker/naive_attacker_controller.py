@@ -193,12 +193,6 @@ class NaiveAttackerController():
             return self.in_spin()
         else:
 
-            # Trata um parte do erro do univector apenas passando um ponto anterior ao real
-            # if (self.ball
-            # _position[0] > self.position[0]):
-            #     self.position[0] -= 30
-
-
             # Segue a bola com o univector
             left, right, done = self.movement.do_univector(
                 speed = SPEED_DEFAULT,
@@ -233,14 +227,6 @@ class NaiveAttackerController():
 
                 robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
                 goal_vector  = [self.ball_position[0]-self.position[0], self.ball_position[1]-self.position[1]]
-
-                #turn the front side to face the ball
-                # left, right, done = self.movement.move_to_point(
-                #     speed = SPEED_DEFAULT,
-                #     robot_position=self.position,
-                #     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                #     goal_position = self.ball_position
-                # )
 
                 left, right, done = self.movement.do_univector_ball(
                     speed = SPEED_DEFAULT,
