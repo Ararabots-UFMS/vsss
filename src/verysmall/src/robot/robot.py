@@ -5,6 +5,7 @@ import random
 from comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.naive_keeper_controller import NaiveGKController
@@ -13,6 +14,7 @@ from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.ball_range import behind_ball
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
+
 SOFTWARE = 0
 HARDWARE = 1
 

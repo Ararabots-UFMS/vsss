@@ -254,6 +254,7 @@ class univectorField:
     def get_attack_goal(self):
         return self.mv2Goal_with_rotation.attack_goal
 
+
     def updateObstacles(self, _obstacles, _obsSpeeds):
         self.obstacles = np.array(_obstacles)
         self.obstaclesSpeed = np.array(_obsSpeeds)
