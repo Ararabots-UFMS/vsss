@@ -2,12 +2,15 @@ import sys
 import os
 import rospy
 import numpy as np
+import math
 from strategy.ball_range import *
 from naive_attacker_strategy import NaiveAttacker, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 import strategy.strategy_utils as strategy_utils
+from utils import math_utils
+
 path += '../parameters/bodies.json'
 
 jsonHandler = JsonHandler()
@@ -97,9 +100,23 @@ class NaiveAttackerController():
         return 0, 0, 0
 
     def in_stuck(self):
-
+        angle = 300
+        robot_orientation = np.array([math.cos(self.orientation), math.sin(self.orientation)])
         # Verifica em qual eixo de borda o robo se encontra
-        # if (self.position)
+        if (strategy_utils(self.position) in [
+            LEFT_DOWN_BOTTOM_LINE,
+            LEFT_UP_BOTTOM_LINE,
+            RIGHT_DOWN_BOTTOM_LINE,
+            RIGHT_UP_BOTTOM_LINE
+        ]):
+            angle = math_utils.angleBetween([1,0], robot_orientation)
+        else:
+            angle = math_utils.angleBetween([0,1], robot_orientation)
+
+        if (angle > 10) and (angle < 10):
+            self.model.state = 'normal'
+
+        return 130, 0, self.pid_type
 
 
     def in_normal_game(self):
@@ -112,8 +129,7 @@ class NaiveAttackerController():
             self.NaiveAttacker.stop_to_normal()
 
         if self.robot.get_stuck():
-            self.model.state = "stack"
-            return self.in_stuck()
+            self.model.state = "stuck"
 
         rospy.logfatal(self.NaiveAttacker.current_state)
 
@@ -121,13 +137,16 @@ class NaiveAttackerController():
             # Caso a bola esteja no campo de ataque
             if strategy_utils.on_attack_side(self.ball_position, self.team_side, 10):
                 # Verifica se a bola esta nas bordas
-                if (section(self.ball_position) in self.borders):
+                if (strategy_utils.section(self.ball_position) in self.borders):
                     self.NaiveAttacker.normal_to_border()
                 else:
                     self.NaiveAttacker.normal_to_reach_ball()
             # Caso o a bola esteja na defesa manda o atacante para um ponto fixo
             else:
                 self.NaiveAttacker.normal_to_point()
+
+        if self.NaiveAttacker.is_stuck:
+            return self.in_stuck()
 
         # Se estado esta como borda
         if self.NaiveAttacker.is_border:
@@ -164,7 +183,7 @@ class NaiveAttackerController():
             return self.in_point()
 
         # Caso o robo esteja na borda
-        if(section(self.ball_position) in self.borders):
+        if(strategy_utils.section(self.ball_position) in self.borders):
 
             self.NaiveAttacker.reach_ball_to_border()
             return self.in_border()
@@ -203,7 +222,7 @@ class NaiveAttackerController():
             return self.in_point()
         else:
             # Caso o robo ainda esteja na borda
-            if(section(self.ball_position) in self.borders):
+            if(strategy_utils.section(self.ball_position) in self.borders):
 
                 if (distance_point(self.ball_position, self.position) < 8):
                     self.NaiveAttacker.border_to_spin()

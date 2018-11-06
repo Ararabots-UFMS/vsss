@@ -32,7 +32,7 @@ class NaiveAttacker(StateMachine):
     reach_ball  = State('Reach_Ball')
     spin        = State('Spin')
     border      = State('Border')
-
+    stuck       = State('Stuck')
 
     # Stop to freeball game
     stop_to_freeball = stop.to(freeball)

@@ -81,6 +81,7 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
+
             NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
