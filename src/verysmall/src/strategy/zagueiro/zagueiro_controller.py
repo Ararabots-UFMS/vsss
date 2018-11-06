@@ -8,11 +8,10 @@ from math import pi
 from movement.functions.movement import Movement
 from utils.math_utils import angleBetween
 from utils.json_handler import JsonHandler
-from utils.math_utils import angleBetween
 path += '../parameters/bodies.json'
 # from arena_sections import *
 # from ball_range import *
-from strategy_utils import *
+from strategy.strategy_utils import *
 
 jsonHandler = JsonHandler()
 bodies_unpack = jsonHandler.read(path, escape=True)
