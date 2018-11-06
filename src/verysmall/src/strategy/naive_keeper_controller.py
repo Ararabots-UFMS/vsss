@@ -2,13 +2,12 @@ import sys
 import os
 import rospy
 import numpy as np
-from arena_sections import *
 from ball_range import *
 from naive_keeper import NaiveGK, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-from arena_sections import *
+from strategy_utils import *
 
 path += '../parameters/bodies.json'
 

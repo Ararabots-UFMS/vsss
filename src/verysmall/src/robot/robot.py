@@ -14,15 +14,9 @@ from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro_controller import ZagueiroController
 from strategy.ball_range import behind_ball
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
-SOFTWARE = 0
-HARDWARE = 1
-
-from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
-
 
 SOFTWARE = 0
 HARDWARE = 1
-
 
 class Robot():
     """docstring for Robot"""
@@ -38,6 +32,8 @@ class Robot():
 
         # True position for penalty
         self.true_pos = np.array([.0,.0])
+        self.velocity_buffer = []
+        self.position_buffer = []
 
         # Receive from vision
         self.ball_position = None
@@ -128,6 +124,11 @@ class Robot():
         # Param A :    LEFT           |      Theta
         # Param B :    RIGHT          |      Speed
         # ========================================================
+
+        self.add_to_buffer(self.velocity_buffer, 10, param_A)
+        self.add_to_buffer(self.velocity_buffer, 10, param_B)
+        #self.add_to_buffer(self.position_buffer, 10, self.position)
+
         if self.bluetooth_sender:
             self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
 
@@ -155,6 +156,7 @@ class Robot():
             buffer.pop(0)
 
         buffer.append(element)
+
 
     # ATTENTION: for now pass just np arrays or numbers please !!
     def buffer_mean(self, buffer):
@@ -187,6 +189,23 @@ class Robot():
 
             return param_1, param_2, SOFTWARE #0.0, 250, HARDWARE
         else:
-            rospy.logfatal("Apareci aqui:"+str(self.position))
             self.game_state = 1
             return self.state_machine.in_penalty_game()
+
+    def get_stuck(self, position):
+        """
+        Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
+        the vision node
+        :param position: int
+        :return: nothing
+        """
+        if sum(self.velocity_buffer):
+
+            # position_sum = self.buffer_mean(self.position_buffer)
+            # if np.any( abs(position_sum - np.array(position)) < 3 ):
+            #     return True
+
+            if np.all(self.speed) < 1:
+                return True
+        
+        return False
