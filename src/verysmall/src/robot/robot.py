@@ -229,7 +229,7 @@ class Robot():
             self.game_state = 1
             return self.state_machine.in_freeball_game()
 
- def get_stuck(self, position):
+    def get_stuck(self, position):
         """
         Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
         the vision node
