@@ -135,7 +135,8 @@ class Robot():
 
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
-        #self.add_to_buffer(self.position_buffer, 10, self.position)
+        self.add_to_buffer(self.position_buffer, 10, self.position)
+
         if param_C: # if is hardware
             self.left_speed = param_B
             self.right_speed = param_B
@@ -235,11 +236,15 @@ class Robot():
         """
         if sum(self.velocity_buffer):
 
-            # position_sum = self.buffer_mean(self.position_buffer)
             # if np.any( abs(position_sum - np.array(position)) < 3 ):
             #     return True
 
-            if (self.speed[0] < 1) and (self.speed[1] < 1):
+            position_sum = self.buffer_mean(self.position_buffer)
+
+            diff = abs(position_sum - np.array(position))
+            diff = (diff[0] < 0.5) and (diff[1] < 0.5)
+
+            if ((self.speed[0] < 0.5) and (self.speed[1] < 0.5) and diff):
                 return True
 
         return False

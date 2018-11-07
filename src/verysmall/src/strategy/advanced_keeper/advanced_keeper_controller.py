@@ -50,7 +50,7 @@ class AdvancedGKController():
 
         self.stop = MyModel(state='stop')
         self.AdvancedGK = AdvancedGK(self.stop)
-        self.movement = Movement(self.pid_list, error=7, attack_goal= np.array([0,0]), _pid_type=self.pid_type,
+        self.movement = Movement(self.pid_list, error=3, attack_goal= np.array([0,0]), _pid_type=self.pid_type,
                                  _debug_topic=_debug_topic)
 
         self.buffer = []
@@ -161,16 +161,21 @@ class AdvancedGKController():
             self.AdvancedGK.stop_to_normal()
 
 
-        # if self.robot.get_stuck(self.position):
+        if self.robot.get_stuck(self.position):
 
-        #     goal_position = np.array([0,0])
+            goal_position = np.array([0,0])
 
-        #     goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
-        #     goal_position[1] = 65.0
+            goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
+            goal_position[1] = 65.0
 
-        #     param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED, self.position, [np.cos(self.orientation), np.sin(self.orientation)], goal_position)
+            param1, param2, param3 = self.movement.move_to_point(
+                GOALKEEPER_SPEED, 
+                self.position, 
+                [np.cos(self.orientation), np.sin(self.orientation)], 
+                goal_position,
+                speed_reduction = True)
 
-        #     return param1, param2, self.pid_type
+            return param1, param2, self.pid_type
 
         if self.AdvancedGK.is_normal:
             ball_section = section(self.ball_position)
@@ -230,9 +235,28 @@ class AdvancedGKController():
                     return self.in_spin() # proximo a bola
                 
                 ## TODO: EMPURRAR BOLA DA AREA
-                elif near_ball(self.ball_position, self.position, DISTANCE)  and (inside_range(45.0, 85.0, self.ball_position[1])):
-                        ## head to para bola pra frrente e empurrar ate sairr da area
-                        return 0,0,0
+                elif (inside_range(45.0, 85.0, self.ball_position[1])):
+                     
+                    if  behind_ball(self.ball_position, self.position, DISTANCE):
+
+                        self.AdvancedGK.defend_ball_to_spin()
+                        return self.in_spin()
+
+                    else:
+                        if self.ball_position[1] < self.position[1]:
+                            self.defend_position = np.array([MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 40.0])
+                        else:
+                            self.defend_position = np.array([MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 90.0])
+
+                
+                        param1, param2, _ = self.movement.move_to_point(
+                                                speed=GOALKEEPER_SPEED,
+                                                robot_position=self.position,
+                                                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                                                goal_position=self.defend_position,
+                                                speed_reduction = True
+                                            )
+
                 else:
 
                     self.AdvancedGK.defend_ball_to_go_to_ball()
@@ -260,6 +284,8 @@ class AdvancedGKController():
         not_inside_left_limit = (self.team_side == LEFT and self.ball_position[0] > 30.0)
         not_inside_right_limit = (self.team_side == RIGHT and self.ball_position[0] < 120.0)
 
+        inside_y_limit = inside_range(30.0, 100.0, self.ball_position[1])
+
         keeper_is_out_of_area = section(self.position) not in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]
 
         # quando a bola entra em uma das area
@@ -276,7 +302,7 @@ class AdvancedGKController():
                 return self.follow_ball()
 
         # goleiro fora da area com histerese de 15 cm (TESTAR FUNCIONAMENTO da HISTERESE)
-        elif(keeper_is_out_of_area and ( not_inside_right_limit or not_inside_left_limit ) ):
+        elif((keeper_is_out_of_area and ( not_inside_right_limit or not_inside_left_limit )) or (not inside_y_limit) ):
             
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
@@ -298,7 +324,12 @@ class AdvancedGKController():
 
         #rospy.logfatal(self.AdvancedGK.current_state)
         self.AdvancedGK.go_to_ball_to_defend_ball()
-        param1, param2, param3 = self.movement.move_to_point(GOALKEEPER_SPEED,self.position,[np.cos(self.orientation), np.sin(self.orientation)],np.array([self.position[0], self.ball_position[1]]))
+        param1, param2, param3 = self.movement.move_to_point(
+            GOALKEEPER_SPEED,
+            self.position,
+            [np.cos(self.orientation), np.sin(self.orientation)],
+            np.array([self.position[0], self.ball_position[1]]), 
+            speed_reduction = True)
         
         return param1, param2, self.pid_type
 
@@ -367,7 +398,8 @@ class AdvancedGKController():
             speed=GOALKEEPER_SPEED,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position=self.defend_position
+            goal_position=self.defend_position,
+            speed_reduction = True
         )
 
         return param_1, param_2, self.pid_type
@@ -419,7 +451,8 @@ class AdvancedGKController():
             GOALKEEPER_SPEED,
             self.position,
             [np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position
+            goal_position,
+            speed_reduction = True
         )
 
         if param3:
