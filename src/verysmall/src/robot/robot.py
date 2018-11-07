@@ -93,6 +93,8 @@ class Robot():
 
         self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
 
+        self.stuck_counter = 0
+
     def run(self):
 
         self.state_machine.update_game_information()
@@ -135,6 +137,7 @@ class Robot():
 
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
+
         #self.add_to_buffer(self.position_buffer, 10, self.position)
         if param_C: # if is hardware
             self.left_speed = param_B
@@ -178,10 +181,11 @@ class Robot():
         length = len(buffer)
         for i in xrange(length):
             sum += buffer[i]
-
-        return sum/length
-
-    # ATTENTION: just use if you have a list of np.arrays of dim 2 !!
+        if length != 0:
+            return sum/length
+        else:
+            return sum/1
+# ATTENTION: just use if you have a list of np.arrays of dim 2 !!
     def buffer_polyfit(self, buffer, degree):
         x = []
         y = []
@@ -226,6 +230,25 @@ class Robot():
             self.game_state = 1
             return self.state_machine.in_freeball_game()
 
+    # def get_stuck(self, position):
+    #     """
+    #     Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
+    #     the vision node
+    #     :param position: int
+    #     :return: nothing
+    #     """
+    #     if sum(self.velocity_buffer):
+    #
+    #         # position_sum = self.buffer_mean(self.position_buffer)
+    #         # if np.any( abs(position_sum - np.array(position)) < 3 ):
+    #         #     return True
+    #
+    #         if (self.speed[0] < 1) and (self.speed[1] < 1):
+    #             return True
+    #
+    #     return False
+    #
+
     def get_stuck(self, position):
         """
         Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
@@ -235,12 +258,21 @@ class Robot():
         """
         if sum(self.velocity_buffer):
 
-            # position_sum = self.buffer_mean(self.position_buffer)
-            # if np.any( abs(position_sum - np.array(position)) < 3 ):
-            #     return True
+        #     # if np.any( abs(position_sum - np.array(position)) < 3 ):
+        #     #     return True
 
-            if (self.speed[0] < 1) and (self.speed[1] < 1):
-                return True
+        #     # position_sum = self.buffer_mean(self.position_buffer)
+
+        #     # diff = abs(position_sum - np.array(position))
+        #     # diff = (diff[0] < 0.5) and (diff[1] < 0.5)
+
+            if ((self.speed[0] < 1) and (self.speed[1] < 1)):
+                self.stuck_counter+=1
+                return (self.stuck_counter > 60)
+            else:
+                if (self.stuck_counter > 0):
+                    self.stuck_counter -= 1
+                else:
+                    self.stuck_counter = 0
 
         return False
-

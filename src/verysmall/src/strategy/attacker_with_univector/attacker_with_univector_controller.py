@@ -7,6 +7,7 @@ sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 from rospy import logfatal
+import strategy.strategy_utils as strategy_utils
 from strategy.strategy_utils import *
 path_strategy = sys.path[0] = os.environ['ROS_ARARA_ROOT']+"src/strategy/"
 
@@ -164,24 +165,35 @@ class AttackerWithUnivectorController():
             #    param1,param2 = (100,100)
             #else:
             #    param1,param2 = (-100,100)
-        #    return param1, param2, SOFTWARE
-        if np.linalg.norm(self.position - self.ball_position) < 7.5 and (section(self.position) in [UP_BORDER, DOWN_BORDER] or ((self.team_side == LEFT and section(self.ball_position) in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_CORNER, RIGHT_DOWN_CORNER]) or (self.team_side==RIGHT and section(self.ball_position) in [RIGHT_DOWN_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, LEFT_DOWN_CORNER, LEFT_UP_CORNER]) )):
-            self.AttackerWithUnivector.univector_to_spin()
-            param_a, param_b, _ = self.in_spin()
+        # #    return param1, param2, SOFTWARE
+        # if np.linalg.norm(self.position - self.ball_position) < 7.5 and (section(self.position) in [UP_BORDER, DOWN_BORDER] or ((self.team_side == LEFT and section(self.ball_position) in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_CORNER, RIGHT_DOWN_CORNER]) or (self.team_side==RIGHT and section(self.ball_position) in [RIGHT_DOWN_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE, LEFT_DOWN_CORNER, LEFT_UP_CORNER]) )):
+        #     self.AttackerWithUnivector.univector_to_spin()
+        #     param_a, param_b, _ = self.in_spin()
+        #
+        # else:
 
-        else:
-            self.AttackerWithUnivector.univector_to_univector()
-            param_a, param_b, _ = self.movement.do_univector(
+        if self.robot.get_stuck(self.position) and not (strategy_utils.section(self.position) == CENTER):
+            left, right, done = self.movement.move_to_point(
                 speed=230,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                robot_speed=np.array([0, 0]),
-                obstacle_position=self.enemies_position,
-                obstacle_speed=[[0,0]]*5,
-                ball_position=self.ball_position,
-                only_forward=False,
-                speed_prediction=True
+                goal_position=[65, 65]
             )
+
+            return left, right, self.pid_type
+
+        self.AttackerWithUnivector.univector_to_univector()
+        param_a, param_b, _ = self.movement.do_univector(
+            speed=200,
+            robot_position=self.position,
+            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+            robot_speed=np.array([0, 0]),
+            obstacle_position=np.resize(self.enemies_position, (-1, 2)),
+            obstacle_speed=[[0,0]]*5,
+            ball_position=self.ball_position,
+            only_forward=False,
+            speed_prediction=True
+        )
 
         return param_a, param_b, self.pid_type
 
