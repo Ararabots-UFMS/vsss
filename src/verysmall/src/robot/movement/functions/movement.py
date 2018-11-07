@@ -116,9 +116,9 @@ class Movement():
         if speed_prediction:
             # central area speed
             raio = raio_vetores(robot_position, robot_vector, ball_position,
-                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500)
+                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
             cte = 100
-            speed = (raio * cte) ** 0.5 + 30
+            speed = (raio * cte) ** 0.5 + 10
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
@@ -240,7 +240,7 @@ class Movement():
             return diff_angle, 0, False
 
         correction = multiplicator * self.pid.update(diff_angle)
-        return self.normalize(int(-correction)), self.normalize(int(correction)), False
+        return self.normalize(int(correction)), self.normalize(int(-correction)), False
 
     def return_speed(self, speed, correction):
         """Recives the robot speed and the PID correction, and return each wheel speed.

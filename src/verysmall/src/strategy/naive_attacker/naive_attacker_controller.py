@@ -7,6 +7,7 @@ from naive_attacker_strategy import NaiveAttacker, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
+import strategy.strategy_utils as strategy_utils
 
 from strategy.strategy_utils import *
 from utils import math_utils
@@ -102,18 +103,14 @@ class NaiveAttackerController():
     def in_stuck(self):
 
 
-        if (strategy_utils.section(self.position) == 10):
+        if (strategy_utils.section(self.position) == CENTER):
             self.model.state = 'normal'
-
-        robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-        goal_vector  = [65,65]
-
         left, right, done = self.movement.move_to_point(
-            speed = SPEED_DEFAULT,
-            robot_position=self.position,
-            robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position = [65,65]
-        )
+                speed = SPEED_DEFAULT,
+                robot_position=self.position,
+                robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
+                goal_position = [65,65]
+            )
 
         return left, right, self.pid_type
 
@@ -127,9 +124,10 @@ class NaiveAttackerController():
         if self.NaiveAttacker.is_stop:
             self.NaiveAttacker.stop_to_normal()
 
-        if self.robot.get_stuck(self.position) and (strategy_utils.section(self.position) != 10):
-            self.model.state = "stuck"
+        if self.robot.get_stuck(self.position) and (strategy_utils.section(self.position) != CENTER):
+           self.model.state = "stuck"
 
+        rospy.logfatal("Is stuck: "+str(self.robot.get_stuck(self.position)))
         rospy.logfatal(self.NaiveAttacker.current_state)
 
         if self.NaiveAttacker.is_normal:
@@ -199,7 +197,7 @@ class NaiveAttackerController():
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=self.speed,
-                obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                obstacle_position=np.resize(self.enemies_position, (-1, 2)),
                 obstacle_speed=[[0,0]]*5,
                 ball_position=self.ball_position,
                 only_forward=False,
@@ -233,7 +231,7 @@ class NaiveAttackerController():
                     robot_position=self.position,
                     robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                     robot_speed=self.speed,
-                    obstacle_position=np.resize(self.enemies_position, (5, 2)),
+                    obstacle_position=np.resize(self.enemies_position, (-1, 2)),
                     obstacle_speed=[[0,0]]*5,
                     ball_position=self.ball_position,
                 )
@@ -324,7 +322,10 @@ class NaiveAttackerController():
         spin_side = spin_direction(self.ball_position, self.position, self.team_side)
 
         # Chama a funcao de spin
-        left, right, done = self.movement.spin(255, spin_side)
+        if self.team_side == LEFT:
+            left, right, done = self.movement.spin(255, not spin_side)
+        else:
+            left, right, done = self.movement.spin(255, spin_side)
 
 
         return left, right, SOFTWARE
