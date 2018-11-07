@@ -135,7 +135,8 @@ class Robot():
 
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
-        #self.add_to_buffer(self.position_buffer, 10, self.position)
+        self.add_to_buffer(self.position_buffer, 10, self.position)
+
         if param_C: # if is hardware
             self.left_speed = param_B
             self.right_speed = param_B
