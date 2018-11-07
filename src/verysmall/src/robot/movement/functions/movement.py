@@ -4,7 +4,7 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle
+from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, raio_vetores_range
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
@@ -115,8 +115,9 @@ class Movement():
 
         if speed_prediction:
             # central area speed
-            raio = raio_vetores(robot_position, robot_vector, ball_position,
-                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
+#            raio = raio_vetores(robot_position, robot_vector, ball_position,
+#                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
+            raio = raio_vetores_range(robot_position, robot_vector, ball_position, self.attack_goal)
             cte = 80
             speed = (raio * cte) ** 0.5 + 10
 

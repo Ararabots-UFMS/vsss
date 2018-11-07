@@ -129,3 +129,23 @@ def get_orientation_and_angle(orientation, vec, goal_vector):
             return False, theta # backward
         else:
             return True, theta # forward
+
+def raio_vetores_range(robot_position, robot_vector, ball_position, atack_goal,  speed_max=255, upper_bound=800,k = 0.01,range_limit = 10):
+    ret = upper_bound
+    robot_position = np.array(robot_position)
+    robot_vector   = np.array(robot_vector)
+    ball_position  = np.array(ball_position)
+    atack_goal     = np.array(atack_goal)
+    pup   = np.array([atack_goal[0],atack_goal[1]-range_limit])
+    pdown = np.array([atack_goal[0],atack_goal[1]+range_limit])
+    vup   = ball_position - pup
+    vdown = ball_position - pdown
+    direction = robot_vector
+    cos_up    = abs(np.dot(direction,vup)/(np.linalg.norm(direction)*np.linalg.norm(vup)))
+    cos_down  = abs(np.dot(direction,vdown)/(np.linalg.norm(direction)*np.linalg.norm(vdown)))
+    cos_both  = abs(np.dot(vdown,vup)/(np.linalg.norm(vup)*np.linalg.norm(vdown)))
+    r1 = 2*(1-min(cos_up,cos_down))
+    if (r1>0):
+        if (cos_up < cos_both or cos_down < cos_both ):
+            ret = 10/(np.sqrt(float(r1*k)))
+    return (ret/upper_bound) * speed_max
