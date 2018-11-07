@@ -4,5 +4,5 @@
   "Goleiro"  : 2,
   "Zagueiro" : 3,
   "Set PID Machine" : 4,
-  "Hardware Goal Keeper" : 5
+  "Naive keeper" : 5
 }

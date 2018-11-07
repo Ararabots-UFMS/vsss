@@ -160,22 +160,6 @@ class AdvancedGKController():
 
             self.AdvancedGK.stop_to_normal()
 
-
-        if self.robot.get_stuck(self.position):
-
-            goal_position = np.array([0,0])
-
-            goal_position[0] = MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X)
-            goal_position[1] = 65.0
-
-            param1, param2, param3 = self.movement.move_to_point(
-                GOALKEEPER_SPEED,
-                self.position,
-                [np.cos(self.orientation), np.sin(self.orientation)],
-                goal_position)
-
-            return param1, param2, self.pid_type
-
         if self.AdvancedGK.is_normal:
             ball_section = section(self.ball_position)
             keeper_section = section(self.position)

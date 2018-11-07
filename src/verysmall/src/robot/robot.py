@@ -13,6 +13,7 @@ from strategy.set_pid_machine_controller import SetPIDMachineController
 from strategy.zagueiro.zagueiro_controller import ZagueiroController
 from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
+from strategy.naive_keeper.naive_keeper_controller import NaiveGKController
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -83,12 +84,12 @@ class Robot():
                                   "Point",
                                   "Meta"]
         self.strategies = [
-
             NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
             AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
             AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
             ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
-            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body)
+            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
+            NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
         self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
@@ -215,7 +216,7 @@ class Robot():
             self.true_pos = self.position
         if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=15):
             param_a, param_b, _ = self.state_machine.movement.do_univector(
-                speed=160,
+                speed=250,
                 robot_position=self.position,
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=np.array([0, 0]),
@@ -223,7 +224,7 @@ class Robot():
                 obstacle_speed=[[0,0]]*5,
                 ball_position=self.ball_position,
                 only_forward=False,
-                speed_prediction=False)
+                speed_prediction=True)
             rospy.logfatal(str(param_a))
             return param_a, param_b, SOFTWARE  # 0.0, 250, HARDWARE
         else:
@@ -276,3 +277,6 @@ class Robot():
                     self.stuck_counter = 0
 
         return False
+
+    def get_fake_stuck(self, position):
+            return False

@@ -118,8 +118,8 @@ class Movement():
 #            raio = raio_vetores(robot_position, robot_vector, ball_position,
 #                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
             raio = raio_vetores_range(robot_position, robot_vector, ball_position, self.attack_goal)
-            cte = 80
-            speed = (raio * cte) ** 0.5 + 10
+            cte = 90
+            speed = (raio * cte) ** 0.5 + 30
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 

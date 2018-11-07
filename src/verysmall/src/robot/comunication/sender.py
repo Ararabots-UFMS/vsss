@@ -22,7 +22,7 @@ WALK_FORWARD_BYTE = 4
 WALK_BACKWARDS_BYTE = 7
 WALK_RIGHT_FRONT_LEFT_BACK_BYTE = 6
 WALK_RIGHT_BACK_LEFT_FRONT_BYTE = 5
-MAX_CONNECTION_ATTEMPT = 5
+MAX_CONNECTION_ATTEMPT = 1
 
 class Sender():
 
@@ -35,7 +35,8 @@ class Sender():
         self.sock = None
         self.closed = False
         self.excp = -1
-
+        self.package_number = 0
+        self.should_send = True
         # =====================
         self.last_time = time.time()
         self.new_time = None
@@ -71,10 +72,14 @@ class Sender():
             Receives an array of angle and speed, if the correction is in hardware
             otherwise, just the wheels speed
         """
-        if isHardwareCorretion:
-            self.send_angle_corretion(package_array[0], package_array[1])
-        else:
-            self.sendPacket(package_array[0], package_array[1])
+        if self.should_send:
+            if isHardwareCorretion:
+                self.send_angle_corretion(package_array[0], package_array[1])
+            else:
+                self.sendPacket(package_array[0], package_array[1])
+
+        self.should_send= not self.should_send
+
 
     def sendPacket(self, leftWheel, rightWheel):
         """Recive the speed, get the first byte and then send the msg to the robot"""
