@@ -4,7 +4,7 @@ import os
 import numpy as np
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores
+from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle
 from utils.json_handler import JsonHandler
 sys.path[0]+="robot/movement/"
 from control.PID import PID
@@ -111,13 +111,13 @@ class Movement():
         :return: returns nothing
         """
         self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.getVec(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
 
         if speed_prediction:
             # central area speed
             raio = raio_vetores(robot_position, robot_vector, ball_position,
                                 np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
-            cte = 100
+            cte = 80
             speed = (raio * cte) ** 0.5 + 10
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
@@ -191,7 +191,8 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
+        #forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
+        forward, diff_angle = get_orientation_and_angle(self.orientation, robot_vector, goal_vector)
         self.orientation = forward
 
         #logfatal("DIFF "+str(diff_angle)+" "+str(forward))

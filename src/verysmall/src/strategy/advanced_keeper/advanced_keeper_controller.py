@@ -154,7 +154,7 @@ class AdvancedGKController():
         :return: int, int
         """
 
-       
+
 
         if self.AdvancedGK.is_stop:
 
@@ -169,11 +169,10 @@ class AdvancedGKController():
             goal_position[1] = 65.0
 
             param1, param2, param3 = self.movement.move_to_point(
-                GOALKEEPER_SPEED, 
-                self.position, 
-                [np.cos(self.orientation), np.sin(self.orientation)], 
-                goal_position,
-                speed_reduction = True)
+                GOALKEEPER_SPEED,
+                self.position,
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                goal_position)
 
             return param1, param2, self.pid_type
 
@@ -225,7 +224,7 @@ class AdvancedGKController():
 
         # quando a bola entra na area
         elif ball_section in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
-            
+
             #quando bola na area de defesa
             if not on_attack_side(self.ball_position, self.team_side):
 
@@ -233,10 +232,10 @@ class AdvancedGKController():
 
                     self.AdvancedGK.defend_ball_to_spin()
                     return self.in_spin() # proximo a bola
-                
+
                 ## TODO: EMPURRAR BOLA DA AREA
                 elif (inside_range(45.0, 85.0, self.ball_position[1])):
-                     
+
                     if  behind_ball(self.ball_position, self.position, DISTANCE):
 
                         self.AdvancedGK.defend_ball_to_spin()
@@ -248,7 +247,7 @@ class AdvancedGKController():
                         else:
                             self.defend_position = np.array([MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X), 90.0])
 
-                
+
                         param1, param2, _ = self.movement.move_to_point(
                                                 speed=GOALKEEPER_SPEED,
                                                 robot_position=self.position,
@@ -261,7 +260,7 @@ class AdvancedGKController():
                     self.AdvancedGK.defend_ball_to_go_to_ball()
                     return self.in_go_to_ball() #loge da bola
             else:
-    
+
                 # quando bola na area de ataque
                 self.AdvancedGK.defend_ball_to_seek_ball()
                 return self.in_seek_ball()
@@ -302,7 +301,7 @@ class AdvancedGKController():
 
         # goleiro fora da area com histerese de 15 cm (TESTAR FUNCIONAMENTO da HISTERESE)
         elif((keeper_is_out_of_area and ( not_inside_right_limit or not_inside_left_limit )) or (not inside_y_limit) ):
-            
+
             self.AdvancedGK.seek_ball_to_out_of_area()
             return self.in_out_of_area()
 
@@ -329,7 +328,7 @@ class AdvancedGKController():
             [np.cos(self.orientation), np.sin(self.orientation)],
             np.array([self.position[0], self.ball_position[1]])
             )
-        
+
         return param1, param2, self.pid_type
 
 
@@ -410,20 +409,20 @@ class AdvancedGKController():
         # if section(self.ball_position) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA]:
         if section(self.ball_position) not in [LEFT_GOAL, RIGHT_GOAL]:
             self.AdvancedGK.goal_to_defend_ball()
-        
+
         return 0, 0, 0
 
- 
+
 
     def in_out_of_area(self):
         #rospy.logfatal(self.AdvancedGK.current_state)
-        
+
         goal_position = np.array([0, 0])
-        
+
         range_left = inside_range(self.position[0], 0.0, self.ball_position[0])
         range_right = inside_range(self.position[0], 150.0, self.ball_position[0])
 
-        # bola entre goleiro e gol, 
+        # bola entre goleiro e gol,
         if (( range_left and self.team_side == LEFT) or ( range_right and self.team_side == RIGHT)):
 
 
@@ -432,7 +431,7 @@ class AdvancedGKController():
                 goal_position = np.array([MIN_X + self.team_side*GG_DIFF, 40.0])
 
             ## bola acima/abaixo do goleiro, volta reto pro gol
-            else: 
+            else:
                 goal_position = np.array([MIN_X + self.team_side*GG_DIFF,  self.position[1]])
 
 

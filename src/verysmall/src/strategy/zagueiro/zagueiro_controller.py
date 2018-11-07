@@ -18,7 +18,7 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 140
+ZAGUEIRO_SPEED = 80
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 ENEMY_POS = np.array([[[7.5,38.0],[7.5, 51.0], [7.5, 64], [7.5, 77], [7.5, 92.0]],[[142.5,38.0],[142.5, 51.0], [142.5, 64], [142.5, 77], [142.5, 92.0]]])
 BOTTOM_LEFT_LINE_POS = [[5.0, 20.0],[5.0, 105.0]]
@@ -450,7 +450,7 @@ class ZagueiroController():
         return 0, 0, self.pid_type
 
     def in_stuck(self):
-        rospy.logfatal(self.zagueiro.current_state)
+        # rospy.logfatal(self.zagueiro.current_state)
         if near_ball(self.ball_position, self.team_side):
             if section(self.ball_position) == UP_BORDER or DOWN_BORDER:
                 if self.team_side == LEFT:

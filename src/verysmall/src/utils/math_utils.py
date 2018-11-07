@@ -114,3 +114,18 @@ def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800, angle = 3,k = 0
         ret = 10/(np.sqrt(float(r1*k)))
     #rospy.logfatal("%4.3f %4.3f"%(cos,ret))
     return (ret/upper_bound) * speed_max
+
+def get_orientation_and_angle(orientation, vec, goal_vector):
+    # vec is the true robot orientation vector
+    th_80 = 70. * (math.pi / 180.)
+    th_110 = 120. * (math.pi/180.)
+
+    theta = angleBetween(vec, goal_vector, abs=False)
+
+    if th_80 < abs(theta) < th_110:
+        return orientation, theta# maintains the same
+    else:
+        if abs(theta) > th_110:
+            return False, theta # backward
+        else:
+            return True, theta # forward
