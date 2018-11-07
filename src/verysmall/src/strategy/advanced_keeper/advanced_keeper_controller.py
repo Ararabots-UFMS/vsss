@@ -253,8 +253,7 @@ class AdvancedGKController():
                                                 speed=GOALKEEPER_SPEED,
                                                 robot_position=self.position,
                                                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                                                goal_position=self.defend_position,
-                                                speed_reduction = True
+                                                goal_position=self.defend_position
                                             )
 
                 else:
@@ -328,8 +327,8 @@ class AdvancedGKController():
             GOALKEEPER_SPEED,
             self.position,
             [np.cos(self.orientation), np.sin(self.orientation)],
-            np.array([self.position[0], self.ball_position[1]]), 
-            speed_reduction = True)
+            np.array([self.position[0], self.ball_position[1]])
+            )
         
         return param1, param2, self.pid_type
 
@@ -398,8 +397,7 @@ class AdvancedGKController():
             speed=GOALKEEPER_SPEED,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position=self.defend_position,
-            speed_reduction = True
+            goal_position=self.defend_position
         )
 
         return param_1, param_2, self.pid_type
@@ -451,8 +449,7 @@ class AdvancedGKController():
             GOALKEEPER_SPEED,
             self.position,
             [np.cos(self.orientation), np.sin(self.orientation)],
-            goal_position,
-            speed_reduction = True
+            goal_position
         )
 
         if param3:
