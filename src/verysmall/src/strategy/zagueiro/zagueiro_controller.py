@@ -37,6 +37,7 @@ class ZagueiroController():
         self.enemies_speed = None
         self.ball_position = None
         self.team_side = None
+        self.speed = None
         self.robot_body = _robot_body
         rospy.logfatal(self.robot_body)
         self.pid_list = [bodies_unpack[self.robot_body]['KP'],
@@ -91,6 +92,7 @@ class ZagueiroController():
         self.ball_position = self.robot.ball_position
         self.team_side = self.robot.team_side
         self.get_stuck = self.robot.get_stuck
+        self.speed = self.robot.speed
         self.robot.add_to_buffer(self.position_buffer, 60, self.robot.position)
         self.movement.univet_field.update_attack_side(not self.team_side)
 
@@ -273,7 +275,8 @@ class ZagueiroController():
             speed=ZAGUEIRO_SPEED,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-            robot_speed=np.array([0, 0]),
+            # robot_speed=self.speed,
+            robot_speed=np.array([0,0]),
             obstacle_position=self.enemies_position,
             obstacle_speed=self.enemies_speed,
             ball_position=self.ball_position)
@@ -310,6 +313,7 @@ class ZagueiroController():
                 [np.cos(self.orientation), np.sin(self.orientation)],
                 self.defend_position
             )
+
 
             return param1, param2, self.pid_type
 
@@ -369,6 +373,7 @@ class ZagueiroController():
         if extended_area(self.position, self.team_side)in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
             self.zagueiro.border_to_area()
             return self.in_area()
+
         if self.get_stuck(self.position):
             rospy.logfatal("if do stuck")
             self.zagueiro.border_to_stuck()
@@ -376,42 +381,51 @@ class ZagueiroController():
 
         sb = section(self.ball_position)
 
-        if self.ball_position[0] < 75.0 and self.team_side == LEFT:
-            if sb in [LEFT_UP_CORNER, LEFT_DOWN_CORNER, LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE]:
-                if self.ball_position[1] < 65:
-                    point = BOTTOM_LEFT_LINE_POS[0]
-                else:
-                    point = BOTTOM_LEFT_LINE_POS[1]
-                speed = self.speed_correction()
-                param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
-                if not param3:
-                    return param1, param2, self.pid_type
-
-        elif self.ball_position[0] >= 75 and self.team_side == RIGHT:
-            if sb in [RIGHT_UP_CORNER, RIGHT_DOWN_CORNER, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
-                if self.ball_position[1] < 65:
-                    point = BOTTOM_RIGHT_LINE_POS[0]
-                else:
-                    point = BOTTOM_RIGHT_LINE_POS[1]
-                speed = self.speed_correction()
-                param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
-                if not param3:
-                    return param1, param2, self.pid_type
+        #estrategia para ir para a ponta da area se a bola estiver no fundo, atualmente nao esta convergindo
+        # if self.ball_position[0] < 75.0 and self.team_side == LEFT:
+        #     if sb in [LEFT_UP_CORNER, LEFT_DOWN_CORNER, LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE]:
+        #         if self.ball_position[1] < 65:
+        #             point = BOTTOM_LEFT_LINE_POS[0]
+        #         else:
+        #             point = BOTTOM_LEFT_LINE_POS[1]
+        #         speed = self.speed_correction()
+        #         param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
+        #         if not param3:
+        #             return param1, param2, self.pid_type
+        #
+        # elif self.ball_position[0] >= 75 and self.team_side == RIGHT:
+        #     if sb in [RIGHT_UP_CORNER, RIGHT_DOWN_CORNER, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
+        #         if self.ball_position[1] < 65:
+        #             point = BOTTOM_RIGHT_LINE_POS[0]
+        #         else:
+        #             point = BOTTOM_RIGHT_LINE_POS[1]
+        #         speed = self.speed_correction()
+        #         param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
+        #         if not param3:
+        #             return param1, param2, self.pid_type
 
         if self.ball_position[0] < 75 and self.team_side == LEFT or self.ball_position[0] >=75 and self.team_side == RIGHT:
-            if sb in [UP_BORDER, DOWN_BORDER]:
+            if sb in [UP_BORDER, DOWN_BORDER] or sb in [LEFT_UP_CORNER, LEFT_DOWN_CORNER, LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE] or sb in [RIGHT_UP_CORNER, RIGHT_DOWN_CORNER, RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
                 if self.position[1] < 65 and self.ball_position[1] >=65 or self.position[1]> 65 and self.ball_position[1] <= 65:
+                    # Se n estou na area e nem stuck e nem perto da bola monto os inimigos
+                    # imaginarios para seguir o univector e possivelmente nunca entrar na area
+                    enemies_position = list(self.enemies_position)
+                    enemies_speed = list(self.enemies_speed)
                     for i in xrange(ENEMY_POS[self.team_side].shape[0]):
-                        np.append(self.enemies_position, ENEMY_POS[self.team_side][i])
-                        np.append(self.enemies_speed, np.array([0,0]))
+                        enemies_position.append(ENEMY_POS[self.team_side][i])
+                        enemies_speed.append(np.array([0,0]))
+
+                    self.enemies_position = np.asarray(enemies_position)
+                    self.enemies_speed = np.asarray(enemies_speed)
 
                     param1, param2, param3 = self.movement.do_univector(
                         speed=ZAGUEIRO_SPEED,
                         robot_position=self.position,
                         robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
-                        robot_speed=np.array([0, 0]),
+                        # robot_speed=self.speed,
+                        robot_speed=np.array([0,0]),
                         obstacle_position=self.enemies_position,
-                        obstacle_speed=[[0,0]]*5,
+                        obstacle_speed=self.enemies_speed,
                         ball_position=self.ball_position)
                     return param1, param2, self.pid_type
                 else:
@@ -424,14 +438,16 @@ class ZagueiroController():
         return 0, 0, self.pid_type
 
     def in_area(self):
-        if extended_area(self.position, self.team_side) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
-            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-            speed = self.speed_correction()
-            param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, self.defend_position)
-            return param1, param2, self.pid_type
-        else:
-            self.zagueiro.area_to_normal()
-            return 0, 0, self.pid_type
+        robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
+        speed = self.speed_correction()
+        param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, self.defend_position)
+        if not param3:
+            if (self.team_side == LEFT and self.position[0] < DEF_X_POS[self.team_side]):
+                return param1, param2, self.pid_type
+            elif (self.team_side == RIGHT and self.position[0] > DEF_X_POS[self.team_side]):
+                return param1, param2, self.pid_type
+        self.zagueiro.area_to_normal()
+        return 0, 0, self.pid_type
 
     def in_stuck(self):
         rospy.logfatal(self.zagueiro.current_state)

@@ -178,8 +178,10 @@ class Robot():
         length = len(buffer)
         for i in xrange(length):
             sum += buffer[i]
-
-        return sum/length
+        if length > 0:
+            return sum/length
+        else:
+            return sum
 
     # ATTENTION: just use if you have a list of np.arrays of dim 2 !!
     def buffer_polyfit(self, buffer, degree):
@@ -235,12 +237,15 @@ class Robot():
         """
         if sum(self.velocity_buffer):
 
-            # position_sum = self.buffer_mean(self.position_buffer)
             # if np.any( abs(position_sum - np.array(position)) < 3 ):
             #     return True
 
-            if (self.speed[0] < 1) and (self.speed[1] < 1):
+            position_sum = self.buffer_mean(self.position_buffer)
+
+            diff = abs(position_sum - np.array(position))
+            diff = (diff[0] < 0.5) and (diff[1] < 0.5)
+
+            if ((self.speed[0] < 0.5) and (self.speed[1] < 0.5) and diff):
                 return True
 
         return False
-
