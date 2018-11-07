@@ -100,7 +100,7 @@ def forward_min_diff(num, orientation, vec, goal, only_forward=False):
         return True, angleBetween(vec, goal, abs=False), new_gamma_count
     return False, angleBetween(opposite_vector(vec), goal, abs=False), new_gamma_count
 
-def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800):
+def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800, angle = 3,k = 0.01):
     p1 = np.array(p1)
     p2 = np.array(p2)
     v1 = np.array(v1)
@@ -110,8 +110,7 @@ def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800):
     cos = abs(np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)))
     r1 = 2*(1-cos)
     d = np.linalg.norm(p1-p2)
-    if (cos < 0.97):
-        k = 0.01
+    if (cos < 1 - angle):
         ret = 10/(np.sqrt(float(r1*k)))
     #rospy.logfatal("%4.3f %4.3f"%(cos,ret))
     return (ret/upper_bound) * speed_max
