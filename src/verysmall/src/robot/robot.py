@@ -229,7 +229,7 @@ class Robot():
             self.game_state = 1
             return self.state_machine.in_freeball_game()
 
-    def get_stuck(self, position):
+ def get_stuck(self, position):
         """
         Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
         the vision node
@@ -238,15 +238,21 @@ class Robot():
         """
         if sum(self.velocity_buffer):
 
-            # if np.any( abs(position_sum - np.array(position)) < 3 ):
-            #     return True
+        #     # if np.any( abs(position_sum - np.array(position)) < 3 ):
+        #     #     return True
 
-            position_sum = self.buffer_mean(self.position_buffer)
+        #     # position_sum = self.buffer_mean(self.position_buffer)
 
-            diff = abs(position_sum - np.array(position))
-            diff = (diff[0] < 0.5) and (diff[1] < 0.5)
+        #     # diff = abs(position_sum - np.array(position))
+        #     # diff = (diff[0] < 0.5) and (diff[1] < 0.5)
 
-            if ((self.speed[0] < 0.5) and (self.speed[1] < 0.5) and diff):
-                return True
+            if ((self.speed[0] < 1) and (self.speed[1] < 1)):
+                self.stuck_counter+=1
+                return (self.stuck_counter > 60)
+            else:
+                if (self.stuck_counter > 0):
+                    self.stuck_counter -= 1
+                else:
+                    self.stuck_counter = 0
 
         return False
