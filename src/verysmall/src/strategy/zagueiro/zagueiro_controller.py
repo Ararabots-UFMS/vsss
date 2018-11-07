@@ -18,7 +18,7 @@ bodies_unpack = jsonHandler.read(path, escape=True)
 SOFTWARE = 0
 HARDWARE = 1
 
-ZAGUEIRO_SPEED = 100
+ZAGUEIRO_SPEED = 140
 DEF_X_POS = [75.0/2.0, 75 + 75.0/2.0]
 ENEMY_POS = np.array([[[7.5,38.0],[7.5, 51.0], [7.5, 64], [7.5, 77], [7.5, 92.0]],[[142.5,38.0],[142.5, 51.0], [142.5, 64], [142.5, 77], [142.5, 92.0]]])
 BOTTOM_LEFT_LINE_POS = [[5.0, 20.0],[5.0, 105.0]]
@@ -110,6 +110,12 @@ class ZagueiroController():
         """
         self.stop.state = 'stop'
         return 0, 0, SOFTWARE
+
+    def speed_correction(self):
+        speed = ZAGUEIRO_SPEED
+        if distancePoints(self.position, self.defend_position) < 1.5 * self.movement.error_margin:
+            speed = ZAGUEIRO_SPEED / 2.0
+        return speed
 
     def in_normal_game(self):
         # rospy.logfatal(str(self.position))
@@ -296,8 +302,7 @@ class ZagueiroController():
 
             speed =ZAGUEIRO_SPEED
             self.movement.error_margin = 5.0
-            if distancePoints(self.position, self.defend_position) < 1.5 * self.movement.error_margin:
-                speed = ZAGUEIRO_SPEED / 2.0
+            speed = self.speed_correction()
 
             param1, param2, param3 = self.movement.move_to_point(
                 speed,
@@ -377,7 +382,8 @@ class ZagueiroController():
                     point = BOTTOM_LEFT_LINE_POS[0]
                 else:
                     point = BOTTOM_LEFT_LINE_POS[1]
-                param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, point)
+                speed = self.speed_correction()
+                param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
                 if not param3:
                     return param1, param2, self.pid_type
 
@@ -387,7 +393,8 @@ class ZagueiroController():
                     point = BOTTOM_RIGHT_LINE_POS[0]
                 else:
                     point = BOTTOM_RIGHT_LINE_POS[1]
-                param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, point)
+                speed = self.speed_correction()
+                param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, point)
                 if not param3:
                     return param1, param2, self.pid_type
 
@@ -408,7 +415,8 @@ class ZagueiroController():
                         ball_position=self.ball_position)
                     return param1, param2, self.pid_type
                 else:
-                    param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.ball_position)
+                    speed = self.speed_correction()
+                    param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, self.ball_position)
                 if not param3:
                     return param1, param2, self.pid_type
             else:
@@ -418,7 +426,8 @@ class ZagueiroController():
     def in_area(self):
         if extended_area(self.position, self.team_side) in [LEFT_GOAL_AREA, RIGHT_GOAL_AREA, LEFT_GOAL, RIGHT_GOAL]:
             robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-            param1, param2, param3 = self.movement.move_to_point(ZAGUEIRO_SPEED, self.position, robot_vector, self.defend_position)
+            speed = self.speed_correction()
+            param1, param2, param3 = self.movement.move_to_point(speed, self.position, robot_vector, self.defend_position)
             return param1, param2, self.pid_type
         else:
             self.zagueiro.area_to_normal()
@@ -438,11 +447,10 @@ class ZagueiroController():
                         return self.in_spin()
 
 
-        if self.get_stuck(self.position):
-            rospy.logfatal("if do stuck")
+        if self.get_stuck(self.position) and section(self.position) != CENTER:
 
-            robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
-            goal_vector = np.array(np.array([75,65]) - self.position)
+            # robot_vector = [np.cos(self.orientation), np.sin(self.orientation)]
+            # goal_vector = np.array(np.array([75,65]) - self.position)
             # param1, param2, param3 = self.movement.head_to(robot_vector, goal_vector)
             #
             # #verify if the robot is aligned with the ball
@@ -456,10 +464,26 @@ class ZagueiroController():
             #     return param1, param2, self.pid_type
 
             # if angleBetween([self.position[0], 150], self.position) < pi/2 + error
-            if self.robot.velocity_buffer[-1] < 0:
-                return 0, 100, self.pid_type
+            rospy.logfatal("if do in_stuck")
+            sr = section(self.position)
+            if sr == UP_BORDER:
+                point = [self.position[0], self.position[1]-10]
+            elif sr == DOWN_BORDER:
+                point = [self.position[0], self.position[1]+10]
+            elif sr in [LEFT_UP_BOTTOM_LINE, LEFT_DOWN_BOTTOM_LINE]:
+                point = [self.position[0]+10, self.position[1]]
+            elif sr in [RIGHT_UP_BOTTOM_LINE, RIGHT_DOWN_BOTTOM_LINE]:
+                point = [self.position[0]-10, self.position[1]]
             else:
-                return 0, -100, self.pid_type
+                point = [65,75]
+            speed = self.speed_correction()
+            param1, param2, param3 = self.movement.move_to_point(
+                speed,
+                self.position,
+                [np.cos(self.orientation), np.sin(self.orientation)],
+                point
+            )
+            return param1, param2, self.pid_type
         else:
             self.zagueiro.stuck_to_defend()
             return 0,0, self.pid_type
