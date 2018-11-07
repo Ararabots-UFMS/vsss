@@ -40,7 +40,6 @@ class AdvancedGK(StateMachine):
 
 
 
-
     # Stop to freeball game
     stop_to_freeball = stop.to(freeball)
     # Stop to normal game
