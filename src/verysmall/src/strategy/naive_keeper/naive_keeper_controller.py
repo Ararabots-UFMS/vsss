@@ -146,7 +146,7 @@ class NaiveGKController():
 
         if (near_ball(self.ball_position, self.position)):
             rospy.logfatal("SPIN")
-            param1, param2, param3 = self.movement.spin(255, not spin_direction(self.ball_position, self.position, self.team_side))
+            param1, param2, param3 = self.movement.spin(255, spin_direction(self.ball_position, self.position, self.team_side))
             return param1, param2, param3
         else:
             rospy.logfatal("MVTP")
