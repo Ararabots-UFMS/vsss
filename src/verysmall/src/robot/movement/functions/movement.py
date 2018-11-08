@@ -119,7 +119,7 @@ class Movement():
 #                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
             raio = raio_vetores_range(robot_position, robot_vector, ball_position, self.attack_goal)
             cte = 90
-            speed = (raio * cte) ** 0.5 + 30
+            speed = (raio * cte) ** 0.5 + 10
 
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
 
@@ -192,8 +192,8 @@ class Movement():
         if self.debug_topic is not None:
             self.debug_topic.debug_publish(goal_vector.tolist())
 
-        #forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
-        forward, diff_angle = get_orientation_and_angle(self.orientation, robot_vector, goal_vector)
+        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.orientation, robot_vector, goal_vector, only_forward)
+        #forward, diff_angle = get_orientation_and_angle(self.orientation, robot_vector, goal_vector)
         self.orientation = forward
 
         #logfatal("DIFF "+str(diff_angle)+" "+str(forward))

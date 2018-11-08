@@ -151,7 +151,7 @@ class SetPIDMachineController():
         #             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
         #             goal_vector=np.array([1 + -2*self.team_side,0]))
 
-        left, right, param_c = self.movement.move_to_point(160, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([130, 50]))
+        left, right, param_c = self.movement.move_to_point(100, np.array(self.position),[np.cos(self.orientation), np.sin(self.orientation)],  np.array([130, 50]))
         rospy.logfatal("Speed " + str(left)+" "+str(right))
         return left, right, 0
         # return 100, 0, 0
