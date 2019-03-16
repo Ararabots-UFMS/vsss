@@ -18,4 +18,5 @@ if __name__ == '__main__':
 	key = None
 	
 	while key != ord('q'):
+		cv2.imshow("a",img)
 		key = cv2.waitKey(0)
