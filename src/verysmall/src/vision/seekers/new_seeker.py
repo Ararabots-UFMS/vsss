@@ -58,7 +58,7 @@ class Tracker():
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
- 
+
     def update(self, position):
         old_p = self.position
         self.position = position
@@ -70,11 +70,11 @@ class Tracker():
         """
             This function predicts the next object position given a time step dt
             :param dt : float
-            :return position : vec2 
+            :return position : vec2
         """
         if dt < 0:
             dt = time() - self.t
-        
+
         return self.position + self.speed*dt
 
 
@@ -97,7 +97,7 @@ class NewSeeker:
         bboxes = []
         for i in range(self.num_objects):
             bboxes.append(self.trackers[i].predict_window())
-        self.fuser(bboxes)  
+        self.fuser(bboxes)
         return self.parent_bboxes
 
 
@@ -126,7 +126,7 @@ class NewSeeker:
 
     def get_parent_bbox(self, bboxes, bboxes_indexes):
         """
-            This function creates a bouding box that includes all bbox in bboxes  
+            This function creates a bouding box that includes all bbox in bboxes
             :param bboxes: list(BoundingBox)
             :param bboxes_indexes: list(int)
         """
@@ -142,7 +142,7 @@ class NewSeeker:
         return (top_left,bottom_right)
 
     def fuser(self, bboxes):
-        
+
         n = self.num_objects
         intersections = np.zeros((n, n))
 
@@ -153,9 +153,4 @@ class NewSeeker:
         self.parent_bboxes = []
         self.segments = self.get_unions(intersections)
         for segment in self.segments:            
-            # chama funcao que pega os extremos de cada segmento
-            # Salvar super bounding boxes
-            #
-            self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment)) 
-
-
+            self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))

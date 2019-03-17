@@ -237,6 +237,23 @@ class Vision:
 
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
 
+    def color_seg(self, windows_in, color):
+        """ Wait until the color parameters are used """
+        self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+        thresholds_dic = {  'blue': (self.blue_min, self.blue_max),
+                            'yellow': (self.yellow_min, self.yellow_max),
+                            'orange': (self.ball_min, self.ball_max)    }
+        min, max = thresholds_dic[color]
+        windows_out = []
+        for window in windows:
+            # a window is described by its top left and bottom right corners
+            # top left point, bottom right point
+            tl, br = window
+            sub_img = self.arena_image[tl.x:br.x, tl.y:br.y]
+            sub_img = cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+            windows_out.append(self.get_filter(sub_img, min, max))
+        return windows_out
+
     def attribute_teams(self):
         if self.home_color == "blue":
             self.home_seg = self.blue_seg
