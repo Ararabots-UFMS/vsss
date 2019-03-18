@@ -20,12 +20,24 @@ class Vec2:
         _v = Vec2(self.x + vec.x, self.y + vec.y)
         return _v
 
+    def __sub__(self, vec):
+        _v = Vec2(self.x - vec.x, self.y - vec.y)
+        return _v
+
+    def __rsub__(self, vec):
+        _v = Vec2(vec.x - self.x, vec.y - self.y)
+        return _v
+
     def __mul__(self, alpha):
         """ alpha is a scalar number """
         return Vec2(alpha*self.x, alpha*self.y)
 
+    def __rmul__(self, alpha):
+        """ alpha is a scalar number """
+        return Vec2(alpha*self.x, alpha*self.y)
+
     def __str__(self):
-        return "({0}, {1})".format(self.x, self.y)
+        return "[{0}, {1}]".format(self.x, self.y)
 
 class BoundingBox:
     def __init__(self):
@@ -142,7 +154,6 @@ class NewSeeker:
         return (top_left,bottom_right)
 
     def fuser(self, bboxes):
-
         n = self.num_objects
         intersections = np.zeros((n, n))
 
@@ -152,5 +163,24 @@ class NewSeeker:
 
         self.parent_bboxes = []
         self.segments = self.get_unions(intersections)
-        for segment in self.segments:            
+        for segment in self.segments:
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
+
+    def maper(self, local_pos):
+        """
+            local_positions:    list of positions localized by the objet detector
+                                in each image segment defined by the parent boxes
+            out_put:            list of global_positions of the objects inside
+                                de segments
+        """
+        k = len(local_pos)
+        if k != len(self.parent_bboxes):
+            return
+
+        global_pos = []
+        for i in range(k):
+            objs = []
+            for pos in seg:
+                objs.append(self.parent_bboxes[i].top_left + pos)
+            global_pos.append(objs)
+        return global_pos
