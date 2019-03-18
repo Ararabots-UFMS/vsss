@@ -166,7 +166,7 @@ class NewSeeker:
         for segment in self.segments:
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
 
-    def maper(self, local_pos):
+    def mapper(self, local_pos):
         """
             local_positions:    list of positions localized by the objet detector
                                 in each image segment defined by the parent boxes
