@@ -104,6 +104,34 @@ class NewSeeker:
         self.segments = []
         self.parent_bboxes = []
 
+    def sort_by_distance_matrix(self, positions, array_of_objects):
+
+        if len(positions) == len(array_of_objects):
+            size_of_matrix = len(positions)
+             m = numpy.zeros(shape=(size_of_matrix,size_of_matrix))
+
+             for i in range(size_of_matrix):
+                for j in range(size_of_matrix):
+                    
+             
+        else
+            print("Incorrect size of arrays!") 
+
+    def update(self, positions_by_segment):
+        # For each segment
+        for index in range(positions_by_segment):
+            # Build a distance matrix between postion given and segments 
+            if len(positions[index]) > 1:
+                # Update each tracker
+
+            elif  len(positions[index]) == 0:
+                pass # Do nothing in case of empty array
+            
+            else:
+                # Trivial case
+                # Update only one tracker
+                self.trackers[self.segments[index][0]].update(positions[index][0])
+        
 
     def predict_all_windows(self):
         bboxes = []
