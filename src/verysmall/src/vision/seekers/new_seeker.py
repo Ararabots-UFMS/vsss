@@ -36,8 +36,14 @@ class Vec2:
         """ alpha is a scalar number """
         return Vec2(alpha*self.x, alpha*self.y)
 
+    def __div__(self, alpha):
+        return Vec2(self.x/alpha, self.y/alpha)
+
     def __str__(self):
         return "[{0}, {1}]".format(self.x, self.y)
+
+    def norm(self):
+        return math.sqrt(self.x*self.x + self.y*self.y)
 
 class BoundingBox:
     def __init__(self):
@@ -104,34 +110,59 @@ class NewSeeker:
         self.segments = []
         self.parent_bboxes = []
 
-    def sort_by_distance_matrix(self, positions, array_of_objects):
+    def sort_by_distance_matrix(self, trackers_in_segment, objects_in_segment):
+        """
 
-        if len(positions) == len(array_of_objects):
-            size_of_matrix = len(positions)
-             m = numpy.zeros(shape=(size_of_matrix,size_of_matrix))
+        :param trackers_in_segment:
+        :param objects_in_segment:
+        :return: Array of positions sorted by trackers in segment
+        """
+        # Verify if the two arrays are the same size
+        if len(trackers_in_segment) == len(objects_in_segment):
 
-             for i in range(size_of_matrix):
-                for j in range(size_of_matrix):
-                    
-             
-        else
-            print("Incorrect size of arrays!") 
+            size_of_matrix = len(trackers_in_segment) # Get one of the sizes since is a n x n matrix
+            matrix = np.zeros(shape=(size_of_matrix,size_of_matrix)) # Create the matrix
+
+            tracker_position_array = np.empty(size_of_matrix)
+            sorted_array = np.array([Vec2()]*size_of_matrix)
+
+            for i in range(size_of_matrix): # rows for trackers in segment
+                print(i)
+                print(tracker_position_array)
+                tracker_position_array[i] = np.inf
+                tracker_index = trackers_in_segment[i]
+
+                for j in range(size_of_matrix): # col for objects founds
+
+                    new_distance = matrix[i][j] = (self.trackers[tracker_index].position - objects_in_segment[j]).norm()
+                    if new_distance < tracker_position_array[i]:
+                        tracker_position_array[i] = new_distance
+                        sorted_array[i] = objects_in_segment[j]
+
+            return sorted_array
+
+        else:
+            print("Incorrect size of arrays!")
 
     def update(self, positions_by_segment):
         # For each segment
         for index in range(positions_by_segment):
             # Build a distance matrix between postion given and segments 
-            if len(positions[index]) > 1:
-                # Update each tracker
+            if len(positions_by_segment[index]) > 1:
+                # Sort the positions with current tracker positions
+                sorted_array = self.sort_by_distance_matrix(self.segments[index] ,positions_by_segment[index])
 
-            elif  len(positions[index]) == 0:
+                # Update each tracker
+                for tracker_index in self.segments[index]:
+                    self.trackers[tracker_index].update(sorted_array[tracker_index])
+
+            elif len(positions_by_segment[index]) == 0:
                 pass # Do nothing in case of empty array
             
             else:
                 # Trivial case
                 # Update only one tracker
-                self.trackers[self.segments[index][0]].update(positions[index][0])
-        
+                self.trackers[self.segments[index][0]].update(positions_by_segment[index][0])
 
     def predict_all_windows(self):
         bboxes = []
@@ -139,7 +170,6 @@ class NewSeeker:
             bboxes.append(self.trackers[i].predict_window())
         self.fuser(bboxes)
         return self.parent_bboxes
-
 
     def get_intersections(self, intersection_matrix, vertex_index, visited):
         intersected = []
