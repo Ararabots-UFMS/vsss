@@ -37,7 +37,12 @@ class Vec2:
         return Vec2(alpha*self.x, alpha*self.y)
 
     def __div__(self, alpha):
+        
         return Vec2(self.x/alpha, self.y/alpha)
+
+    def __rdiv__(self, alpha):
+        _v = Vec2(self.x/alpha, self.y/alpha) 
+        return _v
 
     def __repr__(self):
         return "Vec2(%r, %r)" % (self.x, self.y)
@@ -85,7 +90,7 @@ class Tracker():
         self.position = position
         t0 = self.t
         self.t = time()
-        self.speed = (old_p - self.position) / (self.t - t0)
+        self.speed = (1/(self.t - t0))*(old_p - self.position)
 
     def predict(self, dt = -1):
         """
@@ -130,14 +135,12 @@ class NewSeeker:
             sorted_array = np.array([Vec2()]*size_of_matrix)
 
             for i in range(size_of_matrix): # rows for trackers in segment
-                print(i)
-                print(tracker_position_array)
                 tracker_position_array[i] = np.inf
                 tracker_index = trackers_in_segment[i]
 
                 for j in range(size_of_matrix): # col for objects founds
 
-                    new_distance = matrix[i][j] = len(self.trackers[tracker_index].position - objects_in_segment[j])
+                    new_distance = matrix[i][j] = abs(self.trackers[tracker_index].position - objects_in_segment[j])
                     if new_distance < tracker_position_array[i]:
                         tracker_position_array[i] = new_distance
                         sorted_array[i] = objects_in_segment[j]
@@ -146,6 +149,7 @@ class NewSeeker:
 
         else:
             print("Incorrect size of arrays!")
+            return []
 
     def update(self, positions_by_segment):
         # For each segment
