@@ -45,6 +45,9 @@ class Vec2:
     def __abs__(self):
         return math.sqrt(self.x*self.x + self.y*self.y)
 
+    def __neg__(self):
+        return Vec2(-self.x, -self.y)
+
 class BoundingBox:
     def __init__(self):
         self.top_left = Vec2()
