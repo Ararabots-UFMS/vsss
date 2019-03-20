@@ -39,10 +39,10 @@ class Vec2:
     def __div__(self, alpha):
         return Vec2(self.x/alpha, self.y/alpha)
 
-    def __str__(self):
-        return "[{0}, {1}]".format(self.x, self.y)
+    def __repr__(self):
+        return "Vec2(%r, %r)" % (self.x, self.y)
 
-    def norm(self):
+    def __abs__(self):
         return math.sqrt(self.x*self.x + self.y*self.y)
 
 class BoundingBox:
@@ -134,7 +134,7 @@ class NewSeeker:
 
                 for j in range(size_of_matrix): # col for objects founds
 
-                    new_distance = matrix[i][j] = (self.trackers[tracker_index].position - objects_in_segment[j]).norm()
+                    new_distance = matrix[i][j] = len(self.trackers[tracker_index].position - objects_in_segment[j])
                     if new_distance < tracker_position_array[i]:
                         tracker_position_array[i] = new_distance
                         sorted_array[i] = objects_in_segment[j]
@@ -147,7 +147,7 @@ class NewSeeker:
     def update(self, positions_by_segment):
         # For each segment
         for index in range(positions_by_segment):
-            # Build a distance matrix between postion given and segments 
+            # Build a distance matrix between postion given and segments
             if len(positions_by_segment[index]) > 1:
                 # Sort the positions with current tracker positions
                 sorted_array = self.sort_by_distance_matrix(self.segments[index] ,positions_by_segment[index])
@@ -158,7 +158,7 @@ class NewSeeker:
 
             elif len(positions_by_segment[index]) == 0:
                 pass # Do nothing in case of empty array
-            
+
             else:
                 # Trivial case
                 # Update only one tracker
