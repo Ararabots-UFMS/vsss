@@ -97,19 +97,19 @@ class ArucoObjectDetector:
     def seek(self,segments, objects_per_segment):
         """
             This function receives a list of binary images and list of number of objects per segment
-            and return its centers positions per segment using a opencv aruco implementation 
+            and return its centers positions per segment using a opencv aruco implementation
             :param segments: np.array([uint8]).shape([m,n])
             :param objects_per_segment: np.array
             :return: np.array([float, float]).shape([k, 2]) object has the position of the center of each object in img
         """
-        
+
         # Our return value
         centroids_per_segment = np.array([])
-        
+
         number_of_segments = len(segments)
 
         # Iterate over segments
-        for index in xrange(number_of_segments):
+        for index in range(number_of_segments):
 
             centroids_per_segment = np.append(centroids_per_segment, self.aruco_seek(segments[index], objects_per_segment[index]))
 

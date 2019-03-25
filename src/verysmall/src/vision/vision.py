@@ -263,9 +263,7 @@ class Vision:
             self.adv_seg = self.blue_seg
 
     def run(self):
-
         while not self.finish:
-
             self.last_time = time.time()
             while self.game_on:
                 self.raw_image = self.camera.read()
@@ -287,6 +285,48 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
+                #self.computed_frames += 1
+
+                self.update_fps()
+
+                self.send_message(ball=True, home_team=True, adv_team=True)
+
+        self.camera.stop()
+        self.camera.capture.release()
+
+    def initialize_seeker(self, seeker, color):
+        frames = []
+        tl = Vec2(0, 0)
+        color_seg(self, windows_in, color)
+        self.raw_image = self.camera.read()
+        self.warp_perspective()
+        self.set_dark_border()
+        h, w, _ = self.arena_image.shape
+        br = Vec2(h, w)
+        frames.append([(tl, br)], color)
+
+        self.raw_image = self.camera.read()
+        self.warp_perspective()
+        self.set_dark_border()
+        frames.append([(tl, br)], color)
+        seeker.initialize(frames)
+
+
+    def run_v2(self):
+        self.initialize_seeker(self.new_ball_seeker, 'orange')
+
+        while not self.finish:
+            self.last_time = time.time()
+            while self.game_on:
+                self.raw_image = self.camera.read()
+                """ Takes the raw imagem from the camera and applies the warp perspective transform """
+                self.warp_perspective()
+                self.set_dark_border()
+
+                windows = self.new_ball_seeker.predict_all_windows()
+                segments = self.color_seg(segs, 'orange')
+                self.new_ball_seeker.feed(segments)
+                ball_info = self.new_ball_seeker.get_serialized_objects()
                 #self.computed_frames += 1
 
                 self.update_fps()

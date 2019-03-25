@@ -73,12 +73,22 @@ class BoundingBox:
         return (intersect_area > 0)
 
 class Tracker():
-    def __init__(self, seeker):
+    def __init__(self, seeker, obj_id=0):
+        self.obj_id = obj_id
         self.position = Vec2()
         self.speed = Vec2()
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
+        self.obj_size = Vec2()
+
+    def set_pos(self, x, y):
+        self.position.x = x
+        self.position.y = y
+
+    def set_obj_size(self):
+        # TODO:
+        pass
 
     def update(self, position):
         old_p = self.position
@@ -100,7 +110,6 @@ class Tracker():
 
 
     def predict_window(self):
-
         return self.bbox
         pass
 
@@ -113,9 +122,35 @@ class NewSeeker:
         self.segments = []
         self.parent_bboxes = []
 
+    def initialize(self, frames):
+        """
+            This function should be capable of initialing the state variables
+            from the trackers
+
+            frames: two frames of the full image already segementeds
+        """
+        objects_per_segment = [3]
+
+        # first frame
+        segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+        for i,object in enumerate(segs[0]):
+            # just assign a object to a tracker
+            self.trackers[i].set_pos(object.x, object.y)
+
+        # TODO: set the size of each object into the trackers
+
+        # second frame
+        segs = self.obj_detector.seek([frames[1]], objects_per_segment)
+        self.update(segs)
+
+    def feed(self, img_segments):
+        # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO
+        objs_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
+        self.update(objs_in_segs)
+
+
     def sort_by_distance_matrix(self, trackers_in_segment, objects_in_segment):
         """
-
         :param trackers_in_segment:
         :param objects_in_segment:
         :return: Array of positions sorted by trackers in segment
@@ -136,24 +171,26 @@ class NewSeeker:
                 tracker_index = trackers_in_segment[i]
 
                 for j in range(size_of_matrix): # col for objects founds
-
                     new_distance = matrix[i][j] = len(self.trackers[tracker_index].position - objects_in_segment[j])
                     if new_distance < tracker_position_array[i]:
                         tracker_position_array[i] = new_distance
                         sorted_array[i] = objects_in_segment[j]
 
             return sorted_array
-
         else:
             print("Incorrect size of arrays!")
 
     def update(self, positions_by_segment):
+        # QUESTION: No primeiro for era pra ser: range(len(positions_by_segment))
+
         # For each segment
         for index in range(positions_by_segment):
             # Build a distance matrix between postion given and segments
             if len(positions_by_segment[index]) > 1:
                 # Sort the positions with current tracker positions
                 sorted_array = self.sort_by_distance_matrix(self.segments[index] ,positions_by_segment[index])
+
+                # QUESTION: nao faltou remapear para coordenadas globais antes de fazer o update?
 
                 # Update each tracker
                 for tracker_index in self.segments[index]:
@@ -195,7 +232,6 @@ class NewSeeker:
             if v not in visited:
                 intersections.append(self.get_intersections(m, v, visited))
         return intersections
-
 
     def get_parent_bbox(self, bboxes, bboxes_indexes):
         """
@@ -245,3 +281,9 @@ class NewSeeker:
                 objs.append(self.parent_bboxes[i].top_left + pos)
             global_pos.append(objs)
         return global_pos
+
+        def get_serialized_objects(self):
+            serialized = []
+            for i in range(self.num_objects):
+                serialized.append(self.tracker[i].position.to_list())
+            return serialized
