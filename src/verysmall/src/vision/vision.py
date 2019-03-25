@@ -297,18 +297,20 @@ class Vision:
     def initialize_seeker(self, seeker, color):
         frames = []
         tl = Vec2(0, 0)
-        color_seg(self, windows_in, color)
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         h, w, _ = self.arena_image.shape
         br = Vec2(h, w)
-        frames.append([(tl, br)], color)
+        
+        frame0 = self.color_seg([(tl, br)], color)[0]
+        frames.append(frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
-        frames.append([(tl, br)], color)
+        frame1 = self.color_seg([(tl, br)], color)[0]
+        frames.append(frame1)
         seeker.initialize(frames)
 
 

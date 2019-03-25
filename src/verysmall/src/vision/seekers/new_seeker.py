@@ -134,7 +134,7 @@ class NewSeeker:
 
             frames: two frames of the full image already segementeds
         """
-        objects_per_segment = [3]
+        objects_per_segment = [self.num_objects]
 
         # first frame
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
@@ -186,10 +186,8 @@ class NewSeeker:
             return []
 
     def update(self, positions_by_segment):
-        # QUESTION: No primeiro for era pra ser: range(len(positions_by_segment))
-
         # For each segment
-        for index in range(positions_by_segment):
+        for index in range(len(positions_by_segment)):
             # Build a distance matrix between postion given and segments
             if len(positions_by_segment[index]) > 1:
                 # Sort the positions with current tracker positions
