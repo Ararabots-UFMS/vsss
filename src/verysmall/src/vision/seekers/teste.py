@@ -9,7 +9,7 @@ b = []
 visited = []
 b = seeker.get_unions(a)
 print(b)
-obj_positions = [Vec2(0.7, 0.1), Vec2(2, 3)]
+obj_positions = [Vec2(0.7, 0.1), Vec2(2, 3) , Vec2(1,3)]
 seeker.trackers[1].update(Vec2(1,3))
 trackers_by_segment = [2,1]
 for sucker in seeker.sort_by_distance_matrix(trackers_by_segment, obj_positions):
