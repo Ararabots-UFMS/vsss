@@ -37,7 +37,6 @@ class Vec2:
         return Vec2(alpha*self.x, alpha*self.y)
 
     def __div__(self, alpha):
-
         return Vec2(self.x/alpha, self.y/alpha)
 
     def __rdiv__(self, alpha):
@@ -53,10 +52,30 @@ class Vec2:
     def __neg__(self):
         return Vec2(-self.x, -self.y)
 
-class BoundingBox:
+class ObjField():
     def __init__(self):
-        self.top_left = Vec2()
-        self.bottom_right = Vec2()
+        self.id = -1
+        self.pos = Vec2()
+        self.speed = Vec2()
+        self.orientation = 0
+
+    def set_pos(self, x, y):
+        self.pos.x = x
+        self.pos.y = y
+
+    def set_speed(self, vx, vy):
+        self.speed.x = vx
+        self.speed.y = vy
+
+    def set_orientation(self, theta):
+        # For convention the orientation is always taken in relation
+        # with the x axis
+        self.orientation = theta
+
+class BoundingBox:
+    def __init__(self, tl=Vec2(), br=Vec2()):
+        self.top_left = tl
+        self.bottom_right = br
 
     def to_list(self):
         """ converts bounding box to list like this [[tl_x tl_y], [br_x, br_y]]"""
@@ -76,6 +95,29 @@ class BoundingBox:
 
         intersect_area = max(0, br_x - tl_x + 1) * max(0, br_y - tl_y + 1)
         return (intersect_area > 0)
+
+    def __add__(self, b):
+        tl, br = Vec2(), Vec2()
+        tl.x = min(self.top_left.x, b.top_left.x)
+        tl.y = min(self.top_left.y, b.top_left.y)
+        br.x = max(self.bottom_right.x, b.bottom_right.x)
+        br.y = max(self.bottom_right.y, b.bottom_right.y)
+        return BoundingBox(tl, br)
+
+    def __radd__(self, b):
+        return self.__add__(b)
+
+    def __iadd__(self, b):
+        self.top_left.x = min(self.top_left.x, b.top_left.x)
+        self.top_left.y = min(self.top_left.y, b.top_left.y)
+        self.bottom_right.x = max(self.bottom_right.x, b.bottom_right.x)
+        self.bottom_right.y = max(self.bottom_right.y, b.bottom_right.y)
+
+    def __repr__(self):
+        tl = self.top_left
+        br = self.bottom_right
+        return "[[%r, %r], [%r, %r]]" % (tl.x, tl.y, br.x, br.y)
+
 
 class Tracker():
     def __init__(self, seeker, obj_id=0):
@@ -242,16 +284,12 @@ class NewSeeker:
             :param bboxes: list(BoundingBox)
             :param bboxes_indexes: list(int)
         """
-        top_left = vec2(math.inf, math.inf)
-        bottom_right = vec2(-math.inf, -math.inf)
+        tl = vec2(math.inf, math.inf)
+        br = vec2(-math.inf, -math.inf)
+        b = BoundingBox(tl, br)
         for i in bboxes_indexes:
-            top_left.x = min(top_left.x, bboxes[i].top_left.x)
-            top_left.y = min(top_left.y, bboxes[i].top_left.y)
-
-            bottom_right.x = max(bottom_right.x, bboxes[i].bottom_right.x)
-            bottom_right.y = max(bottom_right.y, bboxes[i].bottom_right.y)
-
-        return (top_left,bottom_right)
+            b += bboxes[i]
+        return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes):
         n = self.num_objects
@@ -276,7 +314,6 @@ class NewSeeker:
         k = len(local_pos)
         if k != len(self.parent_bboxes):
             return
-
         global_pos = []
         for i in range(k):
             objs = []
@@ -285,8 +322,8 @@ class NewSeeker:
             global_pos.append(objs)
         return global_pos
 
-        def get_serialized_objects(self):
-            serialized = []
-            for i in range(self.num_objects):
-                serialized.append(self.tracker[i].position.to_list())
-            return serialized
+    def get_serialized_objects(self):
+        serialized = []
+        for i in range(self.num_objects):
+            serialized.append(self.tracker[i].position.to_list())
+        return serialized
