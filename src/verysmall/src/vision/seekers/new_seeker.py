@@ -52,6 +52,7 @@ class Vec2:
     def __neg__(self):
         return Vec2(-self.x, -self.y)
 
+
 class ObjField():
     def __init__(self):
         self.id = -1
@@ -71,6 +72,7 @@ class ObjField():
         # For convention the orientation is always taken in relation
         # with the x axis
         self.orientation = theta
+
 
 class BoundingBox:
     def __init__(self, tl=Vec2(), br=Vec2()):
@@ -155,10 +157,10 @@ class Tracker():
 
         return self.position + self.speed*dt
 
-
     def predict_window(self):
         return self.bbox
         pass
+
 
 class NewSeeker:
 
@@ -194,7 +196,6 @@ class NewSeeker:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO
         objs_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(objs_in_segs)
-
 
     def sort_by_distance_matrix(self, trackers_in_segment, objects_in_segment):
         """
@@ -235,10 +236,11 @@ class NewSeeker:
                 # Sort the positions with current tracker positions
                 sorted_array = self.sort_by_distance_matrix(self.segments[index] ,positions_by_segment[index])
 
-                # QUESTION: nao faltou remapear para coordenadas globais antes de fazer o update?
+                # Remap position values before update
+                corrected_values = self.mapper(self.segments[index])
 
                 # Update each tracker
-                for tracker_index in self.segments[index]:
+                for tracker_index in corrected_values:
                     self.trackers[tracker_index].update(sorted_array[tracker_index])
 
             elif len(positions_by_segment[index]) == 0:
@@ -317,6 +319,7 @@ class NewSeeker:
         global_pos = []
         for i in range(k):
             objs = []
+            seg = local_pos[i]
             for pos in seg:
                 objs.append(self.parent_bboxes[i].top_left + pos)
             global_pos.append(objs)
