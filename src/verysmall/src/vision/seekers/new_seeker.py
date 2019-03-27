@@ -53,7 +53,7 @@ class Vec2:
         return Vec2(-self.x, -self.y)
 
 
-class ObjField():
+class ObjState():
     def __init__(self, id):
         self.id = id
         self.pos = Vec2()
@@ -125,7 +125,7 @@ class BoundingBox:
 
 class Tracker():
     def __init__(self, seeker, obj_id=-1):
-        self.obj = ObjField(obj_id)
+        self.obj = ObjState(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
@@ -161,7 +161,6 @@ class Tracker():
 
 
 class NewSeeker:
-
     def __init__(self, num_objects, obj_detector):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
