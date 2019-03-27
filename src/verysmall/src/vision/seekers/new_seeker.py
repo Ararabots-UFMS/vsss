@@ -54,11 +54,13 @@ class Vec2:
 
 
 class ObjField():
-    def __init__(self):
-        self.id = -1
+    def __init__(self, id):
+        self.id = id
         self.pos = Vec2()
         self.speed = Vec2()
         self.orientation = 0
+        # Size should be the largest axis of the object
+        self.size = math.inf
 
     def set_pos(self, x, y):
         self.pos.x = x
@@ -122,29 +124,26 @@ class BoundingBox:
 
 
 class Tracker():
-    def __init__(self, seeker, obj_id=0):
-        self.obj_id = obj_id
-        self.position = Vec2()
-        self.speed = Vec2()
+    def __init__(self, seeker, obj_id=-1):
+        self.obj = ObjField(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
-        self.obj_size = Vec2()
 
     def set_pos(self, x, y):
-        self.position.x = x
-        self.position.y = y
+        self.obj.position.x = x
+        self.obj.position.y = y
 
     def set_obj_size(self):
         # TODO:
         pass
 
     def update(self, position):
-        old_p = self.position
-        self.position = position
+        old_p = self.obj.position
+        self.obj.position = position
         t0 = self.t
         self.t = time()
-        self.speed = (1/(self.t - t0))*(old_p - self.position)
+        self.obj.speed = (1/(self.t - t0))*(old_p - self.obj.position)
 
     def predict(self, dt = -1):
         """
@@ -154,8 +153,7 @@ class Tracker():
         """
         if dt < 0:
             dt = time() - self.t
-
-        return self.position + self.speed*dt
+        return self.obj.position + self.obj.speed*dt
 
     def predict_window(self):
         return self.bbox
@@ -167,7 +165,7 @@ class NewSeeker:
     def __init__(self, num_objects, obj_detector):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
-        self.trackers = [Tracker(self) for i in range(self.num_objects)]
+        self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
         self.segments = []
         self.parent_bboxes = []
 
@@ -263,11 +261,10 @@ class NewSeeker:
         if vertex_index not in visited:
             intersected.append(vertex_index)
             visited.append(vertex_index)
-            intersections_indexes = np.where(intersection_matrix[vertex_index, :].reshape(-1) == 1)
-            #print(list(intersections_indexes[0]))
+            line = intersection_matrix[vertex_index, :].reshape(-1)
+            intersections_indexes = np.where(line == 1)
             for v in list(intersections_indexes[0]):
                 intersected += self.get_intersections(intersection_matrix, v, visited)
-                print(intersected)
         return intersected
 
     def get_unions(self, intersection_matrix):
