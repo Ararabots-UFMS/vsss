@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import math
+from seeker_data_structures import *
 
 # @author Wellington Castro <wvmcastro>
 
@@ -28,7 +29,6 @@ class ArucoObjectDetector:
         self.camera_matrix = cam_mtx
         self.distortion_vector = dist_vec
 
-
     def get_aruco_state(self, img, rvec, tvec, degree=False):
         # x axis
         x_axis = np.float32([[0,0,0],[1.0,0,0]]).reshape(-1,3)
@@ -52,7 +52,14 @@ class ArucoObjectDetector:
         return t, orientation_angle
 
     def aruco_seek(self, img, degree=False, number_of_tags = None):
-
+        """
+        Receives an image and the number of tags in it, the applies the aruco seeker to identify tags and returns
+        tags from segment.
+        :param img: Segment of image
+        :param degree: if orientation is returned in degrees
+        :param number_of_tags: number of tags ins segment
+        :return: Array(ObjState)
+        """
         if number_of_tags == None:
             number_of_tags = self.num_tags
 
@@ -87,7 +94,12 @@ class ArucoObjectDetector:
                 # Gets the marker state, ie: its center and x axis orientation
                 center, orientation = self.get_aruco_state(img, rvec, tvec, degree)
 
-                identified_markers.append([sorted_ids[i], center, orientation])
+                obj_state = ObjState()
+                obj_state.id = sorted_ids[i]
+                obj_state.set_pos(center[0], center[1])
+                obj_state.set_orientation(orientation)
+
+                identified_markers.append(obj_state)
 
                 i += 1
 
@@ -99,7 +111,7 @@ class ArucoObjectDetector:
             and return its centers positions per segment using a opencv aruco implementation
             :param segments: np.array([uint8]).shape([m,n])
             :param objects_per_segment: np.array
-            :return: np.array([float, float]).shape([k, 2]) object has the position of the center of each object in img
+            :return: np.array([ObjState]).shape([k, n]) object has the position of the center of each object in img
         """
 
         # Our return value

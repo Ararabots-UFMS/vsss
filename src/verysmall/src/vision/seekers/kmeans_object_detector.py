@@ -1,5 +1,6 @@
 import numpy as np 
 import cv2
+from seeker_data_structures import *
 
 class KmeansObjectDetector():
     """A simple detector using find contours
@@ -8,8 +9,6 @@ class KmeansObjectDetector():
         self.max_iter = 30
         self.number_of_jobs = 1
         self.distance_threshold = 2.5
-
-
 
     def seek(self, segments, objects_per_segment):
         """
@@ -63,7 +62,15 @@ class KmeansObjectDetector():
                     else:
                         center_of_objects = newObjects
 
+            obj_states_in_segment = []
+            for object_center in center_of_objects:
+
+                obj_state = ObjState()
+                obj_state.set_pos(object_center[0], object_center[1])
+
+                obj_states_in_segment.append(obj_state)
+
             # Store found objects in return value
-            centroids_per_segment = np.append( centroids_per_segment, center_of_objects)
+            centroids_per_segment = np.append( centroids_per_segment, obj_states_in_segment)
 
         return centroids_per_segment

@@ -1,5 +1,7 @@
 import numpy as np 
 import cv2
+from seeker_data_structures import *
+
 
 class SimpleObjectDetector():
     """
@@ -30,6 +32,8 @@ class SimpleObjectDetector():
 
             c_x, c_y = None, None
 
+            obj_states_in_this_segment = []
+
             for cnt in cnts:
                 # Compute the contour moment to extract its center
                 M = cv2.moments(cnt)
@@ -39,6 +43,11 @@ class SimpleObjectDetector():
                     c_x = int(M['m10'] / M['m00'])
                     c_y = int(M['m01'] / M['m00'])
 
-            centroids_per_segment = np.append(centroids_per_segment, np.array([c_x, c_y]))
+                temp_obj_state = ObjState()
+                temp_obj_state.set_pos(c_x, c_y)
+
+                obj_states_in_this_segment.append(temp_obj_state)
+
+        centroids_per_segment = np.append(centroids_per_segment, obj_states_in_this_segment)
 
         return centroids_per_segment
