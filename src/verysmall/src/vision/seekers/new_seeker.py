@@ -1,6 +1,8 @@
 import numpy as np
 import math
 from time import time
+#from aruco_object_detector import ArucoObjectDetector
+from simple_object_detector import SimpleObjectDetector
 
 class Vec2:
     def __init__(self, x=0, y=0):
@@ -168,6 +170,9 @@ class NewSeeker:
         self.segments = []
         self.parent_bboxes = []
 
+        if isinstance(obj_detector, ArucoObjectDetector):
+            self.update = self.aruco_update
+
     def initialize(self, frames):
         """
             This function should be capable of initialing the state variables
@@ -190,7 +195,7 @@ class NewSeeker:
         self.update(segs)
 
     def feed(self, img_segments):
-        # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO
+        # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         objs_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(objs_in_segs)
 
@@ -224,6 +229,9 @@ class NewSeeker:
         else:
             print("Incorrect size of arrays!")
             return []
+
+    def aruco_update(self, positions_by_segment):
+        pass
 
     def update(self, positions_by_segment):
         # For each segment
@@ -322,7 +330,7 @@ class NewSeeker:
         return global_pos
 
     def get_serialized_objects(self):
-        serialized = []
-        for i in range(self.num_objects):
-            serialized.append(self.tracker[i].position.to_list())
+        serialized = [self.tracker[i].position.to_list() for i in range(self.num_objects)]
+        # for i in range(self.num_objects):
+        #     serialized.append(self.tracker[i].position.to_list())
         return serialized

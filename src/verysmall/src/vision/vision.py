@@ -302,7 +302,7 @@ class Vision:
         self.set_dark_border()
         h, w, _ = self.arena_image.shape
         br = Vec2(h, w)
-        
+
         frame0 = self.color_seg([(tl, br)], color)[0]
         frames.append(frame0)
 
@@ -326,7 +326,7 @@ class Vision:
                 self.set_dark_border()
 
                 windows = self.new_ball_seeker.predict_all_windows()
-                segments = self.color_seg(segs, 'orange')
+                segments = self.color_seg(windows, 'orange')
                 self.new_ball_seeker.feed(segments)
                 ball_info = self.new_ball_seeker.get_serialized_objects()
                 #self.computed_frames += 1
