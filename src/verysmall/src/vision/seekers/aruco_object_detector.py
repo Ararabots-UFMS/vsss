@@ -121,8 +121,6 @@ class ArucoObjectDetector:
 
         # Iterate over segments
         for index in range(number_of_segments):
-
             centroids_per_segment = np.append(centroids_per_segment, self.aruco_seek(segments[index], objects_per_segment[index]))
-
 
         return centroids_per_segment

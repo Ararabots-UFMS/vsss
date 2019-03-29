@@ -1,4 +1,4 @@
-import numpy as np 
+import numpy as np
 import cv2
 from seeker_data_structures import *
 
@@ -20,12 +20,12 @@ class KmeansObjectDetector():
         """
 
         # Our return value
-        centroids_per_segment = np.array([])
-        
+        centroids_per_segment = []
+
         number_of_segments = len(segments)
 
         # Iterate over segments
-        for index in xrange(number_of_segments):
+        for index in range(number_of_segments):
 
             # Insantiate KMeans for this segment
             kmeans = KMeans(n_clusters=objects_per_segment[index], n_init=1, max_iter=self.max_iter,
@@ -42,7 +42,7 @@ class KmeansObjectDetector():
 
                 cnts_array = np.array(cnts[0]).reshape(-1, 2)
 
-                for i in xrange(1, num_cnts):
+                for i in range(1, num_cnts):
                     cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
 
                 if cnts_array.shape[0] > objects_per_segment[index]:
@@ -64,13 +64,12 @@ class KmeansObjectDetector():
 
             obj_states_in_segment = []
             for object_center in center_of_objects:
-
                 obj_state = ObjState()
-                obj_state.set_pos(object_center[0], object_center[1])
-
+                x,y = object_center
+                obj_state.set_pos(x, y)
                 obj_states_in_segment.append(obj_state)
-
+                
             # Store found objects in return value
-            centroids_per_segment = np.append( centroids_per_segment, obj_states_in_segment)
+            centroids_per_segment.append(obj_states_in_segment)
 
         return centroids_per_segment

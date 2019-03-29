@@ -35,12 +35,13 @@ class Vec2:
         """ alpha is a scalar number """
         return Vec2(alpha*self.x, alpha*self.y)
 
-    def __div__(self, alpha):
+    def __truediv__(self, alpha):
         return Vec2(self.x/alpha, self.y/alpha)
 
-    def __rdiv__(self, alpha):
-        _v = Vec2(self.x/alpha, self.y/alpha)
-        return _v
+    # def __rdiv__(self, alpha):
+    #     _v = Vec2(self.x/alpha, self.y/alpha)
+    #     return _v
+    # QUESTION: ISSO FAZ SENTIDO ?
 
     def __repr__(self):
         return "Vec2(%r, %r)" % (self.x, self.y)
@@ -50,6 +51,11 @@ class Vec2:
 
     def __neg__(self):
         return Vec2(-self.x, -self.y)
+
+    def __getitem__(self, index):
+        if (index%2) == 0:
+            return self.x
+        return self.y
 
 class ObjState():
     def __init__(self, id):

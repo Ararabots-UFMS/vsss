@@ -47,10 +47,30 @@ class BoundingBox:
         self.bottom_right.x = max(self.bottom_right.x, b.bottom_right.x)
         self.bottom_right.y = max(self.bottom_right.y, b.bottom_right.y)
 
-    def __repr__(self):
+    def __str__(self):
         tl = self.top_left
         br = self.bottom_right
         return "[[%r, %r], [%r, %r]]" % (tl.x, tl.y, br.x, br.y)
+
+    def __repr__(self):
+        tl = self.top_left
+        br = self.bottom_right
+        return "BoundingBox(Vec2(%r, %r), Vec2(%r, %r))" % (tl.x, tl.y, br.x, br.y)
+
+    def __mul__(self, alpha):
+        """ alpha is a scalar number """
+        center = (self.top_left + self.bottom_right) / 2.0
+        diff = self.bottom_right - self.top_left
+        w = alpha * Vec2(abs(diff.x)/2.0, abs(diff.y)/2.0)
+        tl = center - w
+        tl.x, tl.y = int(tl.x), int(tl.y)
+        br = center + w
+        br.x, br.y = int(br.x), int(br.y)
+        return BoundingBox(tl, br)
+
+    def __rmul__(self, alpha):
+        return self.__mul__(alpha)
+
 
 
 class Tracker():
@@ -60,6 +80,9 @@ class Tracker():
         self.bbox = BoundingBox()
         self.my_seeker = seeker
 
+    def set_id(self, id):
+        self.obj.id = id
+
     def set_pos(self, x, y):
         self.obj.position.x = x
         self.obj.position.y = y
@@ -68,12 +91,13 @@ class Tracker():
         # TODO:
         pass
 
-    def update(self, position):
+    def update(self, position, orientation=0.0):
         old_p = self.obj.position
         self.obj.position = position
         t0 = self.t
         self.t = time()
         self.obj.speed = (1/(self.t - t0))*(old_p - self.obj.position)
+        self.obj.orientation = orientation
 
     def predict(self, dt = -1):
         """
@@ -100,6 +124,18 @@ class NewSeeker:
 
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.aruco_update
+            self.initialize = self.aruco_initialize
+
+    def aruco_initialize(self, frames):
+        objects_per_segment = [self.num_objects]
+        segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+        for k,obj in enumerate(segs[0]):
+            self.trackers[k].set_id(obj.id)
+            self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
+
+        segs = self.obj_detector.seek([frames[1]], objects_per_segment)
+        self.update(segs)
+
 
     def initialize(self, frames):
         """
@@ -158,8 +194,14 @@ class NewSeeker:
             print("Incorrect size of arrays!")
             return []
 
-    def aruco_update(self, positions_by_segment):
-        pass
+    def aruco_update(self, objs_by_segment):
+        # TODO: achar um nome melhor para o parâmetro objs_by_segment
+        k = 0
+        segments = objs_by_segment
+        for segment in segments:
+            for obj in segment:
+                self.trackers[k].update(obj.pos, obj.orientation)
+                k += 1
 
     def update(self, positions_by_segment):
         # For each segment
