@@ -15,6 +15,9 @@ from seekers.things_seeker import Things
 
 from verysmall.msg import game_topic
 
+from seekers.new_seeker import NewSeeker
+from seekers.simple_object_detector import SimpleObjectDetector
+
 # Top level imports
 import os
 old_path = sys.path[0]
@@ -31,7 +34,7 @@ HEIGHT = 1
 class Vision:
 
     def __init__(self, camera, adv_robots, home_color, home_robots,
-    home_tag="aruco", params_file_name="", colors_params = "", method=""):
+                    home_tag="aruco", params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -121,6 +124,9 @@ class Vision:
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+
+
+        self.new_ball_seeker = NewSeeker(1, SimpleObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -245,12 +251,12 @@ class Vision:
                             'orange': (self.ball_min, self.ball_max)    }
         min, max = thresholds_dic[color]
         windows_out = []
-        for window in windows:
+        for window in windows_in:
             # a window is described by its top left and bottom right corners
             # top left point, bottom right point
             tl, br = window
             sub_img = self.arena_image[tl.x:br.x, tl.y:br.y]
-            sub_img = cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+            sub_img = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
             windows_out.append(self.get_filter(sub_img, min, max))
         return windows_out
 
@@ -333,7 +339,7 @@ class Vision:
 
                 self.update_fps()
 
-                self.send_message(ball=True, home_team=True, adv_team=True)
+                self.new_send_message(self.new_ball_seeker.get_serialized_objects())
 
         self.camera.stop()
         self.camera.capture.release()
@@ -368,6 +374,10 @@ class Vision:
                              self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
                              self.adv_team_orientation, self.adv_team_speed, self.fps)
 
+
+    def new_send_message(self, ball):
+        empty = (np.array([]))*7
+        self.mercury.publish(np.array(ball[1:3]), np.array(ball[3:5]), *empty)
 
 if __name__ == "__main__":
     from threading import Thread
@@ -416,6 +426,6 @@ if __name__ == "__main__":
             v.color_calibrator.run()
             v.load_colors_params()
         elif key == ord('f'):
-            print v.fps, "frames/second"
+            print(v.fps, "frames/second")
 
     cv2.destroyAllWindows()

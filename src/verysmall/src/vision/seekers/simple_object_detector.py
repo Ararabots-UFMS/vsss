@@ -27,7 +27,7 @@ class SimpleObjectDetector():
         """
 
         # Our return value
-        centroids_per_segment = np.array([])
+        obj_per_segment = []
 
         number_of_segments = len(segments)
 
@@ -55,6 +55,6 @@ class SimpleObjectDetector():
                 obj_states_in_this_segment.append(temp_obj_state)
                 self.update_obj_size()
 
-        centroids_per_segment = np.append(centroids_per_segment, obj_states_in_this_segment)
+        obj_per_segment.append(obj_states_in_this_segment)
 
-        return centroids_per_segment
+        return obj_per_segment

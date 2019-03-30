@@ -129,13 +129,13 @@ class Tracker():
         return bbox
 
 class NewSeeker:
-    def __init__(self, num_objects, obj_detector, img_shape):
+    def __init__(self, num_objects, obj_detector):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
         self.segments = []
         self.parent_bboxes = []
-        self.img_shape = img_shape # (w, h) -> cols, lines
+        self.img_shape = None  # (w, h) -> cols, lines
 
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.aruco_update
@@ -153,7 +153,6 @@ class NewSeeker:
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
         self.update(segs)
 
-
     def initialize(self, frames):
         """
             This function should be capable of initialing the state variables
@@ -165,6 +164,9 @@ class NewSeeker:
 
         # first frame
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+
+        self.img_shape = frames[0].shape[:2]
+
         for i,object in enumerate(segs[0]):
             # just assign a object to a tracker
             self.trackers[i].set_pos(object.x, object.y)
@@ -175,8 +177,8 @@ class NewSeeker:
 
     def feed(self, img_segments):
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
-        obj_states_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
-        self.update(obj_states_in_segs)
+        obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
+        self.update(obj_in_segs)
 
     def sort_by_distance_matrix(self, trackers_in_segment, objects_in_segment):
         """
@@ -184,6 +186,8 @@ class NewSeeker:
         :param objects_in_segment:
         :return: Array of positions sorted by trackers in segment
         """
+        #TODO: TEM QUE REFAZER A FUNÇÃO TODA LEVANDO EM CONSIDERAÇÃO AGRUPAMENTO E OBJS, NÃO SÓ POSIÇÕES
+
         # Verify if the two arrays are the same size
         if len(trackers_in_segment) == len(objects_in_segment):
 
@@ -218,33 +222,39 @@ class NewSeeker:
                 self.trackers[k].update(obj.pos, obj.orientation)
 
 
-    def update(self, positions_by_segment):
-        # For each segment
-        for index in range(len(positions_by_segment)):
-            # Build a distance matrix between postion given and segments
-            if len(positions_by_segment[index]) > 1:
-                # Sort the positions with current tracker positions
-                sorted_array = self.sort_by_distance_matrix(self.segments[index], positions_by_segment[index])
+    def update(self, objs_in_segs):
 
-                # Remap position values before update
-                corrected_values = self.mapper(self.segments[index])
+        # Remap position values before update
+        self.mapper(objs_in_segs)
+
+        # For each segment
+        for index in range(len(objs_in_segs)):
+
+
+            # Build a distance matrix between postion given and segments
+            if len(objs_in_segs[index]) > 1:
+
+                # Sort the positions with current tracker positions
+                sorted_array = self.sort_by_distance_matrix(self.segments[index], objs_in_segs[index])
 
                 # Update each tracker
                 for tracker_index in corrected_values:
                     self.trackers[tracker_index].update(sorted_array[tracker_index])
 
-            elif len(positions_by_segment[index]) == 0:
+            elif len(objs_in_segs[index]) == 0:
                 pass # Do nothing in case of empty array
 
             else:
                 # Trivial case
                 # Update only one tracker
-                self.trackers[self.segments[index][0]].update(positions_by_segment[index][0])
+                obj = objs_in_segs[index][0]
+                self.trackers[self.segments[index][0]].update(obj.pos)
 
     def predict_all_windows(self):
         bboxes = []
         for i in range(self.num_objects):
             bboxes.append(self.trackers[i].predict_window())
+        #the fuser function append the self.parent_bboxes and dont return anything
         self.fuser(bboxes)
         return self.parent_bboxes
 
@@ -295,27 +305,21 @@ class NewSeeker:
         for segment in self.segments:
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
 
-    def mapper(self, local_pos):
+    def mapper(self, objs_in_segs):
         """
-            local_positions:    list of positions localized by the objet detector
-                                in each image segment defined by the parent boxes
-            out_put:            list of global_positions of the objects inside
-                                de segments
+            maps the position of the objects in segment to global coordinates
+            objs_in_segs:       list of objects in each segment defined by the parent boxes
+
         """
-        k = len(local_pos)
+
+        k = len(objs_in_segs)
         if k != len(self.parent_bboxes):
             return
-        global_pos = []
         for i in range(k):
-            objs = []
-            seg = local_pos[i]
-            for pos in seg:
-                objs.append(self.parent_bboxes[i].top_left + pos)
-            global_pos.append(objs)
-        return global_pos
+            objs = objs_in_segs[i]
+            for j in range(len(objs)):
+                objs[j].pos += self.parent_bboxes[i].top_left
+
 
     def get_serialized_objects(self):
-        serialized = [self.tracker[i].position.to_list() for i in range(self.num_objects)]
-        # for i in range(self.num_objects):
-        #     serialized.append(self.tracker[i].position.to_list())
-        return serialized
+        return [self.trackers[i].obj.flat() for i in range(self.num_objects)]

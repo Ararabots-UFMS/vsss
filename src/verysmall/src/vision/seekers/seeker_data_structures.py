@@ -78,3 +78,7 @@ class ObjState():
         # For convention the orientation is always taken in relation
         # with the x axis
         self.orientation = theta
+
+    def flat(self):
+        flat_obj = [self.id] + self.pos.to_list() + self.speed.to_list() + [self.orientation]
+        return flat_obj
