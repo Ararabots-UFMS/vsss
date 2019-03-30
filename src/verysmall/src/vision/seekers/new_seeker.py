@@ -167,8 +167,6 @@ class NewSeeker:
             # just assign a object to a tracker
             self.trackers[i].set_pos(object.x, object.y)
 
-        # TODO: set the size of each object into the trackers
-
         # second frame
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
         self.update(segs)
