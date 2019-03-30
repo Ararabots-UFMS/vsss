@@ -109,27 +109,24 @@ class Tracker():
         return self.obj.position + self.obj.speed*dt
 
     def predict_window(self):
-        # l = self.my_seeker.obj_detector.obj_size
-        # tl = self.obj.pos + Vec2(-l, -l)
-        # br = self.obj.pos + Vec2(l,l)
-        # a = self.alpha
-        # # Calculates search region
-        # if self.obj.speed.y < 0:
-        #     tl.y += self.obj.speed.y * alpha
-        #     end_line = self.last_pos[1] + s
-        # else:
-        #     start_line = self.last_pos[1] - s
-        #     end_line = self.last_pos[1] + s + vy * delta_t
-        #
-        # if vx < 0:
-        #     start_col = self.last_pos[0] - s + vx * delta_t
-        #     end_col = self.last_pos[0] + s
-        # else:
-        #     start_col = self.last_pos[0] - s
-        #     end_col = self.last_pos[0] + s + vx * delta_t
-        pass
+        l = self.my_seeker.obj_detector.obj_size / 2.0
+        tl = self.obj.pos + Vec2(-l, -l)
+        br = self.obj.pos + Vec2(l,l)
+        bbox = BoundingBox(tl, br)
+        a = self.alpha
+        dt = time() - self.t
 
+        if self.obj.speed.y < 0:
+            bbox.top_left.y += a * self.obj.speed.y * dt
+        else:
+            bbox.bottom_right.y += a * self.obj.speed.y * dt
 
+        if self.obj.speed.x < 0:
+            bbox.top_left.x += a * self.obj.speed.x * dt
+        else:
+            bbox.bottom_right.x += a * self.obj.speed.x * dt
+
+        return bbox
 
 class NewSeeker:
     def __init__(self, num_objects, obj_detector, img_shape):
