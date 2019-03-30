@@ -29,6 +29,8 @@ class ArucoObjectDetector:
         self.camera_matrix = cam_mtx
         self.distortion_vector = dist_vec
 
+        self.obj_size = -1
+
     def get_aruco_state(self, img, rvec, tvec, degree=False):
         # x axis
         x_axis = np.float32([[0,0,0],[1.0,0,0]]).reshape(-1,3)
@@ -50,6 +52,18 @@ class ArucoObjectDetector:
 
         # returns the center of the aruco marker and its x axis orientation
         return t, orientation_angle
+
+    def update_obj_size(self, obj_rectangle):
+        tl = Vec2(math.inf, math.inf)
+        br = Vec2(-math.inf, -math.inf)
+        for corner in obj_rectangle:
+            tl.x = min(tl.x, corner[0])
+            tl.y = min(tl.y, corner[1])
+            br.x = max(br.x, corner[0])
+            br.y = max(br.y, corner[1])
+
+        wh = br - tl
+        self.obj_size = max(max(wh.x, wh.y), self.obj_size)
 
     def aruco_seek(self, img, degree=False, number_of_tags = None):
         """
@@ -87,6 +101,7 @@ class ArucoObjectDetector:
                 # Finds the original index of the marker before sorting
                 index = np.argwhere(ids == sorted_ids[i])[0,0]
 
+                self.update_obj_size(corners[index])
                 # Estimate the marker's pose
                 rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[ index ], 0.075,
                                 self.camera_matrix, self.distortion_vector)

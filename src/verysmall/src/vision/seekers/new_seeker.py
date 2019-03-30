@@ -71,14 +71,13 @@ class BoundingBox:
     def __rmul__(self, alpha):
         return self.__mul__(alpha)
 
-
-
 class Tracker():
-    def __init__(self, seeker, obj_id=-1):
+    def __init__(self, seeker, obj_id=-1, alpha=1.5):
         self.obj = ObjState(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
+        self.alpha = alpha
 
     def set_id(self, id):
         self.obj.id = id
@@ -96,7 +95,7 @@ class Tracker():
         self.obj.position = position
         t0 = self.t
         self.t = time()
-        self.obj.speed = (1/(self.t - t0))*(old_p - self.obj.position)
+        self.obj.speed = (1/(self.t - t0)) * (old_p - self.obj.position)
         self.obj.orientation = orientation
 
     def predict(self, dt = -1):
@@ -110,17 +109,36 @@ class Tracker():
         return self.obj.position + self.obj.speed*dt
 
     def predict_window(self):
-        return self.bbox
+        # l = self.my_seeker.obj_detector.obj_size
+        # tl = self.obj.pos + Vec2(-l, -l)
+        # br = self.obj.pos + Vec2(l,l)
+        # a = self.alpha
+        # # Calculates search region
+        # if self.obj.speed.y < 0:
+        #     tl.y += self.obj.speed.y * alpha
+        #     end_line = self.last_pos[1] + s
+        # else:
+        #     start_line = self.last_pos[1] - s
+        #     end_line = self.last_pos[1] + s + vy * delta_t
+        #
+        # if vx < 0:
+        #     start_col = self.last_pos[0] - s + vx * delta_t
+        #     end_col = self.last_pos[0] + s
+        # else:
+        #     start_col = self.last_pos[0] - s
+        #     end_col = self.last_pos[0] + s + vx * delta_t
         pass
 
 
+
 class NewSeeker:
-    def __init__(self, num_objects, obj_detector):
+    def __init__(self, num_objects, obj_detector, img_shape):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
         self.segments = []
         self.parent_bboxes = []
+        self.img_shape = img_shape # (w, h) -> cols, lines
 
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.aruco_update
