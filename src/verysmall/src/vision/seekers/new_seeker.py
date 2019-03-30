@@ -140,11 +140,13 @@ class NewSeeker:
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.aruco_update
             self.initialize = self.aruco_initialize
+            self.aruco_table = []
 
     def aruco_initialize(self, frames):
         objects_per_segment = [self.num_objects]
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
         for k,obj in enumerate(segs[0]):
+            self.aruco_table.append(obj.id)
             self.trackers[k].set_id(obj.id)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
 
@@ -209,12 +211,12 @@ class NewSeeker:
 
     def aruco_update(self, objs_by_segment):
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
-        k = 0
         segments = objs_by_segment
         for segment in segments:
             for obj in segment:
+                k = self.aruco_table.index(obj.id)
                 self.trackers[k].update(obj.pos, obj.orientation)
-                k += 1
+
 
     def update(self, positions_by_segment):
         # For each segment
@@ -222,7 +224,7 @@ class NewSeeker:
             # Build a distance matrix between postion given and segments
             if len(positions_by_segment[index]) > 1:
                 # Sort the positions with current tracker positions
-                sorted_array = self.sort_by_distance_matrix(self.segments[index] ,positions_by_segment[index])
+                sorted_array = self.sort_by_distance_matrix(self.segments[index], positions_by_segment[index])
 
                 # Remap position values before update
                 corrected_values = self.mapper(self.segments[index])
