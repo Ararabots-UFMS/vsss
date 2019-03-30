@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import math
+import cv2
 from seeker_data_structures import *
 from time import time
 from aruco_object_detector import ArucoObjectDetector
@@ -30,6 +33,12 @@ class BoundingBox:
         intersect_area = max(0, br_x - tl_x + 1) * max(0, br_y - tl_y + 1)
         return (intersect_area > 0)
 
+    def bound(self, tl_x, tl_y, br_x, br_y):
+        self.top_left.x = max(tl_x, self.top_left.x)
+        self.top_left.y = max(tl_y, self.top_left.y)
+        self.bottom_right.x = min(br_x, self.bottom_right.x)
+        self.bottom_right.y = min(br_y, self.bottom_right.y)
+
     def __add__(self, b):
         tl, br = Vec2(), Vec2()
         tl.x = min(self.top_left.x, b.top_left.x)
@@ -41,11 +50,11 @@ class BoundingBox:
     def __radd__(self, b):
         return self.__add__(b)
 
-    def __iadd__(self, b):
-        self.top_left.x = min(self.top_left.x, b.top_left.x)
-        self.top_left.y = min(self.top_left.y, b.top_left.y)
-        self.bottom_right.x = max(self.bottom_right.x, b.bottom_right.x)
-        self.bottom_right.y = max(self.bottom_right.y, b.bottom_right.y)
+    # def __iadd__(self, b):
+    #     self.top_left.x = min(self.top_left.x, b.top_left.x)
+    #     self.top_left.y = min(self.top_left.y, b.top_left.y)
+    #     self.bottom_right.x = max(self.bottom_right.x, b.bottom_right.x)
+    #     self.bottom_right.y = max(self.bottom_right.y, b.bottom_right.y)
 
     def __str__(self):
         tl = self.top_left
@@ -72,7 +81,7 @@ class BoundingBox:
         return self.__mul__(alpha)
 
 class Tracker():
-    def __init__(self, seeker, obj_id=-1, alpha=1.5):
+    def __init__(self, seeker, obj_id=-1, alpha=2.5):
         self.obj = ObjState(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
@@ -83,19 +92,22 @@ class Tracker():
         self.obj.id = id
 
     def set_pos(self, x, y):
-        self.obj.position.x = x
-        self.obj.position.y = y
+        print("set_pos(%r %r)" % (x, y))
+        self.obj.pos.x = x
+        self.obj.pos.y = y
 
     def set_obj_size(self):
         # TODO:
         pass
 
     def update(self, position, orientation=0.0):
-        old_p = self.obj.position
-        self.obj.position = position
+        old_p = self.obj.pos
+        self.obj.pos = position
+        #print("pos", position)
         t0 = self.t
         self.t = time()
-        self.obj.speed = (1/(self.t - t0)) * (old_p - self.obj.position)
+        self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
+        #print("vel", self.obj.speed)
         self.obj.orientation = orientation
 
     def predict(self, dt = -1):
@@ -110,9 +122,10 @@ class Tracker():
 
     def predict_window(self):
         l = self.my_seeker.obj_detector.obj_size / 2.0
+        
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l,l)
-        bbox = BoundingBox(tl, br)
+        bbox = 2 * BoundingBox(tl, br)
         a = self.alpha
         dt = time() - self.t
 
@@ -126,6 +139,9 @@ class Tracker():
         else:
             bbox.bottom_right.x += a * self.obj.speed.x * dt
 
+        w,h = self.my_seeker.img_shape
+        bbox.bound(0, 0, w, h)
+        print(bbox)
         return bbox
 
 class NewSeeker:
@@ -163,16 +179,21 @@ class NewSeeker:
         objects_per_segment = [self.num_objects]
 
         # first frame
+        cv2.imwrite("frame0.jpg", frames[0])
+        cv2.imwrite("frame1.jpg", frames[1])
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+        h,w = frames[0].shape[:2]
 
-        self.img_shape = frames[0].shape[:2]
-
+        self.img_shape = (w,h)
+        #print("segs[0]", segs[0])
         for i,object in enumerate(segs[0]):
             # just assign a object to a tracker
-            self.trackers[i].set_pos(object.x, object.y)
+            self.trackers[i].set_pos(object.pos.x, object.pos.y)
 
         # second frame
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
+        self.segments = [[i for i in range(self.num_objects)]]
+        self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
     def feed(self, img_segments):
@@ -225,12 +246,13 @@ class NewSeeker:
     def update(self, objs_in_segs):
 
         # Remap position values before update
+        #print(objs_in_segs)
         self.mapper(objs_in_segs)
+        #print(objs_in_segs)
 
         # For each segment
         for index in range(len(objs_in_segs)):
-
-
+            # TODO: CONSERTAR SORT BY DISTANCE MATRIX NAO ESTA FAZENDO O AGRUPAMENTO
             # Build a distance matrix between postion given and segments
             if len(objs_in_segs[index]) > 1:
 
@@ -248,6 +270,7 @@ class NewSeeker:
                 # Trivial case
                 # Update only one tracker
                 obj = objs_in_segs[index][0]
+                
                 self.trackers[self.segments[index][0]].update(obj.pos)
 
     def predict_all_windows(self):
@@ -285,11 +308,12 @@ class NewSeeker:
             :param bboxes: list(BoundingBox)
             :param bboxes_indexes: list(int)
         """
-        tl = vec2(math.inf, math.inf)
-        br = vec2(-math.inf, -math.inf)
+        tl = Vec2(np.inf, np.inf)
+        br = Vec2(-np.inf, -np.inf)
         b = BoundingBox(tl, br)
         for i in bboxes_indexes:
-            b += bboxes[i]
+            b = b + bboxes[i]
+
         return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes):
@@ -297,7 +321,7 @@ class NewSeeker:
         intersections = np.zeros((n, n))
 
         for i in range(n):
-            for j in range(i+1,n):
+            for j in range(i,n):
                 intersections[i,j] = int(bboxes[i].intersect(bboxes[j]))
 
         self.parent_bboxes = []
@@ -318,7 +342,8 @@ class NewSeeker:
         for i in range(k):
             objs = objs_in_segs[i]
             for j in range(len(objs)):
-                objs[j].pos += self.parent_bboxes[i].top_left
+                #print(objs[j].pos, "+", self.parent_bboxes[i][0])
+                objs[j].pos = objs[j].pos + self.parent_bboxes[i][0]
 
 
     def get_serialized_objects(self):

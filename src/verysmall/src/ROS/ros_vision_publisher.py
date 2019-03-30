@@ -26,8 +26,8 @@ class RosVisionPublisher:
         # else is only a publisher
         self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
 
-    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed,
-                enemies_pos, enemies_orientation, enemies_speed, fps):
+    def publish(self, ball_pos, ball_speed, team_pos =np.array([]), team_orient =np.array([]), team_speed =np.array([]),
+                enemies_pos =np.array([]), enemies_orientation =np.array([]), enemies_speed =np.array([]), fps=0.0):
 
         """
             This function publishes in the things position topic

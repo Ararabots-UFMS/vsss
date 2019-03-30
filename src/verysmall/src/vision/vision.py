@@ -12,11 +12,14 @@ from vision_utils.color_segmentation import ColorSegmentation
 
 from seekers.things_seeker import HawkEye
 from seekers.things_seeker import Things
+from seekers.seeker_data_structures import Vec2
 
 from verysmall.msg import game_topic
 
 from seekers.new_seeker import NewSeeker
 from seekers.simple_object_detector import SimpleObjectDetector
+from seekers.kmeans_object_detector import KmeansObjectDetector
+from seekers.aruco_object_detector import ArucoObjectDetector
 
 # Top level imports
 import os
@@ -103,7 +106,7 @@ class Vision:
             self.pipeline = self.color_seg_pipeline
             self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
-            print "Method not recognized!"
+            print("Method not recognized!")
 
         if self.params_file_name != "":
             self.load_params()
@@ -126,7 +129,7 @@ class Vision:
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
 
-        self.new_ball_seeker = NewSeeker(1, SimpleObjectDetector())
+        self.new_ball_seeker = NewSeeker(1, ArucoObjectDetector(camera.camera_matrix, camera.dist_vector, 5))
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -245,18 +248,20 @@ class Vision:
 
     def color_seg(self, windows_in, color):
         """ Wait until the color parameters are used """
-        self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
-        thresholds_dic = {  'blue': (self.blue_min, self.blue_max),
-                            'yellow': (self.yellow_min, self.yellow_max),
-                            'orange': (self.ball_min, self.ball_max)    }
+        #self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+        thresholds_dic = {'blue': (self.blue_min, self.blue_max),
+                           'yellow': (self.yellow_min, self.yellow_max),
+                           'orange': (self.ball_min, self.ball_max)}
         min, max = thresholds_dic[color]
         windows_out = []
         for window in windows_in:
             # a window is described by its top left and bottom right corners
             # top left point, bottom right point
             tl, br = window
-            sub_img = self.arena_image[tl.x:br.x, tl.y:br.y]
-            sub_img = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
+
+            sub_img = self.arena_image[int(tl.y):int(br.y), int(tl.x):int(br.x)]
+            self.sub_img = sub_img
+            sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2HSV)
             windows_out.append(self.get_filter(sub_img, min, max))
         return windows_out
 
@@ -307,9 +312,10 @@ class Vision:
         self.warp_perspective()
         self.set_dark_border()
         h, w, _ = self.arena_image.shape
-        br = Vec2(h, w)
+        br = Vec2(w, h)
 
         frame0 = self.color_seg([(tl, br)], color)[0]
+        cv2.waitKey(0)
         frames.append(frame0)
 
         self.raw_image = self.camera.read()
@@ -332,10 +338,8 @@ class Vision:
                 self.set_dark_border()
 
                 windows = self.new_ball_seeker.predict_all_windows()
-                segments = self.color_seg(windows, 'orange')
+                segments = self.color_seg(windows, 'yellow')
                 self.new_ball_seeker.feed(segments)
-                ball_info = self.new_ball_seeker.get_serialized_objects()
-                #self.computed_frames += 1
 
                 self.update_fps()
 
@@ -377,7 +381,7 @@ class Vision:
 
     def new_send_message(self, ball):
         empty = (np.array([]))*7
-        self.mercury.publish(np.array(ball[1:3]), np.array(ball[3:5]), *empty)
+        self.mercury.publish(np.array(ball[1:3]), np.array(ball[3:5]))
 
 if __name__ == "__main__":
     from threading import Thread
@@ -395,7 +399,7 @@ if __name__ == "__main__":
     arena_params, colors_params, method="color_segmentation")
     v.game_on = True
 
-    t = Thread(target=v.run, args=())
+    t = Thread(target=v.run_v2, args=())
     t.daemon = True
     t.start()
 
@@ -403,6 +407,7 @@ if __name__ == "__main__":
     last_time = time.time()
     cv2.namedWindow('control')
     show = False
+    pinto = False
 
     while True:
         arena = v.arena_image
@@ -410,6 +415,8 @@ if __name__ == "__main__":
         if show:
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
+        if pinto:
+            cv2.imshow('pinto', v.sub_img)
         if key == ord('q'): # exit
             v.pause()
             v.finish = True
@@ -425,6 +432,10 @@ if __name__ == "__main__":
         elif key == ord('g'): # "get color"
             v.color_calibrator.run()
             v.load_colors_params()
+        elif key == ord('p'):
+            pinto = not pinto
+            if not pinto:
+                cv2.destroyWindow("pinto")
         elif key == ord('f'):
             print(v.fps, "frames/second")
 

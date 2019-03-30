@@ -11,10 +11,9 @@ class SimpleObjectDetector():
     def __init__(self):
         self.obj_size = -1
         self.__cnts = None
-        pass
 
-    def update_obj_size(self):
-        *_, w, h = cv2.boudingRect(self.__cnts)
+    def update_obj_size(self, cnt):
+        _, _, w, h = cv2.boundingRect(cnt)
         self.obj_size = max(max(w,h), self.obj_size)
 
     def seek(self, segments, objects_per_segment):
@@ -32,10 +31,8 @@ class SimpleObjectDetector():
         number_of_segments = len(segments)
 
         # Iterate over segments
-        for index in xrange(number_of_segments):
-
+        for index in range(number_of_segments):
             self.__cnts = cv2.findContours(segments[index], cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
-
             c_x, c_y = None, None
 
             obj_states_in_this_segment = []
@@ -49,12 +46,14 @@ class SimpleObjectDetector():
                     c_x = int(M['m10'] / M['m00'])
                     c_y = int(M['m01'] / M['m00'])
 
-                temp_obj_state = ObjState()
-                temp_obj_state.set_pos(c_x, c_y)
+                    temp_obj_state = ObjState()
+                    temp_obj_state.set_pos(c_x, c_y)
+    
+                    obj_states_in_this_segment.append(temp_obj_state)
+                    self.update_obj_size(cnt)
 
-                obj_states_in_this_segment.append(temp_obj_state)
-                self.update_obj_size()
+                if len(obj_states_in_this_segment) == objects_per_segment[index]:
+                    break
 
-        obj_per_segment.append(obj_states_in_this_segment)
-
+            obj_per_segment.append(obj_states_in_this_segment)
         return obj_per_segment

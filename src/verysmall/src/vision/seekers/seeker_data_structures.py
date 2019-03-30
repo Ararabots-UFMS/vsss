@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 
 class Vec2:
@@ -38,6 +39,9 @@ class Vec2:
     def __truediv__(self, alpha):
         return Vec2(self.x/alpha, self.y/alpha)
 
+    def __div__(self, alpha):
+        return Vec2(self.x/alpha, self.y/alpha)
+
     # def __rdiv__(self, alpha):
     #     _v = Vec2(self.x/alpha, self.y/alpha)
     #     return _v
@@ -58,13 +62,13 @@ class Vec2:
         return self.y
 
 class ObjState():
-    def __init__(self, id):
+    def __init__(self, id=0):
         self.id = id
         self.pos = Vec2()
         self.speed = Vec2()
         self.orientation = 0
         # Size should be the largest axis of the object
-        self.size = math.inf
+        self.size = np.inf
 
     def set_pos(self, x, y):
         self.pos.x = x
@@ -82,3 +86,6 @@ class ObjState():
     def flat(self):
         flat_obj = [self.id] + self.pos.to_list() + self.speed.to_list() + [self.orientation]
         return flat_obj
+
+    def __repr__(self):
+        return "ObjsectSegment(id: %r pos: %r speed: %r theta: %r size: %r)" % (self.id, self.pos, self.speed, self.orientation, self.size)

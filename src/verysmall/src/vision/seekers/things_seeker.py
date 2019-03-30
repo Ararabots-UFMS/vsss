@@ -157,7 +157,7 @@ class HawkEye:
             distortion_vector = aux_params[1]
             self.home_team_seeker = ArucoSeeker(camera_matrix, distortion_vector, self.num_robots_home_team)
         else:
-            print "falta implementar"
+            print("falta implementar")
 
         self.adv_team_seeker = GeneralMultObjSeeker(num_robots_adv_team)
 

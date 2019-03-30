@@ -24,7 +24,7 @@ class JsonHandler:
             params_file.close()
         except:
             e = sys.exc_info()[0]
-            print "Error: ", e , sys.path[0] + file_name
+            print("Error: ", e , sys.path[0] + file_name)
 
         if escape:
             dictionary = yaml.safe_load(json.dumps(dictionary))
@@ -45,7 +45,7 @@ class JsonHandler:
             file.close()
         except:
             e = sys.exc_info()[0]
-            print "Erro:", e
+            print("Erro:", e)
             sucess = False
 
         return sucess

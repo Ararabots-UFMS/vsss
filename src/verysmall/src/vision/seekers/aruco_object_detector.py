@@ -66,6 +66,7 @@ class ArucoObjectDetector:
         self.obj_size = max(max(wh.x, wh.y), self.obj_size)
 
     def aruco_seek(self, img, degree=False, number_of_tags = None):
+        # TODO: nao esta identificando a tag aruco
         """
         Receives an image and the number of tags in it, the applies the aruco seeker to identify tags and returns
         tags from segment.
@@ -130,12 +131,12 @@ class ArucoObjectDetector:
         """
 
         # Our return value
-        centroids_per_segment = np.array([])
+        centroids_per_segment = []
 
         number_of_segments = len(segments)
 
         # Iterate over segments
         for index in range(number_of_segments):
-            centroids_per_segment = np.append(centroids_per_segment, self.aruco_seek(segments[index], objects_per_segment[index]))
+            centroids_per_segment.append(self.aruco_seek(segments[index], objects_per_segment[index]))
 
         return centroids_per_segment

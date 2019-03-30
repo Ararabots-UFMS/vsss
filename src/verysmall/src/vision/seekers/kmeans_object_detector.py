@@ -1,14 +1,20 @@
 import numpy as np
 import cv2
 from seeker_data_structures import *
+from sklearn.cluster import KMeans
 
 class KmeansObjectDetector():
     """A simple detector using find contours
         :param : None"""
     def __init__(self):
+        self.obj_size = -1
         self.max_iter = 30
         self.number_of_jobs = 1
         self.distance_threshold = 2.5
+
+    def update_obj_size(self, cnt):
+        _, _, w, h = cv2.boundingRect(cnt)
+        self.obj_size = max(max(w,h), self.obj_size)
 
     def seek(self, segments, objects_per_segment):
         """
@@ -41,9 +47,12 @@ class KmeansObjectDetector():
             if num_cnts > 0:
 
                 cnts_array = np.array(cnts[0]).reshape(-1, 2)
+                self.update_obj_size((cnts[0]))
 
                 for i in range(1, num_cnts):
+
                     cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
+                    self.update_obj_size(cnts[i])
 
                 if cnts_array.shape[0] > objects_per_segment[index]:
                     first_iteration = 1
