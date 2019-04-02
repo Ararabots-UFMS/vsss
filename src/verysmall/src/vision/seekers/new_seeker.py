@@ -236,17 +236,17 @@ class NewSeeker:
 
         trackers = [i for i in range(len(trackers_index_list))]
         objects = [i for i in range(len(objects_list))]
+
+        distances = np.full((n,n), np.inf)
+        for i in range(n):
+            for j in range(n):
+                tracker_pos = self.trackers[trackers[i]].obj.pos
+                obj_pos = objects_list[objects[j]].pos
+                distances[i][j] = abs(tracker_pos - obj_pos)
+
         sorted_objects = [-1 for i in range(n)]
-
         while n > 1:
-            distances = np.full((n,n), np.inf)
-            for i in range(len(trackers)):
-                for j in range(len(objects)):
-                    tracker_pos = self.trackers[trackers[i]].obj.pos
-                    obj_pos = objects_list[objects[j]].pos
-                    distances[i][j] = abs(tracker_pos - obj_pos)
-
-            flat_index = np.argmin(distances)
+            flat_index = np.argmin((distances[trackers,:])[:, objects])
             t_index = int(flat_index / n)
             obj_index = flat_index % n
 
