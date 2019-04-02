@@ -179,7 +179,8 @@ class NewSeeker:
 
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
         h,w = frames[0].shape[:2]
-
+        cv2.imwrite('frame0.png', frames[0])
+        cv2.imwrite('frame1.png', frames[1])
         self.img_shape = (w,h)
         for i,object in enumerate(segs[0]):
             self.trackers[i].set_pos(object.pos.x, object.pos.y)

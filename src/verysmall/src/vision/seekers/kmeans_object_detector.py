@@ -43,33 +43,20 @@ class KmeansObjectDetector():
 
             # Variable to store object positions
             center_of_objects = None
-
+            print num_cnts
             if num_cnts > 0:
 
                 cnts_array = np.array(cnts[0]).reshape(-1, 2)
                 self.update_obj_size((cnts[0]))
 
                 for i in range(1, num_cnts):
-
                     cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
                     self.update_obj_size(cnts[i])
 
                 if cnts_array.shape[0] > objects_per_segment[index]:
-                    first_iteration = 1
-                    if np.all(center_of_objects != None):
-                        first_iteration = 0
-                        kmeans.init = center_of_objects
-
                     kmeans.fit(cnts_array)
                     newObjects = kmeans.cluster_centers_
-
-                    if not first_iteration and np.all(center_of_objects != None):
-                        diff = newObjects - center_of_objects
-                        distances = np.linalg.norm(diff, axis=1)
-                        changes = np.where(distances > self.distance_threshold)[0]
-                        center_of_objects[changes,:] = kmeans.cluster_centers_[changes,:]
-                    else:
-                        center_of_objects = newObjects
+                    center_of_objects = newObjects
 
             obj_states_in_segment = []
             for object_center in center_of_objects:
@@ -77,7 +64,7 @@ class KmeansObjectDetector():
                 x,y = object_center
                 obj_state.set_pos(x, y)
                 obj_states_in_segment.append(obj_state)
-                
+
             # Store found objects in return value
             centroids_per_segment.append(obj_states_in_segment)
 

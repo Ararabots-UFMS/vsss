@@ -129,7 +129,7 @@ class Vision:
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
 
-        self.new_ball_seeker = NewSeeker(1, ArucoObjectDetector(camera.camera_matrix, camera.dist_vector, 5))
+        self.new_ball_seeker = NewSeeker(2, KmeansObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -254,13 +254,14 @@ class Vision:
                            'orange': (self.ball_min, self.ball_max)}
         min, max = thresholds_dic[color]
         windows_out = []
+        self.sub_imgs = []
         for window in windows_in:
             # a window is described by its top left and bottom right corners
             # top left point, bottom right point
             tl, br = window
 
             sub_img = self.arena_image[int(tl.y):int(br.y), int(tl.x):int(br.x)]
-            self.sub_img = sub_img
+            self.sub_imgs.append(sub_img)
             sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2HSV)
             windows_out.append(self.get_filter(sub_img, min, max))
         return windows_out
@@ -327,7 +328,7 @@ class Vision:
 
 
     def run_v2(self):
-        self.initialize_seeker(self.new_ball_seeker, 'orange')
+        self.initialize_seeker(self.new_ball_seeker, 'yellow')
 
         while not self.finish:
             self.last_time = time.time()
@@ -416,7 +417,8 @@ if __name__ == "__main__":
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if pinto:
-            cv2.imshow('pinto', v.sub_img)
+            for i,img in enumerate(v.sub_imgs):
+                cv2.imshow('pinto' + str(i), img)
         if key == ord('q'): # exit
             v.pause()
             v.finish = True
@@ -435,7 +437,8 @@ if __name__ == "__main__":
         elif key == ord('p'):
             pinto = not pinto
             if not pinto:
-                cv2.destroyWindow("pinto")
+                for i in range(len(v.sub_imgs)):
+                    cv2.destroyWindow("pinto"+str(i))
         elif key == ord('f'):
             print(v.fps, "frames/second")
 
