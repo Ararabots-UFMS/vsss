@@ -92,7 +92,6 @@ class Tracker():
         self.obj.id = id
 
     def set_pos(self, x, y):
-        print("set_pos(%r %r)" % (x, y))
         self.obj.pos.x = x
         self.obj.pos.y = y
 
@@ -122,7 +121,7 @@ class Tracker():
 
     def predict_window(self):
         l = self.my_seeker.obj_detector.obj_size / 2.0
-        
+
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l,l)
         bbox = 2 * BoundingBox(tl, br)
@@ -178,16 +177,11 @@ class NewSeeker:
         """
         objects_per_segment = [self.num_objects]
 
-        # first frame
-        cv2.imwrite("frame0.jpg", frames[0])
-        cv2.imwrite("frame1.jpg", frames[1])
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
         h,w = frames[0].shape[:2]
 
         self.img_shape = (w,h)
-        #print("segs[0]", segs[0])
         for i,object in enumerate(segs[0]):
-            # just assign a object to a tracker
             self.trackers[i].set_pos(object.pos.x, object.pos.y)
 
         # second frame
@@ -201,39 +195,6 @@ class NewSeeker:
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
 
-    def sort_by_distance_matrix(self, trackers_in_segment, objects_in_segment):
-        """
-        :param trackers_in_segment:
-        :param objects_in_segment:
-        :return: Array of positions sorted by trackers in segment
-        """
-        #TODO: TEM QUE REFAZER A FUNÇÃO TODA LEVANDO EM CONSIDERAÇÃO AGRUPAMENTO E OBJS, NÃO SÓ POSIÇÕES
-
-        # Verify if the two arrays are the same size
-        if len(trackers_in_segment) == len(objects_in_segment):
-
-            size_of_matrix = len(trackers_in_segment) # Get one of the sizes since is a n x n matrix
-            matrix = np.zeros(shape=(size_of_matrix,size_of_matrix)) # Create the matrix
-
-            tracker_position_array = np.empty(size_of_matrix)
-            sorted_array = np.array([Vec2()]*size_of_matrix)
-
-            for i in range(size_of_matrix): # rows for trackers in segment
-                tracker_position_array[i] = np.inf
-                tracker_index = trackers_in_segment[i]
-
-                for j in range(size_of_matrix): # col for objects founds
-
-                    new_distance = matrix[i][j] = abs(self.trackers[tracker_index].position - objects_in_segment[j])
-                    if new_distance < tracker_position_array[i]:
-                        tracker_position_array[i] = new_distance
-                        sorted_array[i] = objects_in_segment[j]
-
-            return sorted_array
-        else:
-            print("Incorrect size of arrays!")
-            return []
-
     def aruco_update(self, objs_by_segment):
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
         segments = objs_by_segment
@@ -242,36 +203,60 @@ class NewSeeker:
                 k = self.aruco_table.index(obj.id)
                 self.trackers[k].update(obj.pos, obj.orientation)
 
-
     def update(self, objs_in_segs):
-
         # Remap position values before update
-        #print(objs_in_segs)
         self.mapper(objs_in_segs)
-        #print(objs_in_segs)
-
         # For each segment
         for index in range(len(objs_in_segs)):
-            # TODO: CONSERTAR SORT BY DISTANCE MATRIX NAO ESTA FAZENDO O AGRUPAMENTO
             # Build a distance matrix between postion given and segments
-            if len(objs_in_segs[index]) > 1:
-
+            n = len(objs_in_segs[index])
+            if n > 1:
                 # Sort the positions with current tracker positions
-                sorted_array = self.sort_by_distance_matrix(self.segments[index], objs_in_segs[index])
+                t = self.segments[index]
+                o = objs_in_segs[index]
+                sorted_objects = self.cluster_objects_and_trackers(t, o)
 
                 # Update each tracker
-                for tracker_index in corrected_values:
-                    self.trackers[tracker_index].update(sorted_array[tracker_index])
+                for k in range(n):
+                    self.trackers[t[k]].update(sorted_objects[k].pos)
 
             elif len(objs_in_segs[index]) == 0:
                 pass # Do nothing in case of empty array
-
             else:
                 # Trivial case
                 # Update only one tracker
                 obj = objs_in_segs[index][0]
-                
                 self.trackers[self.segments[index][0]].update(obj.pos)
+
+    def cluster_objects_and_trackers(self, trackers_index_list, objects_list):
+        n = len(trackers_index_list)
+        if n != len(objects_list):
+            print("Incorrect size of arrays!")
+            return []
+
+        trackers = [i for i in range(len(trackers_index_list))]
+        objects = [i for i in range(len(objects_list))]
+        sorted_objects = [-1 for i in range(n)]
+
+        while n > 1:
+            distances = np.full((n,n), np.inf)
+            for i in range(len(trackers)):
+                for j in range(len(objects)):
+                    tracker_pos = self.trackers[trackers[i]].obj.pos
+                    obj_pos = objects_list[objects[j]].pos
+                    distances[i][j] = abs(tracker_pos - obj_pos)
+
+            flat_index = np.argmin(distances)
+            t_index = int(flat_index / n)
+            obj_index = flat_index % n
+
+            sorted_objects[trackers[t_index]] = objects_list[objects[obj_index]]
+            del(trackers[t_index])
+            del(objects[obj_index])
+            n -= 1
+
+        sorted_objects[trackers[0]] = objects_list[objects[0]]
+        return sorted_objects
 
     def predict_all_windows(self):
         bboxes = []
