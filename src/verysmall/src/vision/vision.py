@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 import rospy
 import time
+import copy
 from camera.camera import Camera
 from vision_utils.params_setter import ParamsSetter
 from vision_utils.color_segmentation import ColorSegmentation
@@ -129,7 +130,7 @@ class Vision:
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
 
-        self.new_ball_seeker = NewSeeker(2, KmeansObjectDetector())
+        self.new_ball_seeker = NewSeeker(1, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, 1))
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -254,14 +255,11 @@ class Vision:
                            'orange': (self.ball_min, self.ball_max)}
         min, max = thresholds_dic[color]
         windows_out = []
-        self.sub_imgs = []
         for window in windows_in:
             # a window is described by its top left and bottom right corners
             # top left point, bottom right point
             tl, br = window
-
             sub_img = self.arena_image[int(tl.y):int(br.y), int(tl.x):int(br.x)]
-            self.sub_imgs.append(sub_img)
             sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2HSV)
             windows_out.append(self.get_filter(sub_img, min, max))
         return windows_out
@@ -317,13 +315,21 @@ class Vision:
 
         frame0 = self.color_seg([(tl, br)], color)[0]
         cv2.waitKey(0)
-        frames.append(frame0)
+
+        #aruco initialize
+        frames.append(255-frame0)
+
+        #frames.append(frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         frame1 = self.color_seg([(tl, br)], color)[0]
-        frames.append(frame1)
+        #frames.append(frame1)
+
+        #aruco initialize
+        frames.append(255-frame1)
+
         seeker.initialize(frames)
 
 
@@ -338,8 +344,15 @@ class Vision:
                 self.warp_perspective()
                 self.set_dark_border()
 
-                windows = self.new_ball_seeker.predict_all_windows()
-                segments = self.color_seg(windows, 'yellow')
+                # just to be visible in the outside
+                # debugging thing just for now
+                self.windows = self.new_ball_seeker.predict_all_windows()
+
+                segments = self.color_seg(self.windows, 'yellow')
+
+                for k in range(len(segments)):
+                    segments[i] = 255 - segments[k]
+
                 self.new_ball_seeker.feed(segments)
 
                 self.update_fps()
@@ -417,8 +430,13 @@ if __name__ == "__main__":
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if pinto:
-            for i,img in enumerate(v.sub_imgs):
-                cv2.imshow('pinto' + str(i), img)
+            img = copy.deepcopy(v.arena_image)
+            for window in v.windows:
+                tl = (int(window[0][0]), int(window[0][1]))
+                br = (int(window[1][0]), int(window[1][1]))
+                #print window[0].to_list(), window[1].to_list()
+                cv2.rectangle(img, tl, br, (0, 255, 255), 2)
+            cv2.imshow("bounding-boxes", img)
         if key == ord('q'): # exit
             v.pause()
             v.finish = True
@@ -437,8 +455,7 @@ if __name__ == "__main__":
         elif key == ord('p'):
             pinto = not pinto
             if not pinto:
-                for i in range(len(v.sub_imgs)):
-                    cv2.destroyWindow("pinto"+str(i))
+                cv2.destroyWindow("bounding-boxes")
         elif key == ord('f'):
             print(v.fps, "frames/second")
 

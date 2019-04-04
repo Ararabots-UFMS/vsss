@@ -92,17 +92,14 @@ class Tracker():
         self.obj.id = id
 
     def set_pos(self, x, y):
+        print Vec2(x,y)
         self.obj.pos.x = x
         self.obj.pos.y = y
-
-    def set_obj_size(self):
-        # TODO:
-        pass
 
     def update(self, position, orientation=0.0):
         old_p = self.obj.pos
         self.obj.pos = position
-        #print("pos", position)
+        print("pos", position)
         t0 = self.t
         self.t = time()
         self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
@@ -138,9 +135,8 @@ class Tracker():
         else:
             bbox.bottom_right.x += a * self.obj.speed.x * dt
 
-        w,h = self.my_seeker.img_shape
+        w, h = self.my_seeker.img_shape
         bbox.bound(0, 0, w, h)
-        print(bbox)
         return bbox
 
 class NewSeeker:
@@ -158,14 +154,24 @@ class NewSeeker:
             self.aruco_table = []
 
     def aruco_initialize(self, frames):
+        h, w = frames[0].shape[:2]
+        self.img_shape = (w, h)
+
+        cv2.imwrite('frame0.png', frames[0])
+        cv2.imwrite('frame1.png', frames[1])
+
         objects_per_segment = [self.num_objects]
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+
         for k,obj in enumerate(segs[0]):
             self.aruco_table.append(obj.id)
             self.trackers[k].set_id(obj.id)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
 
+        #second frame
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
+        self.segments = [[i for i in range(self.num_objects)]]
+        self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
         self.update(segs)
 
     def initialize(self, frames):
@@ -181,7 +187,7 @@ class NewSeeker:
         h,w = frames[0].shape[:2]
         cv2.imwrite('frame0.png', frames[0])
         cv2.imwrite('frame1.png', frames[1])
-        self.img_shape = (w,h)
+        self.img_shape = (w, h)
         for i,object in enumerate(segs[0]):
             self.trackers[i].set_pos(object.pos.x, object.pos.y)
 
@@ -198,6 +204,7 @@ class NewSeeker:
 
     def aruco_update(self, objs_by_segment):
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
+        self.mapper(objs_by_segment)
         segments = objs_by_segment
         for segment in segments:
             for obj in segment:

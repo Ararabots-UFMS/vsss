@@ -48,7 +48,9 @@ class ArucoObjectDetector:
         orientation_angle = math.atan2(orientation_vec[1], orientation_vec[0])
 
         if degree == True:
-            orientation_angle *= self.rad_to_degree_factor
+            #TODO:
+            pass
+            #orientation_angle *= self.rad_to_degree_factor
 
         # returns the center of the aruco marker and its x axis orientation
         return t, orientation_angle
@@ -57,17 +59,15 @@ class ArucoObjectDetector:
         tl = Vec2(np.inf, np.inf)
         br = Vec2(-np.inf, -np.inf)
         for corner in obj_rectangle:
-            # TODO ARRUMAR ERRO DE COMPARACAO
             tl.x = min(tl.x, corner[0])
             tl.y = min(tl.y, corner[1])
             br.x = max(br.x, corner[0])
             br.y = max(br.y, corner[1])
 
         wh = br - tl
-        self.obj_size = max(max(wh.x, wh.y), self.obj_size)
+        self.obj_size = abs(wh)
 
     def aruco_seek(self, img, degree=False, number_of_tags = None):
-        # TODO: nao esta identificando a tag aruco
         """
         Receives an image and the number of tags in it, the applies the aruco seeker to identify tags and returns
         tags from segment.
@@ -103,7 +103,7 @@ class ArucoObjectDetector:
                 # Finds the original index of the marker before sorting
                 index = np.argwhere(ids == sorted_ids[i])[0,0]
 
-                self.update_obj_size(corners[index])
+                self.update_obj_size(corners[index][0])
                 # Estimate the marker's pose
                 rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[ index ], 0.075,
                                 self.camera_matrix, self.distortion_vector)
