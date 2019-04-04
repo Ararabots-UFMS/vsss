@@ -28,6 +28,11 @@ class Vec2:
         _v = Vec2(vec.x - self.x, vec.y - self.y)
         return _v
 
+    def __eq__(self, vec):
+        if isinstance(vec, Vec2):
+            return self.x == vec.x and self.y == vec.y
+        return False
+
     def __mul__(self, alpha):
         """ alpha is a scalar number """
         return Vec2(alpha*self.x, alpha*self.y)

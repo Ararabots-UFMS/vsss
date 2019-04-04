@@ -178,6 +178,6 @@ CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 if __name__ == "__main__":
 
     params_file = "../../parameters/COLORS.json"
-    camera = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
+    camera = Camera(sys.argv[1], CAMERA_PARAMS_PATH)
     c = ColorSegmentation(camera, params_file)
     c.run()

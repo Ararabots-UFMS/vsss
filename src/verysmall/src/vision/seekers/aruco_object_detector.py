@@ -54,9 +54,10 @@ class ArucoObjectDetector:
         return t, orientation_angle
 
     def update_obj_size(self, obj_rectangle):
-        tl = Vec2(math.inf, math.inf)
-        br = Vec2(-math.inf, -math.inf)
+        tl = Vec2(np.inf, np.inf)
+        br = Vec2(-np.inf, -np.inf)
         for corner in obj_rectangle:
+            # TODO ARRUMAR ERRO DE COMPARACAO
             tl.x = min(tl.x, corner[0])
             tl.y = min(tl.y, corner[1])
             br.x = max(br.x, corner[0])
