@@ -114,7 +114,7 @@ class Tracker():
         """
         if dt < 0:
             dt = time() - self.t
-        return self.obj.position + self.obj.speed*dt
+        return self.obj.pos + self.obj.speed*dt
 
     def predict_window(self):
         l = self.my_seeker.obj_detector.obj_size / 2.0
@@ -149,11 +149,14 @@ class NewSeeker:
         self.img_shape = None  # (w, h) -> cols, lines
 
         if isinstance(obj_detector, ArucoObjectDetector):
-            self.update = self.aruco_update
-            self.initialize = self.aruco_initialize
+            self.update = self.__aruco_update
+            self.initialize = self.__aruco_initialize
             self.aruco_table = []
+        else:
+            self.update = self.__common_update
+            self.initialize = self.__common_initialize
 
-    def aruco_initialize(self, frames):
+    def __aruco_initialize(self, frames):
         h, w = frames[0].shape[:2]
         self.img_shape = (w, h)
 
@@ -174,7 +177,7 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
         self.update(segs)
 
-    def initialize(self, frames):
+    def __common_initialize(self, frames):
         """
             This function should be capable of initialing the state variables
             from the trackers
@@ -202,7 +205,7 @@ class NewSeeker:
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
 
-    def aruco_update(self, objs_by_segment):
+    def __aruco_update(self, objs_by_segment):
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
         self.mapper(objs_by_segment)
         segments = objs_by_segment
@@ -211,7 +214,7 @@ class NewSeeker:
                 k = self.aruco_table.index(obj.id)
                 self.trackers[k].update(obj.pos, obj.orientation)
 
-    def update(self, objs_in_segs):
+    def __common_update(self, objs_in_segs):
         # Remap position values before update
         self.mapper(objs_in_segs)
         # For each segment
