@@ -5,7 +5,7 @@ from os import environ
 from sys import path
 from fltk import fl_message, FL_WHITE, Fl
 path[0] = environ['ROS_ARARA_ROOT'] + "src/"
-from utils.enum_interfaces import all_interfaces, format_ip
+from utils.enum_interfaces import all_interfaces
 
 
 class ConnectionController:
@@ -39,9 +39,9 @@ class ConnectionController:
 
         for ip in self.ip_list:
             # add item for the choice menu
-            self.view.self_ip_field.add(ip[0]+" - "+format_ip(ip[1]))
+            self.view.self_ip_field.add(ip[0]+" - "+ ip[1])
             # If the ip and interface is correct, this is in fact, the correct network
-            if ip[0] == self.game_opt['ROS_IP'][0] and format_ip(ip[1]) == self.game_opt['ROS_IP'][1]:
+            if ip[0] == self.game_opt['ROS_IP'][0] and ip[1] == self.game_opt['ROS_IP'][1]:
                 # So we store its position for setting the choice menu later
                 item = count
             count += 1
@@ -82,7 +82,7 @@ class ConnectionController:
         """
 
         self.file_master_uri = self.view.ip_field.value()  # getting the value from input
-        formatted_ip_string = format_ip(self.ip[1])  # turns a 4 characters string in to readable ip
+        formatted_ip_string = self.ip[1]  # turns a 4 characters string in to readable ip
         self.game_opt["ROS_MASTER_URI"] = self.file_master_uri
         self.game_opt["ROS_IP"] = [self.ip[0], formatted_ip_string]
 
