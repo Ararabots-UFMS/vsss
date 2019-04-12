@@ -92,7 +92,7 @@ class Tracker():
         self.obj.id = id
 
     def set_pos(self, x, y):
-        print Vec2(x,y)
+        print(Vec2(x,y))
         self.obj.pos.x = x
         self.obj.pos.y = y
 
@@ -140,7 +140,7 @@ class Tracker():
         return bbox
 
 class NewSeeker:
-    def __init__(self, num_objects, obj_detector):
+    def __init__(self, num_objects:int, obj_detector):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
@@ -156,7 +156,7 @@ class NewSeeker:
             self.update = self.__common_update
             self.initialize = self.__common_initialize
 
-    def __aruco_initialize(self, frames):
+    def __aruco_initialize(self, frames:[np.ndarray]) -> None:
         h, w = frames[0].shape[:2]
         self.img_shape = (w, h)
 
@@ -177,7 +177,7 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
         self.update(segs)
 
-    def __common_initialize(self, frames):
+    def __common_initialize(self, frames:[np.ndarray]) -> None:
         """
             This function should be capable of initialing the state variables
             from the trackers
@@ -200,12 +200,12 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
-    def feed(self, img_segments):
+    def feed(self, img_segments:[np.ndarray]) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
 
-    def __aruco_update(self, objs_by_segment):
+    def __aruco_update(self, objs_by_segment:[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
         self.mapper(objs_by_segment)
         segments = objs_by_segment
@@ -214,7 +214,7 @@ class NewSeeker:
                 k = self.aruco_table.index(obj.id)
                 self.trackers[k].update(obj.pos, obj.orientation)
 
-    def __common_update(self, objs_in_segs):
+    def __common_update(self, objs_in_segs:[ObjState]) -> None:
         # Remap position values before update
         self.mapper(objs_in_segs)
         # For each segment
@@ -239,7 +239,7 @@ class NewSeeker:
                 obj = objs_in_segs[index][0]
                 self.trackers[self.segments[index][0]].update(obj.pos)
 
-    def cluster_objects_and_trackers(self, trackers_index_list, objects_list):
+    def cluster_objects_and_trackers(self, trackers_index_list:[int], objects_list:[ObjState]) -> [int]:
         n = len(trackers_index_list)
         if n != len(objects_list):
             print("Incorrect size of arrays!")
@@ -269,7 +269,7 @@ class NewSeeker:
         sorted_objects[trackers[0]] = objects_list[objects[0]]
         return sorted_objects
 
-    def predict_all_windows(self):
+    def predict_all_windows(self) -> [(tuple)]:
         bboxes = []
         for i in range(self.num_objects):
             bboxes.append(self.trackers[i].predict_window())
@@ -277,7 +277,7 @@ class NewSeeker:
         self.fuser(bboxes)
         return self.parent_bboxes
 
-    def get_intersections(self, intersection_matrix, vertex_index, visited):
+    def get_intersections(self, intersection_matrix:np.ndarray, vertex_index:[int], visited:[int]) -> [int]:
         intersected = []
         if vertex_index not in visited:
             intersected.append(vertex_index)
@@ -288,7 +288,7 @@ class NewSeeker:
                 intersected += self.get_intersections(intersection_matrix, v, visited)
         return intersected
 
-    def get_unions(self, intersection_matrix):
+    def get_unions(self, intersection_matrix:np.ndarray):
         m = intersection_matrix
         n = self.num_objects
         intersections = []
@@ -298,21 +298,18 @@ class NewSeeker:
                 intersections.append(self.get_intersections(m, v, visited))
         return intersections
 
-    def get_parent_bbox(self, bboxes, bboxes_indexes):
+    def get_parent_bbox(self, bboxes:[BoundingBox], bboxes_indexes:[int]) -> tuple:
         """
             This function creates a bouding box that includes all bbox in bboxes
-            :param bboxes: list(BoundingBox)
-            :param bboxes_indexes: list(int)
         """
-        tl = Vec2(np.inf, np.inf)
-        br = Vec2(-np.inf, -np.inf)
-        b = BoundingBox(tl, br)
+        b = BoundingBox(Vec2(np.inf, np.inf), Vec2(-np.inf, -np.inf))
         for i in bboxes_indexes:
             b = b + bboxes[i]
 
         return (b.top_left, b.bottom_right)
 
-    def fuser(self, bboxes):
+    def fuser(self, bboxes:[BoundingBox]) -> None:
+        self.get_parent_bbox()
         n = self.num_objects
         intersections = np.zeros((n, n))
 
@@ -325,20 +322,18 @@ class NewSeeker:
         for segment in self.segments:
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
 
-    def mapper(self, objs_in_segs):
+    def mapper(self, objs_in_segs:[ObjState]) -> None:
         """
             maps the position of the objects in segment to global coordinates
             objs_in_segs:       list of objects in each segment defined by the parent boxes
 
         """
-
         k = len(objs_in_segs)
         if k != len(self.parent_bboxes):
             return
         for i in range(k):
             objs = objs_in_segs[i]
             for j in range(len(objs)):
-                #print(objs[j].pos, "+", self.parent_bboxes[i][0])
                 objs[j].pos = objs[j].pos + self.parent_bboxes[i][0]
 
 
