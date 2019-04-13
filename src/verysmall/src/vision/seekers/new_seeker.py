@@ -229,7 +229,7 @@ class NewSeeker:
                 intersected += self.get_intersections(intersection_matrix, v, visited)
         return intersected
 
-    def get_unions(self, intersection_matrix:np.ndarray):
+    def get_unions(self, intersection_matrix:np.ndarray) -> list:
         m = intersection_matrix
         n = self.num_objects
         intersections = []
@@ -238,7 +238,7 @@ class NewSeeker:
             if v not in visited:
                 intersections.append(self.get_intersections(m, v, visited))
         return intersections
-
+    
     def get_parent_bbox(self, bboxes:[BoundingBox], bboxes_indexes:[int]) -> tuple:
         """
             This function creates a bouding box that includes all bbox in bboxes
