@@ -7,10 +7,10 @@ from seeker_data_structures import *
 from time import time
 from aruco_object_detector import ArucoObjectDetector
 from simple_object_detector import SimpleObjectDetector
-
+from obj_detector import ObjDetector
 
 class BoundingBox:
-    def __init__(self, tl=Vec2(), br=Vec2()):
+    def __init__(self, tl:Vec2 = Vec2(), br:Vec2 = Vec2()):
         self.top_left = tl
         self.bottom_right = br
 
@@ -18,11 +18,11 @@ class BoundingBox:
         """ converts bounding box to list like this [[tl_x tl_y], [br_x, br_y]]"""
         return [self.top_left.to_list(), self.bottom_right.to_list()]
 
-    def size(self):
+    def size(self) -> (float, float):
         """ returns the width and height of the bounding box """
         return self.bottom_right.x - self.top_left.x, self.bottom_right.y - self.top_left.y
 
-    def intersect(self, bbox):
+    def intersect(self, bbox) -> bool:
         """ returns if the bounding box passed as argument intersects
             this bounding box """
         tl_x = max(self.top_left.x, bbox.top_left.x)
@@ -33,7 +33,7 @@ class BoundingBox:
         intersect_area = max(0, br_x - tl_x + 1) * max(0, br_y - tl_y + 1)
         return (intersect_area > 0)
 
-    def bound(self, tl_x, tl_y, br_x, br_y):
+    def bound(self, tl_x, tl_y, br_x, br_y) -> None:
         self.top_left.x = max(tl_x, self.top_left.x)
         self.top_left.y = max(tl_y, self.top_left.y)
         self.bottom_right.x = min(br_x, self.bottom_right.x)
@@ -56,17 +56,17 @@ class BoundingBox:
     #     self.bottom_right.x = max(self.bottom_right.x, b.bottom_right.x)
     #     self.bottom_right.y = max(self.bottom_right.y, b.bottom_right.y)
 
-    def __str__(self):
+    def __str__(self) -> str:
         tl = self.top_left
         br = self.bottom_right
         return "[[%r, %r], [%r, %r]]" % (tl.x, tl.y, br.x, br.y)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         tl = self.top_left
         br = self.bottom_right
         return "BoundingBox(Vec2(%r, %r), Vec2(%r, %r))" % (tl.x, tl.y, br.x, br.y)
 
-    def __mul__(self, alpha):
+    def __mul__(self, alpha:float):
         """ alpha is a scalar number """
         center = (self.top_left + self.bottom_right) / 2.0
         diff = self.bottom_right - self.top_left
@@ -77,70 +77,11 @@ class BoundingBox:
         br.x, br.y = int(br.x), int(br.y)
         return BoundingBox(tl, br)
 
-    def __rmul__(self, alpha):
+    def __rmul__(self, alpha:float):
         return self.__mul__(alpha)
-
-class Tracker():
-    def __init__(self, seeker, obj_id=-1, alpha=2.5):
-        self.obj = ObjState(obj_id)
-        self.t = 0.0
-        self.bbox = BoundingBox()
-        self.my_seeker = seeker
-        self.alpha = alpha
-
-    def set_id(self, id):
-        self.obj.id = id
-
-    def set_pos(self, x, y):
-        print(Vec2(x,y))
-        self.obj.pos.x = x
-        self.obj.pos.y = y
-
-    def update(self, position, orientation=0.0):
-        old_p = self.obj.pos
-        self.obj.pos = position
-        print("pos", position)
-        t0 = self.t
-        self.t = time()
-        self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
-        #print("vel", self.obj.speed)
-        self.obj.orientation = orientation
-
-    def predict(self, dt = -1):
-        """
-            This function predicts the next object position given a time step dt
-            :param dt : float
-            :return position : vec2
-        """
-        if dt < 0:
-            dt = time() - self.t
-        return self.obj.pos + self.obj.speed*dt
-
-    def predict_window(self):
-        l = self.my_seeker.obj_detector.obj_size / 2.0
-
-        tl = self.obj.pos + Vec2(-l, -l)
-        br = self.obj.pos + Vec2(l,l)
-        bbox = 2 * BoundingBox(tl, br)
-        a = self.alpha
-        dt = time() - self.t
-
-        if self.obj.speed.y < 0:
-            bbox.top_left.y += a * self.obj.speed.y * dt
-        else:
-            bbox.bottom_right.y += a * self.obj.speed.y * dt
-
-        if self.obj.speed.x < 0:
-            bbox.top_left.x += a * self.obj.speed.x * dt
-        else:
-            bbox.bottom_right.x += a * self.obj.speed.x * dt
-
-        w, h = self.my_seeker.img_shape
-        bbox.bound(0, 0, w, h)
-        return bbox
-
+        
 class NewSeeker:
-    def __init__(self, num_objects:int, obj_detector):
+    def __init__(self, num_objects:int, obj_detector:ObjDetector):
         self.num_objects = num_objects
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
@@ -339,3 +280,61 @@ class NewSeeker:
 
     def get_serialized_objects(self):
         return [self.trackers[i].obj.flat() for i in range(self.num_objects)]
+
+
+class Tracker():
+    def __init__(self, seeker:NewSeeker, obj_id:int = -1, alpha:float = 2.5):
+        self.obj = ObjState(obj_id)
+        self.t = 0.0
+        self.bbox = BoundingBox()
+        self.my_seeker = seeker
+        self.alpha = alpha
+
+    def set_id(self, id:int) -> None:
+        self.obj.id = id
+
+    def set_pos(self, x, y) -> None:
+        self.obj.pos.x = x
+        self.obj.pos.y = y
+
+    def update(self, position:Vec2, orientation:float = 0.0):
+        old_p = self.obj.pos
+        self.obj.pos = position
+        print("pos", position)
+        t0 = self.t
+        self.t = time()
+        self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
+        self.obj.orientation = orientation
+
+    def predict(self, dt:int = -1) -> Vec2:
+        """
+            This function predicts the next object position given a time step dt
+            :param dt : float
+            :return position : vec2
+        """
+        if dt < 0:
+            dt = time() - self.t
+        return self.obj.pos + self.obj.speed*dt
+
+    def predict_window(self):
+        l = self.my_seeker.obj_detector.obj_size / 2.0
+
+        tl = self.obj.pos + Vec2(-l, -l)
+        br = self.obj.pos + Vec2(l, l)
+        bbox = 2 * BoundingBox(tl, br)
+        a = self.alpha
+        dt = time() - self.t
+
+        if self.obj.speed.y < 0:
+            bbox.top_left.y += a * self.obj.speed.y * dt
+        else:
+            bbox.bottom_right.y += a * self.obj.speed.y * dt
+
+        if self.obj.speed.x < 0:
+            bbox.top_left.x += a * self.obj.speed.x * dt
+        else:
+            bbox.bottom_right.x += a * self.obj.speed.x * dt
+
+        w, h = self.my_seeker.img_shape
+        bbox.bound(0, 0, w, h)
+        return bbox

@@ -2,8 +2,9 @@ import numpy as np
 import cv2
 from seeker_data_structures import *
 from sklearn.cluster import KMeans
+from obj_detector import ObjDetector
 
-class KmeansObjectDetector():
+class KmeansObjectDetector(ObjDetector):
     """A simple detector using find contours
         :param : None"""
     def __init__(self):

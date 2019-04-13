@@ -7,10 +7,10 @@ class Vec2:
         self.x = x
         self.y = y
 
-    def to_list(self):
+    def to_list(self) -> list:
         return [self.x, self.y]
 
-    def to_np(self):
+    def to_np(self) -> np.ndarray:
         return np.array(self.to_list())
 
     def __add__(self, vec):
@@ -47,11 +47,6 @@ class Vec2:
     def __div__(self, alpha):
         return Vec2(self.x/alpha, self.y/alpha)
 
-    # def __rdiv__(self, alpha):
-    #     _v = Vec2(self.x/alpha, self.y/alpha)
-    #     return _v
-    # QUESTION: ISSO FAZ SENTIDO ?
-
     def __repr__(self):
         return "Vec2(%r, %r)" % (self.x, self.y)
 
@@ -67,7 +62,7 @@ class Vec2:
         return self.y
 
 class ObjState():
-    def __init__(self, id=0):
+    def __init__(self, id:int = 0):
         self.id = id
         self.pos = Vec2()
         self.speed = Vec2()
@@ -75,20 +70,20 @@ class ObjState():
         # Size should be the largest axis of the object
         self.size = np.inf
 
-    def set_pos(self, x, y):
+    def set_pos(self, x, y) -> None:
         self.pos.x = x
         self.pos.y = y
 
-    def set_speed(self, vx, vy):
+    def set_speed(self, vx, vy) -> None:
         self.speed.x = vx
         self.speed.y = vy
 
-    def set_orientation(self, theta):
+    def set_orientation(self, theta) -> None:
         # For convention the orientation is always taken in relation
         # with the x axis
         self.orientation = theta
 
-    def flat(self):
+    def flat(self) -> list:
         flat_obj = [self.id] + self.pos.to_list() + self.speed.to_list() + [self.orientation]
         return flat_obj
 

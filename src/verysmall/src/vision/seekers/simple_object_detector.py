@@ -1,9 +1,10 @@
 import numpy as np
 import cv2
+from obj_detector import ObjDetector
 from seeker_data_structures import *
 
 
-class SimpleObjectDetector():
+class SimpleObjectDetector(ObjDetector):
     """
         A simple detector using find contours
         :param : None
