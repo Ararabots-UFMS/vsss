@@ -19,3 +19,5 @@ robot/movement/control/\.hidden
 src/CMakeLists\.txt
 
 *.avi
+
+.vsconde/
