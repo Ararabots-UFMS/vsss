@@ -21,3 +21,5 @@ src/CMakeLists\.txt
 *.avi
 
 *.vscode/
+
+*.mypy_cache

@@ -3,6 +3,7 @@
 import numpy as np
 import math
 import cv2
+from typing import List
 from seeker_data_structures import *
 from time import time
 from aruco_object_detector import ArucoObjectDetector
@@ -97,7 +98,7 @@ class NewSeeker:
             self.update = self.__common_update
             self.initialize = self.__common_initialize
 
-    def __aruco_initialize(self, frames:[np.ndarray]) -> None:
+    def __aruco_initialize(self, frames:List[np.ndarray]) -> None:
         h, w = frames[0].shape[:2]
         self.img_shape = (w, h)
 
@@ -118,7 +119,7 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
         self.update(segs)
 
-    def __common_initialize(self, frames:[np.ndarray]) -> None:
+    def __common_initialize(self, frames:List[np.ndarray]) -> None:
         """
             This function should be capable of initialing the state variables
             from the trackers
@@ -141,12 +142,12 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
-    def feed(self, img_segments:[np.ndarray]) -> None:
+    def feed(self, img_segments:List[np.ndarray]) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
 
-    def __aruco_update(self, objs_by_segment:[ObjState]) -> None:
+    def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
         self.mapper(objs_by_segment)
         segments = objs_by_segment
@@ -155,7 +156,7 @@ class NewSeeker:
                 k = self.aruco_table.index(obj.id)
                 self.trackers[k].update(obj.pos, obj.orientation)
 
-    def __common_update(self, objs_in_segs:[ObjState]) -> None:
+    def __common_update(self, objs_in_segs:List[ObjState]) -> None:
         # Remap position values before update
         self.mapper(objs_in_segs)
         # For each segment
@@ -180,7 +181,7 @@ class NewSeeker:
                 obj = objs_in_segs[index][0]
                 self.trackers[self.segments[index][0]].update(obj.pos)
 
-    def cluster_objects_and_trackers(self, trackers_index_list:[int], objects_list:[ObjState]) -> [int]:
+    def cluster_objects_and_trackers(self, trackers_index_list:List[int], objects_list:List[ObjState]) -> List[int]:
         n = len(trackers_index_list)
         if n != len(objects_list):
             print("Incorrect size of arrays!")
@@ -218,7 +219,7 @@ class NewSeeker:
         self.fuser(bboxes)
         return self.parent_bboxes
 
-    def get_intersections(self, intersection_matrix:np.ndarray, vertex_index:[int], visited:[int]) -> [int]:
+    def get_intersections(self, intersection_matrix:np.ndarray, vertex_index:List[int], visited:List[int]) -> List[int]:
         intersected = []
         if vertex_index not in visited:
             intersected.append(vertex_index)
@@ -239,7 +240,7 @@ class NewSeeker:
                 intersections.append(self.get_intersections(m, v, visited))
         return intersections
     
-    def get_parent_bbox(self, bboxes:[BoundingBox], bboxes_indexes:[int]) -> tuple:
+    def get_parent_bbox(self, bboxes:List[BoundingBox], bboxes_indexes:List[int]) -> tuple:
         """
             This function creates a bouding box that includes all bbox in bboxes
         """
@@ -249,7 +250,7 @@ class NewSeeker:
 
         return (b.top_left, b.bottom_right)
 
-    def fuser(self, bboxes:[BoundingBox]) -> None:
+    def fuser(self, bboxes:List[BoundingBox]) -> None:
         self.get_parent_bbox()
         n = self.num_objects
         intersections = np.zeros((n, n))
@@ -263,7 +264,7 @@ class NewSeeker:
         for segment in self.segments:
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
 
-    def mapper(self, objs_in_segs:[ObjState]) -> None:
+    def mapper(self, objs_in_segs:List[ObjState]) -> None:
         """
             maps the position of the objects in segment to global coordinates
             objs_in_segs:       list of objects in each segment defined by the parent boxes
