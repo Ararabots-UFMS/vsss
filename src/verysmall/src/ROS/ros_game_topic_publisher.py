@@ -35,7 +35,7 @@ class GameTopicPublisher:
         # Init message values
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
 
-        for robot_id in xrange(5):
+        for robot_id in range(5):
             role_name = self.robot_params[self.faster_hash[robot_id]]['role']
             self.set_robot_role(robot_id, self.robot_name_roles[role_name])
 
@@ -130,7 +130,15 @@ class GameTopicPublisher:
             freeball_robot,
             meta_robot
         )
-
+    
+    def set_team_color(self, team_color:int):
+        """
+        Sets the running game state
+        :param _game_state: int
+        :return: nothing
+        """
+        self.msg.team_color = team_color
+    
     def set_team_side(self, side):
         """
         Set side of the game, right(1) or left(0)?
@@ -171,7 +179,4 @@ class GameTopicPublisher:
 
 
 if __name__ == '__main__':
-    try:
-        GameTopicPublisher()
-    except rospy.ROSInterruptException:
-        pass
+    pass

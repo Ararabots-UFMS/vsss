@@ -100,7 +100,7 @@ class MainWindowController:
         :return: nothing
         """
         # For each Robot, this loop covers all the inputs
-        for num in xrange(self.view.n_robots):
+        for num in range(self.view.n_robots):
             # Access the robot params dict using a int
             # and stores its reference in a temporary variable
             current_robot = self.robot_params[self.faster_hash[num]]
@@ -245,13 +245,13 @@ class MainWindowController:
             self.view.play_button.label("Parar")
             self.view.play_button.playing = not self.view.play_button.playing
 
-    def on_color_change(self, ptr):
+    def on_color_change(self, ptr:int):
         """
         This function change the team color in the game_opt to the selected one
         :param ptr: pointer of the widget
         :return: nothing
         """
-        self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
+        self.pub.set_team_color(ptr.value() + 1)
         self.game_opt["time"] = ptr.value()
         self.set_robot_plot_color(ptr.value())
 
