@@ -3,7 +3,7 @@
 import numpy as np
 import math
 import cv2
-from typing import List
+from typing import List, Tuple
 from seeker_data_structures import *
 from time import time
 from aruco_object_detector import ArucoObjectDetector
@@ -19,7 +19,7 @@ class BoundingBox:
         """ converts bounding box to list like this [[tl_x tl_y], [br_x, br_y]]"""
         return [self.top_left.to_list(), self.bottom_right.to_list()]
 
-    def size(self) -> (float, float):
+    def size(self) -> Tuple[float, float]:
         """ returns the width and height of the bounding box """
         return self.bottom_right.x - self.top_left.x, self.bottom_right.y - self.top_left.y
 
@@ -251,7 +251,6 @@ class NewSeeker:
         return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes:List[BoundingBox]) -> None:
-        self.get_parent_bbox()
         n = self.num_objects
         intersections = np.zeros((n, n))
 
