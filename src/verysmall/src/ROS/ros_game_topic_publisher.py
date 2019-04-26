@@ -130,15 +130,7 @@ class GameTopicPublisher:
             freeball_robot,
             meta_robot
         )
-    
-    def set_team_color(self, team_color:int):
-        """
-        Sets the running game state
-        :param _game_state: int
-        :return: nothing
-        """
-        self.msg.team_color = team_color
-    
+
     def set_team_side(self, side):
         """
         Set side of the game, right(1) or left(0)?
@@ -179,4 +171,7 @@ class GameTopicPublisher:
 
 
 if __name__ == '__main__':
-    pass
+    try:
+        GameTopicPublisher()
+    except rospy.ROSInterruptException:
+        pass

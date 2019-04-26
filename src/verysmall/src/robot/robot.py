@@ -49,6 +49,7 @@ class Robot():
         self.enemies_speed = None
 
         # Receive from game topic
+        self.team_color = None
         self.behaviour_type = None
         self.game_state = 0
         self.role = None

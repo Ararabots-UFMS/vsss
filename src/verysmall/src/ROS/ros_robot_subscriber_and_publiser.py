@@ -39,6 +39,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.meta_robot = data.meta_robot
         self.robot.changed_game_state = True
         self.robot.state_machine = self.robot.strategies[self.robot.role]
+        self.robot.team_color = data.team_color
 
     def read_topic(self, data):
         """

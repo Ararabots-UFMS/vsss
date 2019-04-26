@@ -19,7 +19,7 @@ class Coach:
         self.robot_roles = model.robot_roles
         self.game_opt = model.game_opt
         self.debug_params = model.debug_params
-        self.pub = _game_topic_publisher
+        self.game_topic_pub = _game_topic_publisher
 
         # Fast access array to use a dict as an simple array
         self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
@@ -46,7 +46,7 @@ class Coach:
                 tag = self.robot_params[robot]['tag_number']
                 body = self.robot_params[robot]['body_id']
                 debug = str(self.debug_params["things"][robot])
-                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.pub.get_name() + " " + debug
+                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.game_topic_pub.get_name() + " " + debug
             except KeyError:
                 variables = ""
                 self.robot_params[robot]['active'] = False
@@ -63,8 +63,8 @@ class Coach:
         """
         # TODO: alterar objeto Coach
         # TODO: alterar funcao para receber string e transformar em int para publicar
-        self.pub.set_robot_role(robot_id, role)
-        self.pub.publish()
+        self.game_topic_pub.set_robot_role(robot_id, role)
+        self.game_topic_pub.publish()
 
     def set_robot_parameters(self, robot_id):
         """
@@ -79,7 +79,7 @@ class Coach:
         tag = self.robot_params[robot]['tag_number']
         body = self.robot_params[robot]['body_id']
         debug = str(self.debug_params["things"][robot])
-        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.pub.get_name() + " " + debug
+        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.game_topic_pub.get_name() + " " + debug
 
         self.ros_functions.change_arguments_of_node(robot, variables)
 

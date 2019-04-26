@@ -11,6 +11,7 @@ from coach.Coach import Coach
 import rospy
 import roslaunch
 from utils.camera_loader import CameraLoader
+from random import randint
 """
 Instantiates all the windows, robots, topics and services
 """
@@ -40,18 +41,18 @@ if __name__ == '__main__':
         lc.stop()
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
         
-	lc.start("Carregando nÛ da vis„o")
-        # Launch Vision with another Topic
-        arguments = str(device_index) + " " + str(model.game_opt['time'])
+    lc.start("Carregando n√≥ da vis√£o")
+    # Launch Vision with another Topic
+    arguments = str(device_index) + " " + str(model.game_opt['time'])
 
-        vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
-                                          name='vision', args=arguments)
+    vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
+                                        name='vision', args=arguments)
 
-        # launches the node and stores it in the given memory space
-        vision_process = launch.launch(vision_node)
-        vision_owner = True
+    # launches the node and stores it in the given memory space
+    vision_process = launch.launch(vision_node)
+    vision_owner = True
 
-    game_topic_id = RosUtils.number_of_topic_instances('/game_topic_')
+    game_topic_id = randint(0,99999)
 
     game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
 
