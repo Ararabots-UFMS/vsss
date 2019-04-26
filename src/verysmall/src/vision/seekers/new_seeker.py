@@ -244,10 +244,7 @@ class NewSeeker:
         """
             This function creates a bouding box that includes all bbox in bboxes
         """
-        b = BoundingBox(Vec2(np.inf, np.inf), Vec2(-np.inf, -np.inf))
-        for i in bboxes_indexes:
-            b = b + bboxes[i]
-
+        b = sum([bboxes[i] for i in bboxes_indexes])
         return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes:List[BoundingBox]) -> None:
