@@ -280,12 +280,11 @@ class NewSeeker:
 
 
 class Tracker():
-    def __init__(self, seeker:NewSeeker, obj_id:int = -1, alpha:float = 2.5):
+    def __init__(self, seeker:NewSeeker, obj_id:int = -1):
         self.obj = ObjState(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
         self.my_seeker = seeker
-        self.alpha = alpha
 
     def set_id(self, id:int) -> None:
         self.obj.id = id
@@ -294,13 +293,13 @@ class Tracker():
         self.obj.pos.x = x
         self.obj.pos.y = y
 
-    def update(self, position:Vec2, orientation:float = 0.0):
+    def update(self, position:Vec2, orientation:float = 0.):
         old_p = self.obj.pos
         self.obj.pos = position
         print("pos", position)
         t0 = self.t
         self.t = time()
-        self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
+        self.obj.speed = (1.0/(self.t - t0)) * (self.obj.pos - old_p)
         self.obj.orientation = orientation
 
     def predict(self, dt:int = -1) -> Vec2:
@@ -313,25 +312,22 @@ class Tracker():
             dt = time() - self.t
         return self.obj.pos + self.obj.speed*dt
 
-    def predict_window(self):
+    def predict_window(self, speed_gain:float = 2.5, fat_factor:float = 2.0) -> BoundingBox:
         l = self.my_seeker.obj_detector.obj_size / 2.0
-
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l, l)
-        bbox = 2 * BoundingBox(tl, br)
-        a = self.alpha
+        bbox = fat_factor * BoundingBox(tl, br)
         dt = time() - self.t
 
         if self.obj.speed.y < 0:
-            bbox.top_left.y += a * self.obj.speed.y * dt
+            bbox.top_left.y += speed_gain * self.obj.speed.y * dt
         else:
-            bbox.bottom_right.y += a * self.obj.speed.y * dt
+            bbox.bottom_right.y += speed_gain * self.obj.speed.y * dt
 
         if self.obj.speed.x < 0:
-            bbox.top_left.x += a * self.obj.speed.x * dt
+            bbox.top_left.x += speed_gain * self.obj.speed.x * dt
         else:
-            bbox.bottom_right.x += a * self.obj.speed.x * dt
+            bbox.bottom_right.x += speed_gain * self.obj.speed.x * dt
 
-        w, h = self.my_seeker.img_shape
-        bbox.bound(0, 0, w, h)
+        bbox.bound(0, 0, *self.my_seeker.img_shape)
         return bbox
