@@ -4,7 +4,7 @@ import numpy as np
 import copy
 import os
 
-import vision_module.COLORS
+from vision_module import COLORS
 from vision_module.camera_module.camera import Camera
 
 from utils.json_handler import JsonHandler
@@ -54,7 +54,7 @@ class ColorSegmentation:
                 self.yellow_min = np.asarray(params['hsv_yellow_min']).astype("uint8")
                 self.yellow_max = np.asarray(params['hsv_yellow_max']).astype("uint8")
         else:
-            print("The is no previous params to load")
+            print("There is no previous params to load:", self.params_file )
 
     def write_params(self):
         params = dict()

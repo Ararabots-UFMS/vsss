@@ -146,6 +146,7 @@ class NewSeeker:
     def feed(self, img_segments:List[np.ndarray]) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
+        print(obj_in_segs,"!===!", len(img_segments))
         self.update(obj_in_segs)
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
@@ -158,8 +159,10 @@ class NewSeeker:
                 try:
                     obj = objs_by_segment[index][i]
                     k = self.aruco_table.index(obj.id)
-                    print(self.trackers[k])
+                    print('aruco table:', self.aruco_table)
+                    
                     self.trackers[k].update(obj.pos, obj.orientation)
+                    print("tracker: ",self.trackers[k])
                 except ValueError:
                     print('tag id ', obj.id, 'doesnt exist')
 
@@ -181,6 +184,7 @@ class NewSeeker:
                 # Update each tracker
                 for k in range(n):
                     self.trackers[t[k]].update(sorted_objects[k].pos)
+                    print("tracker: ",self.trackers[k])
 
             elif len(objs_in_segs[index]) == 0:
                 pass # Do nothing in case of empty array
@@ -223,7 +227,7 @@ class NewSeeker:
     def predict_all_windows(self) -> [(tuple)]:
         bboxes = []
         for i in range(self.num_objects):
-            print("pred window:", self.trackers[i].predict_window())
+            #print("pred window:", self.trackers[i].predict_window())
             bboxes.append(self.trackers[i].predict_window())
         #the fuser function append the self.parent_bboxes and dont return anything
         self.fuser(bboxes)
@@ -254,7 +258,9 @@ class NewSeeker:
         """
             This function creates a bouding box that includes all bbox in bboxes
         """
-        b = sum([bboxes[i] for i in bboxes_indexes])
+
+        degenerated  = BoundingBox(Vec2(np.inf, np.inf),Vec2(-np.inf, -np.inf))
+        b = sum([bboxes[i] for i in bboxes_indexes], degenerated)
         return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes:List[BoundingBox]) -> None:
@@ -309,11 +315,14 @@ class Tracker():
 
     def update(self, position:Vec2, orientation:float = 0.):
         old_p = self.obj.pos
+        #print('position que chega', position)
         self.obj.pos = position
-        #print("pos", position)
-        t0 = self.t
-        self.t = time()
-        self.obj.speed = (1.0/(self.t - t0)) * (self.obj.pos - old_p)
+        #print("position que atribui", self.obj.pos)
+        #t0 = self.t
+        #self.t = time()
+        t0 = time()
+        self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
+        self.t = t0
         self.obj.orientation = orientation
 
     def predict(self, dt:int = -1) -> Vec2:

@@ -127,7 +127,8 @@ class Vision:
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
 
-        self.new_ball_seeker = NewSeeker(self.home_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.home_robots))
+        self.new_obj_seeker = NewSeeker(self.home_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.home_robots))
+        #self.new_obj_seeker = NewSeeker(self.home_robots, KmeansObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -286,7 +287,7 @@ class Vision:
 
                 self.attribute_teams()
 
-                self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
+                self.hawk_eye.seek_home_team(self.home_seg, self.home_team)
 
                 self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
 
@@ -314,24 +315,22 @@ class Vision:
         cv2.waitKey(0)
 
         #aruco initialize
-        frames.append(255-frame0)
-
-        #frames.append(frame0)
+        frames.append(255 -frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         frame1 = self.color_seg([(tl, br)], color)[0]
-        #frames.append(frame1)
+        #frames.append(255 -frame1)
 
         #aruco initialize
-        frames.append(255-frame1)
+        frames.append(255 -frame1)
 
         seeker.initialize(frames)
 
 
     def run_v2(self):
-        self.initialize_seeker(self.new_ball_seeker, 'yellow')
+        self.initialize_seeker(self.new_obj_seeker, 'yellow')
 
         while not self.finish:
             self.last_time = time.time()
@@ -343,18 +342,18 @@ class Vision:
 
                 # just to be visible in the outside
                 # debugging thing just for now
-                self.windows = self.new_ball_seeker.predict_all_windows()
+                self.windows = self.new_obj_seeker.predict_all_windows()
 
                 segments = self.color_seg(self.windows, 'yellow')
 
                 for k in range(len(segments)):
                     segments[i] = 255 - segments[k]
 
-                self.new_ball_seeker.feed(segments)
+                self.new_obj_seeker.feed(segments)
 
                 self.update_fps()
 
-                self.new_send_message(self.new_ball_seeker.get_serialized_objects())
+                self.new_send_message(self.new_obj_seeker.get_serialized_objects())
 
         self.camera.stop()
         self.camera.capture.release()
