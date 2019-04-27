@@ -1,8 +1,9 @@
 import numpy as np
 import cv2
-from seeker_data_structures import *
 from sklearn.cluster import KMeans
-from obj_detector import ObjDetector
+
+from vision_module.seekers.seeker_data_structures import *
+from vision_module.seekers.obj_detector import ObjDetector
 
 class KmeansObjectDetector(ObjDetector):
     """A simple detector using find contours
@@ -44,7 +45,7 @@ class KmeansObjectDetector(ObjDetector):
 
             # Variable to store object positions
             center_of_objects = None
-            print num_cnts
+            #print num_cnts
             if num_cnts > 0:
 
                 cnts_array = np.array(cnts[0]).reshape(-1, 2)

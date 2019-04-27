@@ -2,8 +2,9 @@ import numpy as np
 import cv2
 import cv2.aruco as aruco
 import math
-from seeker_data_structures import *
-from obj_detector import ObjDetector
+
+from vision_module.seekers.seeker_data_structures import *
+from vision_module.seekers.obj_detector import ObjDetector
 
 # @author Wellington Castro <wvmcastro>
 

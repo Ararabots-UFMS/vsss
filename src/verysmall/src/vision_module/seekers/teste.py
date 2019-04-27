@@ -1,5 +1,7 @@
 import numpy as np
-from new_seeker import *
+
+from vision_module.seekers.new_seeker import *
+
 seeker = NewSeeker(3,None)
 a = np.zeros((4,4))
 a[0][0] = 1

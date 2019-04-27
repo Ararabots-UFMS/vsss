@@ -1,12 +1,11 @@
 import sys
-sys.path.append('../camera')
-
-from camera import Camera
 import time
 import numpy as np
 import uuid
 import cv2
 import sys
+
+from vision_module.camera_module.camera import Camera
 
 CAMERA_ID = 0
 PARAMS_FILE = ""

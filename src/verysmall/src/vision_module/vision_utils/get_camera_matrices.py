@@ -1,13 +1,13 @@
 #!/usr/bin/python
-import numpy as np
 import glob
 import cv2
 import time
 import sys
 import json
 import os
-sys.path.append('../camera')
-from camera import Camera
+import numpy as np
+
+from vision_module.camera_module.camera import Camera
 
 # @author Wellington Castro <wvmcastro>
 

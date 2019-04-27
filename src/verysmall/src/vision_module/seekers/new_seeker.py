@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import math
 import cv2
-from seeker_data_structures import *
+import numpy as np
 from time import time
-from aruco_object_detector import ArucoObjectDetector
-from simple_object_detector import SimpleObjectDetector
-from obj_detector import ObjDetector
+
+from vision_module.seekers.seeker_data_structures import *
+from vision_module.seekers.aruco_object_detector import ArucoObjectDetector
+from vision_module.seekers.simple_object_detector import SimpleObjectDetector
+from vision_module.seekers.obj_detector import ObjDetector
 
 class BoundingBox:
     def __init__(self, tl:Vec2 = Vec2(), br:Vec2 = Vec2()):
@@ -116,6 +117,7 @@ class NewSeeker:
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
         self.segments = [[i for i in range(self.num_objects)]]
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
+
         self.update(segs)
 
     def __common_initialize(self, frames:[np.ndarray]) -> None:
@@ -146,16 +148,24 @@ class NewSeeker:
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
 
-    def __aruco_update(self, objs_by_segment:[ObjState]) -> None:
+    def __aruco_update(self, objs_by_segment:[[ObjState]]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
         self.mapper(objs_by_segment)
-        segments = objs_by_segment
-        for segment in segments:
-            for obj in segment:
-                k = self.aruco_table.index(obj.id)
-                self.trackers[k].update(obj.pos, obj.orientation)
+
+        for index in range(len(objs_by_segment)):
+            n = len(objs_by_segment[index])
+            for i in range(n):
+                try:
+                    obj = objs_by_segment[index][i]
+                    k = self.aruco_table.index(obj.id)
+                    print(self.trackers[k])
+                    self.trackers[k].update(obj.pos, obj.orientation)
+                except ValueError:
+                    print('tag id ', obj.id, 'doesnt exist')
+
 
     def __common_update(self, objs_in_segs:[ObjState]) -> None:
+        # Remap position values before update
         # Remap position values before update
         self.mapper(objs_in_segs)
         # For each segment
@@ -213,6 +223,7 @@ class NewSeeker:
     def predict_all_windows(self) -> [(tuple)]:
         bboxes = []
         for i in range(self.num_objects):
+            print("pred window:", self.trackers[i].predict_window())
             bboxes.append(self.trackers[i].predict_window())
         #the fuser function append the self.parent_bboxes and dont return anything
         self.fuser(bboxes)
@@ -250,7 +261,7 @@ class NewSeeker:
         return (b.top_left, b.bottom_right)
 
     def fuser(self, bboxes:[BoundingBox]) -> None:
-        self.get_parent_bbox()
+        # self.get_parent_bbox()
         n = self.num_objects
         intersections = np.zeros((n, n))
 
@@ -290,6 +301,9 @@ class Tracker():
         self.my_seeker = seeker
         self.alpha = alpha
 
+    def __repr__(self):
+        return "Tracker:\n---"+str(self.obj.id)+"\n---"+str(self.bbox)
+
     def set_id(self, id:int) -> None:
         self.obj.id = id
 
@@ -300,7 +314,7 @@ class Tracker():
     def update(self, position:Vec2, orientation:float = 0.0):
         old_p = self.obj.pos
         self.obj.pos = position
-        print("pos", position)
+        #print("pos", position)
         t0 = self.t
         self.t = time()
         self.obj.speed = (1/(self.t - t0)) * (self.obj.pos - old_p)
@@ -318,7 +332,6 @@ class Tracker():
 
     def predict_window(self):
         l = self.my_seeker.obj_detector.obj_size / 2.0
-
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l, l)
         bbox = 2 * BoundingBox(tl, br)

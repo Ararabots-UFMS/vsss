@@ -1,12 +1,12 @@
-import numpy as np
 import cv2
 import time
 import math
-
-from aruco_seeker import ArucoSeeker
-from general_object_seeker import GeneralObjSeeker
-from general_mult_obj_seeker import GeneralMultObjSeeker
 import rospy
+import numpy as np
+
+from vision_module.seekers.aruco_seeker import ArucoSeeker
+from vision_module.seekers.general_object_seeker import GeneralObjSeeker
+from vision_module.seekers.general_mult_obj_seeker import GeneralMultObjSeeker
 # @author Wellington Castro <wvmcastro>
 
 # Sorry for these globals, but is good for code reading

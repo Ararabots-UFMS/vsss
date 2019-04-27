@@ -1,14 +1,13 @@
 import sys
-sys.path.append('../../')
-sys.path.append('../')
-
-from utils.json_handler import JsonHandler
-from camera.camera import Camera
 import cv2
 import numpy as np
 import copy
-import COLORS
 import os
+
+import vision_module.COLORS
+from vision_module.camera_module.camera import Camera
+
+from utils.json_handler import JsonHandler
 
 # @author Wellington Castro <wvmcastro>
 

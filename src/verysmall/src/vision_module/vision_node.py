@@ -2,20 +2,18 @@
 import rospy
 import sys
 import cv2
-from camera.camera import Camera
 from threading import Thread
-from vision import Vision
 from time import time
+from enum import Enum
+
+from vision_module.vision import Vision
+from vision_module.camera_module.camera import Camera
 
 # Top level imports
-import os
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
 from ROS.ros_vision_publisher import RosVisionService
 from utils.model import Model
 from utils.camera_loader import CameraLoader
-sys.path[0] = old_path
-from enum import Enum
+
 
 
 class VisionOperations(Enum):
@@ -46,8 +44,8 @@ class VisionNode:
 
         frame_hater = int(1 / 60 * 1000)
 
-        arena_params = root_path + "parameters/ARENA.json"
-        colors_params = root_path + "parameters/COLORS.json"
+        arena_params = "parameters/ARENA.json"
+        colors_params = "parameters/COLORS.json"
 
         try:
             device = int(sys.argv[1])
@@ -57,7 +55,7 @@ class VisionNode:
             model = Model()
             return_type, device = CameraLoader(model.game_opt['camera']).get_index()
 
-        self.camera = Camera(device, root_path + "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
+        self.camera = Camera(device, "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
 
         self.vision = Vision(self.camera, self.adv_robots, self.home_color, self.home_robots, self.home_tag,
                              arena_params, colors_params, method="color_segmentation")

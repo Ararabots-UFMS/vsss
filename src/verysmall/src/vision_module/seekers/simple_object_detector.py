@@ -1,7 +1,8 @@
 import numpy as np
 import cv2
-from obj_detector import ObjDetector
-from seeker_data_structures import *
+
+from vision_module.seekers.obj_detector import ObjDetector
+from vision_module.seekers.seeker_data_structures import *
 
 
 class SimpleObjectDetector(ObjDetector):

@@ -2,19 +2,19 @@
 import rospy
 import sys
 import cv2
-from camera.camera import Camera
-from threading import Thread
-from vision import Vision
-from time import time
 import os
+from time import time
 from enum import Enum
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
+from threading import Thread
+
+from vision_module.vision import Vision
+from vision_module.camera_module.camera import Camera
+
 from ROS.ros_vision_publisher import RosVisionPublisher
 from ROS.ros_vision_publisher import RosVisionService
-sys.path[0] = old_path
 
 from verysmall.msg import things_position
+
 
 class VisionOperations(Enum):
     """

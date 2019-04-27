@@ -20,9 +20,9 @@
 # 	while key != ord('q'):
 # 		cv2.imshow("a",img)
 # 		key = cv2.waitKey(0)
-from new_seeker import NewSeeker
-from seeker_data_structures import Vec2
-from seeker_data_structures import ObjState
+from vision_module.seekers.new_seeker import NewSeeker
+from vision_module.seekers.seeker_data_structures import Vec2
+from vision_module.seekers.seeker_data_structures import ObjState
 
 if __name__ == '__main__':
 	n = 3

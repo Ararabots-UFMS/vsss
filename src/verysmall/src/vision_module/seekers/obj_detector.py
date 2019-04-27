@@ -1,6 +1,7 @@
-from seeker_data_structures import ObjState
 import numpy as np
 from abc import ABC, abstractmethod
+
+from vision_module.seekers.seeker_data_structures import ObjState
 
 # python 3.4+
 

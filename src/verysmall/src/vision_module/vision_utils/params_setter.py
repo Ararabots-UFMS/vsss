@@ -1,17 +1,18 @@
 import sys
-sys.path.append('../')
-
-from camera.camera import Camera
-import COLORS
-import numpy as np
 import cv2
 import time
 import os
+import numpy as np
+
+import vision_module.COLORS
+from vision_module.camera_module.camera import Camera
+
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 0
-CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
-ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
+CAMERA_ID = 1
+
+CAMERA_PARAMS_PATH = "parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+ARENA_PARAMS_PATH = "parameters/ARENA.json"
 
 class ParamsSetter:
 

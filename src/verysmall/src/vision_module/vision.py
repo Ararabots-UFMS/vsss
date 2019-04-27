@@ -1,34 +1,31 @@
 #!/usr/bin/python
 import sys
-sys.path.append('../')
 import COLORS
 import cv2
 import numpy as np
 import rospy
 import time
 import copy
-from camera.camera import Camera
-from vision_utils.params_setter import ParamsSetter
-from vision_utils.color_segmentation import ColorSegmentation
 
-from seekers.things_seeker import HawkEye
-from seekers.things_seeker import Things
-from seekers.seeker_data_structures import Vec2
+from utils.json_handler import JsonHandler
+from ROS.ros_vision_publisher import RosVisionPublisher
+
+from vision_module.camera_module.camera import Camera
+from vision_module.vision_utils.params_setter import ParamsSetter
+from vision_module.vision_utils.color_segmentation import ColorSegmentation
+
+from vision_module.seekers.things_seeker import HawkEye
+from vision_module.seekers.things_seeker import Things
+from vision_module.seekers.seeker_data_structures import Vec2
+
+from vision_module.seekers.new_seeker import NewSeeker
+from vision_module.seekers.simple_object_detector import SimpleObjectDetector
+from vision_module.seekers.kmeans_object_detector import KmeansObjectDetector
+from vision_module.seekers.aruco_object_detector import ArucoObjectDetector
 
 from verysmall.msg import game_topic
 
-from seekers.new_seeker import NewSeeker
-from seekers.simple_object_detector import SimpleObjectDetector
-from seekers.kmeans_object_detector import KmeansObjectDetector
-from seekers.aruco_object_detector import ArucoObjectDetector
 
-# Top level imports
-import os
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
-from utils.json_handler import JsonHandler
-from ROS.ros_vision_publisher import RosVisionPublisher
-sys.path[0] = old_path
 
 # @author Wellington Castro <wvmcastro>
 
@@ -94,8 +91,8 @@ class Vision:
         self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.home_team = [Things() for _ in xrange(home_robots)]
-        self.adv_team =[Things() for _ in xrange(adv_robots)]
+        self.home_team = [Things() for _ in range(home_robots)]
+        self.adv_team =[Things() for _ in range(adv_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -130,7 +127,7 @@ class Vision:
                                 self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
 
-        self.new_ball_seeker = NewSeeker(1, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, 1))
+        self.new_ball_seeker = NewSeeker(self.home_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.home_robots))
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -142,10 +139,10 @@ class Vision:
         # Used when the game state changes to playing
         self.ball.reset()
 
-        for i in xrange(len(self.home_team)):
+        for i in range(len(self.home_team)):
             self.home_team[i].reset()
 
-        for i in xrange(len(self.adv_team)):
+        for i in range(len(self.adv_team)):
             self.adv_team[i].reset()
 
     def start(self):
@@ -401,13 +398,13 @@ if __name__ == "__main__":
     from threading import Thread
 
     home_color = "yellow" # blue or yellow
-    home_robots = 1
+    home_robots = 2
     adv_robots = 2
     home_tag = "aruco"
 
-    arena_params = "../parameters/ARENA.json"
-    colors_params = "../parameters/COLORS.json"
-    camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+    arena_params = "parameters/ARENA.json"
+    colors_params = "parameters/COLORS.json"
+    camera = Camera(sys.argv[1], "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")
