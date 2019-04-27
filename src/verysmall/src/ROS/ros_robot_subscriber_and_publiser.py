@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from verysmall.msg import things_position, game_topic, debug_topic
 import rospy
 import numpy as np
@@ -41,7 +40,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.state_machine = self.robot.strategies[self.robot.role]
         self.robot.team_color = data.team_color
 
-    def read_topic(self, data):
+    def read_topic(self, data) -> None:
         """
         This class formats the things position into np arrays and replaces any nan to None
         :param data: ROS Things position message
@@ -50,18 +49,27 @@ class RosRobotSubscriberAndPublisher:
         self.robot.ball_position = np.nan_to_num(data.ball_pos) / 100.0
         self.robot.ball_speed = np.nan_to_num(data.ball_speed) / 100.0
 
-        self.robot.team_pos = np.nan_to_num(data.team_pos).reshape((5, 2)) / 100.0
-        self.robot.team_orientation = np.nan_to_num(data.team_orientation) / 10000.0
-        self.robot.team_speed = np.nan_to_num(data.team_speed).reshape((5, 2)) / 100.0
+        if(self.robot.team_color == 0): # yellow
+            self.robot.team_pos = np.nan_to_num(data.yellow_pos).reshape((-1, 2)) / 100.0
+            self.robot.team_orientation = np.nan_to_num(data.yellow_orientation) / 10000.0
+            self.robot.team_speed = np.nan_to_num(data.yellow_speed).reshape((-1, 2)) / 100.0
+
+            enemies_position = np.nan_to_num(data.blue_pos).reshape((-1, 2)) / 100.0
+            enemies_orientation = np.nan_to_num(data.blue_orientation) / 10000.0
+            enemies_speed = np.nan_to_num(data.blue_speed).reshape((-1, 2)) / 100.0
+        else: # blue
+            self.robot.team_pos = np.nan_to_num(data.blue_pos).reshape((-1, 2)) / 100.0
+            self.robot.team_orientation = np.nan_to_num(data.blue_orientation) / 10000.0
+            self.robot.team_speed = np.nan_to_num(data.blue_speed).reshape((-1, 2)) / 100.0
+
+            enemies_position = np.nan_to_num(data.yellow_pos).reshape((-1, 2)) / 100.0
+            enemies_orientation = np.nan_to_num(data.yellow_orientation) / 10000.0
+            enemies_speed = np.nan_to_num(data.yellow_speed).reshape((-1, 2)) / 100.0
+
 
         self.robot.position = self.robot.team_pos[self.robot.tag]
         self.robot.orientation = self.robot.team_orientation[self.robot.tag]
         self.robot.speed = self.robot.team_speed[self.robot.tag]
-
-
-        enemies_position = np.nan_to_num(data.enemies_pos).reshape((5, 2)) / 100.0
-        enemies_orientation = np.nan_to_num(data.enemies_orientation) / 10000.0
-        enemies_speed = np.nan_to_num(data.enemies_speed).reshape((5, 2)) / 100.0
 
         self.robot.enemies_position = []
         self.robot.enemies_orientation = []
@@ -92,4 +100,4 @@ class RosRobotSubscriberAndPublisher:
         try:
             self.pub.publish(self.debug_msg)
         except rospy.ROSException as e:
-            rospy.logfatal(msg)
+            rospy.logfatal(e)

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import sys
 sys.path.append('../')
 import COLORS
@@ -6,12 +5,12 @@ import cv2
 import numpy as np
 import rospy
 import time
-from camera.camera import Camera
-from vision_utils.params_setter import ParamsSetter
-from vision_utils.color_segmentation import ColorSegmentation
+from .camera.camera import Camera
+from .vision_utils.params_setter import ParamsSetter
+from .vision_utils.color_segmentation import ColorSegmentation
 
-from seekers.things_seeker import HawkEye
-from seekers.things_seeker import Things
+from .seekers.things_seeker import HawkEye
+from .seekers.things_seeker import Things
 
 from verysmall.msg import game_topic
 
@@ -19,8 +18,8 @@ from verysmall.msg import game_topic
 import os
 old_path = sys.path[0]
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
-from utils.json_handler import JsonHandler
-from ROS.ros_vision_publisher import RosVisionPublisher
+from .utils.json_handler import JsonHandler
+from .ROS.ros_vision_publisher import RosVisionPublisher
 sys.path[0] = old_path
 
 # @author Wellington Castro <wvmcastro>
@@ -31,7 +30,7 @@ HEIGHT = 1
 class Vision:
 
     def __init__(self, camera, adv_robots, home_color, home_robots,
-    home_tag="aruco", params_file_name="", colors_params = "", method=""):
+    yellow_tag="aruco", params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -45,14 +44,14 @@ class Vision:
         self.ball_speed = np.array([[.0, .0]])
 
         # Home team info
-        self.home_team_pos = np.array([[0.0, 0.0]] * 5)
-        self.home_team_orientation = np.array([0.0] * 5)
-        self.home_team_speed = np.array([[0.0,0.0]] * 5)
+        self.yellow_team_pos = np.array([[0.0, 0.0]] * 5)
+        self.yellow_team_orientation = np.array([0.0] * 5)
+        self.yellow_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Adv team info
-        self.adv_team_pos = np.array([[0.0,0.0]] * 5)
-        self.adv_team_orientation = np.array([0.0] * 5)
-        self.adv_team_speed = np.array([[0.0,0.0]] * 5)
+        self.blue_team_pos = np.array([[0.0,0.0]] * 5)
+        self.blue_team_orientation = np.array([0.0] * 5)
+        self.blue_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
         rospy.Subscriber('game_topic_1', game_topic, self.on_game_state_change)
@@ -65,7 +64,7 @@ class Vision:
         self.home_color = home_color
         self.home_robots = home_robots
         self.adv_robots = adv_robots
-        self.home_tag = home_tag
+        self.yellow_tag = yellow_tag
 
         self.arena_vertices = []
         self.arena_size = ()
@@ -77,7 +76,6 @@ class Vision:
         self.fps = None
         self.last_time = None
         self.new_time = None
-        ##self. computed_frames = 0
 
         # Super necessary to compute the robots positions
         self.origin = None
@@ -87,8 +85,8 @@ class Vision:
         self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.home_team = [Things() for _ in xrange(home_robots)]
-        self.adv_team =[Things() for _ in xrange(adv_robots)]
+        self.yellow_team = [Things() for _ in range(home_robots)]
+        self.blue_team =[Things() for _ in range(adv_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -100,7 +98,7 @@ class Vision:
             self.pipeline = self.color_seg_pipeline
             self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
-            print "Method not recognized!"
+            print("Method not recognized!")
 
         if self.params_file_name != "":
             self.load_params()
@@ -116,11 +114,11 @@ class Vision:
         # The hawk eye object will be responsible to locate and identify all
         # objects at the field
         hawk_eye_extra_params = []
-        if self.home_tag == "aruco":
+        if self.yellow_tag == "aruco":
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
-                                self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+                                self.yellow_robots, self.blue_robots, self.arena_image.shape, hawk_eye_extra_params)
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -132,11 +130,11 @@ class Vision:
         # Used when the game state changes to playing
         self.ball.reset()
 
-        for i in xrange(len(self.home_team)):
-            self.home_team[i].reset()
+        for i in range(len(self.yellow_team)):
+            self.yellow_team[i].reset()
 
-        for i in xrange(len(self.adv_team)):
-            self.adv_team[i].reset()
+        for i in range(len(self.blue_team)):
+            self.blue_team[i].reset()
 
     def start(self):
         self.game_on = True
@@ -231,10 +229,8 @@ class Vision:
     def color_seg_pipeline(self):
         """ Wait until the color parameters are used """
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
-
         self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
-
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
 
     def attribute_teams(self):
@@ -262,11 +258,9 @@ class Vision:
                     self.home_seg, self.adv_seg and self.ball_seg """
                 self.pipeline()
 
-                self.attribute_teams()
+                self.hawk_eye.seek_yellow_team(255-self.yellow_seg, self.yellow_team)
 
-                self.hawk_eye.seek_home_team(255-self.home_seg, self.home_team)
-
-                self.hawk_eye.seek_adv_team(self.adv_seg, self.adv_team)
+                self.hawk_eye.seek_blue_team(self.blue_seg, self.blue_team)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
@@ -274,7 +268,7 @@ class Vision:
 
                 self.update_fps()
 
-                self.send_message(ball=True, home_team=True, adv_team=True)
+                self.send_message(ball=True, yellow_team=True, blue_team=True)
 
         self.camera.stop()
         self.camera.capture.release()
@@ -290,24 +284,26 @@ class Vision:
                 orientations_list[id] = thing.orientation
                 speeds_list[id] = thing.speed
 
-    def send_message(self, ball=False, home_team=False, adv_team=False):
+    def send_message(self, ball: bool = False,
+                           yellow_team: bool = False,
+                           blue_team: bool = False) -> None:
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
         if ball:
             self.unpack_things_to_lists([self.ball], self.ball_pos, [[]], self.ball_speed)
 
-        if home_team:
-            self.unpack_things_to_lists(self.home_team, self.home_team_pos,
-                                        self.home_team_orientation, self.home_team_speed)
+        if yellow_team:
+            self.unpack_things_to_lists(self.yellow_team, self.yellow_team_pos,
+                                        self.yellow_team_orientation, self.yellow_team_speed)
 
-        if adv_team:
-            self.unpack_things_to_lists(self.adv_team, self.adv_team_pos,
-                                        self.adv_team_orientation, self.adv_team_speed)
+        if blue_team:
+            self.unpack_things_to_lists(self.blue_team, self.blue_team_pos,
+                                        self.blue_team_orientation, self.blue_team_speed)
 
-        self.mercury.publish(self.ball_pos[0], self.ball_speed[0], self.home_team_pos,
-                             self.home_team_orientation, self.home_team_speed, self.adv_team_pos,
-                             self.adv_team_orientation, self.adv_team_speed, self.fps)
+        self.mercury.publish(self.ball_pos[0], self.ball_speed[0], self.yellow_team_pos,
+                             self.yellow_team_orientation, self.yellow_team_speed, self.blue_team_pos,
+                             self.blue_team_orientation, self.blue_team_speed, self.fps)
 
 
 if __name__ == "__main__":
@@ -357,6 +353,6 @@ if __name__ == "__main__":
             v.color_calibrator.run()
             v.load_colors_params()
         elif key == ord('f'):
-            print v.fps, "frames/second"
+            print(v.fps, "frames/second")
 
     cv2.destroyAllWindows()

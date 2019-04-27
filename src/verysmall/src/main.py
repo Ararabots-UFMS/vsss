@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: latin-1 -*-
 from utils.json_handler import JsonHandler
 from utils.model import Model

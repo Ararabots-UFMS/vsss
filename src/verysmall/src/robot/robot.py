@@ -2,7 +2,7 @@ import rospy
 import sys
 import numpy as np
 import random
-from comunication.sender import Sender
+from .comunication.sender import Sender
 import os
 sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 

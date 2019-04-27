@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import fltk as fl
@@ -25,7 +24,7 @@ class BluetoothManagerView:
         self.new_address = None #used to get address from add window
         self.create_main_title("Bluetooth")
 
-        self.scroll = fl.Fl_Scroll(0,0, self.root.w()-2, self.root.h());
+        self.scroll = fl.Fl_Scroll(0,0, self.root.w()-2, self.root.h())
         self.scroll.box(fl.FL_BORDER_BOX)
         scrollbar = self.scroll.getScrollbar()
         self.scroll.add(self.title)
@@ -43,7 +42,7 @@ class BluetoothManagerView:
         #     self.create_bluetooth_entry("name","address")
         # self.root.end()
         # while fl.Fl.wait() > 0:
-        #     # print self.bluetooths[-1][0].label()
+        #     # print(self.bluetooths[-1][0].label())
         #     if fl.Fl.get_key(ord("q")):#ord pega o numero do caractere dentro da funcd
         #         fl._exit()#sair da janela
         #     elif fl.Fl.get_key(ord("n")):
@@ -178,7 +177,7 @@ class BluetoothManagerView:
         # self.bluetooths[pos][0].
         fl.Fl_delete_widget(self.bluetooths[pos][2])
         fl.Fl_delete_widget(self.bluetooths[pos][3])
-        for i in xrange(pos,len(self.bluetooths)-1):
+        for i in range(pos,len(self.bluetooths)-1):
             self.bluetooths[i] = self.bluetooths[i+1]
             self.bluetooths[i][3].callback(self.bluetooth_delete_button_cb, i)
             # self.bluetooths[i][1] = self.bluetooths[i][1]
@@ -190,7 +189,7 @@ class BluetoothManagerView:
 
     def new_bluetooth_position(self):
         current_height = 0
-        for i in xrange(len(self.bluetooths)):
+        for i in range(len(self.bluetooths)):
             y  = self.proportion_height(7) + current_height
             self.bluetooths[i][0].position(self.bluetooths[i][0].x(),y)
             self.bluetooths[i][1].position(self.bluetooths[i][1].x(),y)
@@ -213,7 +212,6 @@ class BluetoothManagerView:
 
 
     def window_callback(self,ptr):
-        print "shablaudson carai"
         self.view.root.hide()
         return self.bluetooths
 

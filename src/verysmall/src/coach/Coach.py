@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from robot.robot import Robot
 from sys import path
 from os import environ

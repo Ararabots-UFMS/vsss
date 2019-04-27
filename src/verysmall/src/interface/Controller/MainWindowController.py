@@ -1,8 +1,8 @@
 from ..View.MainWindowView import MainWindowView
-from BluetoothManagerController import BluetoothManagerController
-from ConnectionController import ConnectionController
-from DebugController import DebugController
-from RobotParamsController import RobotParamsController
+from .BluetoothManagerController import BluetoothManagerController
+from .ConnectionController import ConnectionController
+from .DebugController import DebugController
+from .RobotParamsController import RobotParamsController
 import fltk as fl
 
 
@@ -81,7 +81,7 @@ class MainWindowController:
         # Multiple callbacks, each for one type of input
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
-        for num in xrange(self.view.n_robots):
+        for num in range(self.view.n_robots):
             self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)

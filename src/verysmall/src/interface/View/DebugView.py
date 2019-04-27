@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import fltk as fl
@@ -93,7 +92,7 @@ class DebugView:
         n = 6
         self.check_robots = [None]*n
         temp_names = ["robo 1", "robo 2", "robo 3", "robo 4","robo 5", "ball"]
-        print temp_names
+        print(temp_names)
         for num in range(0,n/2):
             self.check_robots[num] = fl.Fl_Check_Button(self.proportion_width(10) + self.proportion_width(5) * num * 2,
                                self.proportion_height(32),

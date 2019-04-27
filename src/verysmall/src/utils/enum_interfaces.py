@@ -39,5 +39,5 @@ def format_ip(addr):
 if __name__ == '__main__':
     ifs = all_interfaces()
     for i in ifs:
-        print "%12s   %s" % (i[0], format_ip(i[1]))
+        print("%12s   %s" % (i[0], format_ip(i[1])))
 

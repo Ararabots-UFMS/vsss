@@ -118,7 +118,7 @@ class ParamsSetter:
             pts[i] = (x,y-self.BAR_HEIGHT)
 
     def onMouse_no_mode(self, event, x, y, flags, pts):
-        print x,y
+        print(x,y)
         pass
 
     def sort_clockwise(self, pts):
@@ -217,7 +217,6 @@ class ParamsSetter:
             params['warp_matrix'] = self.matrix_transform.tolist()
             params['arena_size'] = self.arena_size
         if self.vertices_points != []:
-            print "oi"
             params['arena_vertices'] = self.vertices_points
         if not(self.value_min is None):
             params['value_min'] = self.value_min.tolist()
@@ -225,14 +224,14 @@ class ParamsSetter:
         return json_handler.write(params, self.params_file)
 
     def print_manual(self):
-        print "-------------------------------------------"
-        print "A to enter Add point mode"
-        print "E to enter Edit point mode"
-        print "D to enter Delete point mode"
-        print "ESC to exit mode selection"
-        print "S to save"
-        print "Q to quit"
-        print "--------------------------------------------\n"
+        print("-------------------------------------------")
+        print("A to enter Add point mode")
+        print("E to enter Edit point mode")
+        print("D to enter Delete point mode")
+        print("ESC to exit mode selection")
+        print("S to save")
+        print("Q to quit")
+        print("--------------------------------------------\n")
 
     def run(self):
         self.print_manual()
@@ -292,22 +291,22 @@ class ParamsSetter:
                 if value_adjusted == True and value_saved == False:
                     self.save_params()
                     value_saved = True
-                    print "Everything saved!"
+                    print("Everything saved!")
                 else:
                     if warped == True:
                         self.vertices_points = points
                         self.save_params()
-                        print "Warp matrix and vertices saved!"
+                        print("Warp matrix and vertices saved!")
                     else:
                         if len(points) == 4:
                             warped = True
-                            print "Calculating prespective transform"
+                            print("Calculating prespective transform")
                             self.get_matrix_transform(points)
                             points = []
                             mode = self.NO_MODE
-                            print "Done!"
+                            print("Done!")
                         else:
-                            print "Select four points"
+                            print("Select four points")
 
         cv2.destroyWindow('cropper')
 

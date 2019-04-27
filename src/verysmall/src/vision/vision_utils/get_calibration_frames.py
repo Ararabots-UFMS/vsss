@@ -27,9 +27,9 @@ if __name__ == '__main__':
         if key == ord(' '):
             name = uuid.uuid4().hex + ".jpg"
             cv2.imwrite(name, frame)
-            print "Frame saved"
+            print("Frame saved")
         elif key == ord('q'):
-            print "Exiting"
+            print("Exiting")
             break
 
 cv2.destroyAllWindows()

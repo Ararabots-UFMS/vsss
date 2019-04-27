@@ -3,7 +3,7 @@ import os
 import rospy
 import numpy as np
 import math
-from naive_attacker_strategy import NaiveAttacker, MyModel
+from .naive_attacker_strategy import NaiveAttacker, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from movement.functions.movement import Movement
 from utils.json_handler import JsonHandler

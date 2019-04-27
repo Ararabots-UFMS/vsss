@@ -1,4 +1,3 @@
-#!/usr/bin/pythonderp
 # -*- coding: latin-1 -*-
 from ..View.ConnectionView import ConnectionView
 from os import environ

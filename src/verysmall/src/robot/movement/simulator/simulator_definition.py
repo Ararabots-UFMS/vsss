@@ -60,14 +60,14 @@ rightSpeed = 0
 done = False
 
 def printInformation():
-    print "**********************************************"
-    print "         Initializing VSSS simulation         "
-    print "**********************************************"
-    print "Press any key to start:"
-    # print "To change the game state to normal game: n"
-    # print "To change the game state to stop: s"
-    # print "To change the game state to meta: m"
-    # print "To change the game state to penalty: p"
-    # print "To change the game state to free ball: f"
-    print "To draw the ball in mouse position use: g"
-    print "To exit the simulation press: q"
+    print("**********************************************")
+    print("         Initializing VSSS simulation         ")
+    print("**********************************************")
+    print("Press any key to start:")
+    # print("To change the game state to normal game: n")
+    # print("To change the game state to stop: s")
+    # print("To change the game state to meta: m")
+    # print("To change the game state to penalty: p")
+    # print("To change the game state to free ball: f")
+    print("To draw the ball in mouse position use: g")
+    print("To exit the simulation press: q")

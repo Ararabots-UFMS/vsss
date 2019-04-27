@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: latin-1 -*-
 
 from ..View.BluetoothManagerView import BluetoothManagerView

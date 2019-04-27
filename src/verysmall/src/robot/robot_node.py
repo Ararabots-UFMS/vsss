@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import rospy
 import sys
 from robot import Robot

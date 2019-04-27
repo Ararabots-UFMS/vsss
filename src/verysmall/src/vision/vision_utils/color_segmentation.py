@@ -55,7 +55,7 @@ class ColorSegmentation:
                 self.yellow_min = np.asarray(params['hsv_yellow_min']).astype("uint8")
                 self.yellow_max = np.asarray(params['hsv_yellow_max']).astype("uint8")
         else:
-            print "The is no previous params to load"
+            print("The is no previous params to load")
 
     def write_params(self):
         params = dict()
@@ -158,12 +158,12 @@ class ColorSegmentation:
                 self.temp_min = self.yellow_min
                 self.last_key = 'y'
             elif key == ord(' '):
-                print "LAST KEY", self.last_key
+                print("LAST KEY", self.last_key)
                 self.erase_previous()
                 self.visited = []
             elif key == ord('s'):
                 self.write_params()
-                print "saving"
+                print("saving")
             elif key == 27: # no mode
                 self.reset("temp")
                 cv2.setMouseCallback(window_name, self.onMouse_no_mode)

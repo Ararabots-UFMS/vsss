@@ -35,7 +35,7 @@ if __name__ == "__main__":
         # end simulation
         elif key == ord('q'):
             cv2.destroyAllWindows()
-            print "***************Simulation finished***************"
+            print("***************Simulation finished***************")
             break
 
         elif key == ord('s'):

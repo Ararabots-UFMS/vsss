@@ -2,7 +2,7 @@ import sys
 import os
 import rospy
 import numpy as np
-from zagueiro import Zagueiro, MyModel
+from .zagueiro import Zagueiro, MyModel
 sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
 from math import pi
 from movement.functions.movement import Movement

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from Queue import Queue
+from queue import Queue
 from collections import deque
 from verysmall.msg import things_position, debug_topic
 from numpy import nan_to_num, array, asarray, any

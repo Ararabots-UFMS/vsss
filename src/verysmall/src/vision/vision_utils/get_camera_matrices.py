@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import numpy as np
 import glob
 import cv2
@@ -69,10 +68,10 @@ if __name__ == '__main__':
     mapx,mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (nw,nh), 5)
 
     e = get_error(objp, imgpoints, rvecs, tvecs, mtx, dist)
-    print "STD Error:", e
+    print("STD Error:", e)
 
     save = raw_input("Save camera matrices? (y/n): ")
-    print save
+    print(save)
 
     if save == 'y':
         if CAMERA_NAME == "":
@@ -102,7 +101,7 @@ if __name__ == '__main__':
 
 
 
-    print "Showing result, press q to exit"
+    print("Showing result, press q to exit")
     if save == 'y':
         cap = Camera(CAMERA_ID, "../../parameters/CAMERA_"+name+".json")
     else:
@@ -118,5 +117,5 @@ if __name__ == '__main__':
             break
 
     os.system("rm *.jpg")
-    print "all .jpg files removed!"
+    print("all .jpg files removed!")
     cv2.destroyAllWindows()

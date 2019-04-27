@@ -66,7 +66,7 @@ if __name__=="__main__":
                          installation_bash + "\n" +
                          package_bash+ "\n" +
                          "source "+ros_arara_root+"src/parameters/rosmaster.bash"+ "\n" +
-                         "export ROS_PACKAGE_PATH="+path_to_file + "/src/:"+ path_to_ros+"share/"+"\n"
+                         "export ROS_PACKAGE_PATH="+path_to_file + "/src/:"+ path_to_ros+"share/"+"\n"+
                          "#======== END OF ARARABOT SCRIPT ==============\n")
 
     with open(os.path.expanduser('~')+'/.bashrc','w+') as file:

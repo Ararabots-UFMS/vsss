@@ -3,7 +3,7 @@ import math
 import numpy as np
 import rospy
 import time
-from auxiliary import *
+from .auxiliary import *
 import copy
 from sys import path
 from os import environ

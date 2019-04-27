@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import sys
 sys.path.append('../../')
 
@@ -99,7 +98,7 @@ class Camera:
             ret, self.frame = self.capture.read()
         except:
             e = sys.exc_info()[0]
-            print "Erro: %s", e
+            print("Erro: %s", e)
 
         if self.lens_correction:
             self.frame = cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
@@ -113,7 +112,7 @@ class Camera:
             return self.threaded_read()
 
     def load_params(self):
-    	""" Loads the parameters of the camera from a json """
+        """ Loads the parameters of the camera from a json """
         params = self.json_handler.read(self.params_file_name)
 
         """ mapx and mapy are the matrix with the lens correction map """

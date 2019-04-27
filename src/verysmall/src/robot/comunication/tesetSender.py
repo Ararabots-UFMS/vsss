@@ -25,13 +25,13 @@ sleep(2)
 #     elif key == ord('p'):
 #         # for i in xrange(speed0, 255, 10):
 #             # robot.sendPacket(i, i)
-#             # print i
+#             # print(i)
 #             # sleep(0.05)
 #             robot.sendPacket(0, 0)
 #             sleep(0.2)
 #             robot.send_angle_corretion(0, 150)
 #     elif key == ord('r'):
-#         print "Rotating"
+#         print("Rotating")
 #         robot.sendPacket(-25, 25)
 #     elif key == ord('c'):
 #         kp, ki, kd = raw_input("Please type kP kI kD: ").split(' ')
@@ -39,7 +39,7 @@ sleep(2)
 #         ki = float(ki);
 #         kd = float(kd);
 #         robot.send_set_pid_packet(kp, ki, kd)
-#         print "sent!"
+#         print("sent!")
 #     elif key == ord('q'):
 #         cv2.destroyWindow("controle")
 #         break
