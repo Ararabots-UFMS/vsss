@@ -1,8 +1,8 @@
-#!usr/bin/python3
+#!/usr/bin/python3
 import rospy
 import sys
 import cv2
-from camera.camera import Camera
+from camera_module.camera import Camera
 from threading import Thread
 from vision import Vision
 from time import time

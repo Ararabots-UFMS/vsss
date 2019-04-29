@@ -23,7 +23,7 @@ robot.sendPacket(0, 100)
 sleep(2)
 #         robot.send_angle_corretion(3.14/2, -100)
 #     elif key == ord('p'):
-#         # for i in xrange(speed0, 255, 10):
+#         # for i in range(speed0, 255, 10):
 #             # robot.sendPacket(i, i)
 #             # print(i)
 #             # sleep(0.05)

@@ -1,7 +1,7 @@
-#!/usr/bin/env python
 import rospy
 from queue import Queue
 from collections import deque
+#from verysmall.msg import things_position, debug_topic
 from verysmall.msg import things_position, debug_topic
 from numpy import nan_to_num, array, asarray, any
 
@@ -85,7 +85,7 @@ class RosMainWindowSubscriber:
             enemies_orientation = []
             enemies_speed = []
 
-            for i in xrange(5):
+            for i in range(5):
                 if any(data_item.enemies_pos[i]):
                     enemies_position.append(data_item.enemies_pos[i])
                     enemies_orientation.append(data_item.enemies_orientation[i])

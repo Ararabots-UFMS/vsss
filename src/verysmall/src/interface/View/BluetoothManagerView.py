@@ -38,7 +38,7 @@ class BluetoothManagerView:
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
         # self.root.show(len(sys.argv), sys.argv)
-        # for i in xrange(10):
+        # for i in range(10):
         #     self.create_bluetooth_entry("name","address")
         # self.root.end()
         # while fl.Fl.wait() > 0:

@@ -1,7 +1,4 @@
-import sys
-sys.path.append('../')
-
-from camera.camera import Camera
+from ..camera_module.camera import Camera
 import COLORS
 import numpy as np
 import cv2

@@ -181,7 +181,7 @@ class Robot():
     def buffer_mean(self, buffer):
         sum = 0.
         length = len(buffer)
-        for i in xrange(length):
+        for i in range(length):
             sum += buffer[i]
         if length != 0:
             return sum/length

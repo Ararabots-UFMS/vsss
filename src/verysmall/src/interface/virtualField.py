@@ -438,7 +438,7 @@ class virtualField():
         self.robot_tags = [0]*5
         self.tag_debug_vector = [0]*20
 
-        for id in xrange(5):
+        for id in range(5):
           tag_id = robot_params[faster_hash[id]]['tag_number']
           self.robot_tags[id] = int(tag_id)
           self.robot_draw_list[id]|= int(robot_list[faster_hash[id]])
@@ -465,7 +465,7 @@ class virtualField():
         return int(((self.width + self.height) * 0.5) * size / 100)
 
     def plot_debug_vectors(self, robot_positions, debug_vectors):
-        for index in xrange(5):
+        for index in range(5):
             if self.robot_draw_list[index]:
                 currentPos = robot_positions[self.robot_tags[index]]
                 _currentPos = position_from_origin(unit_convert( currentPos, self.width_conv, self.height_conv), self.field_origin)

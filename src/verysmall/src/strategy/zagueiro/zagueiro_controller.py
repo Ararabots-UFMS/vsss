@@ -148,7 +148,7 @@ class ZagueiroController():
             if(self.team_side == LEFT):
                 if((section(self.ball_position) not in [LEFT_GOAL, LEFT_GOAL_AREA]) and self.ball_position[0] <= 75.0):
                     s = section(self.ball_position)
-                    if s in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or s in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
+                    if s in range(LEFT_UP_CORNER,DOWN_BORDER+1) or s in range(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
                         self.zagueiro.normal_to_border()
                     else:
                         self.zagueiro.normal_to_defend()
@@ -202,7 +202,7 @@ class ZagueiroController():
             return self.in_wait_ball()
         else:
             sb = section(self.ball_position)
-            if sb in xrange(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in xrange(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
+            if sb in range(LEFT_UP_CORNER,DOWN_BORDER+1) or sb in range(LEFT_DOWN_BOTTOM_LINE, RIGHT_UP_BOTTOM_LINE+1):
                 self.zagueiro.defend_to_border()
                 return self.in_border()
             if(near_ball(self.ball_position, self.position)):
@@ -265,7 +265,7 @@ class ZagueiroController():
         # imaginarios para seguir o univector e possivelmente nunca entrar na area
         enemies_position = list(self.enemies_position)
         enemies_speed = list(self.enemies_speed)
-        for i in xrange(ENEMY_POS[self.team_side].shape[0]):
+        for i in range(ENEMY_POS[self.team_side].shape[0]):
             enemies_position.append(ENEMY_POS[self.team_side][i])
             enemies_speed.append(np.array([0,0]))
 
@@ -412,7 +412,7 @@ class ZagueiroController():
                     # imaginarios para seguir o univector e possivelmente nunca entrar na area
                     enemies_position = list(self.enemies_position)
                     enemies_speed = list(self.enemies_speed)
-                    for i in xrange(ENEMY_POS[self.team_side].shape[0]):
+                    for i in range(ENEMY_POS[self.team_side].shape[0]):
                         enemies_position.append(ENEMY_POS[self.team_side][i])
                         enemies_speed.append(np.array([0,0]))
 

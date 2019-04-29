@@ -1,8 +1,8 @@
-from ..View.MainWindowView import MainWindowView
-from .BluetoothManagerController import BluetoothManagerController
-from .ConnectionController import ConnectionController
-from .DebugController import DebugController
-from .RobotParamsController import RobotParamsController
+from interface.View.MainWindowView import MainWindowView
+from interface.Controller.BluetoothManagerController import BluetoothManagerController
+from interface.Controller.ConnectionController import ConnectionController
+from interface.Controller.DebugController import DebugController
+from interface.Controller.RobotParamsController import RobotParamsController
 import fltk as fl
 
 

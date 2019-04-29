@@ -46,7 +46,7 @@ class RobotParamsController:
         :return: nothing
         """
         # Give the correct owner for things
-        for x in xrange(n_robots):
+        for x in range(n_robots):
             current_robot = self.robot_params[self.faster_hash[x]]
 
             try:  # assort tag
@@ -120,7 +120,7 @@ class RobotParamsController:
             value += 1
 
         # Add tags to tag input
-        for x in xrange(20):
+        for x in range(20):
             if self.tag_is_owned_by[x] is not None:
                 self.view.tag_field.add(str(x)+'*')
             else:

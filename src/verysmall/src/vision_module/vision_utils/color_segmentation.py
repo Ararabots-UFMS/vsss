@@ -1,9 +1,5 @@
-import sys
-sys.path.append('../../')
-sys.path.append('../')
-
 from utils.json_handler import JsonHandler
-from camera.camera import Camera
+from vision_module.camera_module.camera import Camera
 import cv2
 import numpy as np
 import copy
@@ -77,8 +73,8 @@ class ColorSegmentation:
                 self.temp_max = np.maximum(self.temp_max, self.hsv_frame[y,x,:])
                 self.visited.append([y,x])
             elif event == cv2.EVENT_LBUTTONUP:
-                for i in xrange(y-1, y+2):
-                    for j in xrange(x-1, x+2):
+                for i in range(y-1, y+2):
+                    for j in range(x-1, x+2):
                         self.temp_min = np.minimum(self.temp_min, self.hsv_frame[i,j,:])
                         self.temp_max = np.maximum(self.temp_max, self.hsv_frame[i,j,:])
                         self.visited.append([i,j])

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import fltk as fl
-from ..virtualField import virtualField
+from interface.virtualField import virtualField
 import time
 from sys import path
 from os import environ
-old_path = path[0]
-path[0] = environ['ROS_ARARA_ROOT'] + "src/"
 from ROS.ros_main_window_subscriber import RosMainWindowSubscriber
-path[0] = old_path
+
 
 
 class Canvas(fl.Fl_Double_Window):

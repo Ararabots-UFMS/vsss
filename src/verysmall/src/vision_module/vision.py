@@ -1,26 +1,18 @@
-import sys
-sys.path.append('../')
-import COLORS
 import cv2
 import numpy as np
 import rospy
 import time
-from .camera.camera import Camera
-from .vision_utils.params_setter import ParamsSetter
-from .vision_utils.color_segmentation import ColorSegmentation
+import sys
 
-from .seekers.things_seeker import HawkEye
-from .seekers.things_seeker import Things
-
+from vision_module.camera_module.camera import Camera
+from vision_module.vision_utils.params_setter import ParamsSetter
+from vision_module.vision_utils.color_segmentation import ColorSegmentation
+from vision_module.seekers.things_seeker import HawkEye
+from vision_module.seekers.things_seeker import Things
+from vision_module import COLORS
 from verysmall.msg import game_topic
-
-# Top level imports
-import os
-old_path = sys.path[0]
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT']+"src/"
-from .utils.json_handler import JsonHandler
-from .ROS.ros_vision_publisher import RosVisionPublisher
-sys.path[0] = old_path
+from utils.json_handler import JsonHandler
+from ROS.ros_vision_publisher import RosVisionPublisher
 
 # @author Wellington Castro <wvmcastro>
 
@@ -117,8 +109,8 @@ class Vision:
         if self.yellow_tag == "aruco":
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
-        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.home_tag,
-                                self.yellow_robots, self.blue_robots, self.arena_image.shape, hawk_eye_extra_params)
+        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag,
+                                self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
