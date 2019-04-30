@@ -1,5 +1,6 @@
-# -*- coding: latin-1 -*-
-from ..View.CameraSelectView import CameraSelectView
+# -*- coding: utf-8 -*-
+
+from interface.View.CameraSelectView import CameraSelectView
 import fltk as fl
 import sys
 from os import path

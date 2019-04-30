@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 from fltk import Fl_Single_Window, Fl, Fl_Box, FL_WHITE, Fl_Choice, FL_HELVETICA_BOLD, FL_RED, Fl_File_Chooser, \
     FL_FLAT_BOX, FL_DARK_GREEN, Fl_Button, FL_BLUE

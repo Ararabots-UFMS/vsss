@@ -1,1 +1,1 @@
-{"meta_player": 2, "penalty_player": 0, "side": 0, "time": 0, "camera": {"name": "Integrated_Webcam_HD", "file": "/home/verysmall/Downloads/record.avi", "product": "670b", "vendor": "0c45"}, "freeball_player": 4, "ROS_MASTER_URI": "http://127.0.0.1:11311", "ROS_IP": ["lo", "127.0.0.1"]}
+{"camera": {"file": "", "vendor": "05a3", "product": "9230", "name": "USB 2.0 Camera"}, "meta_player": 2, "ROS_IP": ["wlp6s0", "192.168.1.108"], "penalty_player": 0, "side": 0, "ROS_MASTER_URI": "http://192.168.1.108:11311", "time": 0, "freeball_player": 4}

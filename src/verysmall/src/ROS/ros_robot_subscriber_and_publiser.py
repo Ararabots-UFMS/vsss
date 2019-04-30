@@ -56,7 +56,6 @@ class RosRobotSubscriberAndPublisher:
             self.robot.team_pos = np.nan_to_num(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             self.robot.team_orientation = np.nan_to_num(data.yellow_team_orientation) / 10000.0
             self.robot.team_speed = np.nan_to_num(data.yellow_team_speed).reshape((-1, 2)) / 100.0
-
             enemies_position = np.nan_to_num(data.blue_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.nan_to_num(data.blue_team_orientation) / 10000.0
             enemies_speed = np.nan_to_num(data.blue_team_speed).reshape((-1, 2)) / 100.0
@@ -64,7 +63,6 @@ class RosRobotSubscriberAndPublisher:
             self.robot.team_pos = np.nan_to_num(data.blue_team_pos).reshape((-1, 2)) / 100.0
             self.robot.team_orientation = np.nan_to_num(data.blue_team_orientation) / 10000.0
             self.robot.team_speed = np.nan_to_num(data.blue_team_speed).reshape((-1, 2)) / 100.0
-
             enemies_position = np.nan_to_num(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.nan_to_num(data.yellow_team_orientation) / 10000.0
             enemies_speed = np.nan_to_num(data.yellow_team_speed).reshape((-1, 2)) / 100.0

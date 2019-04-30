@@ -1,4 +1,4 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 import fltk as fl
 from .ImageCreator import ImageCreator

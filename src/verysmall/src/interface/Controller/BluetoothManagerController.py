@@ -1,6 +1,6 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
-from ..View.BluetoothManagerView import BluetoothManagerView
+from interface.View.BluetoothManagerView import BluetoothManagerView
 import fltk as fl
 from utils.json_handler import JsonHandler
 
