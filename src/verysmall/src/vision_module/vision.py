@@ -21,8 +21,8 @@ HEIGHT = 1
 
 class Vision:
 
-    def __init__(self, camera, adv_robots, home_color, home_robots,
-    yellow_tag="aruco", params_file_name="", colors_params = "", method=""):
+    def __init__(self, camera, num_blue_robots, num_yellow_robots,
+                 params_file_name="", colors_params = "", method=""):
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -53,10 +53,9 @@ class Vision:
         self.json_handler = JsonHandler()
         self.camera = camera
         self.params_file_name = params_file_name
-        self.home_color = home_color
-        self.home_robots = home_robots
-        self.adv_robots = adv_robots
-        self.yellow_tag = yellow_tag
+        self.num_yellow_robots = num_yellow_robots
+        self.num_blue_robots = num_blue_robots
+        self.yellow_tag = "aruco"
 
         self.arena_vertices = []
         self.arena_size = ()
@@ -77,8 +76,8 @@ class Vision:
         self.finish = False
 
         # Creates the lists to the home team and the adversary
-        self.yellow_team = [Things() for _ in range(home_robots)]
-        self.blue_team =[Things() for _ in range(adv_robots)]
+        self.yellow_team = [Things() for _ in range(num_yellow_robots)]
+        self.blue_team =[Things() for _ in range(num_blue_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -109,8 +108,9 @@ class Vision:
         if self.yellow_tag == "aruco":
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
-        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag,
-                                self.home_robots, self.adv_robots, self.arena_image.shape, hawk_eye_extra_params)
+        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag, self.num_yellow_robots, 
+                                self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
+
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -225,14 +225,6 @@ class Vision:
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
 
-    def attribute_teams(self):
-        if self.home_color == "blue":
-            self.home_seg = self.blue_seg
-            self.adv_seg = self.yellow_seg
-        else:
-            self.home_seg = self.yellow_seg
-            self.adv_seg = self.blue_seg
-
     def run(self):
 
         while not self.finish:
@@ -301,19 +293,19 @@ class Vision:
 if __name__ == "__main__":
     from threading import Thread
 
-    home_color = "yellow" # blue or yellow
-    home_robots = 1
-    adv_robots = 2
+    num_yellow_robots = 1
+    num_blue_robots = 2
     home_tag = "aruco"
 
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
     camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
-    v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
-    arena_params, colors_params, method="color_segmentation")
-    v.game_on = True
+    v = Vision(camera, num_blue_robots, num_yellow_robots, arena_params,
+               colors_params, method="color_segmentation")
 
+    v.game_on = True
+    
     t = Thread(target=v.run, args=())
     t.daemon = True
     t.start()

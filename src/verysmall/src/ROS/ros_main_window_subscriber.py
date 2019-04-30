@@ -1,7 +1,8 @@
 import rospy
 from queue import Queue
 from collections import deque, namedtuple
-from numpy import nan_to_num, array, asarray, any
+import numpy as np
+from numpy import array, asarray, any
 from verysmall.msg import things_position, debug_topic
 #from interface.View.MainWindowView import MainWindowView
 
@@ -77,23 +78,23 @@ class RosMainWindowSubscriber:
                                    'enemies_pos', 'enemies_orientation',
                                    'enemies_speed', 'vision_fps'])
             
-            data_item.ball_pos = nan_to_num(topic_info.ball_pos) / 100.0
+            data_item.ball_pos = np.array(topic_info.ball_pos) / 100.0
             data_item.vision_fps = topic_info.vision_fps / 1000.0
 
             if self._my_window.home_color == 1:
-                data_item.team_pos = nan_to_num(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
-                data_item.team_orientation = nan_to_num(topic_info.yellow_team_orientation) / 10000.0
-                data_item.team_speed = nan_to_num(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
-                data_item.enemies_pos = nan_to_num(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
-                data_item.enemies_orientation = nan_to_num(topic_info.blue_team_orientation) / 10000.0
-                data_item.enemies_speed = nan_to_num(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
+                data_item.team_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
+                data_item.team_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
+                data_item.team_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
+                data_item.enemies_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
+                data_item.enemies_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
+                data_item.enemies_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
             else:
-                data_item.team_pos = nan_to_num(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
-                data_item.team_orientation = nan_to_num(topic_info.blue_team_orientation) / 10000.0
-                data_item.team_speed = nan_to_num(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
-                data_item.enemies_pos = nan_to_num(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
-                data_item.enemies_orientation = nan_to_num(topic_info.yellow_team_orientation) / 10000.0
-                data_item.enemies_speed = nan_to_num(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
+                data_item.team_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
+                data_item.team_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
+                data_item.team_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
+                data_item.enemies_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
+                data_item.enemies_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
+                data_item.enemies_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
 
 
             enemies_position = []
