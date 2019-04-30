@@ -13,7 +13,7 @@ file_path = path[0] + 'parameters/univector_constants.json'
 from utils.json_handler import JsonHandler
 jsonHandler = JsonHandler()
 univector_list = jsonHandler.read(file_path)
-from robot.movement.univector.un_field import univectorField
+from robot_module.movement.univector.un_field import univectorField
 path[0] = old_path
 
 

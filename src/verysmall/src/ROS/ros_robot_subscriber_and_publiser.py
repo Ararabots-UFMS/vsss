@@ -32,7 +32,10 @@ class RosRobotSubscriberAndPublisher:
         """
         self.robot.game_state = data.game_state
         self.robot.team_side = data.team_side
-        self.robot.role = unpack('B', data.robot_roles[self.robot.robot_id_integer])[0]
+
+        #TODO: VERIFICAR ESSA ALTERAÇÃO, N TENHO CERTEZA
+        self.robot.role = data.robot_roles[self.robot.robot_id_integer]
+        
         self.robot.penalty_robot = data.penalty_robot
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
@@ -49,22 +52,22 @@ class RosRobotSubscriberAndPublisher:
         self.robot.ball_position = np.nan_to_num(data.ball_pos) / 100.0
         self.robot.ball_speed = np.nan_to_num(data.ball_speed) / 100.0
 
-        if(self.robot.team_color == 0): # yellow
-            self.robot.team_pos = np.nan_to_num(data.yellow_pos).reshape((-1, 2)) / 100.0
-            self.robot.team_orientation = np.nan_to_num(data.yellow_orientation) / 10000.0
-            self.robot.team_speed = np.nan_to_num(data.yellow_speed).reshape((-1, 2)) / 100.0
+        if(self.robot.team_color == 1): # yellow
+            self.robot.team_pos = np.nan_to_num(data.yellow_team_pos).reshape((-1, 2)) / 100.0
+            self.robot.team_orientation = np.nan_to_num(data.yellow_team_orientation) / 10000.0
+            self.robot.team_speed = np.nan_to_num(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
-            enemies_position = np.nan_to_num(data.blue_pos).reshape((-1, 2)) / 100.0
-            enemies_orientation = np.nan_to_num(data.blue_orientation) / 10000.0
-            enemies_speed = np.nan_to_num(data.blue_speed).reshape((-1, 2)) / 100.0
+            enemies_position = np.nan_to_num(data.blue_team_pos).reshape((-1, 2)) / 100.0
+            enemies_orientation = np.nan_to_num(data.blue_team_orientation) / 10000.0
+            enemies_speed = np.nan_to_num(data.blue_team_speed).reshape((-1, 2)) / 100.0
         else: # blue
-            self.robot.team_pos = np.nan_to_num(data.blue_pos).reshape((-1, 2)) / 100.0
-            self.robot.team_orientation = np.nan_to_num(data.blue_orientation) / 10000.0
-            self.robot.team_speed = np.nan_to_num(data.blue_speed).reshape((-1, 2)) / 100.0
+            self.robot.team_pos = np.nan_to_num(data.blue_team_pos).reshape((-1, 2)) / 100.0
+            self.robot.team_orientation = np.nan_to_num(data.blue_team_orientation) / 10000.0
+            self.robot.team_speed = np.nan_to_num(data.blue_team_speed).reshape((-1, 2)) / 100.0
 
-            enemies_position = np.nan_to_num(data.yellow_pos).reshape((-1, 2)) / 100.0
-            enemies_orientation = np.nan_to_num(data.yellow_orientation) / 10000.0
-            enemies_speed = np.nan_to_num(data.yellow_speed).reshape((-1, 2)) / 100.0
+            enemies_position = np.nan_to_num(data.yellow_team_pos).reshape((-1, 2)) / 100.0
+            enemies_orientation = np.nan_to_num(data.yellow_team_orientation) / 10000.0
+            enemies_speed = np.nan_to_num(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
 
         self.robot.position = self.robot.team_pos[self.robot.tag]

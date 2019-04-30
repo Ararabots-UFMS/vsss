@@ -2,10 +2,8 @@ import rospy
 import sys
 import numpy as np
 import random
-from .comunication.sender import Sender
 import os
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-
+from robot_module.comunication.sender import Sender
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController

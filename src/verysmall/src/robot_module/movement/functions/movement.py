@@ -1,17 +1,16 @@
 import sys
 import os
 import numpy as np
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-path = sys.path[0] + 'parameters/univector_constants.json'
+#sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
+#path = sys.path[0] + 'parameters/univector_constants.json'
 from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, raio_vetores_range
 from utils.json_handler import JsonHandler
-sys.path[0]+="robot/movement/"
-from control.PID import PID
-from univector.un_field import univectorField
+
+from ..control.PID import PID
+from ..univector.un_field import univectorField
 from rospy import logfatal
 
-jsonHandler = JsonHandler()
-univector_list = jsonHandler.read(path)
+univector_list = JsonHandler().read("parameters/univector_constants.json")
 
 # univector
 RADIUS = univector_list['RADIUS']

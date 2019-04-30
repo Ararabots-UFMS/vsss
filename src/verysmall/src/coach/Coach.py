@@ -1,10 +1,5 @@
-from robot.robot import Robot
-from sys import path
-from os import environ
-old_path = path[0]
-path[0] = environ['ROS_ARARA_ROOT'] + "src/"
+from robot_module.robot import Robot
 from ROS.ros_coach import RosCoach
-path[0] = old_path
 
 
 class Coach:

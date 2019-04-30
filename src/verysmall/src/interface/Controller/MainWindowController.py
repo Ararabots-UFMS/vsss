@@ -245,23 +245,25 @@ class MainWindowController:
             self.view.play_button.label("Parar")
             self.view.play_button.playing = not self.view.play_button.playing
 
-    def on_color_change(self, ptr:int):
+    def on_color_change(self, ptr):
         """
         This function change the team color in the game_opt to the selected one
         :param ptr: pointer of the widget
         :return: nothing
         """
-        self.pub.set_team_color(ptr.value() + 1)
-        self.game_opt["time"] = ptr.value()
-        self.set_robot_plot_color(ptr.value())
+        value = ptr.value()
+        self.pub.set_team_color(value)
+        self.pub.publish()
+        self.game_opt["time"] = value
+        self.set_robot_plot_color(value)
 
     def set_robot_plot_color(self, is_yellow = True):
         if is_yellow:
-            self.view.home_color = self.view.virtualField.colors["yellow"]  # home team color
-            self.view.away_color = self.view.virtualField.colors["blue"]    # away team color
+            self.view.home_color = 1  #  home team color
+            self.view.away_color = 0    # away team color
         else:
-            self.view.home_color = self.view.virtualField.colors["blue"]  # home team color
-            self.view.away_color = self.view.virtualField.colors["yellow"]    # away team color
+            self.view.home_color = 0  # home team color
+            self.view.away_color = 1    # away team color
 
 
     def on_side_change(self, ptr):

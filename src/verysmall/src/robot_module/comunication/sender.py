@@ -64,7 +64,7 @@ class Sender():
             else:
                 #self.sock.setblocking(False)
                 logfatal("Opened bluetooth device at "+str(self.port)+" after "+ str(attempt)+" attempts")
-                break;
+                break
             attempt += 1
 
     def send_movement_package(self, package_array, isHardwareCorretion = False):
@@ -93,8 +93,8 @@ class Sender():
             self.sock.send(c_ubyte(right))
             #self.update_time()
         except Exception as e:
-            self.printError(e[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
-            if e[0] == 107 or e[0] == 110:
+            self.printError(e.args[0], "Packet error robot: "+ str(self.robotId)+" E: "+ str(e))
+            if e.args[0] == 107 or e.args[0] == 110:
                 self.printError("-1", "Tentando reconexao")
                 self.sock.connect(False)
 
@@ -109,7 +109,7 @@ class Sender():
             self.send_float(KI)
             self.send_float(KD)
         except Exception as e:
-            self.printError(e[0],"Packet error robot: "+self.robotId+" E: "+str(e))
+            self.printError(e.args[0],"Packet error robot: "+self.robotId+" E: "+str(e))
 
     def send_angle_corretion(self, theta, speed, rad=True):
         try:
@@ -119,8 +119,8 @@ class Sender():
             self.sock.send(c_ubyte(correct_theta))
             self.sock.send(c_ubyte(abs(speed)))
         except Exception as e:
-            self.printError(e[0],"Packet error robot: "+str(self.robotId)+" E: "+e)
-            if e[0] == 107 or e[0] == 110:
+            self.printError(e.args[0],"Packet error robot: "+str(self.robotId)+" E: " + srt(e))
+            if e.args[0] == 107 or e.args[0] == 110:
                 self.printError("-1", "Tentando reconexao")
                 self.sock.connect(False)
 

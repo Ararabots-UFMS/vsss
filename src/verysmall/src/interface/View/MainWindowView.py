@@ -7,8 +7,6 @@ from sys import path
 from os import environ
 from ROS.ros_main_window_subscriber import RosMainWindowSubscriber
 
-
-
 class Canvas(fl.Fl_Double_Window):
     """The canvas class is a sub-class of Fl_Double_Window, so it has double buffering enabled"""
     def __init__(self, x, y, w, h, l, image):
@@ -54,7 +52,7 @@ class MainWindowView:
         self.n_robots = 5
         self.arena = None
 
-        self.reader = RosMainWindowSubscriber(_game_topic_name)
+        self.reader = RosMainWindowSubscriber(self,_game_topic_name)
 
         self.debug_counter = 0
         self.debug_vector_array = [np.array([.0,.0])]*5
@@ -92,8 +90,8 @@ class MainWindowView:
         # Define colors
         fl.Fl.background(23, 23, 23)
         self.root.labelcolor(fl.FL_WHITE)
-        self.home_color = self.virtualField.colors["yellow"]  # home team color
-        self.away_color = self.virtualField.colors["blue"]    # away team color
+        self.home_color = 1  # home team color
+        self.away_color = 0    # away team color
 
 
     def redraw_field(self):
@@ -101,10 +99,16 @@ class MainWindowView:
         data_item = self.reader.pop_item()  # Get the data
 
         if data_item is not None:
+            if self.home_color == 1:
+                vfield_home_team_color = self.virtualField.colors["yellow"]
+                vfield_adv_team_color = self.virtualField.colors["blue"]
+            else:
+                vfield_home_team_color = self.virtualField.colors["blue"]
+                vfield_adv_team_color = self.virtualField.colors["yellow"]
 
             self.virtualField.plot(data_item,
-                                   self.home_color,  # home team color
-                                   self.away_color,    # away team color
+                                   vfield_home_team_color,  # home team color
+                                   vfield_adv_team_color,    # away team color
                                    int(data_item.vision_fps*10)/10.0,
                                    int((self.computed_frames / (time.time() - self.t0))*10)/10.0,
                                    is_away=True)  # vision_fps, topic_fps, is_away flag
