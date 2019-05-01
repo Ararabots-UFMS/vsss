@@ -1,8 +1,8 @@
-from ..View.MainWindowView import MainWindowView
-from BluetoothManagerController import BluetoothManagerController
-from ConnectionController import ConnectionController
-from DebugController import DebugController
-from RobotParamsController import RobotParamsController
+from interface.View.MainWindowView import MainWindowView
+from interface.Controller.BluetoothManagerController import BluetoothManagerController
+from interface.Controller.ConnectionController import ConnectionController
+from interface.Controller.DebugController import DebugController
+from interface.Controller.RobotParamsController import RobotParamsController
 import fltk as fl
 
 
@@ -81,7 +81,7 @@ class MainWindowController:
         # Multiple callbacks, each for one type of input
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
-        for num in xrange(self.view.n_robots):
+        for num in range(self.view.n_robots):
             self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
@@ -100,7 +100,7 @@ class MainWindowController:
         :return: nothing
         """
         # For each Robot, this loop covers all the inputs
-        for num in xrange(self.view.n_robots):
+        for num in range(self.view.n_robots):
             # Access the robot params dict using a int
             # and stores its reference in a temporary variable
             current_robot = self.robot_params[self.faster_hash[num]]
@@ -251,17 +251,19 @@ class MainWindowController:
         :param ptr: pointer of the widget
         :return: nothing
         """
-        self.pub.send_vision_operation(ptr.value()+4)  # Defined in VisionOperations - Vision Node file
-        self.game_opt["time"] = ptr.value()
-        self.set_robot_plot_color(ptr.value())
+        value = ptr.value()
+        self.pub.set_team_color(value)
+        self.pub.publish()
+        self.game_opt["time"] = value
+        self.set_robot_plot_color(value)
 
     def set_robot_plot_color(self, is_yellow = True):
         if is_yellow:
-            self.view.home_color = self.view.virtualField.colors["yellow"]  # home team color
-            self.view.away_color = self.view.virtualField.colors["blue"]    # away team color
+            self.view.home_color = 1  #  home team color
+            self.view.away_color = 0    # away team color
         else:
-            self.view.home_color = self.view.virtualField.colors["blue"]  # home team color
-            self.view.away_color = self.view.virtualField.colors["yellow"]    # away team color
+            self.view.home_color = 0  # home team color
+            self.view.away_color = 1    # away team color
 
 
     def on_side_change(self, ptr):

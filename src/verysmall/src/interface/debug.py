@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import fltk as fl
@@ -102,7 +101,7 @@ class WindowManager:
         n = 8
         self.check_robots = [None]*n
         temp_names = ["robo 1", "robo 2", "robo 3", "robo 4","robo 5", "robo 6", "robo 7", "robo 8", ]
-        print temp_names
+        print(temp_names)
         for num in range(n):
             self.check_robots[num] = fl.Fl_Check_Button(self.proportion_width(2)*n + self.proportion_width(5),
                                self.proportion_height(30) + self.proportion_height(3) * num * 2,

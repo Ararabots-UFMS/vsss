@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 from fltk import Fl_Single_Window, Fl, Fl_Box, FL_WHITE, Fl_Choice, FL_HELVETICA_BOLD, FL_RED, Fl_File_Chooser, \
     FL_FLAT_BOX, FL_DARK_GREEN, Fl_Button, FL_BLUE
@@ -24,7 +23,7 @@ class CameraSelectView:
         self.warning = Fl_Box(self.proportion_width(15),
                               self.padding_y,
                               self.proportion_width(68),
-                              self.proportion_height(10), "Dispositivo '#DISP_ANTIGO' não encontrado.")
+                              self.proportion_height(10), "Dispositivo '#DISP_ANTIGO' nï¿½o encontrado.")
 
         self.padding_y += self.proportion_height(20)
 
@@ -36,12 +35,12 @@ class CameraSelectView:
 
         self.padding_y += self.proportion_height(20)
 
-        self.file_browser = Fl_File_Chooser(".", "*", Fl_File_Chooser.SINGLE, "Selecione o arquivo de vídeo")
+        self.file_browser = Fl_File_Chooser(".", "*", Fl_File_Chooser.SINGLE, "Selecione o arquivo de vï¿½deo")
 
         self.file_browser_label = Fl_Box(self.proportion_width(16),
                                           self.padding_y,
                                           self.proportion_width(25),
-                                          self.proportion_height(5), "Arquivo de vídeo:")
+                                          self.proportion_height(5), "Arquivo de vï¿½deo:")
 
         self.padding_y += self.proportion_height(7)
 

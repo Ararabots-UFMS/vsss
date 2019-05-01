@@ -3,16 +3,12 @@ import os
 import rospy
 import numpy as np
 from strategy.strategy_utils import *
-from advanced_keeper import AdvancedGK, MyModel
-sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT'] + "src/robot/"
-from movement.functions.movement import Movement
+from .advanced_keeper import AdvancedGK, MyModel
+from robot_module.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 from utils.math_utils import angleBetween
 
-path += '../parameters/bodies.json'
-
-jsonHandler = JsonHandler()
-bodies_unpack = jsonHandler.read(path, escape=True)
+bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 
 SOFTWARE = 0
 HARDWARE = 1

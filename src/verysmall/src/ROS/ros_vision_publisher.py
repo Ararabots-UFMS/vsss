@@ -26,39 +26,40 @@ class RosVisionPublisher:
         # else is only a publisher
         self.pub = rospy.Publisher('things_position', things_position, queue_size=1)
 
-    def publish(self, ball_pos, ball_speed, team_pos, team_orient, team_speed,
-                enemies_pos, enemies_orientation, enemies_speed, fps):
+    def publish(self, ball_pos, ball_speed, yellow_pos, yellow_orient, yellow_speed,
+                blue_pos, blue_orientation, blue_speed, fps):
 
         """
             This function publishes in the things position topic
 
-            :param ball_pos: float64[2]
-            :param ball_speed: float64[2]
-            :param team_pos: float64[10]
-            :param team_orient: float64[5]
-            :param team_speed: float64[10]
-            :param enemies_pos: float64[10]
-            :param enemies_orientation: float64[5]
-            :param enemies_speed: float64[10]
-            :param fps: float
+            :param ball_pos: int16[2]
+            :param ball_speed: int16[2]
+            :param yellow_pos: int16[10]
+            :param yellow_orient: int16[5]
+            :param yellow_speed: int16[10]
+            :param blue_pos: int16[10]
+            :param blue_orientation: int16[5]
+            :param blue_speed: int16[10]
+            :param fps: utin16
             :return: returns nothing
         """
 
         msg = things_position(
-            ball_pos.tolist(),
-            ball_speed.tolist(),
-            team_pos.flatten().tolist(),
-            team_orient.flatten().tolist(),
-            team_speed.flatten().tolist(),
-            enemies_pos.flatten().tolist(),
-            enemies_orientation.flatten().tolist(),
-            enemies_speed.flatten().tolist(),
-            fps
+            np.int16(ball_pos * 100).tolist(),
+            np.int16(ball_speed * 100).tolist(),
+            np.int16(yellow_pos.flatten() * 100).tolist(),
+            np.int16(yellow_orient.flatten() * 10000).tolist(),
+            np.int16(yellow_speed.flatten() * 100).tolist(),
+            np.int16(blue_pos.flatten() * 100).tolist(),
+            np.int16(blue_orientation.flatten() * 10000).tolist(),
+            np.int16(blue_speed.flatten() * 100).tolist(),
+            int(fps * 100)
         )
 
         try:
             self.pub.publish(msg)
         except rospy.ROSException as e:
+            rospy.logfatal(e)
             rospy.logfatal(msg)
 
 

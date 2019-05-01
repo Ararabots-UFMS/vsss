@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import rospy
 from verysmall.msg import game_topic
 from verysmall.srv import vision_command
@@ -35,7 +34,7 @@ class GameTopicPublisher:
         # Init message values
         self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
 
-        for robot_id in xrange(5):
+        for robot_id in range(5):
             role_name = self.robot_params[self.faster_hash[robot_id]]['role']
             self.set_robot_role(robot_id, self.robot_name_roles[role_name])
 
@@ -110,7 +109,7 @@ class GameTopicPublisher:
         """
         self.msg.meta_robot = _meta_robot
 
-    def set_message(self, game_state, team_side, robot_roles, penalty_robot, freeball_robot, meta_robot):
+    def set_message(self, game_state, team_side, team_color, robot_roles, penalty_robot, freeball_robot, meta_robot):
         """
         This function sets the publisher message
         :param game_state: uint8
@@ -125,8 +124,9 @@ class GameTopicPublisher:
         self.msg = game_topic(
             game_state,
             team_side,
+            team_color,
             tuple(robot_roles),
-                penalty_robot,
+            penalty_robot,
             freeball_robot,
             meta_robot
         )
@@ -138,6 +138,10 @@ class GameTopicPublisher:
         :return: nothing
         """
         self.msg.team_side = side
+    
+    def set_team_color(self, color:int) -> None:
+        """ Set side of the game, yellow(1) or blue(0)? """
+        self.msg.team_color = color
 
     def publish(self):
         """

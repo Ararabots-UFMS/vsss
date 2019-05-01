@@ -19,3 +19,6 @@ robot/movement/control/\.hidden
 src/CMakeLists\.txt
 
 *.avi
+
+*.vscode/
+*.mypy_cache/

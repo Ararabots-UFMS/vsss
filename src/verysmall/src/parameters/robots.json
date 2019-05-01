@@ -1,1 +1,37 @@
-{"robot_2": {"active": 1, "bluetooth_mac_address": "LUIS_ESPALHA_LIXO", "body_id": "LUIS_ESPALHA_LIXO", "role": "Zagueiro", "tag_number": 2}, "robot_3": {"active": 0, "bluetooth_mac_address": "Tijolinho", "body_id": "Tijolinho", "role": "Atacker With Univector", "tag_number": 3}, "robot_1": {"active": 0, "bluetooth_mac_address": "Et_Bilu", "body_id": "Et_Bilu", "role": "Naive keeper", "tag_number": 0}, "robot_4": {"active": 0, "bluetooth_mac_address": "Nenhum", "body_id": "Nenhum", "role": "Atacante", "tag_number": 3}, "robot_5": {"active": 0, "bluetooth_mac_address": "Et_Bilu", "body_id": "Et_Bilu", "role": "Atacker With Univector", "tag_number": 3}}
+{
+    "robot_1": {
+        "active": 0,
+        "bluetooth_mac_address": "Et_Bilu",
+        "body_id": "Et_Bilu",
+        "role": "Goleiro",
+        "tag_number": 0
+    },
+    "robot_2": {
+        "active": 0,
+        "bluetooth_mac_address": "LUIS_ESPALHA_LIXO",
+        "body_id": "LUIS_ESPALHA_LIXO",
+        "role": "Atacker With Univector",
+        "tag_number": 2
+    },
+    "robot_3": {
+        "active": 0,
+        "bluetooth_mac_address": "Tijolinho",
+        "body_id": "Tijolinho",
+        "role": "Atacker With Univector",
+        "tag_number": 3
+    },
+    "robot_4": {
+        "active": 0,
+        "bluetooth_mac_address": "Nenhum",
+        "body_id": "Nenhum",
+        "role": "Atacante",
+        "tag_number": 3
+    },
+    "robot_5": {
+        "active": 0,
+        "bluetooth_mac_address": "Et_Bilu",
+        "body_id": "Et_Bilu",
+        "role": "Atacker With Univector",
+        "tag_number": 3
+    }
+}
