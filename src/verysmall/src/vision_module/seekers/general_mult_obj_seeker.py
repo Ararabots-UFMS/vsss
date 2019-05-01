@@ -28,7 +28,7 @@ class GeneralMultObjSeeker:
         if num_cnts > 0:
             cnts_array = np.array(cnts[0]).reshape(-1, 2)
 
-            for i in xrange(1, num_cnts):
+            for i in range(1, num_cnts):
                 cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
 
             if cnts_array.shape[0] > self.num_objects:

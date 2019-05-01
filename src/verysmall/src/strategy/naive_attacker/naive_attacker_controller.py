@@ -3,18 +3,14 @@ import os
 import rospy
 import numpy as np
 import math
-from naive_attacker_strategy import NaiveAttacker, MyModel
-sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
-from movement.functions.movement import Movement
+from .naive_attacker_strategy import NaiveAttacker, MyModel
+from robot_module.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 import strategy.strategy_utils as strategy_utils
 from strategy.strategy_utils import *
 from utils import math_utils
 
-path += '../parameters/bodies.json'
-
-jsonHandler = JsonHandler()
-bodies_unpack = jsonHandler.read(path, escape = True)
+bodies_unpack = JsonHandler().read("parameters/bodies.json", escape = True)
 
 HARDWARE = 1
 SOFTWARE = 0

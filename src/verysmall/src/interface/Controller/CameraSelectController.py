@@ -1,6 +1,6 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
-from ..View.CameraSelectView import CameraSelectView
+# -*- coding: utf-8 -*-
+
+from interface.View.CameraSelectView import CameraSelectView
 import fltk as fl
 import sys
 from os import path
@@ -75,7 +75,7 @@ class CameraSelectController:
         self.device = None
         self.choice_map = None
 
-        self.view.warning.label("Dispositivo \""+self.camera_model["name"]+"\" não encontrado.")
+        self.view.warning.label("Dispositivo \""+self.camera_model["name"]+"\" nï¿½o encontrado.")
 
         self.update_list(self.camera_list)
 

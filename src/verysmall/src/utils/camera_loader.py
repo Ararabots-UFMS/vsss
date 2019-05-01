@@ -1,7 +1,7 @@
-#!/usr/bin/python
 from interface.Controller.CameraSelectController import CameraSelectController
 import subprocess as sb
-
+from rospy import logfatal
+import sys
 
 class CameraLoader:
 
@@ -36,21 +36,27 @@ class CameraLoader:
     def camera_check(self):
         self.camera_list.clear()
         # List capture devices options
-        devices = sb.check_output("ls", cwd="/sys/class/video4linux/").split("\n")
-
+        encoding = sys.getdefaultencoding()
+        decode = lambda s : s.decode(encoding).split('\n')
+        
+        devices = decode(sb.check_output("ls", cwd="/sys/class/video4linux/"))
+        
         # For each device in the dev dir
         for device_dir in devices:
             if len(device_dir):
 
-                name = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/name", shell=True).strip("\n")
-
+                name = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/name",shell=True)
+                name = decode(name)[0]
                 try:
-                    input_folder = sb.check_output("ls", cwd="/sys/class/video4linux/"+device_dir+"/device/input/").strip("\n")
+                    input_folder = sb.check_output("ls", cwd="/sys/class/video4linux/"+device_dir+"/device/input/")
+                    input_folder = decode(input_folder)[0]
                 except ValueError:
                     print(ValueError)
 
-                product = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/product", shell=True).strip("\n")
-                vendor = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/vendor", shell=True).strip("\n")
+                product = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/product", shell=True)
+                product = decode(product)[0]
+                vendor = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/vendor", shell=True)
+                vendor = decode(vendor)[0]
                 device_number = device_dir.strip("video")
                 self.camera_list[device_number] = {"name": name, "product": product, "vendor" : vendor}
                 if product == self.camera_id["product"]:

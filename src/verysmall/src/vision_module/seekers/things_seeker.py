@@ -143,23 +143,25 @@ class HawkEye:
         in the field """
     # https://docs.opencv.org/master/d9/d8b/tutorial_py_contours_hierarchy.html#gsc.tab=0
 
-    def __init__(self, field_origin, conversion_factor, home_tag, num_robots_home_team,
-    num_robots_adv_team, img_shape, aux_params):
+    def __init__(self, field_origin, conversion_factor, yellow_tag, num_robots_yellow_team,
+    num_robots_blue_team, img_shape, aux_params):
 
         self.field_origin = field_origin
         self.conversion_factor = conversion_factor
         self.rad_to_degree_factor = 180.0/math.pi
-        self.num_robots_home_team = num_robots_home_team
-        self.num_robots_adv_team = num_robots_adv_team
+        self.num_robots_yellow_team = num_robots_yellow_team
+        self.num_robots_blue_team = num_robots_blue_team
 
-        if home_tag == "aruco":
+        if yellow_tag == "aruco":
             camera_matrix = aux_params[0]
             distortion_vector = aux_params[1]
-            self.home_team_seeker = ArucoSeeker(camera_matrix, distortion_vector, self.num_robots_home_team)
+            self.yellow_team_seeker = ArucoSeeker(camera_matrix,
+                                                  distortion_vector,
+                                                  self.num_robots_yellow_team)
         else:
             print("falta implementar")
 
-        self.adv_team_seeker = GeneralMultObjSeeker(num_robots_adv_team)
+        self.blue_team_seeker = GeneralMultObjSeeker(num_robots_blue_team)
 
         self.ball_seeker = GeneralObjSeeker(img_shape)
 
@@ -170,17 +172,18 @@ class HawkEye:
 
         return pos * self.conversion_factor
 
-    def seek_home_team(self, img, robots_list):
+    def seek_yellow_team(self, img, robots_list):
         """ This function expects a binary image with the team robots and a list
             of Things objects to store the info """
 
-        robots = self.home_team_seeker.seek(img, degree=False)
+        robots = self.yellow_team_seeker.seek(img, degree=False)
+        # TODO: ISSO AQUI UM DIA VAI DAR MERDA
         tags = [9, 14, 18, 23, 28]
         # tags_in_game = []
         k = 0
 
         len_robots = len(robots)
-        for i in xrange(self.num_robots_home_team):
+        for i in range(self.num_robots_yellow_team):
             id = None if k >= len_robots else robots[k][ID]
             if tags[i] == id:
                 pos = self.pixel_to_real_world(robots[k][POS])
@@ -202,18 +205,18 @@ class HawkEye:
 
         ball.update(0, pos)
 
-    def seek_adv_team(self, img, robots_list):
+    def seek_blue_team(self, img, robots_list):
 
-        adv_centers = self.adv_team_seeker.seek(img)
+        adv_centers = self.blue_team_seeker.seek(img)
 
         if not(adv_centers is None) and adv_centers.size:
-            for i in xrange(self.num_robots_adv_team):
+            for i in range(self.num_robots_blue_team):
                 pos = self.pixel_to_real_world(adv_centers[i, :])
                 robots_list[i].update(i, pos)
 
     def reset(self):
-        self.home_team_seeker.reset()
-        self.adv_team_seeker.reset()
+        self.yellow_team_seeker.reset()
+        self.blue_team_seeker.reset()
         self.ball_seeker.reset()
 
 if __name__ == '__main__':

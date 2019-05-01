@@ -1,18 +1,14 @@
-import sys
+from ..camera_module.camera import Camera
+import COLORS
+import numpy as np
 import cv2
 import time
 import os
-import numpy as np
-
-import vision_module.COLORS
-from vision_module.camera_module.camera import Camera
-
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 1
-
-CAMERA_PARAMS_PATH = "parameters/CAMERA_ELP-USBFHD01M-SFV.json"
-ARENA_PARAMS_PATH = "parameters/ARENA.json"
+CAMERA_ID = 0
+CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
 class ParamsSetter:
 
@@ -218,7 +214,6 @@ class ParamsSetter:
             params['warp_matrix'] = self.matrix_transform.tolist()
             params['arena_size'] = self.arena_size
         if self.vertices_points != []:
-            print("oi")
             params['arena_vertices'] = self.vertices_points
         if not(self.value_min is None):
             params['value_min'] = self.value_min.tolist()

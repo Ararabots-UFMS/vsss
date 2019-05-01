@@ -1,6 +1,5 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
-from ..View.DebugView import DebugView
+# -*- coding: utf-8 -*-
+from interface.View.DebugView import DebugView
 import fltk as fl
 from utils.json_handler import JsonHandler
 from rospy import logfatal

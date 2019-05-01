@@ -1,11 +1,10 @@
-import sys
+from vision_module.camera_module.camera import Camera
 import time
 import numpy as np
 import uuid
 import cv2
 import sys
 
-from vision_module.camera_module.camera import Camera
 
 CAMERA_ID = 0
 PARAMS_FILE = ""
@@ -26,9 +25,9 @@ if __name__ == '__main__':
         if key == ord(' '):
             name = uuid.uuid4().hex + ".jpg"
             cv2.imwrite(name, frame)
-            print "Frame saved"
+            print("Frame saved")
         elif key == ord('q'):
-            print "Exiting"
+            print("Exiting")
             break
 
 cv2.destroyAllWindows()

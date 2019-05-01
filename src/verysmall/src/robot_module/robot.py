@@ -2,10 +2,8 @@ import rospy
 import sys
 import numpy as np
 import random
-from comunication.sender import Sender
 import os
-sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
-
+from robot_module.comunication.sender import Sender
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
@@ -49,6 +47,7 @@ class Robot():
         self.enemies_speed = None
 
         # Receive from game topic
+        self.team_color = None
         self.behaviour_type = None
         self.game_state = 0
         self.role = None
@@ -180,7 +179,7 @@ class Robot():
     def buffer_mean(self, buffer):
         sum = 0.
         length = len(buffer)
-        for i in xrange(length):
+        for i in range(length):
             sum += buffer[i]
         if length != 0:
             return sum/length

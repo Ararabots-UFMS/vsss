@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import subprocess as sb
 from rospy import logfatal
 

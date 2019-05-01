@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import json, yaml
 import sys
 from os import environ
@@ -41,7 +40,7 @@ class JsonHandler:
             file = open(environ['ROS_ARARA_ROOT'] + "src/" + file_name, "w+")
 
         try:
-            json.dump(dictionary, file)
+            json.dump(dictionary, file, indent=4, sort_keys=True)
             file.close()
         except:
             e = sys.exc_info()[0]

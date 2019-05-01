@@ -1,11 +1,8 @@
-#!/usr/bin/pythonderp
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 from ..View.ConnectionView import ConnectionView
-from os import environ
-from sys import path
 from fltk import fl_message, FL_WHITE, Fl
-path[0] = environ['ROS_ARARA_ROOT'] + "src/"
 from utils.enum_interfaces import all_interfaces
+from os import environ
 
 
 class ConnectionController:

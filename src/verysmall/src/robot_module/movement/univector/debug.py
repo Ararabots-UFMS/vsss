@@ -91,7 +91,6 @@ def drawPath(img, start, end, univetField):
 
     while(np.linalg.norm(currentPos - end) >= beta):
         v = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
-        print v
         newPos = currentPos + (alpha*np.array(v))
         _newPos = cm2pixel(newPos).astype(int)
 
@@ -158,5 +157,5 @@ if __name__ == "__main__":
                 arquivo.close()
 
             rep -= 1
-            print "SIMULATION", i
+            print("SIMULATION", i)
             i += 1

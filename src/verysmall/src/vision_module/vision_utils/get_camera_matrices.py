@@ -1,13 +1,12 @@
-#!/usr/bin/python
+import numpy as np
 import glob
 import cv2
 import time
 import sys
 import json
 import os
-import numpy as np
-
-from vision_module.camera_module.camera import Camera
+sys.path.append('../camera')
+from camera import Camera
 
 # @author Wellington Castro <wvmcastro>
 
@@ -21,7 +20,7 @@ SCALE = 0.8
 
 def get_error(objp, imgpoints, rvecs, tvecs, mtx, dist):
     mean_error = 0
-    for i in xrange(len(objpoints)):
+    for i in range(len(objpoints)):
         imgpoints2, _ = cv2.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
         error = cv2.norm(imgpoints[i],imgpoints2, cv2.NORM_L2)/len(imgpoints2)
         mean_error += error
@@ -69,10 +68,10 @@ if __name__ == '__main__':
     mapx,mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (nw,nh), 5)
 
     e = get_error(objp, imgpoints, rvecs, tvecs, mtx, dist)
-    print "STD Error:", e
+    print("STD Error:", e)
 
     save = raw_input("Save camera matrices? (y/n): ")
-    print save
+    print(save)
 
     if save == 'y':
         if CAMERA_NAME == "":
@@ -102,7 +101,7 @@ if __name__ == '__main__':
 
 
 
-    print "Showing result, press q to exit"
+    print("Showing result, press q to exit")
     if save == 'y':
         cap = Camera(CAMERA_ID, "../../parameters/CAMERA_"+name+".json")
     else:
@@ -118,5 +117,5 @@ if __name__ == '__main__':
             break
 
     os.system("rm *.jpg")
-    print "all .jpg files removed!"
+    print("all .jpg files removed!")
     cv2.destroyAllWindows()

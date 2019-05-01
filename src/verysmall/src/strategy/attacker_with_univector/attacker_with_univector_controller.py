@@ -2,19 +2,14 @@ import sys
 import os
 import rospy
 import numpy as np
-from attacker_with_univector import AttackerWithUnivector, MyModel
-sys.path[0] = path = root_path = os.environ['ROS_ARARA_ROOT']+"src/robot/"
-from movement.functions.movement import Movement
+from strategy.attacker_with_univector.attacker_with_univector import AttackerWithUnivector, MyModel
+from robot_module.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
 from rospy import logfatal
-import strategy.strategy_utils as strategy_utils
 from strategy.strategy_utils import *
-path_strategy = sys.path[0] = os.environ['ROS_ARARA_ROOT']+"src/strategy/"
+import sys
 
-path += '../parameters/bodies.json'
-
-jsonHandler = JsonHandler()
-bodies_unpack = jsonHandler.read(path, escape=True)
+bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 
 SOFTWARE = 0
 HARDWARE = 1

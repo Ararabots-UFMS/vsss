@@ -1,5 +1,3 @@
-#!/usr/bin/python
-import sys
 import cv2
 import os
 import sys
@@ -7,6 +5,7 @@ import numpy as np
 from threading import Thread
 from time import sleep
 
+# Top level imports
 from utils.json_handler import JsonHandler
 
 # @author Wellington Castro <wvmcastro>
@@ -93,7 +92,7 @@ class Camera:
             ret, self.frame = self.capture.read()
         except:
             e = sys.exc_info()[0]
-            print ("Erro: %s" %  (e))
+            print("Erro: %s", e)
 
         if self.lens_correction:
             self.frame = cv2.remap(self.frame, self.mapx, self.mapy, cv2.INTER_LINEAR)

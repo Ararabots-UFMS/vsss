@@ -1,8 +1,7 @@
-#!/usr/bin/python
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 
 import fltk as fl
-from ImageCreator import ImageCreator
+from .ImageCreator import ImageCreator
 from os import path, environ
 import time
 from threading import Thread
@@ -44,8 +43,8 @@ class LoadingView(Thread):
                 self.logo_image = fl.Fl_PNG_Image(logo_file)
                 self.logo.image(self.logo_image)
             else:
-                print logo_file
-                print "nope"
+                print(logo_file)
+                print("nope")
                 self.logo_image = None
 
         self.label = fl.Fl_Box(self.proportion_width(31),self.proportion_height(5),self.proportion_width(68),
@@ -59,8 +58,8 @@ class LoadingView(Thread):
 
         self.label_position = 0
         self.labels_text = ["Salvando banco de dados",
-                            "Carregando nó da visão",
-                            "Testando texto desnecessário e extremamente longo para essa tela",
+                            "Carregando nï¿½ da visï¿½o",
+                            "Testando texto desnecessï¿½rio e extremamente longo para essa tela",
                             "Carregando Assets",
                             "Carregando..."]
 

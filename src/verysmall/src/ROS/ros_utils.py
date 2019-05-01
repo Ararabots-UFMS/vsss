@@ -28,11 +28,5 @@ class RosUtils:
             - game_topic_2
         :param topic: String
         :return: int
-        """
-        count = 0
-        for owner_topics in get_published_topics():
-            for current_topic in owner_topics:
-                if current_topic.find(topic) != -1:
-                    count+=1
-        
+        """        
         return random.randint(0,99999)

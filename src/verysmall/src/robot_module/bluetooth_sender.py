@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import rospy
 import sys
 from verysmall.msg import motor_speed

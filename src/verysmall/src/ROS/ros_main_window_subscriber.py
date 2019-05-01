@@ -1,17 +1,18 @@
-#!/usr/bin/env python
 import rospy
-from Queue import Queue
-from collections import deque
+from queue import Queue
+from collections import deque, namedtuple
+import numpy as np
+from numpy import array, asarray, any
 from verysmall.msg import things_position, debug_topic
-from numpy import nan_to_num, array, asarray, any
-
+#from interface.View.MainWindowView import MainWindowView
 
 class RosMainWindowSubscriber:
-    def __init__(self, _game_topic_name = 'game_topic_0'):
+    def __init__(self, window, game_topic_name = 'game_topic_0'):
         """
         This is class is mainly responsible for the ROS functions of Main Window View
         :return: nothing
         """
+        self._my_window = window
         #if isnode:
         #    rospy.init_node('virtual_field', anonymous=True)
 
@@ -19,7 +20,7 @@ class RosMainWindowSubscriber:
         rospy.Subscriber('things_position', things_position, self.read, queue_size=10)
 
         # Debug topic
-        rospy.Subscriber('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
+        rospy.Subscriber('debug_topic_'+game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
 
         # Queue of data from Topic Things position
         msg = things_position()
@@ -71,21 +72,36 @@ class RosMainWindowSubscriber:
         data_item = None
 
         try:
-            data_item = self.data.popleft()
-            data_item.ball_pos = nan_to_num(data_item.ball_pos)  # ball position
-            data_item.team_pos = nan_to_num(data_item.team_pos).reshape((5, 2))  # home team position
-            data_item.team_orientation = nan_to_num(data_item.team_orientation)  # home team vectors
-            data_item.team_speed = nan_to_num(data_item.team_speed).reshape((5, 2))  # away team speed    
+            topic_info = self.data.popleft()
+            data_item = namedtuple('DataItem', ['ball_pos', 'team_pos', 
+                                   'team_orientation', 'team_speed',
+                                   'enemies_pos', 'enemies_orientation',
+                                   'enemies_speed', 'vision_fps'])
             
-            data_item.enemies_pos = nan_to_num(data_item.enemies_pos).reshape((5, 2))  # away team position
-            data_item.enemies_orientation = nan_to_num(data_item.enemies_orientation)  # away team vectors
-            data_item.enemies_speed = nan_to_num(data_item.enemies_speed).reshape((5, 2))  # away team speed
+            data_item.ball_pos = np.array(topic_info.ball_pos) / 100.0
+            data_item.vision_fps = topic_info.vision_fps / 100.0
+
+            if self._my_window.home_color == 1:
+                data_item.team_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
+                data_item.team_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
+                data_item.team_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
+                data_item.enemies_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
+                data_item.enemies_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
+                data_item.enemies_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
+            else:
+                data_item.team_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
+                data_item.team_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
+                data_item.team_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
+                data_item.enemies_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
+                data_item.enemies_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
+                data_item.enemies_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
+
 
             enemies_position = []
             enemies_orientation = []
             enemies_speed = []
 
-            for i in xrange(5):
+            for i in range(5):
                 if any(data_item.enemies_pos[i]):
                     enemies_position.append(data_item.enemies_pos[i])
                     enemies_orientation.append(data_item.enemies_orientation[i])

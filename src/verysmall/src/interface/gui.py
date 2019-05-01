@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import fltk as fl
 import sys
 import os
