@@ -146,8 +146,8 @@ class NewSeeker:
     def feed(self, img_segments:List[np.ndarray]) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
-        print(obj_in_segs,"!===!", len(img_segments))
         self.update(obj_in_segs)
+        print(obj_in_segs,"!===!", len(img_segments))
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment

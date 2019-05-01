@@ -122,6 +122,7 @@ class ArucoObjectDetector(ObjDetector):
 
                 i += 1
 
+        print("FOUND:", identified_markers)
         return identified_markers
 
     def seek(self,segments, objects_per_segment):

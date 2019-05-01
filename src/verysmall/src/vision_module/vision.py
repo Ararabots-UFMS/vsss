@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import sys
 import COLORS
 import cv2
@@ -36,6 +36,8 @@ class Vision:
 
     def __init__(self, camera, adv_robots, home_color, home_robots,
                     home_tag="aruco", params_file_name="", colors_params = "", method=""):
+
+        print('vendo um pau cheiroso')
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -400,25 +402,20 @@ if __name__ == "__main__":
     home_robots = 2
     adv_robots = 2
     home_tag = "aruco"
-
     arena_params = "parameters/ARENA.json"
     colors_params = "parameters/COLORS.json"
     camera = Camera(sys.argv[1], "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
-
     v = Vision(camera, adv_robots, home_color, home_robots, home_tag,
     arena_params, colors_params, method="color_segmentation")
     v.game_on = True
-
     t = Thread(target=v.run_v2, args=())
     t.daemon = True
     t.start()
-
     i = 0
     last_time = time.time()
     cv2.namedWindow('control')
     show = False
     pinto = False
-
     while True:
         arena = v.arena_image
         key = cv2.waitKey(1) & 0xFF
