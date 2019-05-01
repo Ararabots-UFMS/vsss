@@ -2,6 +2,7 @@
 from ..View.ConnectionView import ConnectionView
 from fltk import fl_message, FL_WHITE, Fl
 from utils.enum_interfaces import all_interfaces
+from os import environ
 
 
 class ConnectionController:

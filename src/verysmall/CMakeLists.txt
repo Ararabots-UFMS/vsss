@@ -60,7 +60,6 @@ add_message_files(
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
-   connect_mac.srv
    manage_mac.srv
    vision_command.srv
 #   Service2.srv

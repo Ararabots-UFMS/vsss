@@ -5,7 +5,6 @@ class Model():
     def __init__(self):
         self.json_handler = JsonHandler()
         self.robot_params = self.json_handler.read("parameters/robots.json", escape=True)
-        self.robot_pid = self.json_handler.read("parameters/robots_pid.json", escape=True)
         self.robot_bluetooth = self.json_handler.read("parameters/bluetooth.json", escape=True)
         self.robot_bodies = self.json_handler.read("parameters/bodies.json", escape=True)
         self.robot_roles = self.json_handler.read("parameters/roles.json", escape=True)
