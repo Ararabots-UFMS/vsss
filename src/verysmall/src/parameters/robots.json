@@ -3,14 +3,14 @@
         "active": 0,
         "bluetooth_mac_address": "Et_Bilu",
         "body_id": "Et_Bilu",
-        "role": "Naive keeper",
+        "role": "Goleiro",
         "tag_number": 0
     },
     "robot_2": {
         "active": 0,
         "bluetooth_mac_address": "LUIS_ESPALHA_LIXO",
         "body_id": "LUIS_ESPALHA_LIXO",
-        "role": "Zagueiro",
+        "role": "Atacker With Univector",
         "tag_number": 2
     },
     "robot_3": {

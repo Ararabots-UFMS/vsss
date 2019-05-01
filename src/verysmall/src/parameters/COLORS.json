@@ -1,1 +1,32 @@
-{"hsv_ball_min": [255, 255, 255], "hsv_yellow_min": [35, 146, 192], "hsv_blue_max": [0, 0, 0], "hsv_blue_min": [255, 255, 255], "hsv_ball_max": [0, 0, 0], "hsv_yellow_max": [38, 255, 242]}
+{
+    "hsv_ball_max": [
+        15,
+        255,
+        255
+    ],
+    "hsv_ball_min": [
+        7,
+        176,
+        184
+    ],
+    "hsv_blue_max": [
+        0,
+        0,
+        0
+    ],
+    "hsv_blue_min": [
+        255,
+        255,
+        255
+    ],
+    "hsv_yellow_max": [
+        39,
+        240,
+        242
+    ],
+    "hsv_yellow_min": [
+        36,
+        160,
+        212
+    ]
+}

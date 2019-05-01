@@ -79,7 +79,7 @@ class RosMainWindowSubscriber:
                                    'enemies_speed', 'vision_fps'])
             
             data_item.ball_pos = np.array(topic_info.ball_pos) / 100.0
-            data_item.vision_fps = topic_info.vision_fps / 1000.0
+            data_item.vision_fps = topic_info.vision_fps / 100.0
 
             if self._my_window.home_color == 1:
                 data_item.team_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0

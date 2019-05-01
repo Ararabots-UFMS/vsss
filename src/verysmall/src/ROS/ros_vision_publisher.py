@@ -53,12 +53,13 @@ class RosVisionPublisher:
             np.int16(blue_pos.flatten() * 100).tolist(),
             np.int16(blue_orientation.flatten() * 10000).tolist(),
             np.int16(blue_speed.flatten() * 100).tolist(),
-            int(fps * 1000)
+            int(fps * 100)
         )
 
         try:
             self.pub.publish(msg)
         except rospy.ROSException as e:
+            rospy.logfatal(e)
             rospy.logfatal(msg)
 
 
