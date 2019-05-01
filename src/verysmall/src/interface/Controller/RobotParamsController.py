@@ -190,9 +190,6 @@ class RobotParamsController:
 
 
 if __name__ == '__main__':
-    from sys import path
-    from os import environ
-    path[0] = root_path = environ['ROS_ARARA_ROOT'] + "src/"
     from interface.View.RobotParamsView import RobotParamsView
     from utils.model import Model
     model = Model()

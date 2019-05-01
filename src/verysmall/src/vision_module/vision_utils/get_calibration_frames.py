@@ -1,7 +1,4 @@
-import sys
-sys.path.append('../camera')
-
-from camera import Camera
+from vision_module.camera_module.camera import Camera
 import time
 import numpy as np
 import uuid

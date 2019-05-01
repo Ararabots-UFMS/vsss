@@ -1,1 +1,1 @@
-{"freeball_player": 4, "meta_player": 2, "time": 1, "ROS_MASTER_URI": "http://192.168.1.108:11311", "camera": {"vendor": "05a3", "file": "", "name": "USB 2.0 Camera", "product": "9230"}, "penalty_player": 0, "ROS_IP": ["wlp6s0", "192.168.1.108"], "side": 0}
+{"ROS_MASTER_URI": "http://192.168.1.108:11311", "penalty_player": 0, "time": 1, "ROS_IP": ["wlp6s0", "192.168.1.108"], "freeball_player": 4, "meta_player": 2, "side": 0, "camera": {"vendor": "05a3", "name": "USB 2.0 Camera", "file": "", "product": "9230"}}
