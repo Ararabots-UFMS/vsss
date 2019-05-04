@@ -88,4 +88,4 @@ class ObjState():
         return flat_obj
 
     def __repr__(self):
-        return "ObjsectSegment(id: %r pos: %r speed: %r theta: %r size: %r)" % (self.id, self.pos, self.speed, self.orientation, self.size)
+        return "ObjsectSate(id: %r pos: %r speed: %r theta: %r size: %r)" % (self.id, self.pos, self.speed, self.orientation, self.size)

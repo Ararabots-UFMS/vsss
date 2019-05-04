@@ -174,7 +174,7 @@ class ColorSegmentation:
         cv2.destroyAllWindows()
 
 CAMERA_ID = 0
-CAMERA_PARAMS_PATH = environ['ROS_ARARA_ROOT'] + "src/" +  "parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+CAMERA_PARAMS_PATH = "parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 
 if __name__ == "__main__":
 

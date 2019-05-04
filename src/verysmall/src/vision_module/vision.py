@@ -115,8 +115,8 @@ class Vision:
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag, self.num_yellow_robots,
                                 self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
 
-        #self.new_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
-        self.new_obj_seeker = NewSeeker(self.num_yellow_robots, KmeansObjectDetector())
+        self.new_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
+        #self.new_obj_seeker = NewSeeker(self.num_yellow_robots, KmeansObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -221,7 +221,6 @@ class Vision:
     def get_filter(self, img, lower, upper):
         """ Returns a binary images where the white pixels corresponds to the pixels
         of the img that are between lower and upper threshold """
-        print(lower, upper)
         temp_value_mask = cv2.inRange(img, np.array(lower), np.array(upper))
         return temp_value_mask
 
@@ -262,7 +261,7 @@ class Vision:
         frame0 = self.color_seg([(tl, br)], color)[0]
 
         #aruco initialize
-        frames.append(0 + frame0)
+        frames.append(255 - frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
@@ -270,7 +269,7 @@ class Vision:
         frame1 = self.color_seg([(tl, br)], color)[0]
 
         #aruco initialize
-        frames.append(0 + frame1)
+        frames.append(255 - frame1)
 
         seeker.initialize(frames)
 
@@ -282,6 +281,7 @@ class Vision:
             self.last_time = time.time()
             while self.game_on:
                 self.raw_image = self.camera.read()
+
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
                 self.set_dark_border()
@@ -289,13 +289,12 @@ class Vision:
                 # just to be visible in the outside
                 # debugging thing just for now
                 self.windows = self.new_obj_seeker.predict_all_windows()
+                self.segments = self.color_seg(self.windows, 'yellow')
 
-                segments = self.color_seg(self.windows, 'yellow')
+                for k in range(len(self.segments)):
+                    self.segments[k] = 255 - self.segments[k]
 
-                for k in range(len(segments)):
-                    segments[i] = 0 + segments[k]
-
-                self.new_obj_seeker.feed(segments)
+                self.new_obj_seeker.feed(self.segments)
 
                 self.update_fps()
     
@@ -375,11 +374,13 @@ if __name__ == "__main__":
                 br = (int(window[1][0]), int(window[1][1]))
                 #print window[0].to_list(), window[1].to_list()
                 cv2.rectangle(img, tl, br, (0, 255, 255), 2)
-            for tracker in v.new_obj_seeker.trackers:
+            for i, seg in enumerate(v.segments):
+                cv2.imshow("seg"+str(i), seg)
+            """for tracker in v.new_obj_seeker.trackers:
                 tl = (int(tracker.bbox.top_left.x), int(tracker.bbox.top_left.y))
                 br = (int(tracker.bbox.bottom_right.x), int(tracker.bbox.bottom_right.y))
                 #print window[0].to_list(), window[1].to_list()
-                cv2.rectangle(img, tl, br, (255, 0, 255), 2)
+                cv2.rectangle(img, tl, br, (255, 0, 255), 2)"""
 
             cv2.imshow("bounding-boxes", img)
         if key == ord('q'): # exit

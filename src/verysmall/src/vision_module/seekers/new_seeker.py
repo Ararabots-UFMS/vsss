@@ -164,14 +164,14 @@ class NewSeeker:
                     print('tag id ', obj.id, 'doesnt exist')
 
 
-    def __common_update(self, objs_in_segs:List[ObjState]) -> None:
-        # Remap position values before update
+    def __common_update(self, objs_in_segs:List[List[ObjState]]) -> None:
         # Remap position values before update
         self.mapper(objs_in_segs)
+
         # For each segment
-        for index in range(len(objs_in_segs)):
-            # Build a distance matrix between postion given and segments
+        for index in range(len(self.segments)):
             n = len(objs_in_segs[index])
+
             if n > 1:
                 # Sort the positions with current tracker positions
                 t = self.segments[index]
@@ -223,9 +223,9 @@ class NewSeeker:
     def predict_all_windows(self) -> [(tuple)]:
         bboxes = []
         for i in range(self.num_objects):
-            #print("pred window:", self.trackers[i].predict_window())
-            bboxes.append(self.trackers[i].predict_window())
-        #the fuser function append the self.parent_bboxes and dont return anything
+            bboxes.append(self.trackers[i].predict_window(speed_gain=1))
+
+        #print("predict_all... ", bboxes)
         self.fuser(bboxes)
         return self.parent_bboxes
 
@@ -270,8 +270,10 @@ class NewSeeker:
 
         self.parent_bboxes = []
         self.segments = self.get_unions(intersections)
-        for segment in self.segments:
+
+        for i, segment in enumerate(self.segments):
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
+            #print("fuser: %r -> %r" % (i, self.parent_bboxes[-1]))
 
     def mapper(self, objs_in_segs:List[ObjState]) -> None:
         """
@@ -280,12 +282,15 @@ class NewSeeker:
 
         """
         k = len(objs_in_segs)
+
         if k != len(self.parent_bboxes):
             return
+
         for i in range(k):
             objs = objs_in_segs[i]
             for j in range(len(objs)):
                 objs[j].pos = objs[j].pos + self.parent_bboxes[i][0]
+                #print("mapper: %r -> %r" % (i, self.parent_bboxes[i]))
 
 
     def get_serialized_objects(self):
@@ -312,15 +317,14 @@ class Tracker():
 
     def update(self, position:Vec2, orientation:float = 0.):
         self.updated = True
+
         old_p = self.obj.pos
-        #print('position que chega', position)
         self.obj.pos = position
-        #print("position que atribui", self.obj.pos)
-        #t0 = self.t
-        #self.t = time()
+
         t0 = time()
         self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
         self.t = t0
+
         self.obj.orientation = orientation
 
     def predict(self, dt:int = -1) -> Vec2:
@@ -335,13 +339,13 @@ class Tracker():
 
     def predict_window(self, speed_gain:float = 2.5, fat_factor:float = 2.0) -> BoundingBox:
 
-        #if not self.updated:
-         #   return self.bbox
+        if not self.updated:
+            return self.bbox
 
         l = self.my_seeker.obj_detector.obj_size / 2.0
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l, l)
-        bbox = fat_factor * BoundingBox(tl, br)
+        bbox = 1.5 * BoundingBox(tl, br)
         dt = time() - self.t
 
         if self.obj.speed.y < 0:
@@ -359,4 +363,5 @@ class Tracker():
         self.bbox = bbox
 
         self.updated = False
+
         return bbox

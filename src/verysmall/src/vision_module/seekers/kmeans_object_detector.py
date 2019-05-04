@@ -34,7 +34,6 @@ class KmeansObjectDetector(ObjDetector):
 
         # Iterate over segments
         for index in range(number_of_segments):
-
             # Insantiate KMeans for this segment
             kmeans = KMeans(n_clusters=objects_per_segment[index], n_init=1, max_iter=self.max_iter,
             precompute_distances=True, n_jobs=self.number_of_jobs)
@@ -57,8 +56,7 @@ class KmeansObjectDetector(ObjDetector):
 
                 if cnts_array.shape[0] > objects_per_segment[index]:
                     kmeans.fit(cnts_array)
-                    newObjects = kmeans.cluster_centers_
-                    center_of_objects = newObjects
+                    center_of_objects = kmeans.cluster_centers_
 
             obj_states_in_segment = []
             for object_center in center_of_objects:

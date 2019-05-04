@@ -107,6 +107,7 @@ class ArucoObjectDetector(ObjDetector):
 
                 self.update_obj_size(corners[index][0])
                 # Estimate the marker's pose
+
                 rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[ index ], 0.075,
                                 self.camera_matrix, self.distortion_vector)
 
@@ -122,7 +123,7 @@ class ArucoObjectDetector(ObjDetector):
 
                 i += 1
 
-        print("FOUND:", identified_markers)
+        #print("FOUND:", identified_markers)
         return identified_markers
 
     def seek(self,segments, objects_per_segment):
