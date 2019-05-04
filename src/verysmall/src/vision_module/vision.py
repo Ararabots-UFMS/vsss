@@ -17,6 +17,7 @@ from ROS.ros_vision_publisher import RosVisionPublisher
 
 from vision_module.seekers.new_seeker import NewSeeker
 from vision_module.seekers.seeker_data_structures import Vec2
+from vision_module.seekers.kmeans_object_detector import KmeansObjectDetector
 from vision_module.seekers.aruco_object_detector import ArucoObjectDetector
 # @author Wellington Castro <wvmcastro>
 
@@ -90,7 +91,6 @@ class Vision:
         if method == "color_segmentation":
             self.colors_params_file = colors_params
             self.load_colors_params()
-            self.pipeline = self.color_seg_pipeline
             self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
             print("Method not recognized!")
@@ -115,8 +115,8 @@ class Vision:
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag, self.num_yellow_robots,
                                 self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
 
-        self.new_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
-        #self.new_obj_seeker = NewSeeker(self.home_robots, KmeansObjectDetector())
+        #self.new_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
+        self.new_obj_seeker = NewSeeker(self.num_yellow_robots, KmeansObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -221,6 +221,7 @@ class Vision:
     def get_filter(self, img, lower, upper):
         """ Returns a binary images where the white pixels corresponds to the pixels
         of the img that are between lower and upper threshold """
+        print(lower, upper)
         temp_value_mask = cv2.inRange(img, np.array(lower), np.array(upper))
         return temp_value_mask
 
@@ -242,42 +243,12 @@ class Vision:
 
         return windows_out
         
-    def color_seg_pipeline(self):
-        """ Wait until the color parameters are used """
+    """def color_seg_pipeline(self):
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
         self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
         self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
-        self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
+        self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)"""
 
-    def run(self):
-        while not self.finish:
-            self.last_time = time.time()
-            while self.game_on:
-                self.raw_image = self.camera.read()
-
-                """ Takes the raw imagem from the camera and applies the warp perspective transform """
-                self.warp_perspective()
-
-                self.set_dark_border()
-
-                """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
-                    self.home_seg, self.adv_seg and self.ball_seg """
-                self.pipeline()
-
-                self.hawk_eye.seek_yellow_team(255-self.yellow_seg, self.yellow_team)
-
-                self.hawk_eye.seek_blue_team(self.blue_seg, self.blue_team)
-
-                self.hawk_eye.seek_ball(self.ball_seg, self.ball)
-
-                #self.computed_frames += 1
-
-                self.update_fps()
-
-                self.send_message(ball=True, yellow_team=True, blue_team=True)
-
-        self.camera.stop()
-        self.camera.capture.release()
 
     def initialize_seeker(self, seeker, color):
         frames = []
@@ -289,19 +260,17 @@ class Vision:
         br = Vec2(w, h)
 
         frame0 = self.color_seg([(tl, br)], color)[0]
-        cv2.waitKey(0)
 
         #aruco initialize
-        frames.append(255 -frame0)
+        frames.append(0 + frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         frame1 = self.color_seg([(tl, br)], color)[0]
-        #frames.append(255 -frame1)
 
         #aruco initialize
-        frames.append(255 -frame1)
+        frames.append(0 + frame1)
 
         seeker.initialize(frames)
 
@@ -324,7 +293,7 @@ class Vision:
                 segments = self.color_seg(self.windows, 'yellow')
 
                 for k in range(len(segments)):
-                    segments[i] = 255 - segments[k]
+                    segments[i] = 0 + segments[k]
 
                 self.new_obj_seeker.feed(segments)
 
@@ -372,7 +341,7 @@ class Vision:
 if __name__ == "__main__":
     from threading import Thread
 
-    num_yellow_robots = 1
+    num_yellow_robots = 2
     num_blue_robots = 2
     home_tag = "aruco"
 
@@ -406,6 +375,12 @@ if __name__ == "__main__":
                 br = (int(window[1][0]), int(window[1][1]))
                 #print window[0].to_list(), window[1].to_list()
                 cv2.rectangle(img, tl, br, (0, 255, 255), 2)
+            for tracker in v.new_obj_seeker.trackers:
+                tl = (int(tracker.bbox.top_left.x), int(tracker.bbox.top_left.y))
+                br = (int(tracker.bbox.bottom_right.x), int(tracker.bbox.bottom_right.y))
+                #print window[0].to_list(), window[1].to_list()
+                cv2.rectangle(img, tl, br, (255, 0, 255), 2)
+
             cv2.imshow("bounding-boxes", img)
         if key == ord('q'): # exit
             v.pause()

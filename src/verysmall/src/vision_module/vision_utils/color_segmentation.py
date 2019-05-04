@@ -1,4 +1,6 @@
 import sys
+from os import environ
+
 import cv2
 import numpy as np
 import copy
@@ -172,11 +174,11 @@ class ColorSegmentation:
         cv2.destroyAllWindows()
 
 CAMERA_ID = 0
-CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+CAMERA_PARAMS_PATH = environ['ROS_ARARA_ROOT'] + "src/" +  "parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 
 if __name__ == "__main__":
 
-    params_file = "../../parameters/COLORS.json"
+    params_file = environ['ROS_ARARA_ROOT'] + "src/" + "parameters/COLORS.json"
     camera = Camera(sys.argv[1], CAMERA_PARAMS_PATH)
     c = ColorSegmentation(camera, params_file)
     c.run()

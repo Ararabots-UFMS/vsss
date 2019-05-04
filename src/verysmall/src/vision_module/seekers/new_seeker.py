@@ -147,7 +147,6 @@ class NewSeeker:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
         self.update(obj_in_segs)
-        print(obj_in_segs,"!===!", len(img_segments))
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
@@ -159,10 +158,8 @@ class NewSeeker:
                 try:
                     obj = objs_by_segment[index][i]
                     k = self.aruco_table.index(obj.id)
-                    print('aruco table:', self.aruco_table)
                     
                     self.trackers[k].update(obj.pos, obj.orientation)
-                    print("tracker: ",self.trackers[k])
                 except ValueError:
                     print('tag id ', obj.id, 'doesnt exist')
 
@@ -184,7 +181,6 @@ class NewSeeker:
                 # Update each tracker
                 for k in range(n):
                     self.trackers[t[k]].update(sorted_objects[k].pos)
-                    print("tracker: ",self.trackers[k])
 
             elif len(objs_in_segs[index]) == 0:
                 pass # Do nothing in case of empty array
@@ -298,6 +294,7 @@ class NewSeeker:
 
 class Tracker():
     def __init__(self, seeker:NewSeeker, obj_id:int = -1):
+        self.updated = False
         self.obj = ObjState(obj_id)
         self.t = 0.0
         self.bbox = BoundingBox()
@@ -314,6 +311,7 @@ class Tracker():
         self.obj.pos.y = y
 
     def update(self, position:Vec2, orientation:float = 0.):
+        self.updated = True
         old_p = self.obj.pos
         #print('position que chega', position)
         self.obj.pos = position
@@ -336,6 +334,10 @@ class Tracker():
         return self.obj.pos + self.obj.speed*dt
 
     def predict_window(self, speed_gain:float = 2.5, fat_factor:float = 2.0) -> BoundingBox:
+
+        #if not self.updated:
+         #   return self.bbox
+
         l = self.my_seeker.obj_detector.obj_size / 2.0
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l, l)
@@ -353,4 +355,8 @@ class Tracker():
             bbox.bottom_right.x += speed_gain * self.obj.speed.x * dt
 
         bbox.bound(0, 0, *self.my_seeker.img_shape)
+
+        self.bbox = bbox
+
+        self.updated = False
         return bbox
