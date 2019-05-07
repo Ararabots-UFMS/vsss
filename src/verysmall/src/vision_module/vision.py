@@ -273,6 +273,8 @@ class Vision:
 
         seeker.initialize(frames)
 
+        seeker.obj_detector.turn_off_size_calculation()
+
 
     def run_v2(self):
         self.initialize_seeker(self.new_obj_seeker, 'yellow')

@@ -48,11 +48,13 @@ class KmeansObjectDetector(ObjDetector):
             if num_cnts > 0:
 
                 cnts_array = np.array(cnts[0]).reshape(-1, 2)
-                self.update_obj_size((cnts[0]))
+                if self.should_calculate_size:
+                    self.update_obj_size((cnts[0]))
 
                 for i in range(1, num_cnts):
                     cnts_array = np.vstack([cnts_array, np.array(cnts[i]).reshape(-1, 2)])
-                    self.update_obj_size(cnts[i])
+                    if self.should_calculate_size:
+                        self.update_obj_size(cnts[i])
 
                 if cnts_array.shape[0] > objects_per_segment[index]:
                     kmeans.fit(cnts_array)

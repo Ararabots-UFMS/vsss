@@ -52,7 +52,8 @@ class SimpleObjectDetector(ObjDetector):
                     temp_obj_state.set_pos(c_x, c_y)
     
                     obj_states_in_this_segment.append(temp_obj_state)
-                    self.update_obj_size(cnt)
+                    if self.should_calculate_size:
+                        self.update_obj_size(cnt)
 
                 if len(obj_states_in_this_segment) == objects_per_segment[index]:
                     break

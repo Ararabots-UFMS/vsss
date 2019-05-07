@@ -337,7 +337,7 @@ class Tracker():
             dt = time() - self.t
         return self.obj.pos + self.obj.speed*dt
 
-    def predict_window(self, speed_gain:float = 2.5, fat_factor:float = 2.0) -> BoundingBox:
+    def predict_window(self, speed_gain:float = 2.5, scale_factor:float = 2.0, ) -> BoundingBox:
 
         if not self.updated:
             return self.bbox
@@ -345,7 +345,7 @@ class Tracker():
         l = self.my_seeker.obj_detector.obj_size / 2.0
         tl = self.obj.pos + Vec2(-l, -l)
         br = self.obj.pos + Vec2(l, l)
-        bbox = 1.5 * BoundingBox(tl, br)
+        bbox = scale_factor * BoundingBox(tl, br)
         dt = time() - self.t
 
         if self.obj.speed.y < 0:

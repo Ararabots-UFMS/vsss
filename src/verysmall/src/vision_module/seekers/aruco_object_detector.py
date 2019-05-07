@@ -8,11 +8,14 @@ from vision_module.seekers.obj_detector import ObjDetector
 
 # @author Wellington Castro <wvmcastro>
 
+
 class ArucoObjectDetector(ObjDetector):
 
     def __init__(self, cam_mtx, dist_vec, num_tags, num_bits=3, num_markers=5):
         """ Initializes the objects necessary to perform the detection
             of the aruco tags """
+
+        super().__init__()
 
         # Hyper params to create the aruco markers dictionary
         # self.num_markers = num_markers
@@ -32,6 +35,8 @@ class ArucoObjectDetector(ObjDetector):
         self.distortion_vector = dist_vec
 
         self.obj_size = -1
+
+
 
     def get_aruco_state(self, img, rvec, tvec, degree=False):
         # x axis
@@ -105,9 +110,10 @@ class ArucoObjectDetector(ObjDetector):
                 # Finds the original index of the marker before sorting
                 index = np.argwhere(ids == sorted_ids[i])[0,0]
 
-                self.update_obj_size(corners[index][0])
-                # Estimate the marker's pose
+                if self.should_calculate_size:
+                    self.update_obj_size(corners[index][0])
 
+                # Estimate the marker's pose
                 rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[ index ], 0.075,
                                 self.camera_matrix, self.distortion_vector)
 
