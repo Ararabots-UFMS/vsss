@@ -341,7 +341,7 @@ class Vision:
 
 if __name__ == "__main__":
     from threading import Thread
-
+    print('oe')
     num_yellow_robots = 2
     num_blue_robots = 2
     home_tag = "aruco"
@@ -349,11 +349,12 @@ if __name__ == "__main__":
     arena_params = "../parameters/ARENA.json"
     colors_params = "../parameters/COLORS.json"
     camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
-
+    print('camera started')
     v = Vision(camera, num_blue_robots, num_yellow_robots, arena_params,
                colors_params, method="color_segmentation")
 
     v.game_on = True
+    print('vision started')
 
     t = Thread(target=v.run_v2, args=())
     t.daemon = True
@@ -391,7 +392,7 @@ if __name__ == "__main__":
             break
         elif key == ord('s'): #show/hide
             show = not show
-            if show == False:
+            if show is False:
                 cv2.destroyWindow("vision")
                 cv2.destroyWindow("segs")
         elif key == ord('c'): # open cropper

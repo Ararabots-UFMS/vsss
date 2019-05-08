@@ -61,11 +61,12 @@ class Vec2:
             return self.x
         return self.y
 
+
 class ObjState():
     def __init__(self, id:int = 0):
         self.id = id
         self.pos = Vec2()
-        self.speed = Vec2()
+        self.velocity = Vec2()
         self.orientation = 0
         # Size should be the largest axis of the object
         self.size = np.inf
@@ -75,8 +76,8 @@ class ObjState():
         self.pos.y = y
 
     def set_speed(self, vx, vy) -> None:
-        self.speed.x = vx
-        self.speed.y = vy
+        self.velocity.x = vx
+        self.velocity.y = vy
 
     def set_orientation(self, theta) -> None:
         # For convention the orientation is always taken in relation
@@ -84,8 +85,8 @@ class ObjState():
         self.orientation = theta
 
     def flat(self) -> list:
-        flat_obj = [self.id] + self.pos.to_list() + self.speed.to_list() + [self.orientation]
+        flat_obj = [self.id] + self.pos.to_list() + self.velocity.to_list() + [self.orientation]
         return flat_obj
 
     def __repr__(self):
-        return "ObjsectSate(id: %r pos: %r speed: %r theta: %r size: %r)" % (self.id, self.pos, self.speed, self.orientation, self.size)
+        return "ObjsectSate(id: %r pos: %r speed: %r theta: %r size: %r)" % (self.id, self.pos, self.velocity, self.orientation, self.size)

@@ -305,6 +305,61 @@ class Tracker():
         self.bbox = BoundingBox()
         self.my_seeker = seeker
 
+        self.lost_counter = 0
+
+        # Saves the time of the last update
+        self.last_update = None
+
+        # This variable is used as the kalman filter object
+        self.kalman = None
+
+        self.angular_kalman = None
+
+        self.init_kalman()
+
+
+
+    def init_angular_kalman(self):
+        dt = 1.0
+        self.angular_kalman = cv2.KalmanFilter(3, 1, 0)
+        self.angular_kalman.transitionMatrix = np.array([[1., dt, .5*dt**2],
+                                                         [0., 1., dt],
+                                                         [0., 0., 1.]]).reshape(3,3)
+        self.angular_kalman.processNoiseCov = 1e-5 * np.eye(3)
+        self.angular_kalman.measurementNoiseCov = 1e-1 * np.ones((1, 1))
+        self.angular_kalman.measurementMatrix = 0. * np.zeros((1, 3))
+        self.angular_kalman.measurementMatrix[0,0] = 1.
+        self.angular_kalman.errorCovPost = 1. * np.ones((3, 3))
+        self.angular_kalman.statePost = np.array([[0., 0., 0.]]).reshape(3,1)
+
+    def init_kalman(self):
+        #estimated frame rate
+        dt = 1.0
+        self.kalman = cv2.KalmanFilter(6, 2, 0)
+        self.kalman.transitionMatrix = np.array([[1., 0., dt, 0, .5*dt**2, 0.],
+                                                 [0., 1., 0., dt, 0., .5*dt**2],
+                                                 [0., 0., 1., 0., dt, 0.],
+                                                 [0., 0., 0., 1., 0., dt],
+                                                 [0., 0., 0., 0., 1., 0.],
+                                                 [0., 0., 0., 0., 0., 1.]]).reshape(6,6)
+
+        self.kalman.processNoiseCov = 1e-5 * np.eye(6)
+        self.kalman.measurementNoiseCov = 1e-1 * np.ones((2, 2))
+
+        self.kalman.measurementMatrix = 0. * np.zeros((2, 6))
+        self.kalman.measurementMatrix[0,0] = 1.
+        self.kalman.measurementMatrix[1,1] = 1.
+
+        self.kalman.errorCovPost = 1. * np.ones((6, 6))
+        self.kalman.statePost = np.array([[0., 0., 0., 0., 0., 0.]]).reshape(6,1)
+
+        self.init_angular_kalman()
+
+    def set_dt(self, time_now):
+        dt = time_now - self.last_update
+        self.kalman.transitionMatrix[0,2] = dt
+        self.kalman.transitionMatrix[1,3] = dt
+
     def __repr__(self):
         return "Tracker:\n---"+str(self.obj.id)+"\n---"+str(self.bbox)
 
@@ -316,16 +371,69 @@ class Tracker():
         self.obj.pos.y = y
 
     def update(self, position:Vec2, orientation:float = 0.):
-        self.updated = True
+        # self.updated = True
+        #
+        # old_p = self.obj.pos
+        # self.obj.pos = position
+        #
+        # t0 = time()
+        # self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
+        # self.t = t0
+        #
+        # self.obj.orientation = orientation
 
-        old_p = self.obj.pos
-        self.obj.pos = position
+        now = time()
+        if self.last_update is None and np.all(position is not None):  # first run
+            self.init_kalman()
+            # A initialization state must be provided to the kalman filter
+            self.kalman.statePost = np.array([[position[0], position[1], 0., 0., 0., 0.]]).reshape(6, 1)
 
-        t0 = time()
-        self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
-        self.t = t0
+            if orientation is not None:
+                self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3, 1)
+            else:
+                self.angular_kalman.statePost = np.array([[0, 0., 0.]]).reshape(3, 1)
 
-        self.obj.orientation = orientation
+            self.lost_counter = 0
+            self.obj.velocity = np.array([0, 0])
+        else:
+            self.kalman.predict()
+            self.angular_kalman.predict()
+
+            # updates the kalman filter
+            if np.all(position is not None) and self.lost_counter < 60:
+                self.kalman.correct(position.to_np().reshape(2, 1))
+                if orientation is not None:
+                    self.angular_kalman.correct(np.array([orientation]).reshape(1, 1))
+                self.lost_counter = 0
+            else:  # updates the lost counter
+                self.lost_counter += 1
+
+            # uses the kalman info
+            state = self.kalman.predict()
+            pos = np.array([state[0, 0], state[1, 0]])
+            self.obj.velocity = np.array([state[2, 0], state[3, 0]]) * 60.0
+
+            if orientation is not None and abs(abs(orientation) - math.pi) < 0.15:
+                # self.init_angular_kalman()
+                self.angular_kalman.statePost = np.array([[orientation, 0., 0.]]).reshape(3, 1)
+            elif orientation is None:
+                orientation = self.angular_kalman.predict()[0, 0]
+
+        if self.lost_counter >= 60:  # if the thing was lost in all previous 10 frames
+            self.reset()
+        else:
+            # Updates the robot's state variables
+            self.updated = True
+            self.last_update = now
+
+            old_p = self.obj.pos
+            self.obj.pos = position
+
+            t0 = time()
+            self.obj.velocity = (1.0 / (-self.t + t0)) * (self.obj.pos - old_p)
+            self.t = t0
+
+            self.obj.orientation = orientation
 
     def predict(self, dt:int = -1) -> Vec2:
         """
@@ -335,7 +443,7 @@ class Tracker():
         """
         if dt < 0:
             dt = time() - self.t
-        return self.obj.pos + self.obj.speed*dt
+        return self.obj.pos + self.obj.velocity * dt
 
     def predict_window(self, speed_gain:float = 2.5, scale_factor:float = 2.0, ) -> BoundingBox:
 
@@ -348,15 +456,15 @@ class Tracker():
         bbox = scale_factor * BoundingBox(tl, br)
         dt = time() - self.t
 
-        if self.obj.speed.y < 0:
-            bbox.top_left.y += speed_gain * self.obj.speed.y * dt
+        if self.obj.velocity.y < 0:
+            bbox.top_left.y += speed_gain * self.obj.velocity.y * dt
         else:
-            bbox.bottom_right.y += speed_gain * self.obj.speed.y * dt
+            bbox.bottom_right.y += speed_gain * self.obj.velocity.y * dt
 
-        if self.obj.speed.x < 0:
-            bbox.top_left.x += speed_gain * self.obj.speed.x * dt
+        if self.obj.velocity.x < 0:
+            bbox.top_left.x += speed_gain * self.obj.velocity.x * dt
         else:
-            bbox.bottom_right.x += speed_gain * self.obj.speed.x * dt
+            bbox.bottom_right.x += speed_gain * self.obj.velocity.x * dt
 
         bbox.bound(0, 0, *self.my_seeker.img_shape)
 

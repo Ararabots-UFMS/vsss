@@ -1,5 +1,5 @@
-from ..camera_module.camera import Camera
-import COLORS
+from vision_module.camera_module.camera import Camera
+import vision_module.COLORS as COLORS
 import numpy as np
 import cv2
 import time
