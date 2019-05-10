@@ -14,11 +14,13 @@ class Vec2:
         return np.array(self.to_list())
 
     def __add__(self, vec):
-        return Vec2(self.x + vec.x, self.y + vec.y)
-
+        try:
+            return Vec2(self.x + vec.x, self.y + vec.y)
+        except TypeError:
+            return NotImplemented
+        
     def __radd__(self, vec):
-        _v = Vec2(self.x + vec.x, self.y + vec.y)
-        return _v
+        return self + vec
 
     def __sub__(self, vec):
         _v = Vec2(self.x - vec.x, self.y - vec.y)
@@ -57,9 +59,12 @@ class Vec2:
         return Vec2(-self.x, -self.y)
 
     def __getitem__(self, index):
-        if (index%2) == 0:
-            return self.x
-        return self.y
+        if index == 0:
+            return self.x 
+        elif index == 1:
+            return self.y
+        
+        raise IndexError
 
 
 class ObjState():
