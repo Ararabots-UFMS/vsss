@@ -16,6 +16,7 @@ from utils.json_handler import JsonHandler
 from ROS.ros_vision_publisher import RosVisionPublisher
 
 from vision_module.seekers.new_seeker import NewSeeker
+from vision_module.seekers.simple_object_detector import SimpleObjectDetector
 from vision_module.seekers.seeker_data_structures import Vec2
 from vision_module.seekers.kmeans_object_detector import KmeansObjectDetector
 from vision_module.seekers.aruco_object_detector import ArucoObjectDetector
@@ -76,6 +77,9 @@ class Vision:
         # Super necessary to compute the robots positions
         self.origin = None
         self.conversion_factor = None
+        self.yellow_windows = None
+        self.ball_window = None
+        self.blue_windows = None
 
         self.game_on = False
         self.finish = False
@@ -115,8 +119,9 @@ class Vision:
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag, self.num_yellow_robots,
                                 self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
 
-        self.new_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
-        #self.new_obj_seeker = NewSeeker(self.num_yellow_robots, KmeansObjectDetector())
+        self.ball_obj_seeker = NewSeeker(1, SimpleObjectDetector())
+        self.yellow_obj_seeker = NewSeeker(self.num_yellow_robots, ArucoObjectDetector(self.camera.camera_matrix, self.camera.dist_vector, self.num_yellow_robots))
+        self.blue_obj_seeker = NewSeeker(self.num_blue_robots, KmeansObjectDetector())
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -275,9 +280,9 @@ class Vision:
 
         seeker.obj_detector.turn_off_size_calculation()
 
-
     def run_v2(self):
-        self.initialize_seeker(self.new_obj_seeker, 'yellow')
+        self.initialize_seeker(self.yellow_obj_seeker, 'yellow')
+        self.initialize_seeker(self.blue_obj_seeker, 'blue')
 
         while not self.finish:
             self.last_time = time.time()
@@ -288,20 +293,26 @@ class Vision:
                 self.warp_perspective()
                 self.set_dark_border()
 
-                # just to be visible in the outside
-                # debugging thing just for now
-                self.windows = self.new_obj_seeker.predict_all_windows()
-                self.segments = self.color_seg(self.windows, 'yellow')
+                # ========== Ball Detector ======================
+                self.ball_window = self.ball_obj_seeker.predict_all_windows()
+                segments = self.color_seg(self.ball_window, 'orange')
+                self.ball_obj_seeker.feed(segments)
 
-                for k in range(len(self.segments)):
-                    self.segments[k] = 255 - self.segments[k]
+                # ==========  Blue Detector ====================
+                self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
+                segments = self.color_seg(self.yellow_windows, 'yellow')
+                self.yellow_obj_seeker.feed(segments)
+                # ===============================================
 
-                self.new_obj_seeker.feed(self.segments)
-
+                # ==========  Yellow Detector ====================
+                self.blue_windows = self.blue_obj_seeker.predict_all_windows()
+                segments = self.color_seg(self.blue_windows, 'blue')
+                self.blue_obj_seeker.feed(segments)
+                # ===============================================
                 self.update_fps()
     
                 self.send_message(ball=True, yellow_team=True, blue_team=True)
-                #self.new_send_message(self.new_obj_seeker.get_serialized_objects())
+                #self.new_send_message(self.yellow_obj_seeker.get_serialized_objects())
 
         self.camera.stop()
         self.camera.capture.release()
@@ -379,7 +390,7 @@ if __name__ == "__main__":
                 cv2.rectangle(img, tl, br, (0, 255, 255), 2)
             for i, seg in enumerate(v.segments):
                 cv2.imshow("seg"+str(i), seg)
-            """for tracker in v.new_obj_seeker.trackers:
+            """for tracker in v.yellow_obj_seeker.trackers:
                 tl = (int(tracker.bbox.top_left.x), int(tracker.bbox.top_left.y))
                 br = (int(tracker.bbox.bottom_right.x), int(tracker.bbox.bottom_right.y))
                 #print window[0].to_list(), window[1].to_list()

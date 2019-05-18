@@ -80,7 +80,8 @@ class BoundingBox:
 
     def __rmul__(self, alpha:float):
         return self.__mul__(alpha)
-        
+
+
 class NewSeeker:
     def __init__(self, num_objects:int, obj_detector:ObjDetector):
         self.num_objects = num_objects

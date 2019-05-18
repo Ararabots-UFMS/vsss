@@ -148,6 +148,7 @@ class ArucoObjectDetector(ObjDetector):
 
         # Iterate over segments
         for index in range(number_of_segments):
-            centroids_per_segment.append(self.aruco_seek(segments[index], objects_per_segment[index]))
+            # Invert image colors so we can see with aruco detector
+            centroids_per_segment.append(self.aruco_seek(255 - segments[index], objects_per_segment[index]))
 
         return centroids_per_segment
