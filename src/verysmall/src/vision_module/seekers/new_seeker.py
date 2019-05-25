@@ -4,11 +4,19 @@ import cv2
 from time import time
 import numpy as np
 from typing import List, Tuple
+from enum import Enum
 
 from vision_module.seekers.seeker_data_structures import *
 from vision_module.seekers.aruco_object_detector import ArucoObjectDetector
-from vision_module.seekers.simple_object_detector import SimpleObjectDetector
+from vision_module.seekers.kmeans_object_detector import KmeansObjectDetector
 from vision_module.seekers.obj_detector import ObjDetector
+
+
+class ObjDetectorType(Enum):
+    ARUCO = 0
+    KMEANS = 1
+    SIMPLE = 2
+
 
 class BoundingBox:
     def __init__(self, tl:Vec2 = Vec2(), br:Vec2 = Vec2()):
@@ -88,6 +96,7 @@ class NewSeeker:
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
         self.segments = []
+        self.full_image = []
         self.parent_bboxes = []
         self.img_shape = None  # (w, h) -> cols, lines
 
@@ -95,9 +104,14 @@ class NewSeeker:
             self.update = self.__aruco_update
             self.initialize = self.__aruco_initialize
             self.aruco_table = []
+            self.obj_detector_type = ObjDetectorType.ARUCO
         else:
             self.update = self.__common_update
             self.initialize = self.__common_initialize
+            if isinstance(obj_detector, KmeansObjectDetector):
+                self.obj_detector_type = ObjDetectorType.KMEANS
+            else:
+                self.obj_detector_type = ObjDetectorType.SIMPLE
 
     def __aruco_initialize(self, frames:List[np.ndarray]) -> None:
         h, w = frames[0].shape[:2]
@@ -144,9 +158,9 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
-    def feed(self, img_segments:List[np.ndarray]) -> None:
+    def feed(self, img_segments:List[np.ndarray], full_image) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
-        obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
+        obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments], full_image)
         self.update(obj_in_segs)
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
@@ -253,7 +267,7 @@ class NewSeeker:
     
     def get_parent_bbox(self, bboxes:List[BoundingBox], bboxes_indexes:List[int]) -> tuple:
         """
-            This function creates a bouding box that includes all bbox in bboxes
+            This function creates a bounding box that includes all bbox in bboxes
         """
 
         degenerated  = BoundingBox(Vec2(np.inf, np.inf),Vec2(-np.inf, -np.inf))

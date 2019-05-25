@@ -74,7 +74,7 @@ class ArucoObjectDetector(ObjDetector):
         wh = br - tl
         self.obj_size = abs(wh)
 
-    def aruco_seek(self, img, degree=False, number_of_tags = None):
+    def aruco_seek(self, img, number_of_tags=None, degree=False):
         """
         Receives an image and the number of tags in it, the applies the aruco seeker to identify tags and returns
         tags from segment.
@@ -83,7 +83,7 @@ class ArucoObjectDetector(ObjDetector):
         :param number_of_tags: number of tags ins segment
         :return: Array(ObjState)
         """
-        if number_of_tags == None:
+        if number_of_tags is None:
             number_of_tags = self.num_tags
 
         # Try to locate all markers in the img
@@ -91,7 +91,7 @@ class ArucoObjectDetector(ObjDetector):
 
         identified_markers = []
 
-        if np.any(ids != None):
+        if np.any(ids is not None):
             # That means at least one Aruco marker was recognized
 
             # Reshapes the ids matrix to an ids vector for indexing simplicity
@@ -132,7 +132,7 @@ class ArucoObjectDetector(ObjDetector):
         #print("FOUND:", identified_markers)
         return identified_markers
 
-    def seek(self,segments, objects_per_segment):
+    def seek(self, segments, objects_per_segment, full_image):
         """
             This function receives a list of binary images and list of number of objects per segment
             and return its centers positions per segment using a opencv aruco implementation
@@ -143,12 +143,14 @@ class ArucoObjectDetector(ObjDetector):
 
         # Our return value
         centroids_per_segment = []
-
+        obj_counter = 0
         number_of_segments = len(segments)
 
         # Iterate over segments
         for index in range(number_of_segments):
             # Invert image colors so we can see with aruco detector
-            centroids_per_segment.append(self.aruco_seek(255 - segments[index], objects_per_segment[index]))
+            centroids_per_segment.append(self.aruco_seek(img=segments[index], number_of_tags=objects_per_segment[index]))
+            obj_counter += len(centroids_per_segment)
 
+        if obj_counter < sum(objects_per_segment)
         return centroids_per_segment

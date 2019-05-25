@@ -15,7 +15,7 @@ from verysmall.msg import game_topic
 from utils.json_handler import JsonHandler
 from ROS.ros_vision_publisher import RosVisionPublisher
 
-from vision_module.seekers.new_seeker import NewSeeker
+from vision_module.seekers.new_seeker import NewSeeker, ObjDetectorType
 from vision_module.seekers.simple_object_detector import SimpleObjectDetector
 from vision_module.seekers.seeker_data_structures import Vec2
 from vision_module.seekers.kmeans_object_detector import KmeansObjectDetector
@@ -265,16 +265,14 @@ class Vision:
 
         frame0 = self.color_seg([(tl, br)], color)[0]
 
-        #aruco initialize
-        frames.append(255 - frame0)
+        frames.append(frame0)
 
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         frame1 = self.color_seg([(tl, br)], color)[0]
 
-        #aruco initialize
-        frames.append(255 - frame1)
+        frames.append(frame1)
 
         seeker.initialize(frames)
 
@@ -298,15 +296,21 @@ class Vision:
                 segments = self.color_seg(self.ball_window, 'orange')
                 self.ball_obj_seeker.feed(segments)
 
-                # ==========  Blue Detector ====================
+                # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.yellow_windows, 'yellow')
+                if self.yellow_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
+                    segments = 255 - segments
+
                 self.yellow_obj_seeker.feed(segments)
                 # ===============================================
 
-                # ==========  Yellow Detector ====================
+                # ==========  Blue Detector ====================
                 self.blue_windows = self.blue_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.blue_windows, 'blue')
+                if self.blue_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
+                    segments = 255 - segments
+
                 self.blue_obj_seeker.feed(segments)
                 # ===============================================
                 self.update_fps()
