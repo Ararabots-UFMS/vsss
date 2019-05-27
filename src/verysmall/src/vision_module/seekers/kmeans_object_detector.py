@@ -9,6 +9,7 @@ class KmeansObjectDetector(ObjDetector):
     """A simple detector using find contours
         :param : None"""
     def __init__(self):
+        super().__init__()
         self.obj_size = -1
         self.max_iter = 30
         self.number_of_jobs = 1

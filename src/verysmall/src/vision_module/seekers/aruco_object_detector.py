@@ -5,6 +5,7 @@ import math
 
 from vision_module.seekers.seeker_data_structures import *
 from vision_module.seekers.obj_detector import ObjDetector
+from typing import List
 
 # @author Wellington Castro <wvmcastro>
 
@@ -132,12 +133,13 @@ class ArucoObjectDetector(ObjDetector):
         #print("FOUND:", identified_markers)
         return identified_markers
 
-    def seek(self, segments, objects_per_segment, full_image):
+    def seek(self, segments: List[np.ndarray], objects_per_segment: List[int], full_image: np.ndarray):
         """
             This function receives a list of binary images and list of number of objects per segment
             and return its centers positions per segment using a opencv aruco implementation
             :param segments: np.array([uint8]).shape([m,n])
             :param objects_per_segment: np.array
+            :param full_image: np.array
             :return: np.array([ObjState]).shape([k, n]) object has the position of the center of each object in img
         """
 
@@ -152,5 +154,7 @@ class ArucoObjectDetector(ObjDetector):
             centroids_per_segment.append(self.aruco_seek(img=segments[index], number_of_tags=objects_per_segment[index]))
             obj_counter += len(centroids_per_segment)
 
-        if obj_counter < sum(objects_per_segment)
+        if obj_counter < sum(objects_per_segment):
+            centroids_per_segment = [self.aruco_seek(img=full_image, number_of_tags=sum(objects_per_segment))]
+
         return centroids_per_segment

@@ -298,6 +298,7 @@ class Vision:
 
                 # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
+                print(self.yellow_windows)
                 segments = self.color_seg(self.yellow_windows, 'yellow')
                 if self.yellow_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
                     segments = 255 - segments

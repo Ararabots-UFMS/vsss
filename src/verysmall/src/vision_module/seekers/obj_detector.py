@@ -12,7 +12,7 @@ class ObjDetector(ABC):
         self.should_calculate_size = True
 
     @abstractmethod
-    def seek(self, segments:np.ndarray, objs_per_segment:[int]) -> ObjState:
+    def seek(self, segments:np.ndarray, objs_per_segment:[int], full_image:np.ndarray) -> ObjState:
         raise Exception("subclass must override seek")
         pass
     

@@ -121,7 +121,7 @@ class NewSeeker:
         cv2.imwrite('frame1.png', frames[1])
 
         objects_per_segment = [self.num_objects]
-        segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+        segs = self.obj_detector.seek([frames[0]], objects_per_segment, frames[0])
 
         for k,obj in enumerate(segs[0]):
             self.aruco_table.append(obj.id)
@@ -129,7 +129,7 @@ class NewSeeker:
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
 
         #second frame
-        segs = self.obj_detector.seek([frames[1]], objects_per_segment)
+        segs = self.obj_detector.seek([frames[1]], objects_per_segment, frames[1])
         self.segments = [[i for i in range(self.num_objects)]]
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
 
@@ -143,7 +143,7 @@ class NewSeeker:
             frames: two frames of the full image already segementeds
         """
         objects_per_segment = [self.num_objects]
-
+        print(sum(frames[0]))
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
         h,w = frames[0].shape[:2]
         cv2.imwrite('frame0.png', frames[0])
