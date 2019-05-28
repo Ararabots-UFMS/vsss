@@ -116,9 +116,8 @@ class NewSeeker:
     def __aruco_initialize(self, frames:List[np.ndarray]) -> None:
         h, w = frames[0].shape[:2]
         self.img_shape = (w, h)
-
-        cv2.imwrite('frame0.png', frames[0])
-        cv2.imwrite('frame1.png', frames[1])
+        for i in range(len(frames)):
+            frames[i] = 255 - frames[i]
 
         objects_per_segment = [self.num_objects]
         segs = self.obj_detector.seek([frames[0]], objects_per_segment, frames[0])
@@ -143,11 +142,8 @@ class NewSeeker:
             frames: two frames of the full image already segementeds
         """
         objects_per_segment = [self.num_objects]
-        print(sum(frames[0]))
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
         h,w = frames[0].shape[:2]
-        cv2.imwrite('frame0.png', frames[0])
-        cv2.imwrite('frame1.png', frames[1])
         self.img_shape = (w, h)
         for i,object in enumerate(segs[0]):
             self.trackers[i].set_pos(object.pos.x, object.pos.y)
@@ -385,17 +381,20 @@ class Tracker():
         self.obj.pos.x = x
         self.obj.pos.y = y
 
-    def update(self, position:Vec2, orientation:float = 0.):
-        # self.updated = True
-        #
-        # old_p = self.obj.pos
-        # self.obj.pos = position
-        #
-        # t0 = time()
-        # self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
-        # self.t = t0
-        #
-        # self.obj.orientation = orientation
+    def update(self, position:Vec2, orientation:float = 0., kalman =False):
+
+        if not kalman:
+            self.updated = True
+
+            old_p = self.obj.pos
+            self.obj.pos = position
+
+            t0 = time()
+            self.obj.speed = (1.0/(-self.t + t0)) * (self.obj.pos - old_p)
+            self.t = t0
+
+            self.obj.orientation = orientation
+            return
 
         now = time()
         if self.last_update is None and np.all(position is not None):  # first run

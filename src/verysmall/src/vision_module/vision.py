@@ -279,6 +279,7 @@ class Vision:
         seeker.obj_detector.turn_off_size_calculation()
 
     def run_v2(self):
+        self.initialize_seeker(self.ball_obj_seeker, 'orange')
         self.initialize_seeker(self.yellow_obj_seeker, 'yellow')
         self.initialize_seeker(self.blue_obj_seeker, 'blue')
 
@@ -294,29 +295,31 @@ class Vision:
                 # ========== Ball Detector ======================
                 self.ball_window = self.ball_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.ball_window, 'orange')
-                self.ball_obj_seeker.feed(segments)
+                self.ball_obj_seeker.feed(segments, self.arena_image)
+
 
                 # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
-                print(self.yellow_windows)
                 segments = self.color_seg(self.yellow_windows, 'yellow')
                 if self.yellow_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
-                    segments = 255 - segments
+                    for k in range(len(segments)):
+                        segments[k] = 255 - segments[k]
 
-                self.yellow_obj_seeker.feed(segments)
+                self.yellow_obj_seeker.feed(segments, self.arena_image)
                 # ===============================================
 
                 # ==========  Blue Detector ====================
                 self.blue_windows = self.blue_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.blue_windows, 'blue')
                 if self.blue_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
-                    segments = 255 - segments
+                    for k in range(len(segments)):
+                        segments[k] = 255 - segments[k]
 
-                self.blue_obj_seeker.feed(segments)
+                self.blue_obj_seeker.feed(segments, self.arena_image)
                 # ===============================================
                 self.update_fps()
-    
-                self.send_message(ball=True, yellow_team=True, blue_team=True)
+
+                #self.send_message(ball=True, yellow_team=True, blue_team=True)
                 #self.new_send_message(self.yellow_obj_seeker.get_serialized_objects())
 
         self.camera.stop()
@@ -357,8 +360,7 @@ class Vision:
 
 if __name__ == "__main__":
     from threading import Thread
-    print('oe')
-    num_yellow_robots = 2
+    num_yellow_robots = 1
     num_blue_robots = 2
     home_tag = "aruco"
 
@@ -385,16 +387,27 @@ if __name__ == "__main__":
         key = cv2.waitKey(1) & 0xFF
         if show:
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
-            cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
+            #cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
         if pinto:
             img = copy.deepcopy(v.arena_image)
-            for window in v.windows:
+            for window in v.ball_window:
                 tl = (int(window[0][0]), int(window[0][1]))
                 br = (int(window[1][0]), int(window[1][1]))
                 #print window[0].to_list(), window[1].to_list()
-                cv2.rectangle(img, tl, br, (0, 255, 255), 2)
-            for i, seg in enumerate(v.segments):
-                cv2.imshow("seg"+str(i), seg)
+                cv2.rectangle(img, tl, br, (40,158,255), 2)
+            for window in v.blue_windows:
+                tl = (int(window[0][0]), int(window[0][1]))
+                br = (int(window[1][0]), int(window[1][1]))
+                #print window[0].to_list(), window[1].to_list()
+                cv2.rectangle(img, tl, br, (255,0,0), 2)
+
+            for window in v.yellow_windows:
+                tl = (int(window[0][0]), int(window[0][1]))
+                br = (int(window[1][0]), int(window[1][1]))
+                #print window[0].to_list(), window[1].to_list()
+                cv2.rectangle(img, tl, br, (0,255,255), 2)
+            # for i, seg in enumerate(v.segments):
+            #     cv2.imshow("seg"+str(i), seg)
             """for tracker in v.yellow_obj_seeker.trackers:
                 tl = (int(tracker.bbox.top_left.x), int(tracker.bbox.top_left.y))
                 br = (int(tracker.bbox.bottom_right.x), int(tracker.bbox.bottom_right.y))

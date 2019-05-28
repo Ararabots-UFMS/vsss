@@ -154,7 +154,7 @@ class ArucoObjectDetector(ObjDetector):
             centroids_per_segment.append(self.aruco_seek(img=segments[index], number_of_tags=objects_per_segment[index]))
             obj_counter += len(centroids_per_segment)
 
-        if obj_counter < sum(objects_per_segment):
+        if obj_counter < self.num_tags:
             centroids_per_segment = [self.aruco_seek(img=full_image, number_of_tags=sum(objects_per_segment))]
 
         return centroids_per_segment

@@ -2,11 +2,11 @@ from vision_module.camera_module.camera import Camera
 import vision_module.COLORS as COLORS
 import numpy as np
 import cv2
+import sys
 import time
 import os
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 0
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
@@ -310,7 +310,7 @@ class ParamsSetter:
 
 
 if __name__ == '__main__':
-
+    CAMERA_ID = sys.argv[1]
     cam = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
     setter = ParamsSetter(cam, ARENA_PARAMS_PATH)
     setter.run()
