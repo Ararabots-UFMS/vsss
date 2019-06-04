@@ -96,10 +96,13 @@ class NewSeeker:
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
         self.segments = []
+        self.default_segment = []
         self.full_image = []
         self.parent_bboxes = []
         self.img_shape = None  # (w, h) -> cols, lines
+        self.lost_obj = False
 
+        # procurar alternativa em uma unica função que já faça a separação
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.__aruco_update
             self.initialize = self.__aruco_initialize
@@ -108,6 +111,7 @@ class NewSeeker:
         else:
             self.update = self.__common_update
             self.initialize = self.__common_initialize
+
             if isinstance(obj_detector, KmeansObjectDetector):
                 self.obj_detector_type = ObjDetectorType.KMEANS
             else:
@@ -130,6 +134,7 @@ class NewSeeker:
         #second frame
         segs = self.obj_detector.seek([frames[1]], objects_per_segment, frames[1])
         self.segments = [[i for i in range(self.num_objects)]]
+        self.default_segment = self.segments
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
 
         self.update(segs)
@@ -151,12 +156,14 @@ class NewSeeker:
         # second frame
         segs = self.obj_detector.seek([frames[1]], objects_per_segment)
         self.segments = [[i for i in range(self.num_objects)]]
+        self.default_segment = self.segments
         self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
     def feed(self, img_segments:List[np.ndarray], full_image) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments], full_image)
+        self.lost_obj = sum([len(seg) for seg in obj_in_segs]) < self.num_objects
         self.update(obj_in_segs)
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
@@ -233,11 +240,18 @@ class NewSeeker:
 
     def predict_all_windows(self) -> [(tuple)]:
         bboxes = []
-        for i in range(self.num_objects):
-            bboxes.append(self.trackers[i].predict_window(speed_gain=1))
 
-        #print("predict_all... ", bboxes)
-        self.fuser(bboxes)
+        if self.lost_obj:
+            self.lost_obj = False
+            self.segments = self.default_segment
+            temp_box = (Vec2(0, 0), Vec2(self.img_shape[0], self.img_shape[1]))
+            bboxes.append(temp_box)
+            self.parent_bboxes = bboxes
+        else:
+            for i in range(self.num_objects):
+                bboxes.append(self.trackers[i].predict_window(speed_gain=1))
+            self.fuser(bboxes)
+
         return self.parent_bboxes
 
     def get_intersections(self, intersection_matrix:np.ndarray, vertex_index:List[int], visited:List[int]) -> List[int]:

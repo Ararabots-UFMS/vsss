@@ -237,13 +237,17 @@ class Vision:
                            'orange': (self.ball_min, self.ball_max)}
         min, max = thresholds_dic[color]
         windows_out = []
-        for window in windows_in:
-            # a window is described by its top left and bottom right corners
-            # top left point, bottom right point
-            tl, br = window
-            sub_img = self.arena_image[int(tl.y):int(br.y), int(tl.x):int(br.x)]
-            sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2HSV)
-            windows_out.append(self.get_filter(sub_img, min, max))
+
+        if windows_in:
+
+            for window in windows_in:
+                if window[1].x != 0 and window[1].y != 0:
+                    # a window is described by its top left and bottom right corners
+                    # top left point, bottom right point
+                    tl, br = window
+                    sub_img = self.arena_image[int(tl.y):int(br.y), int(tl.x):int(br.x)]
+                    sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2HSV)
+                    windows_out.append(self.get_filter(sub_img, min, max))
 
         return windows_out
         
@@ -257,6 +261,7 @@ class Vision:
     def initialize_seeker(self, seeker, color):
         frames = []
         tl = Vec2(0, 0)
+        #procurar alternativa com uma unica função que chama camera read, warp e set dark border
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
@@ -265,14 +270,15 @@ class Vision:
 
         frame0 = self.color_seg([(tl, br)], color)[0]
 
-        frames.append(frame0)
-
         self.raw_image = self.camera.read()
         self.warp_perspective()
         self.set_dark_border()
         frame1 = self.color_seg([(tl, br)], color)[0]
 
-        frames.append(frame1)
+        if seeker.obj_detector_type == ObjDetectorType.ARUCO:
+            frames = [255 - frame0, 255 - frame1]
+        else:
+            frames = [frame0, frame1]
 
         seeker.initialize(frames)
 
@@ -297,11 +303,10 @@ class Vision:
                 segments = self.color_seg(self.ball_window, 'orange')
                 self.ball_obj_seeker.feed(segments, self.arena_image)
 
-
                 # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.yellow_windows, 'yellow')
-                if self.yellow_obj_seeker.obj_detector_type.value == ObjDetectorType.ARUCO.value:
+                if self.yellow_obj_seeker.obj_detector_type == ObjDetectorType.ARUCO:
                     for k in range(len(segments)):
                         segments[k] = 255 - segments[k]
 
