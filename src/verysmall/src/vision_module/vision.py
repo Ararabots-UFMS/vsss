@@ -305,6 +305,7 @@ class Vision:
 
                 # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
+                print(self.yellow_windows)
                 segments = self.color_seg(self.yellow_windows, 'yellow')
                 if self.yellow_obj_seeker.obj_detector_type == ObjDetectorType.ARUCO:
                     for k in range(len(segments)):
@@ -365,7 +366,7 @@ class Vision:
 
 if __name__ == "__main__":
     from threading import Thread
-    num_yellow_robots = 1
+    num_yellow_robots = 2
     num_blue_robots = 2
     home_tag = "aruco"
 

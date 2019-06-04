@@ -92,6 +92,7 @@ class BoundingBox:
 
 class NewSeeker:
     def __init__(self, num_objects:int, obj_detector:ObjDetector):
+        self.found_more_than_lost = 0
         self.num_objects = num_objects
         self.obj_detector = obj_detector
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
@@ -136,8 +137,20 @@ class NewSeeker:
         self.segments = [[i for i in range(self.num_objects)]]
         self.default_segment = self.segments
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
-
         self.update(segs)
+        print(self.trackers)
+
+    def set_trackers(self, seg):
+        self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
+
+        if self.obj_detector_type == ObjDetectorType.ARUCO:
+            self.aruco_table.clear()
+
+        for k,obj in enumerate(seg):
+            self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
+            if self.obj_detector_type == ObjDetectorType.ARUCO:
+                self.aruco_table.append(obj.id)
+                self.trackers[k].set_id(obj.id)
 
     def __common_initialize(self, frames:List[np.ndarray]) -> None:
         """
@@ -163,8 +176,29 @@ class NewSeeker:
     def feed(self, img_segments:List[np.ndarray], full_image) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
         obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments], full_image)
-        self.lost_obj = sum([len(seg) for seg in obj_in_segs]) < self.num_objects
+
+        if self.lost_obj:
+            self.found_more_than_lost-=1
+            if self.found_more_than_lost < -15:
+                self.found_more_than_lost = 0
+                # Reset Trackers if found right number
+                print("================Resetting")
+                self.set_trackers(obj_in_segs[0])
+                self.lost_obj = False
+        else:
+            self.found_more_than_lost+=1
+
         self.update(obj_in_segs)
+
+        everyone_updated = True
+
+        for tracker in self.trackers:
+            everyone_updated = everyone_updated and tracker.updated
+
+        # if self.obj_detector_type == ObjDetectorType.ARUCO:
+        #     print(self.found_more_than_lost)
+
+        self.lost_obj = False
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
@@ -180,7 +214,6 @@ class NewSeeker:
                     self.trackers[k].update(obj.pos, obj.orientation)
                 except ValueError:
                     print('tag id ', obj.id, 'doesnt exist')
-
 
     def __common_update(self, objs_in_segs:List[List[ObjState]]) -> None:
         # Remap position values before update
@@ -242,7 +275,7 @@ class NewSeeker:
         bboxes = []
 
         if self.lost_obj:
-            self.lost_obj = False
+            print("Vish")
             self.segments = self.default_segment
             temp_box = (Vec2(0, 0), Vec2(self.img_shape[0], self.img_shape[1]))
             bboxes.append(temp_box)
