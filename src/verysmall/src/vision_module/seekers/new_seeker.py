@@ -103,6 +103,12 @@ class NewSeeker:
         self.img_shape = None  # (w, h) -> cols, lines
         self.lost_obj = False
 
+        # =========================
+        # Fail window rate Variable
+        # =========================
+        self.fail_rate_window = 15
+
+
         # procurar alternativa em uma unica função que já faça a separação
         if isinstance(obj_detector, ArucoObjectDetector):
             self.update = self.__aruco_update
@@ -121,24 +127,25 @@ class NewSeeker:
     def __aruco_initialize(self, frames:List[np.ndarray]) -> None:
         h, w = frames[0].shape[:2]
         self.img_shape = (w, h)
-        for i in range(len(frames)):
-            frames[i] = 255 - frames[i]
+        # for i in range(len(frames)):
+        #     frames[i] = 255 - frames[i]
 
         objects_per_segment = [self.num_objects]
-        segs = self.obj_detector.seek([frames[0]], objects_per_segment, frames[0])
-
+        segs = self.obj_detector.seek([frames[0]], objects_per_segment)
+        print(segs)
         for k,obj in enumerate(segs[0]):
+            print(obj)
             self.aruco_table.append(obj.id)
             self.trackers[k].set_id(obj.id)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
 
         #second frame
-        segs = self.obj_detector.seek([frames[1]], objects_per_segment, frames[1])
+        segs = self.obj_detector.seek([frames[1]], objects_per_segment)
         self.segments = [[i for i in range(self.num_objects)]]
         self.default_segment = self.segments
         self.parent_bboxes = [(Vec2(0, 0), Vec2(w, h))]
         self.update(segs)
-        print(self.trackers)
+
 
     def set_trackers(self, seg):
         self.trackers = [Tracker(self, i) for i in range(self.num_objects)]
@@ -147,6 +154,7 @@ class NewSeeker:
             self.aruco_table.clear()
 
         for k,obj in enumerate(seg):
+            print(obj)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
             if self.obj_detector_type == ObjDetectorType.ARUCO:
                 self.aruco_table.append(obj.id)
@@ -173,32 +181,30 @@ class NewSeeker:
         self.parent_bboxes = [(Vec2(0,0),Vec2(w,h))]
         self.update(segs)
 
-    def feed(self, img_segments:List[np.ndarray], full_image) -> None:
+    def feed(self, img_segments:List[np.ndarray]) -> None:
         # TODO: TEM QUE OLHAR O NOME DESSA FUNCAO, TALKEI?
-        obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments], full_image)
 
         if self.lost_obj:
-            self.found_more_than_lost-=1
-            if self.found_more_than_lost < -15:
-                self.found_more_than_lost = 0
-                # Reset Trackers if found right number
-                print("================Resetting")
-                self.set_trackers(obj_in_segs[0])
-                self.lost_obj = False
+            obj_in_segs = self.obj_detector.seek(img_segments, [self.num_objects])
+            self.found_more_than_lost = 0
+            # Reset Trackers if found right number
+            self.set_trackers(obj_in_segs[0])
+            self.lost_obj = False
         else:
-            self.found_more_than_lost+=1
+            obj_in_segs = self.obj_detector.seek(img_segments, [len(seg) for seg in self.segments])
 
         self.update(obj_in_segs)
 
-        everyone_updated = True
-
+        found_everyone = True
         for tracker in self.trackers:
-            everyone_updated = everyone_updated and tracker.updated
+            found_everyone = found_everyone and tracker.updated
 
-        # if self.obj_detector_type == ObjDetectorType.ARUCO:
-        #     print(self.found_more_than_lost)
-
-        self.lost_obj = False
+        if found_everyone:
+            self.found_more_than_lost += 1 if self.found_more_than_lost<= self.fail_rate_window else 0
+        else:
+            if self.found_more_than_lost < -self.fail_rate_window:
+                self.lost_obj = True
+            self.found_more_than_lost -= 1
 
     def __aruco_update(self, objs_by_segment:List[ObjState]) -> None:
         # TODO: achar um nome melhor para o parâmetro objs_by_segment
@@ -212,6 +218,7 @@ class NewSeeker:
                     k = self.aruco_table.index(obj.id)
                     
                     self.trackers[k].update(obj.pos, obj.orientation)
+                    print(self.trackers[k].obj.speed)
                 except ValueError:
                     print('tag id ', obj.id, 'doesnt exist')
 
@@ -220,9 +227,9 @@ class NewSeeker:
         self.mapper(objs_in_segs)
 
         # For each segment
-        for index in range(len(self.segments)):
+        for index in range(len(objs_in_segs)):
             n = len(objs_in_segs[index])
-
+            print(n)
             if n > 1:
                 # Sort the positions with current tracker positions
                 t = self.segments[index]
@@ -275,14 +282,13 @@ class NewSeeker:
         bboxes = []
 
         if self.lost_obj:
-            print("Vish")
             self.segments = self.default_segment
             temp_box = (Vec2(0, 0), Vec2(self.img_shape[0], self.img_shape[1]))
             bboxes.append(temp_box)
             self.parent_bboxes = bboxes
         else:
             for i in range(self.num_objects):
-                bboxes.append(self.trackers[i].predict_window(speed_gain=1))
+                bboxes.append(self.trackers[i].predict_window())
             self.fuser(bboxes)
 
         return self.parent_bboxes

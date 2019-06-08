@@ -133,7 +133,7 @@ class ArucoObjectDetector(ObjDetector):
         #print("FOUND:", identified_markers)
         return identified_markers
 
-    def seek(self, segments: List[np.ndarray], objects_per_segment: List[int], full_image: np.ndarray):
+    def seek(self, segments: List[np.ndarray], objects_per_segment: List[int]):
         """
             This function receives a list of binary images and list of number of objects per segment
             and return its centers positions per segment using a opencv aruco implementation
@@ -153,8 +153,5 @@ class ArucoObjectDetector(ObjDetector):
             # Invert image colors so we can see with aruco detector
             centroids_per_segment.append(self.aruco_seek(img=segments[index], number_of_tags=objects_per_segment[index]))
             obj_counter += len(centroids_per_segment)
-
-        if obj_counter < self.num_tags:
-            centroids_per_segment = [self.aruco_seek(img=full_image, number_of_tags=sum(objects_per_segment))]
 
         return centroids_per_segment

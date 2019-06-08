@@ -19,7 +19,7 @@ class KmeansObjectDetector(ObjDetector):
         _, _, w, h = cv2.boundingRect(cnt)
         self.obj_size = max(max(w,h), self.obj_size)
 
-    def seek(self, segments, objects_per_segment, full_image = None):
+    def seek(self, segments, objects_per_segment):
         """
             This function receives a list of binary images and list of number of objects per segment
             and return its centers positions per segment using kmeans implementation
@@ -61,14 +61,17 @@ class KmeansObjectDetector(ObjDetector):
                     kmeans.fit(cnts_array)
                     center_of_objects = kmeans.cluster_centers_
 
-            obj_states_in_segment = []
-            for object_center in center_of_objects:
-                obj_state = ObjState()
-                x,y = object_center
-                obj_state.set_pos(x, y)
-                obj_states_in_segment.append(obj_state)
+            if center_of_objects is None:
+                centroids_per_segment.append([])
+            else:
+                obj_states_in_segment = []
+                for object_center in center_of_objects:
+                    obj_state = ObjState()
+                    x,y = object_center
+                    obj_state.set_pos(x, y)
+                    obj_states_in_segment.append(obj_state)
 
-            # Store found objects in return value
-            centroids_per_segment.append(obj_states_in_segment)
+                # Store found objects in return value
+                centroids_per_segment.append(obj_states_in_segment)
 
         return centroids_per_segment

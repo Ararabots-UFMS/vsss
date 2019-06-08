@@ -301,17 +301,17 @@ class Vision:
                 # ========== Ball Detector ======================
                 self.ball_window = self.ball_obj_seeker.predict_all_windows()
                 segments = self.color_seg(self.ball_window, 'orange')
-                self.ball_obj_seeker.feed(segments, self.arena_image)
+                self.ball_obj_seeker.feed(segments)
 
                 # ==========  Yellow Detector ====================
                 self.yellow_windows = self.yellow_obj_seeker.predict_all_windows()
-                print(self.yellow_windows)
+
                 segments = self.color_seg(self.yellow_windows, 'yellow')
                 if self.yellow_obj_seeker.obj_detector_type == ObjDetectorType.ARUCO:
                     for k in range(len(segments)):
                         segments[k] = 255 - segments[k]
 
-                self.yellow_obj_seeker.feed(segments, self.arena_image)
+                self.yellow_obj_seeker.feed(segments)
                 # ===============================================
 
                 # ==========  Blue Detector ====================
@@ -321,7 +321,7 @@ class Vision:
                     for k in range(len(segments)):
                         segments[k] = 255 - segments[k]
 
-                self.blue_obj_seeker.feed(segments, self.arena_image)
+                self.blue_obj_seeker.feed(segments)
                 # ===============================================
                 self.update_fps()
 

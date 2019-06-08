@@ -20,13 +20,12 @@ class SimpleObjectDetector(ObjDetector):
         _, _, w, h = cv2.boundingRect(cnt)
         self.obj_size = max(max(w,h), self.obj_size)
 
-    def seek(self, segments, objects_per_segment, full_image=None):
+    def seek(self, segments, objects_per_segment):
         """
             This function receives a list of binary images and list of number of objects per segment
             and return its centers positions per segment using a simple opencv find contours function
             :param segments: np.array([uint8]).shape([m,n])
             :param objects_per_segment: np.array
-            :param full_image: np.array
             :return: np.array([float, float]).shape([k, 2]) object has the position of the center of each object in img
         """
 
