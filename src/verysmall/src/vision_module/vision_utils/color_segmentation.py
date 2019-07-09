@@ -3,7 +3,7 @@ from vision_module.camera_module.camera import Camera
 import cv2
 import numpy as np
 import copy
-import COLORS
+from vision_module import COLORS
 import os
 
 # @author Wellington Castro <wvmcastro>
@@ -168,12 +168,12 @@ class ColorSegmentation:
 
         cv2.destroyAllWindows()
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 
 if __name__ == "__main__":
 
     params_file = "../../parameters/COLORS.json"
-    camera = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
+    camera = Camera(CAMERA_ID, CAMERA_PARAMS_PATH, threading=True)
     c = ColorSegmentation(camera, params_file)
     c.run()
