@@ -52,7 +52,7 @@ class VisionNode:
                              arena_params, colors_params, method="color_segmentation")
         self.vision.game_on = True
 
-        self.thread = Thread(target=self.vision.run, args=())
+        self.thread = Thread(target=self.vision.run_v2, args=())
         self.thread.daemon = True
         self.thread.start()
 

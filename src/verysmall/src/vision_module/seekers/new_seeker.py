@@ -132,9 +132,9 @@ class NewSeeker:
 
         objects_per_segment = [self.num_objects]
         segs = self.obj_detector.seek([frames[0]], objects_per_segment)
-        print(segs)
+        ##print(segs)
         for k,obj in enumerate(segs[0]):
-            print(obj)
+            ##print(obj)
             self.aruco_table.append(obj.id)
             self.trackers[k].set_id(obj.id)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
@@ -154,7 +154,7 @@ class NewSeeker:
             self.aruco_table.clear()
 
         for k,obj in enumerate(seg):
-            print(obj)
+            ##print(obj)
             self.trackers[k].set_pos(obj.pos.x, obj.pos.y)
             if self.obj_detector_type == ObjDetectorType.ARUCO:
                 self.aruco_table.append(obj.id)
@@ -218,9 +218,10 @@ class NewSeeker:
                     k = self.aruco_table.index(obj.id)
                     
                     self.trackers[k].update(obj.pos, obj.orientation)
-                    print(self.trackers[k].obj.speed)
+                    #print(self.trackers[k].obj.speed)
                 except ValueError:
-                    print('tag id ', obj.id, 'doesnt exist')
+                    #print('tag id ', obj.id, 'doesnt exist')
+                    pass
 
     def __common_update(self, objs_in_segs:List[List[ObjState]]) -> None:
         # Remap position values before update
@@ -229,7 +230,7 @@ class NewSeeker:
         # For each segment
         for index in range(len(objs_in_segs)):
             n = len(objs_in_segs[index])
-            print(n)
+            #print(n)
             if n > 1:
                 # Sort the positions with current tracker positions
                 t = self.segments[index]
@@ -251,7 +252,7 @@ class NewSeeker:
     def cluster_objects_and_trackers(self, trackers_index_list:List[int], objects_list:List[ObjState]) -> List[int]:
         n = len(trackers_index_list)
         if n != len(objects_list):
-            print("Incorrect size of arrays!")
+            #print("Incorrect size of arrays!")
             return []
 
         trackers = [i for i in range(len(trackers_index_list))]
@@ -337,7 +338,7 @@ class NewSeeker:
 
         for i, segment in enumerate(self.segments):
             self.parent_bboxes.append(self.get_parent_bbox(bboxes, segment))
-            #print("fuser: %r -> %r" % (i, self.parent_bboxes[-1]))
+            ##print("fuser: %r -> %r" % (i, self.parent_bboxes[-1]))
 
     def mapper(self, objs_in_segs:List[ObjState]) -> None:
         """
@@ -354,7 +355,7 @@ class NewSeeker:
             objs = objs_in_segs[i]
             for j in range(len(objs)):
                 objs[j].pos = objs[j].pos + self.parent_bboxes[i][0]
-                #print("mapper: %r -> %r" % (i, self.parent_bboxes[i]))
+                ##print("mapper: %r -> %r" % (i, self.parent_bboxes[i]))
 
 
     def get_serialized_objects(self):

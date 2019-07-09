@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 from multiprocessing import Queue, Process
 from utils.json_handler import JsonHandler
-
+import time
 
 # @author Wellington Castro <wvmcastro>
 
@@ -64,7 +64,7 @@ class Camera:
 
     def _capture_and_correct_frame(self) -> np.ndarray:
         _, frame = self.capture.read()
-        frame = cv2.remap(frame, self.mapx, self.mapy, cv2.INTER_LINEAR)
+        frame = cv2.remap(frame, self.converted_mapx, self.converted_mapy, cv2.INTER_LINEAR)
         return frame
 
     def read(self) -> np.ndarray:
@@ -91,6 +91,7 @@ class Camera:
         self.mapx = np.asarray(params['matrix_x']).astype("float32")
         self.mapy = np.asarray(params['matrix_y']).astype("float32")
 
+        self.converted_mapx, self.converted_mapy = cv2.convertMaps(self.mapx, self.mapy, cv2.CV_16SC2)
         """ The frame width and height """
         self.frame_width = int(params['default_frame_width'])
         self.frame_height = int(params['default_frame_height'])

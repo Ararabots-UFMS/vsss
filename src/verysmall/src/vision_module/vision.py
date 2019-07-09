@@ -325,7 +325,7 @@ class Vision:
                 # ===============================================
                 self.update_fps()
 
-                #self.send_message(ball=True, yellow_team=True, blue_team=True)
+                self.send_message(ball=True, yellow_team=False, blue_team=False)
                 #self.new_send_message(self.yellow_obj_seeker.get_serialized_objects())
 
         self.camera.stop()
