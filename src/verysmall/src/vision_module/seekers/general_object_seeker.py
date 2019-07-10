@@ -83,7 +83,7 @@ class GeneralObjSeeker:
         if cv2.__version__ == '4.1.1-pre':
             cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
-            _, cnts = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         
         pos = np.array([None, None])
         c_x, c_y = None, None
