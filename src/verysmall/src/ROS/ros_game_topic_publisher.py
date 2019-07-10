@@ -1,7 +1,9 @@
+from typing import List
 import rospy
+from rospy import ServiceException, ServiceProxy, wait_for_service
 from verysmall.msg import game_topic
-from verysmall.srv import vision_command
-from rospy import ServiceException,ServiceProxy, wait_for_service
+from verysmall.srv import vision_command, message_server_service
+from message_server_module.opcodes import ServerOpCode
 
 
 class GameTopicPublisher:
@@ -43,10 +45,15 @@ class GameTopicPublisher:
         self.set_meta_robot(self.game_opt['meta_player']) 
 
         self.set_team_side(self.game_opt['side'])
+        self.set_team_color(self.game_opt['time'])
 
         # Variable for storing proxy
         self.vision_proxy = None
+        self._messageserver_proxy = None
+
         self.register_vision_service()
+        self._register_messageserver_service()
+        
 
     def set_game_state(self, _game_state):
         """
@@ -152,6 +159,24 @@ class GameTopicPublisher:
             self.pub.publish(self.msg)
         except rospy.ROSException as e:
             rospy.logfatal(e)
+
+    def _register_messageserver_service(self):
+        wait_for_service('message_server_service')
+        self._messageserver_proxy = ServiceProxy('message_server_service',
+                                                  message_server_service)
+
+    
+    def add_or_remove_socket_on_messageserver(self, opcode: int, 
+                                              socket_id:int,
+                                              mac_addr: List[int]) -> int:
+        wait_for_service('message_server_service')
+        try:
+            r = self._messageserver_proxy(opcode, socket_id, mac_addr)
+            return r
+        except ServiceException as e:
+            print("Message server service request error " + repr(e))
+            return ServerOpCode.ERROR.value
+
 
     def register_vision_service(self):
         """

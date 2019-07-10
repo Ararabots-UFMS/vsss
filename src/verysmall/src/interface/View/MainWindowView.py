@@ -231,11 +231,12 @@ class MainWindowView:
                           self.proportion_width(10) * 3
                           ]
         self.padding_y += self.proportion_height(5)
-
+        #TODO: WELSO https://www.fltk.org/doc-1.3/classFl__Box.html
         for num in range(self.n_robots):
             # Defines choice input
             self.robot_roles[num] = fl.Fl_Choice(temp_x_padding[0],
-                                                  self.padding_y, self.proportion_width(10),
+                                                  self.padding_y,
+                                                  self.proportion_width(10),
                                                   self.proportion_height(4),
                                                   temp_names[num])
 
@@ -245,7 +246,7 @@ class MainWindowView:
             # Body Input styles
             self.robot_roles[num].color(fl.FL_RED)
             self.robot_roles[num].labelcolor(fl.FL_WHITE)
-            self.robot_roles[num].box(fl.FL_NO_BOX)
+            self.robot_roles[num].box(fl.FL_NO_BOX )
 
             # # Bluetooth inputs
             self.robot_params[num] = fl.Fl_Button(

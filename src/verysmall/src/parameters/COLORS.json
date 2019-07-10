@@ -1,32 +1,32 @@
 {
     "hsv_ball_max": [
-        15,
-        255,
-        255
-    ],
-    "hsv_ball_min": [
-        7,
-        176,
-        184
-    ],
-    "hsv_blue_max": [
         0,
         0,
         0
     ],
-    "hsv_blue_min": [
+    "hsv_ball_min": [
         255,
         255,
         255
     ],
+    "hsv_blue_max": [
+        122,
+        229,
+        180
+    ],
+    "hsv_blue_min": [
+        114,
+        188,
+        68
+    ],
     "hsv_yellow_max": [
-        39,
-        240,
-        242
+        40,
+        255,
+        235
     ],
     "hsv_yellow_min": [
-        36,
-        160,
-        212
+        34,
+        109,
+        173
     ]
 }

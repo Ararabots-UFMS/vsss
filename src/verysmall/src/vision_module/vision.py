@@ -294,7 +294,7 @@ if __name__ == "__main__":
     from threading import Thread
 
     num_yellow_robots = 1
-    num_blue_robots = 2
+    num_blue_robots = 1
     home_tag = "aruco"
 
     arena_params = "../parameters/ARENA.json"
