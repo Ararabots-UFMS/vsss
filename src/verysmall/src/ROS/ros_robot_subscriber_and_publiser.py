@@ -22,7 +22,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot = _robot
 
         self.debug_msg = debug_topic()
-        self.debug_msg.id = self.robot.robot_id_integer
+        self.debug_msg.id = self.robot.id
 
     def read_game_topic(self, data):
         """
@@ -32,10 +32,7 @@ class RosRobotSubscriberAndPublisher:
         """
         self.robot.game_state = data.game_state
         self.robot.team_side = data.team_side
-
-        #TODO: VERIFICAR ESSA ALTERAÇÃO, N TENHO CERTEZA
-        self.robot.role = data.robot_roles[self.robot.robot_id_integer]
-        
+        self.robot.role = data.robot_roles[self.robot.id]        
         self.robot.penalty_robot = data.penalty_robot
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
@@ -51,7 +48,7 @@ class RosRobotSubscriberAndPublisher:
         """
         self.robot.ball_position = np.array(data.ball_pos) / 100.0
         self.robot.ball_speed = np.array(data.ball_speed) / 100.0
-
+        
         if(self.robot.team_color == 1): # yellow
             self.robot.team_pos = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             self.robot.team_orientation = np.array(data.yellow_team_orientation) / 10000.0
@@ -85,7 +82,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.enemies_position = np.asarray(self.robot.enemies_position)
         self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
         self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
-
+        
         self.robot.run()
 
     def debug_publish(self, _vector):

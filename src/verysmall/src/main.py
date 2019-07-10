@@ -54,9 +54,8 @@ if __name__ == '__main__':
     vision_owner = True
 
     game_topic_id = randint(0,99999)
-
     game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
-
+    
     coach = Coach(model, game_topic_publisher, launch)
     lc.stop()
 

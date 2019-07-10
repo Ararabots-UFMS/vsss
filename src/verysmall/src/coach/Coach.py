@@ -1,11 +1,15 @@
+from typing import Dict
 from robot_module.robot import Robot
 from ROS.ros_coach import RosCoach
-
+from ROS.ros_game_topic_publisher import GameTopicPublisher
+from verysmall.msg import game_topic
 
 class Coach:
     """Creates the Coach"""
 
-    def __init__(self, model, _game_topic_publisher, _launcher=None):
+    def __init__(self, model,
+                       _game_topic_publisher: GameTopicPublisher,
+                       _launcher=None):
 
         # Save the parameters for future use
         self.robot_params = model.robot_params
@@ -31,22 +35,42 @@ class Coach:
         for robot in self.robot_params.keys():
             # arguments for the node
             try:
-                bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
-                bluetooth_address = self.robot_bluetooth[bluetooth_number]
-            except KeyError:
-                bluetooth_address = str(-1)
-
-            try:
-                tag = self.robot_params[robot]['tag_number']
-                body = self.robot_params[robot]['body_id']
                 debug = str(self.debug_params["things"][robot])
-                variables = robot + ' ' + str(tag) + ' ' + bluetooth_address + " " + body + " " + self.game_topic_pub.get_name() + " " + debug
+                variables = self.get_robot_params(robot, 
+                                                self.robot_params[robot],
+                                                self.game_topic_pub.msg,
+                                                int(debug))
             except KeyError:
                 variables = ""
                 self.robot_params[robot]['active'] = False
 
             # Creates a player node
             self.ros_functions.create_and_store_node(robot, self.robot_params[robot]['active'], variables)
+
+    def get_robot_params(self, robot_name: str,
+                               robot_params: Dict, 
+                               topic: game_topic,
+                               debug: int = 0) -> str:
+        robot_id = int(robot_name.split('_')[1]) - 1
+        robot_id = str(robot_id)
+
+        if robot_params["bluetooth_mac_address"] == "Nenhum":
+            socket_id = str(-1)
+        else:
+            socket_id = robot_id
+
+        params = ""
+        params += robot_id + " "
+        params += str(robot_params["tag_number"]) + " "
+        params += str(robot_params["body_id"]) + " "
+        params += str(topic.team_side) + " "
+        params += str(topic.team_color) + " "
+        params += str(topic.robot_roles[int(robot_id)]) + " "
+        params += self.game_topic_pub.get_name() + " "
+        params += socket_id + " "
+        params += str(debug)
+
+        return params
 
     def change_robot_role(self, robot_id, role):
         """
@@ -69,11 +93,11 @@ class Coach:
         robot = self.faster_hash[robot_id]
 
         # arguments for the node
-        bluetooth_number = self.robot_params[robot]['bluetooth_mac_address']
-        tag = self.robot_params[robot]['tag_number']
-        body = self.robot_params[robot]['body_id']
         debug = str(self.debug_params["things"][robot])
-        variables = robot + ' ' + str(tag) + ' ' + self.robot_bluetooth[bluetooth_number] + " " + body + " " + self.game_topic_pub.get_name() + " " + debug
+        variables = self.get_robot_params(robot, 
+                                          self.robot_params[robot],
+                                          self.game_topic_pub.msg,
+                                          debug)
 
         self.ros_functions.change_arguments_of_node(robot, variables)
 

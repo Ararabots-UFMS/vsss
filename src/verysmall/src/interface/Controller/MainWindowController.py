@@ -1,18 +1,23 @@
+from typing import List, Tuple
+
+import fltk as fl
+
 from interface.View.MainWindowView import MainWindowView
 from interface.Controller.BluetoothManagerController import BluetoothManagerController
 from interface.Controller.ConnectionController import ConnectionController
 from interface.Controller.DebugController import DebugController
 from interface.Controller.RobotParamsController import RobotParamsController
-import fltk as fl
-
+from message_server_module.opcodes import ServerOpCode
+from ROS.ros_game_topic_publisher import GameTopicPublisher
+from ROS.main_window_controller_subscriber import MainWindowControllerSubscriber
+from coach.Coach import Coach
 
 class MainWindowController:
-    def __init__(self, model, _coach, _game_topic_publisher):
+    def __init__(self, model: dict,
+                _coach: Coach, 
+                _game_topic_publisher: GameTopicPublisher):
         """
         This class os resonsible for managing the main window
-        :param model: Dict
-        :param _coach: Coach Class Object
-        :param _game_topic_publisher: GameTopicPublisher Class Objcet
         """
         # Save the parameters for future use
         self.robot_params = model.robot_params
@@ -34,6 +39,11 @@ class MainWindowController:
                                                           model.debug_params['robot_vector'],
                                                           model.debug_params['things'],
                                                           self.robot_params)
+        
+        self.subs =  MainWindowControllerSubscriber(self._connection_status_listener)
+
+        # Creates the game topic
+        self.pub = _game_topic_publisher
 
         # The coach object class control the active and the activities of robots
         self.coach = _coach
@@ -49,12 +59,11 @@ class MainWindowController:
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
         
         self.view.team_color.value(self.game_opt["time"])
+        self.pub.set_team_color(self.view.team_color.value())
+
         self.set_robot_plot_color(self.game_opt["time"])
 
         self.view.team_side.value(self.game_opt["side"])
-
-        # Creates the game topic
-        self.pub = _game_topic_publisher
 
         # Replaced by the function set_robots_bluetooth
         self.set_robots_params()
@@ -91,8 +100,21 @@ class MainWindowController:
 
         self.view.team_color.callback(self.on_color_change)
         self.view.team_side.callback(self.on_side_change)
-
+        
+        #self._initialize_game_topic()
         self.view.end()
+        
+
+    def _initialize_game_topic(self):
+        self.pub.publish()
+
+    def _connection_status_listener(self, topic: List) -> None:
+        for i, status in enumerate(topic):
+            ptr = self.view.robot_radio_button[i]
+            if status != ptr.value():
+                ptr.value(status)
+                self.coach.set_robot_active(ptr.id, ptr.value())
+                self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def set_robots_params(self):
         """
@@ -187,14 +209,33 @@ class MainWindowController:
         self.pub.publish()
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
+    def get_mac_address(self, robot_id: int) -> Tuple[bool, bytes]:
+        robot_name = self.robot_params[self.faster_hash[robot_id]]['bluetooth_mac_address']
+        mac_str = self.robot_bluetooth[robot_name]
+
+        if mac_str == "-1":
+            return False, bytes([])
+        else:
+            mac = [int(x, base=16) for x in mac_str.split(":")]
+            return True, bytes(mac)
+
     def radio_choice(self, ptr):
         """
         Checkbox callback, node active or not?
         :param ptr: Widget pointer
         :return: nothing
         """
-        self.coach.set_robot_active(ptr.id, ptr.value())
-        self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
+        isMacAddress, mac = self.get_mac_address(ptr.id)
+
+        if isMacAddress:
+            if ptr.value() == True: # add
+                r = self.pub.add_or_remove_socket_on_messageserver(ServerOpCode.ADD.value, ptr.id, mac)
+            else: # remove
+                r = self.pub.add_or_remove_socket_on_messageserver(ServerOpCode.REMOVE.value, ptr.id, mac)
+        
+        if not isMacAddress or r != ServerOpCode.ERROR.value:
+            self.coach.set_robot_active(ptr.id, ptr.value())
+            self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
 
     def role_choice(self, ptr):
         """

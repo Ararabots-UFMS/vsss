@@ -1,14 +1,34 @@
 #!/usr/bin/python3
 import rospy
 import sys
-from robot import Robot
+from argparse import ArgumentParser
+from robot_module.robot import Robot
+
+
+def makeArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+    parser.add_argument("id", type=int, help="robot id")
+    parser.add_argument("tag", type=int, help="tag id")
+    parser.add_argument("body", type=str, help="robot body name")
+    parser.add_argument("team_side", type=int, help="robot team side: 0->---, 1->---")
+    parser.add_argument("team_color", type=int, help="robot team color: 0->blue, 1->yellow")
+    parser.add_argument("robot_role", type=int, help="robot state machine id")
+    parser.add_argument("game_topic", type=str, help="game topic name")
+    parser.add_argument("socket_id", type=int, help="robot socket id")
+    parser.add_argument("should_debug", type=int, default=0, help="robot debug flag")
+    parser.add_argument("ros_args", nargs='*', help="additional ros parameters")
+    return parser
 
 
 if __name__ == '__main__':
-    # robot_id body_id node_name
-    
-    rospy.init_node(sys.argv[1], anonymous=True)
-    rospy.logfatal(sys.argv[1]+" - bt:"+ sys.argv[3] +" tag: "+sys.argv[2]+ " Online")
-    robot = Robot(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
-    rospy.on_shutdown(robot.bluetooth_detach)
+    parser = makeArgParser()
+    args = parser.parse_args()
+
+    robot_name = "ROBOT " + str(args.id)
+    rospy.init_node(robot_name, anonymous=True)
+    rospy.logfatal(robot_name + " TAG: " + str(args.tag) + " Online")
+
+    robot = Robot(args.id, args.tag, args.body, args.team_side, args.team_color,
+                  args.robot_role, args.game_topic, args.socket_id, args.should_debug)
+
     rospy.spin()

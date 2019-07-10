@@ -60,7 +60,7 @@ class AttackerWithUnivectorController():
         self.orientation = self.robot.orientation
         self.speed = self.robot.speed
         self.team_speed = self.robot.team_speed
-        self.enemies_position = self.robot.enemies_position
+        self.enemies_position = self.robot.enemies_position.shape = (-1, 2)
         self.enemies_speed = self.robot.enemies_speed
         self.ball_position = self.robot.ball_position
         self.team_side = self.robot.team_side
@@ -176,14 +176,14 @@ class AttackerWithUnivectorController():
             )
 
             return left, right, self.pid_type
-
+        
         self.AttackerWithUnivector.univector_to_univector()
         param_a, param_b, _ = self.movement.do_univector(
             speed=250,
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=np.array([0, 0]),
-            obstacle_position=np.resize(self.enemies_position, (-1, 2)),
+            obstacle_position=self.enemies_position,
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position,
             only_forward=False,
