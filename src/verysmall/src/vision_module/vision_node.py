@@ -31,7 +31,7 @@ class VisionNode:
         """
         self.team_colors = ['blue', 'yellow']
         self.yellow_robots = 5
-        self.blue_robots = 3 
+        self.blue_robots = 5
         self.show = False
         self.state_changed = 0
 
@@ -46,7 +46,7 @@ class VisionNode:
             model = Model()
             _, device = CameraLoader(model.game_opt['camera']).get_index()
 
-        self.camera = Camera(device, "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
+        self.camera = Camera(device, "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
 
         self.vision = Vision(self.camera, self.blue_robots, self.yellow_robots,
                              arena_params, colors_params, method="color_segmentation")

@@ -1,9 +1,10 @@
+from argparse import ArgumentParser
 from utils.json_handler import JsonHandler
 from vision_module.camera_module.camera import Camera
 import cv2
 import numpy as np
 import copy
-import COLORS
+from  vision_module import COLORS
 import os
 
 # @author Wellington Castro <wvmcastro>
@@ -168,12 +169,25 @@ class ColorSegmentation:
 
         cv2.destroyAllWindows()
 
-CAMERA_ID = 0
-CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
+def makeArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+    parser.add_argument("device", type=str, default="0", help="camera device")
+    parser.add_argument("--camera_params_file", 
+                         type=str, 
+                         default="../../parameters/CAMERA_ELP-USBFHD01M-SFV.json",
+                         help="camera params file for lens correction")
+    parser.add_argument("--color_params_file",
+                        type=str,
+                        default="../../parameters/COLORS.json",
+                        help="color params file to store the color thresholds")
+    return parser
 
 if __name__ == "__main__":
+    parser = makeArgParser()
+    args = parser.parse_args()
+    
+    cam_id = int(args.device) if len(args.device) == 0 else args.device
+    camera = Camera(cam_id, args.camera_params_file)
 
-    params_file = "../../parameters/COLORS.json"
-    camera = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
-    c = ColorSegmentation(camera, params_file)
+    c = ColorSegmentation(camera, args.color_params_file)
     c.run()

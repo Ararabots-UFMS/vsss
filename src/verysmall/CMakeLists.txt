@@ -55,6 +55,8 @@ add_message_files(
 	debug_topic.msg
 	game_topic.msg
 	things_position.msg
+  connection_status_topic.msg
+  message_server_topic.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -62,6 +64,7 @@ add_message_files(
    FILES
    manage_mac.srv
    vision_command.srv
+   message_server_service.srv
 #   Service2.srv
 )
 

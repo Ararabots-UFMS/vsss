@@ -3,7 +3,9 @@ import sys
 import numpy as np
 import random
 import os
-from robot_module.comunication.sender import Sender
+from robot_module.hardware import RobotHardware
+
+from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
 from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
@@ -17,16 +19,25 @@ SOFTWARE = 0
 HARDWARE = 1
 
 class Robot():
-    """docstring for Robot"""
 
-    def __init__(self, _robot_name, _tag, _mac_address, _robot_body, _game_topic_name, _should_debug = 0):
+    def __init__(self, robot_id:int,
+                tag: int, 
+                robot_body: str,
+                team_side: int,
+                team_color: int,
+                robot_role: int,
+                _game_topic_name: str,
+                socket_id:int = -1,
+                should_debug:int = 0):
+
         # Parameters
-        self.robot_name = _robot_name
-        self.robot_id_integer = int(self.robot_name.split("_")[1]) - 1
-        self.mac_address = _mac_address # Mac address
-        self.robot_body = _robot_body
-        self.tag = int(_tag)
-        self.should_debug = _should_debug
+        self.id = robot_id
+        self.robot_body = robot_body
+        self.tag = tag
+        self._socket_id = socket_id
+        self._should_debug = should_debug
+
+        self.hardware = RobotHardware()
 
         # True position for penalty
         self.true_pos = np.array([.0,.0])
@@ -47,30 +58,27 @@ class Robot():
         self.enemies_speed = None
 
         # Receive from game topic
-        self.team_color = None
-        self.behaviour_type = None
+        self.team_color = team_color
+        self.team_side = team_side
+        self.role = robot_role
         self.game_state = 0
-        self.role = None
         self.penalty_robot = None
         self.freeball_robot = None
         self.meta_robot = None
-        self.team_side = 0
         # right(1) or left(0)
         self.left_side = 0
-        self.right_side = not self.left_side
-
-        # wheels speed
+        self.right_side = not self.left_side #TODO: pq isso aqui?
+        
         self.left_speed = self.right_speed = 0
 
         # Open bluetooth socket
-        if self.mac_address == '-1':
+        if self._socket_id == -1:
             rospy.logfatal("Using fake bluetooth")
-            self.bluetooth_sender = None
+            self.sender = None
         else:
-            self.bluetooth_sender = Sender(self.robot_id_integer, self.mac_address)
-            self.bluetooth_sender.connect()
+            self.sender = Sender(self._socket_id)
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, _should_debug)
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, self._should_debug)
 
         self.changed_game_state = True
         self.game_state_string = ["stop",
@@ -91,7 +99,7 @@ class Robot():
             NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
-        self.state_machine = AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body)
+        self.state_machine = self.strategies[self.role]
 
         self.stuck_counter = 0
 
@@ -108,8 +116,8 @@ class Robot():
 
         elif self.game_state == 2:  # Freeball
 
-            if self.robot_id_integer == self.freeball_robot:
-                rospy.logfatal(str(self.robot_id_integer)+" Vo bate freeball")
+            if self.id == self.freeball_robot:
+                rospy.logfatal(str(self.id)+" Vo bate freeball")
                 param_A, param_B, param_C = self.freeball_routine()
             else:
                 self.game_state = 1
@@ -117,8 +125,8 @@ class Robot():
 
         elif self.game_state == 3:  # Penalty
 
-            if self.robot_id_integer == self.penalty_robot:
-                rospy.logfatal(str(self.robot_id_integer)+" Vo bate penalty")
+            if self.id == self.penalty_robot:
+                rospy.logfatal(str(self.id)+" Vo bate penalty")
                 param_A, param_B, param_C = self.penalty_routine()
             else:
                 self.game_state = 1
@@ -145,17 +153,23 @@ class Robot():
         else:
             self.left_speed = param_A
             self.right_speed = param_B
+            msg = STDMsg(self.left_speed, self.right_speed)
 
-        if self.bluetooth_sender:
-            self.bluetooth_sender.send_movement_package([param_A, param_B], param_C)
+        if self.sender is not None:
+            priority = self.get_priority()
+            self.sender.send(priority, self.hardware.encode(msg))
 
-        if self.should_debug:
+        if self._should_debug:
             pass
 
         if self.changed_game_state:
-            rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
-                           str(self.team_side))
+            # rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
+            #                str(self.team_side))
             self.changed_game_state = False
+
+    def get_priority(self) -> int:
+        distance = np.linalg.norm(self.position - self.ball_position)
+        return int(distance) & 0xFF
 
     def read_parameters(self):
         #TODO: ler parametros do robot na funcao init
@@ -163,10 +177,6 @@ class Robot():
 
     def debug(self):
         pass
-
-    def bluetooth_detach(self):
-        if self.bluetooth_sender is not None:
-            self.bluetooth_sender.closeSocket()
 
     def add_to_buffer(self, buffer, buffer_size, element):
         if(len(buffer) > buffer_size):
@@ -200,7 +210,7 @@ class Robot():
             self.true_pos = self.position
 
         if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance = 25):
-            param_1, param_2, param_c = self.state_machine.movement.move_to_point(
+            param_1, param_2, _ = self.state_machine.movement.move_to_point(
                 220, np.array(self.position),
                 [np.cos(self.orientation), np.sin(self.orientation)],
                 np.array([(not self.team_side)*150, 65]))

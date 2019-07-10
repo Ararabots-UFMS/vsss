@@ -237,7 +237,7 @@ class NaiveAttackerController():
             robot_position=self.position,
             robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
             robot_speed=self.speed,
-            obstacle_position=np.resize(self.enemies_position, (-1, 2)),
+            obstacle_position=self.enemies_position.reshape((-1, 2)),
             obstacle_speed=[[0,0]]*5,
             ball_position=self.ball_position,
             only_forward=False,

@@ -9,8 +9,9 @@ class JsonHandler:
 
     def __init__(self):
         pass
-
-    def read(self, file_name, escape = False):
+        
+    @staticmethod
+    def read(file_name, escape = False):
         """ Takes a json file name and return a dict object with its content """
         dictionary = dict()
         try:
@@ -29,8 +30,9 @@ class JsonHandler:
             dictionary = yaml.safe_load(json.dumps(dictionary))
 
         return dictionary
-
-    def write(self, dictionary, file_name):
+    
+    @staticmethod
+    def write(dictionary, file_name):
         """ Writes the dictionary content in a json file """
         sucess = True
 

@@ -1,14 +1,12 @@
-from ..camera_module.camera import Camera
-import COLORS
 import numpy as np
 import cv2
 import time
 import os
-from utils.json_handler import JsonHandler
+from argparse import ArgumentParser
 
-CAMERA_ID = 0
-CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
-ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
+from vision_module.camera_module.camera import Camera
+from vision_module import COLORS
+from utils.json_handler import JsonHandler
 
 class ParamsSetter:
 
@@ -307,10 +305,24 @@ class ParamsSetter:
 
         cv2.destroyWindow('cropper')
 
+def makeArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+    parser.add_argument("device", type=str, default="0", help="camera device")
+    parser.add_argument("--camera_params_file", 
+                         type=str, 
+                         default="../../parameters/CAMERA_ELP-USBFHD01M-SFV.json",
+                         help="camera params file for lens correction")
+    parser.add_argument("--arena_params_file",
+                        type=str,
+                        default="../../parameters/ARENA.json",
+                        help="color params file to store the color thresholds")
+    return parser
 
 
 if __name__ == '__main__':
+    parser = makeArgParser()
+    args = parser.parse_args()
 
-    cam = Camera(CAMERA_ID, CAMERA_PARAMS_PATH)
-    setter = ParamsSetter(cam, ARENA_PARAMS_PATH)
+    cam = Camera(args.device, args.camera_params_file)
+    setter = ParamsSetter(cam, args.arena_params_file)
     setter.run()
