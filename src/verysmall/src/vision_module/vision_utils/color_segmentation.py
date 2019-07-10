@@ -4,7 +4,7 @@ from vision_module.camera_module.camera import Camera
 import cv2
 import numpy as np
 import copy
-from  vision_module import COLORS
+from vision_module import COLORS
 import os
 
 # @author Wellington Castro <wvmcastro>
