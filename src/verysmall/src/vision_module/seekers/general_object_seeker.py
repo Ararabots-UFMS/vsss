@@ -103,6 +103,7 @@ class GeneralObjSeeker:
 
         return np.array([c_x, c_y])
 
+
     def seek(self, img):
         if np.all(self.last_pos != None) and np.all(self.speed != None):
             origin, region = self.get_search_region(img)

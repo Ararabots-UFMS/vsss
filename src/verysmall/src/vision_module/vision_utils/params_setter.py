@@ -1,12 +1,12 @@
-from ..camera_module.camera import Camera
-import COLORS
+from vision_module.camera_module.camera import Camera
+from vision_module import COLORS
 import numpy as np
 import cv2
 import time
 import os
 from utils.json_handler import JsonHandler
 
-CAMERA_ID = 0
+CAMERA_ID = 1
 CAMERA_PARAMS_PATH = "../../parameters/CAMERA_ELP-USBFHD01M-SFV.json"
 ARENA_PARAMS_PATH = "../../parameters/ARENA.json"
 
