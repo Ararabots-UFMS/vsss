@@ -231,14 +231,11 @@ class Vision:
             self.last_time = time.time()
             while self.game_on:
                 self.raw_image = self.camera.read()
-                t0 = time.time()
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
 
                 self.set_dark_border()
 
-                """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
-                    self.home_seg, self.adv_seg and self.ball_seg """
                 self.pipeline()
 
                 self.hawk_eye.seek_yellow_team(255-self.yellow_seg, self.yellow_team)
