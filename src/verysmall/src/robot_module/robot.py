@@ -15,6 +15,8 @@ from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
 from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
 from strategy.naive_keeper.naive_keeper_controller import NaiveGKController
 
+from strategy.behaviour.blackboard import BlackBoard
+
 SOFTWARE = 0
 HARDWARE = 1
 
@@ -99,44 +101,50 @@ class Robot():
             NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
+        self.behaviour_trees = [
+
+        ]
+
         self.state_machine = self.strategies[self.role]
+
+        self.behaviour_tree = self.behaviour_trees[0]
+
+        self.blackboard = BlackBoard()
 
         self.stuck_counter = 0
 
+    def update_blackboard():
+        self.blackboard.game_state = self.game_state 
+        self.blackboard.team_side = self.team_side 
+
+        self.blackboard.freeball_robot_id = self.freeball_robot_id 
+        self.blackboard.meta_robot_id = self.meta_robot_id 
+        self.blackboard.penalty_robot_id = self.penalty_robot_id 
+
+        self.blackboard.ball_position = self.ball_position 
+        self.blackboard.ball_speed = self.ball_speed 
+
+        self.blackboard.my_id = self.id
+        self.blackboard.role = self.role 
+        self.blackboard.position = self.position 
+        self.blackboard.orientation = self.orientation 
+        self.blackboard.speed = self.speed 
+
+        self.blackboard.team_color = self.team_color 
+        self.blackboard.team_pos = self.team_pos 
+        self.blackboard.team_orientation = self.team_orientation 
+        self.blackboard.team_speed = self.team_speed 
+
+        self.blackboard.enemies_position = self.enemies_position 
+        self.blackboard.enemies_orientation = self.enemies_orientation 
+        self.blackboard.enemies_speed = self.enemies_speed 
+
+
     def run(self):
 
-        self.state_machine.update_game_information()
+        self.update_blackboard()
+        param_A, param_B, param_C = 
 
-        if self.game_state == 0:  # Stopped
-            param_A, param_B, param_C = self.state_machine.set_to_stop_game()
-
-        elif self.game_state == 1:  # Normal Play
-            param_A, param_B, param_C = self.state_machine.in_normal_game()
-            # rospy.logfatal(str(param_A)+" "+ str(param_B))
-
-        elif self.game_state == 2:  # Freeball
-
-            if self.id == self.freeball_robot:
-                rospy.logfatal(str(self.id)+" Vo bate freeball")
-                param_A, param_B, param_C = self.freeball_routine()
-            else:
-                self.game_state = 1
-                param_A, param_B, param_C = self.state_machine.in_freeball_game()
-
-        elif self.game_state == 3:  # Penalty
-
-            if self.id == self.penalty_robot:
-                rospy.logfatal(str(self.id)+" Vo bate penalty")
-                param_A, param_B, param_C = self.penalty_routine()
-            else:
-                self.game_state = 1
-                param_A, param_B, param_C = self.state_machine.in_penalty_game()
-
-        elif self.game_state == 4:  # meta
-            param_A, param_B, param_C = self.state_machine.in_meta_game()
-
-        else:  # I really really really Dont Know
-            print("wut")
         # ========================================================
         #             SOFTWARE        |    HARDWARE
         # Param A :    LEFT           |      Theta
