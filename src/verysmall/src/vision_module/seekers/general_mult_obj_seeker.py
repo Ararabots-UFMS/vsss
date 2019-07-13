@@ -22,7 +22,11 @@ class GeneralMultObjSeeker:
            :return: objecs: np.array([float, float]).shape([k, 2])
            object has the position of the center of each object in img
         """
-        cnts = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)[1]
+        if cv2.__version__ == '4.1.1-pre':
+            cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        else:
+            _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        
         centroids_list = []
         num_cnts = len(cnts)
         if num_cnts > 0:
