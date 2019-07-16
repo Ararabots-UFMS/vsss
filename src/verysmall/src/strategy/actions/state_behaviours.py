@@ -1,5 +1,6 @@
 from strategy.behaviour import TaskStatus
 
+
 class InState:
     """ 
         A selector runs each task in order until one succeeds,

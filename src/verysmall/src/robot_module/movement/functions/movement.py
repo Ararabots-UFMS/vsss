@@ -3,7 +3,7 @@ import os
 import numpy as np
 #sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 #path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, raio_vetores_range
+from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, predict_speed
 from utils.json_handler import JsonHandler
 
 from ..control.PID import PID
@@ -115,7 +115,7 @@ class Movement():
             # central area speed
 #            raio = raio_vetores(robot_position, robot_vector, ball_position,
 #                                np.array(self.univet_field.get_attack_goal() - ball_position), speed, 500, angle=0.07)
-            raio = raio_vetores_range(robot_position, robot_vector, ball_position, self.attack_goal)
+            raio = predict_speed(robot_position, robot_vector, ball_position, self.attack_goal)
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
@@ -177,13 +177,14 @@ class Movement():
         # logfatal(str(direction_vector))
         return self.follow_vector(speed, robot_vector, direction_vector, only_forward)
 
-    def follow_vector(self, speed, robot_vector, goal_vector, only_forward=False):
+    def follow_vector(self, speed, robot_vector, goal_vector, only_forward=False, correct_pid = True):
         """Recives the robot vector, goal vector and a speed and return the speed
         of the wheels to follow the goal vector
          :param speed : int
          :param robot_vector : np.array([float, float])
          :param goal_vector : np.array([float, float])
          :param only_forward : boolean
+         :param correct_pid: boolean
 
         :return: returns int, int, boolean
         """
@@ -203,6 +204,7 @@ class Movement():
             return diff_angle, -speed, False
 
         correction = self.pid.update(diff_angle)
+
         if forward:
             return self.return_speed(speed, correction)
         return self.return_speed(-speed, correction)
@@ -253,7 +255,8 @@ class Movement():
             return self.normalize(int(speed + correction)), self.normalize(int(speed - correction)), False
         return self.normalize(int(speed - correction)), self.normalize(int(speed + correction)), False
 
-    def normalize(self, speed):
+    @staticmethod
+    def normalize(speed):
         """Normalize robot speed
             :param speed: int
             :return: return int

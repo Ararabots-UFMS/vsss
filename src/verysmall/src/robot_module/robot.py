@@ -7,18 +7,26 @@ from robot_module.hardware import RobotHardware
 
 from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
-from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
-from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
-from strategy.set_pid_machine_controller import SetPIDMachineController
-from strategy.zagueiro.zagueiro_controller import ZagueiroController
-from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
-from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
-from strategy.naive_keeper.naive_keeper_controller import NaiveGKController
+# from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
+# from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
+# from strategy.set_pid_machine_controller import SetPIDMachineController
+# from strategy.zagueiro.zagueiro_controller import ZagueiroController
+# from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
+# from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
+# from strategy.naive_keeper.naive_keeper_controller import NaiveGKController
 
-from strategy.behaviour.blackboard import BlackBoard
+from strategy.behaviour import BlackBoard
+from strategy.strategy_utils import GameStates
+from strategy.attack_with_univector import AttackerWithUnivectorBT
+from utils.math_utils import forward_min_diff
+from utils.json_handler import JsonHandler
+from robot_module.movement.control.PID import PID
 
 SOFTWARE = 0
 HARDWARE = 1
+
+bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
+
 
 class Robot():
 
@@ -92,17 +100,18 @@ class Robot():
                                   "Border",
                                   "Point",
                                   "Meta"]
-        self.strategies = [
-            NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
-            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
-            AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
-            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
-            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
-            NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
+
+        self.strategies = [0,0,0,0,0,0,0,0,0,0,0,0
+            # NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
+            # AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+            # AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
+            # ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
+            # SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
+            # NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
         ]
 
         self.behaviour_trees = [
-
+            AttackerWithUnivectorBT()
         ]
 
         self.state_machine = self.strategies[self.role]
@@ -113,13 +122,21 @@ class Robot():
 
         self.stuck_counter = 0
 
-    def update_blackboard():
-        self.blackboard.game_state = self.game_state 
-        self.blackboard.team_side = self.team_side 
+        self.correct_orientation = 0
+        self.gamma_count = 0
 
-        self.blackboard.freeball_robot_id = self.freeball_robot_id 
-        self.blackboard.meta_robot_id = self.meta_robot_id 
-        self.blackboard.penalty_robot_id = self.penalty_robot_id 
+        self.pid_list = bodies_unpack[self.robot_body]
+
+        self.pid = PID(kp=self.pid_list['KP'], ki= self.pid_list['KI'], kd=self.pid_list['KD'])
+
+    def update_blackboard(self):
+        self.blackboard.game_state = GameStates(self.game_state)
+        self.blackboard.team_side = self.team_side
+        self.blackboard.attack_goal = not self.team_side
+
+        self.blackboard.freeball_robot_id = self.freeball_robot
+        self.blackboard.meta_robot_id = self.meta_robot
+        self.blackboard.penalty_robot_id = self.penalty_robot
 
         self.blackboard.ball_position = self.ball_position 
         self.blackboard.ball_speed = self.ball_speed 
@@ -139,11 +156,12 @@ class Robot():
         self.blackboard.enemies_orientation = self.enemies_orientation 
         self.blackboard.enemies_speed = self.enemies_speed 
 
-
     def run(self):
 
         self.update_blackboard()
-        param_A, param_B, param_C = 
+        vector, speed, param_C  = self.behaviour_tree.run(self.blackboard)
+
+        param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
 
         # ========================================================
         #             SOFTWARE        |    HARDWARE
@@ -174,6 +192,22 @@ class Robot():
             # rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
             #                str(self.team_side))
             self.changed_game_state = False
+
+    def translate_vector_to_motor_speed(self, vector, speed):
+
+        if type(vector) == float:
+            return speed, -speed
+
+        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.correct_orientation,
+                                                                 [np.cos(self.orientation), np.sin(self.orientation)],
+                                                                 vector, only_forward=False)
+        forward = self.correct_orientation
+        correction = self.pid.update(diff_angle)
+
+        if not forward:
+            speed = -speed
+
+        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction))
 
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.position - self.ball_position)
@@ -297,3 +331,13 @@ class Robot():
 
     def get_fake_stuck(self, position):
             return False
+
+    @staticmethod
+    def normalize(speed):
+        """Normalize robot speed
+            :param speed: int
+            :return: return int
+        """
+        if abs(speed) > 255:
+            return 255*speed/abs(speed)
+        return speed

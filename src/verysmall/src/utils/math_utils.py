@@ -130,7 +130,8 @@ def get_orientation_and_angle(orientation, robot_vector, goal_vector,do_nothing_
         else:
             return False, theta # forward
 
-def raio_vetores_range(robot_position, robot_vector, ball_position, atack_goal,  speed_max=255, upper_bound=800,k = 0.01,range_limit = 10):
+
+def predict_speed(robot_position, robot_vector, ball_position, atack_goal,  speed_max=255, upper_bound=800,k = 0.01,range_limit = 10):
     ret = upper_bound
     robot_position = np.array(robot_position)
     robot_vector   = np.array(robot_vector)

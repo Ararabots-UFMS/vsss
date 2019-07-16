@@ -1,4 +1,5 @@
 from enum import Enum
+import rospy
 
 
 class TaskStatus(Enum):
@@ -13,6 +14,7 @@ class BlackBoard:
     def __init__(self):
         self.game_state = None
         self.team_side = None
+        self.attack_goal = None
 
         self.freeball_robot_id = None
         self.meta_robot_id = None
@@ -36,6 +38,29 @@ class BlackBoard:
         self.enemies_orientation = None
         self.enemies_speed = None
 
+    def __repr__(self):
+        return 'BlackBoard:\n' + \
+               '\t--self.game_state: ' + str(self.game_state) + '\n' + \
+               '\t--self.team_side: ' + str(self.team_side) + '\n' + \
+               '\t--self.attack_goal: ' + str(self.attack_goal) + '\n' + \
+               '\t--self.freeball_robot_id: ' + str(self.freeball_robot_id) + '\n' + \
+               '\t--self.meta_robot_id: ' + str(self.meta_robot_id) + '\n' + \
+               '\t--self.penalty_robot_id: ' + str(self.penalty_robot_id) + '\n' + \
+               '\t--self.ball_position: ' + str(self.ball_position) + '\n' + \
+               '\t--self.ball_speed: ' + str(self.ball_speed) + '\n' + \
+               '\t--self.my_id: ' + str(self.my_id) + '\n' + \
+               '\t--self.role: ' + str(self.role) + '\n' + \
+               '\t--self.position: ' + str(self.position) + '\n' + \
+               '\t--self.orientation: ' + str(self.orientation) + '\n' + \
+               '\t--self.speed: ' + str(self.speed) + '\n' + \
+               '\t--self.team_color: ' + str(self.team_color) + '\n' + \
+               '\t--self.team_pos: ' + str(self.team_pos) + '\n' + \
+               '\t--self.team_orientation: ' + str(self.team_orientation) + '\n' + \
+               '\t--self.team_speed: ' + str(self.team_speed) + '\n' + \
+               '\t--self.enemies_position: ' + str(self.enemies_position) + '\n' + \
+               '\t--self.enemies_orientation: ' + str(self.enemies_orientation) + '\n' + \
+               '\t--self.enemies_speed: ' + str(self.enemies_speed) + '\n'
+
 
 class Sequence:
     """
@@ -51,13 +76,14 @@ class Sequence:
         self.children = []
 
     def run(self, blackboard):
+
         for c in self.children:
             status = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:
                 return status
 
-        return TaskStatus.SUCCESS
+        return TaskStatus.SUCCESS, None
 
 
 class Selector:
@@ -80,4 +106,4 @@ class Selector:
             if status != TaskStatus.FAILURE:
                 return status
 
-        return TaskStatus.FAILURE
+        return TaskStatus.FAILURE, None

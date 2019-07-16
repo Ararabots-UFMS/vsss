@@ -1,3 +1,5 @@
+from enum import Enum
+
 import numpy as np
 from utils import math_utils
 import math
@@ -36,6 +38,14 @@ ROBOT_SIZE = 7
 
 BORDER_NORMALS = {4:[1.0,-1.0], 5:[1.0,1.0], 6:[-1.0,-1.0], 7:[-1.0,1.0], 8:[0.0,1.0], 9:[0.0,-1.0], 11:[1.0,0.0],
                   12:[1.0,0.0], 13:[-1.0,0.0], 14:[-1.0,0.0]}
+
+
+class GameStates(Enum):
+    STOPPED = 0
+    NORMAL = 1
+    FREE_BALL = 2
+    PENALTY = 3
+    META = 4
 
 ############################
 # arena sections functions #
