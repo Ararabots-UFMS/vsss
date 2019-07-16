@@ -64,7 +64,7 @@ class Vision:
         self.raw_image = None
         self.warp_matrix = None
         self.pipeline = None
-        self.fps = None
+        self.fps = -1
         self.last_time = None
         self.new_time = None
 
@@ -226,20 +226,16 @@ class Vision:
         self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
 
     def run(self):
-
         while not self.finish:
 
             self.last_time = time.time()
             while self.game_on:
                 self.raw_image = self.camera.read()
-
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
 
                 self.set_dark_border()
 
-                """ After the self.pipeline() and self.attribute_teams are executed, is expected that will be three images:
-                    self.home_seg, self.adv_seg and self.ball_seg """
                 self.pipeline()
 
                 self.hawk_eye.seek_yellow_team(255-self.yellow_seg, self.yellow_team)
@@ -248,11 +244,8 @@ class Vision:
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
-                #self.computed_frames += 1
-
-                self.update_fps()
-
                 self.send_message(ball=True, yellow_team=True, blue_team=True)
+                self.update_fps()
 
         self.camera.stop()
         self.camera.capture.release()
