@@ -26,6 +26,7 @@ class BlackBoard:
         self.my_id = None
         self.role = None
         self.position = None
+        self.true_pos = None
         self.orientation = None
         self.speed = None
 
@@ -78,10 +79,10 @@ class Sequence:
     def run(self, blackboard):
 
         for c in self.children:
-            status = c.run(blackboard)
+            status, action = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:
-                return status
+                return status, action
 
         return TaskStatus.SUCCESS, None
 
@@ -101,9 +102,9 @@ class Selector:
 
     def run(self, blackboard):
         for c in self.children:
-            status = c.run(blackboard)
+            status, action = c.run(blackboard)
 
             if status != TaskStatus.FAILURE:
-                return status
+                return status, action
 
         return TaskStatus.FAILURE, None

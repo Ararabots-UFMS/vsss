@@ -4,6 +4,7 @@ from strategy.actions.state_behaviours import InState
 from strategy.strategy_utils import GameStates
 import rospy
 
+
 class AttackerWithUnivectorBT(Selector):
     """docstring for ClassName"""
 
@@ -25,7 +26,7 @@ class AttackerWithUnivectorBT(Selector):
 
         result, action = super().run(blackboard)
 
-        if result != TaskStatus.FAILURE:
+        if result != TaskStatus.FAILURE and action is not None:
             return action
         else:
             return .0, .0, False
