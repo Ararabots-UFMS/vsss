@@ -11,6 +11,7 @@ from strategy.attack_with_univector import AttackerWithUnivectorBT
 from utils.math_utils import forward_min_diff
 from utils.json_handler import JsonHandler
 from robot_module.movement.control.PID import PID
+from robot_module.movement.definitions import OpCodes
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -152,7 +153,17 @@ class Robot():
     def run(self):
 
         self.update_blackboard()
-        vector, speed, param_C = self.behaviour_tree.run(self.blackboard)
+        op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
+        # rospy.logwarn(op_code)
+        # rospy.logwarn(angle)
+        # rospy.logwarn(speed)
+        # rospy.logwarn(dist)
+
+        param_C = False
+        if op_code == OpCodes.SPIN:
+            vector = 360
+        else:
+            vector = np.array([np.cos(angle), np.sin(angle)])
 
         param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
 

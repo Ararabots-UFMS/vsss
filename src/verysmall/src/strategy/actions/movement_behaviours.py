@@ -1,8 +1,10 @@
 from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import univectorField
-from robot_module.movement.functions.movement import Movement
+from robot_module.movement.definitions import OpCodes
 from utils.json_handler import JsonHandler
-from utils.math_utils import predict_speed
+from utils.math_utils import predict_speed, angle_between
+from abc import ABC, abstractmethod
+from typing import List
 import numpy as np
 
 
@@ -11,21 +13,20 @@ class StopAction:
     def __init__(self, name):
         self.name = name
 
-    def run(self, blackboard: BlackBoard):
-        return TaskStatus.SUCCESS, (.0, .0, False)
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+        return TaskStatus.SUCCESS, (OpCodes.NORMAL, .0, 0, .0)
 
 
 class SpinTask:
     def __init__(self, name):
         self.name = name
 
-    def run(self, blackboard: BlackBoard):
-        return TaskStatus.RUNNING, (360, 255, False)
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+        return TaskStatus.RUNNING, (OpCodes.SPIN, 3.0, 255, .0)
 
 
-class GoToBallUsingUnivector:
-
-    def __init__(self, name, max_speed=250, acceptance_radius=10.0, speed_prediction=True):
+class UnivectorTask(ABC):
+    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         self.name = name
         self.speed = max_speed
         self.speed_prediction = speed_prediction
@@ -43,35 +44,64 @@ class GoToBallUsingUnivector:
         self.univector_field = univectorField()
         self.univector_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
 
-    def run(self, blackboard: BlackBoard):
-        if np.linalg.norm(blackboard.position - blackboard.ball_position) < self.acceptance_radius:
+    @abstractmethod
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+        raise Exception("subclass must override run method")
+        pass
+
+    def go_to_objective(self, blackboard: BlackBoard, objective_position):
+        distance_to_ball = np.linalg.norm(blackboard.position - objective_position)
+
+        if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
 
         self.univector_field.updateObstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
-        vector = self.univector_field.getVecWithBall(blackboard.position, np.array([0, 0]),  # blackboard.speed,
-                                                     blackboard.ball_position)
+        angle = self.univector_field.get_angle_with_ball(blackboard.position, np.array([0, 0]),  # blackboard.speed,
+                                                         objective_position)
         speed = self.speed
         if self.speed_prediction:
             raio = predict_speed(blackboard.position, [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
-                                 blackboard.ball_position, self.univector_field.get_attack_goal())
+                                 objective_position, self.univector_field.get_attack_goal())
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
         status = TaskStatus.RUNNING
 
-        return status, (vector, speed, False)
+        return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
+
+
+class GoToBallUsingUnivector(UnivectorTask):
+
+    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+
+        return self.go_to_objective(blackboard, blackboard.ball_position)
+
+
+class GoToAttackGoalUsingUnivector(UnivectorTask):
+    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+        return self.go_to_objective(blackboard, np.array([blackboard.attack_goal * 150, 65]))
 
 
 class ChargeWithBall:
 
-    def __init__(self, name='ChargeWithBall'):
+    def __init__(self, name='ChargeWithBall', max_speed: int = 255):
         self.name = name
+        self.max_speed = max_speed
 
-    def run(self, blackboard:BlackBoard):
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+        goal_vector = np.array([blackboard.attack_goal * 150, 65]) - blackboard.position
 
-        param_1, param_2, _ = self.state_machine.movement.move_to_point(
-            220, np.array(self.position),
-            [np.cos(self.orientation), np.sin(self.orientation)],
-            np.array([(not self.team_side) * 150, 65]))
+        angle = angle_between(
+            [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
+            goal_vector
+        )
 
-        return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
+        distance_to_goal = np.linalg.norm(goal_vector)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)

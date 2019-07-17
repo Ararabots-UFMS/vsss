@@ -68,7 +68,7 @@ class Simulator():
     def drawRobot(self, pos, vec):
         """Draw the robot in position pos with the robotVectortor iqual a vec"""
         # angle between vec and [1,0]
-        angle = angleBetween([1,0], vec)*180/(math.pi)
+        angle = angle_between([1, 0], vec) * 180 / (math.pi)
         # get the robot contour
         rect = (pos, robotSize, angle)
         box = cv2.boxPoints(rect)

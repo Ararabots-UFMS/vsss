@@ -252,8 +252,8 @@ def border_stuck(position_buffer, orientation):
         return False
 
     orientation = np.array([math.cos(orientation), math.sin(orientation)])
-    front_angle = math_utils.angleBetween(orientation, BORDER_NORMALS[sec])
-    back_angle = math_utils.angleBetween(-orientation, BORDER_NORMALS[sec])
+    front_angle = math_utils.angle_between(orientation, BORDER_NORMALS[sec])
+    back_angle = math_utils.angle_between(-orientation, BORDER_NORMALS[sec])
 
     angle = min(front_angle, back_angle) * 180 / math.pi
 

@@ -6,7 +6,7 @@ from strategy.strategy_utils import *
 from .advanced_keeper import AdvancedGK, MyModel
 from robot_module.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-from utils.math_utils import angleBetween
+from utils.math_utils import angle_between
 
 bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 

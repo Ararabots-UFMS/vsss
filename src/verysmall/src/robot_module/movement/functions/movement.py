@@ -3,7 +3,7 @@ import os
 import numpy as np
 #sys.path[0] = root_path = os.environ['ROS_ARARA_ROOT'] + "src/"
 #path = sys.path[0] + 'parameters/univector_constants.json'
-from utils.math_utils import angleBetween, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, predict_speed
+from utils.math_utils import angle_between, distancePoints, unitVector, forward_min_diff, raio_vetores, get_orientation_and_angle, predict_speed
 from utils.json_handler import JsonHandler
 
 from ..control.PID import PID
@@ -155,7 +155,7 @@ class Movement():
 
          :return: returns : boolean
         """
-        if abs(angleBetween(robot_vector, goal_vector, abs=False)) <= 0.087266463: #5 degrees error
+        if abs(angle_between(robot_vector, goal_vector, abs=False)) <= 0.087266463: #5 degrees error
             return True
         return False
 
@@ -232,8 +232,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        diff_angle = angleBetween(robot_vector, goal_vector, abs=False)
-        #logfatal(str(diff_angle))
+        diff_angle = angle_between(robot_vector, goal_vector, abs=False)
 
         if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True

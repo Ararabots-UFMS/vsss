@@ -5,7 +5,7 @@ import numpy as np
 from .zagueiro import Zagueiro, MyModel
 from math import pi
 from robot_module.movement.functions.movement import Movement
-from utils.math_utils import angleBetween, distancePoints
+from utils.math_utils import angle_between, distancePoints
 from utils.json_handler import JsonHandler
 from strategy.strategy_utils import *
 

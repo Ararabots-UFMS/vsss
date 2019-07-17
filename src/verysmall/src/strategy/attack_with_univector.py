@@ -2,6 +2,8 @@ from strategy.behaviour import *
 from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask
 from strategy.actions.state_behaviours import InState
 from strategy.strategy_utils import GameStates
+from strategy.base_trees import FreeBall, Penalty
+from robot_module.movement.definitions import OpCodes
 import rospy
 
 
@@ -16,6 +18,9 @@ class AttackerWithUnivectorBT(Selector):
         stopped.children.append(StopAction('Wait'))
         self.children.append(stopped)
 
+        self.children.append(Penalty())
+        self.children.append(FreeBall())
+
         normal = Sequence('Normal')
         normal.children.append(InState('CheckNormalState', GameStates.NORMAL))
         normal.children.append(GoToBallUsingUnivector('FollowBall'))  # FollowBall
@@ -29,5 +34,5 @@ class AttackerWithUnivectorBT(Selector):
         if result != TaskStatus.FAILURE and action is not None:
             return action
         else:
-            return .0, .0, False
+            return OpCodes.NORMAL, 0.0, 0, .0
 
