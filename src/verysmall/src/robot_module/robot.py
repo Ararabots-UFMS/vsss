@@ -12,6 +12,7 @@ from utils.math_utils import forward_min_diff
 from utils.json_handler import JsonHandler
 from robot_module.movement.control.PID import PID
 from robot_module.movement.definitions import OpCodes
+from robot_module.control import Control
 
 SOFTWARE = 0
 HARDWARE = 1
@@ -38,7 +39,11 @@ class Robot():
         self._socket_id = socket_id
         self._should_debug = should_debug
 
-        self.hardware = RobotHardware()
+        self.pid_list = bodies_unpack[self.robot_body]
+        constants = [self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD']]
+        
+        self._hardware = RobotHardware()
+        self._controller = Control(self, constants)
 
         # True position for penalty
         self.true_pos = np.array([.0, .0])
@@ -77,9 +82,9 @@ class Robot():
         # Open bluetooth socket
         if self._socket_id == -1:
             rospy.logfatal("Using fake bluetooth")
-            self.sender = None
+            self._sender = None
         else:
-            self.sender = Sender(self._socket_id)
+            self._sender = Sender(self._socket_id)
 
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, self._should_debug)
 
@@ -118,10 +123,6 @@ class Robot():
         self.correct_orientation = 0
         self.gamma_count = 0
 
-        self.pid_list = bodies_unpack[self.robot_body]
-
-        self.pid = PID(kp=self.pid_list['KP'], ki=self.pid_list['KI'], kd=self.pid_list['KD'])
-
     def update_blackboard(self):
         self.blackboard.game_state = GameStates(self.game_state)
         self.blackboard.team_side = self.team_side
@@ -151,6 +152,17 @@ class Robot():
         self.blackboard.enemies_position = self.enemies_position
         self.blackboard.enemies_orientation = self.enemies_orientation
         self.blackboard.enemies_speed = self.enemies_speed
+
+    def run(self):
+        self.update_blackboard()
+        op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
+        left, right = self._controller.get_wheels_speeds(op_code, speed, angle, dist)
+        msg = self._hardware.normalize_speeds(STDMsg(left, right))
+        
+        if self._sender is not None:
+            priority = self.get_priority()
+            self._sender.send(priority, self._hardware.encode(msg))
+
 
     def run(self):
 
@@ -187,9 +199,9 @@ class Robot():
             self.right_speed = param_B
             msg = STDMsg(self.left_speed, self.right_speed)
 
-        if self.sender is not None:
+        if self._sender is not None:
             priority = self.get_priority()
-            self.sender.send(priority, self.hardware.encode(msg))
+            self._sender.send(priority, self._hardware.encode(msg))
 
         if self._should_debug:
             pass
@@ -216,7 +228,7 @@ class Robot():
         return self.normalize(int(speed + correction)), self.normalize(int(speed - correction))
 
     def get_priority(self) -> int:
-        distance = np.linalg.norm(self.position - self.ball_position)
+        distance = np.linalg.norm(self.blackboard.position - self.blackboard.ball_position)
         return int(distance) & 0xFF
 
     def read_parameters(self):
