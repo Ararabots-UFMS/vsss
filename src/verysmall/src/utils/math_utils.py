@@ -1,3 +1,4 @@
+from typing import Union
 import numpy as np
 import numpy.linalg as la
 import math
@@ -8,8 +9,10 @@ import rospy
 MINCHANGE = 0.5
 
 FORWARD = True
-BACKWARDS = False
+BACKWARDS = not FORWARD
 
+RAD2DEG = 180.0/math.pi
+DEG2RAD = 1.0/RAD2DEG
 
 def unitVector(vector):
     """ Returns the unit vector of the vector.  """
@@ -149,3 +152,21 @@ def raio_vetores_range(robot_position, robot_vector, ball_position, atack_goal, 
         if (cos_up < cos_both or cos_down < cos_both ):
             ret = 10/(np.sqrt(float(r1*k)))
     return (ret/upper_bound) * speed_max
+
+
+def min_angle(ang1, ang2, rad: bool = True) -> Union[int, float]:
+    if rad == True:
+        ang1 *= RAD2DEG
+        ang2 *= RAD2DEG
+    
+    angle_degrees = (ang1 + 180 -  ang2) % 360 - 180
+
+    return -angle_degrees*DEG2RAD if rad == True else -angle_degrees 
+    
+def wrap2pi(theta):
+    if theta > math.pi:
+        return theta - 2*math.pi
+    if theta < -math.pi:
+        return 2*math.pi + theta
+    else:
+        return theta

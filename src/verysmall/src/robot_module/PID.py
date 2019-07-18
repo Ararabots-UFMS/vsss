@@ -1,8 +1,6 @@
 import time
 
-"""Pid class"""
-
-class PID:
+class PIDController:
 
     def __init__(self, kp=1.0, ki=0.0, kd=0.0, max_integral=1000.0, max_derivative=1000.0, target=0.0):
         # Constants 
@@ -25,22 +23,9 @@ class PID:
         # Initialize time sample 
         self.last_time = time.time()
 
-
-    def set_kp(self, num):
-        """set new Kp value"""
-        self.kp = num
-
-    def set_ki(self, num):
-        """set new Ki value"""
-        self.ki = num
-
-    def set_kd(self, num):
-        """set new Kd value"""
-        self.kd = num
-
     def set_target(self, num):
         """Set new target value"""
-        self.set_target = num
+        self.target = num
 
     def set_constants(self, kp, ki, kd):
         """
@@ -50,9 +35,9 @@ class PID:
         :param kd: float
         :return:
         """
-        self.set_kp(kp)
-        self.set_ki(ki)
-        self.set_kd(kd)
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
 
     def get_constants(self):
         """Return the constant values"""
@@ -66,7 +51,6 @@ class PID:
         delta_time = timer_aux - self.last_time
 
         # Calculating pid values
-        proportional = error
         integral = self.integral + (self.error*delta_time)
         derivative = (error - self.error)/delta_time
 
@@ -79,7 +63,7 @@ class PID:
             derivative = self.max_derivative
 
         # Output value
-        output = self.kp*proportional + self.ki*integral + self.kd*derivative
+        output = self.kp*error + self.ki*integral + self.kd*derivative
 
         # Update values
         self.integral = integral

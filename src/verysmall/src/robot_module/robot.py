@@ -47,12 +47,14 @@ class Robot():
         # Receive from vision
         self.ball_position = None
         self.ball_speed = None
-        self.team_pos = None
-        self.team_orientation = None
-        self.team_speed = None
+        
         self.position = None
         self.orientation = None
         self.speed = None
+
+        self.team_pos = None
+        self.team_orientation = None
+        self.team_speed = None
         self.enemies_position = None
         self.enemies_orientation = None
         self.enemies_speed = None
@@ -239,25 +241,6 @@ class Robot():
         else:
             self.game_state = 1
             return self.state_machine.in_freeball_game()
-
-    # def get_stuck(self, position):
-    #     """
-    #     Returns if the robot is stuck or not based on its wheels velocity and the velocity seen by
-    #     the vision node
-    #     :param position: int
-    #     :return: nothing
-    #     """
-    #     if sum(self.velocity_buffer):
-    #
-    #         # position_sum = self.buffer_mean(self.position_buffer)
-    #         # if np.any( abs(position_sum - np.array(position)) < 3 ):
-    #         #     return True
-    #
-    #         if (self.speed[0] < 1) and (self.speed[1] < 1):
-    #             return True
-    #
-    #     return False
-    #
 
     def get_stuck(self, position):
         """

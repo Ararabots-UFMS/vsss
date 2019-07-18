@@ -98,9 +98,10 @@ class Camera:
         params = self.json_handler.read(self.params_file_name)
 
         """ mapx and mapy are the matrix with the lens correction map """
-        mapx = np.asarray(params['matrix_x']).astype("float32")
-        mapy = np.asarray(params['matrix_y']).astype("float32")
-        self.mapx, self.mapy = cv2.convertMaps(mapx, mapy, cv2.CV_16SC2)
+        self.mapx = np.asarray(params['matrix_x']).astype("float32")
+        self.mapy = np.asarray(params['matrix_y']).astype("float32")
+        # self.mapx, self.mapy = cv2.convertMaps(mapx, mapy, cv2.CV_16SC2)
+
 
         """ The frame width and height """
         self.frame_width = int(params['default_frame_width'])
