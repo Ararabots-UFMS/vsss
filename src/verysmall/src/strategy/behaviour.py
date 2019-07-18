@@ -79,6 +79,9 @@ class Sequence:
     def run(self, blackboard):
 
         for c in self.children:
+            # if not issubclass(type(c), Sequence):
+            #     rospy.logwarn(c.name)
+
             status, action = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:
@@ -101,7 +104,11 @@ class Selector:
         self.children = []
 
     def run(self, blackboard):
+
         for c in self.children:
+            # if not issubclass(type(c), Sequence):
+            #     rospy.logwarn(c.name)
+
             status, action = c.run(blackboard)
 
             if status != TaskStatus.FAILURE:
