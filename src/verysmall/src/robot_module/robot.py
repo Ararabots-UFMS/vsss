@@ -1,34 +1,35 @@
 import rospy
-import sys
 import numpy as np
-import random
-import os
 from robot_module.hardware import RobotHardware
 
 from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
-from strategy.attacker_with_univector.attacker_with_univector_controller import AttackerWithUnivectorController
-from strategy.advanced_keeper.advanced_keeper_controller import AdvancedGKController
-from strategy.set_pid_machine_controller import SetPIDMachineController
-from strategy.zagueiro.zagueiro_controller import ZagueiroController
-from strategy.strategy_utils import behind_ball, on_attack_side, spin_direction
-from strategy.naive_attacker.naive_attacker_controller import NaiveAttackerController
-from strategy.naive_keeper.naive_keeper_controller import NaiveGKController
+
+from strategy.behaviour import BlackBoard
+from strategy.strategy_utils import GameStates
+from strategy.attack_with_univector import AttackerWithUnivectorBT
+from utils.math_utils import forward_min_diff
+from utils.json_handler import JsonHandler
+from robot_module.movement.control.PID import PID
+from robot_module.movement.definitions import OpCodes
 
 SOFTWARE = 0
 HARDWARE = 1
 
+bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
+
+
 class Robot():
 
-    def __init__(self, robot_id:int,
-                tag: int, 
-                robot_body: str,
-                team_side: int,
-                team_color: int,
-                robot_role: int,
-                _game_topic_name: str,
-                socket_id:int = -1,
-                should_debug:int = 0):
+    def __init__(self, robot_id: int,
+                 tag: int,
+                 robot_body: str,
+                 team_side: int,
+                 team_color: int,
+                 robot_role: int,
+                 _game_topic_name: str,
+                 socket_id: int = -1,
+                 should_debug: int = 0):
 
         # Parameters
         self.id = robot_id
@@ -40,7 +41,7 @@ class Robot():
         self.hardware = RobotHardware()
 
         # True position for penalty
-        self.true_pos = np.array([.0,.0])
+        self.true_pos = np.array([.0, .0])
         self.velocity_buffer = []
         self.position_buffer = []
 
@@ -69,8 +70,8 @@ class Robot():
         self.meta_robot = None
         # right(1) or left(0)
         self.left_side = 0
-        self.right_side = not self.left_side #TODO: pq isso aqui?
-        
+        self.right_side = not self.left_side  # TODO: pq isso aqui?
+
         self.left_speed = self.right_speed = 0
 
         # Open bluetooth socket
@@ -92,53 +93,82 @@ class Robot():
                                   "Border",
                                   "Point",
                                   "Meta"]
-        self.strategies = [
-            NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
-            AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
-            AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
-            ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
-            SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
-            NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
+
+        self.strategies = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                           # NaiveAttackerController(_robot_obj = self, _robot_body = self.robot_body),
+                           # AttackerWithUnivectorController(_robot_obj = self, _robot_body = self.robot_body),
+                           # AdvancedGKController(_robot_obj = self, _robot_body = self.robot_body),
+                           # ZagueiroController(_robot_obj=self, _robot_body=self.robot_body),
+                           # SetPIDMachineController(_robot_obj = self, _robot_body=self.robot_body),
+                           # NaiveGKController(_robot_obj = self, _robot_body=self.robot_body)
+                           ]
+
+        self.behaviour_trees = [
+            AttackerWithUnivectorBT()
         ]
 
         self.state_machine = self.strategies[self.role]
 
+        self.behaviour_tree = self.behaviour_trees[0]
+
+        self.blackboard = BlackBoard()
+
         self.stuck_counter = 0
+
+        self.correct_orientation = 0
+        self.gamma_count = 0
+
+        self.pid_list = bodies_unpack[self.robot_body]
+
+        self.pid = PID(kp=self.pid_list['KP'], ki=self.pid_list['KI'], kd=self.pid_list['KD'])
+
+    def update_blackboard(self):
+        self.blackboard.game_state = GameStates(self.game_state)
+        self.blackboard.team_side = self.team_side
+        self.blackboard.attack_goal = not self.team_side
+
+        self.blackboard.freeball_robot_id = self.freeball_robot
+        self.blackboard.meta_robot_id = self.meta_robot
+        self.blackboard.penalty_robot_id = self.penalty_robot
+
+        self.blackboard.ball_position = self.ball_position
+        self.blackboard.ball_speed = self.ball_speed
+
+        self.blackboard.my_id = self.id
+        self.blackboard.role = self.role
+        self.blackboard.position = self.position
+        if np.all(self.position):
+            self.blackboard.true_pos = self.position
+
+        self.blackboard.orientation = self.orientation
+        self.blackboard.speed = self.speed
+
+        self.blackboard.team_color = self.team_color
+        self.blackboard.team_pos = self.team_pos
+        self.blackboard.team_orientation = self.team_orientation
+        self.blackboard.team_speed = self.team_speed
+
+        self.blackboard.enemies_position = self.enemies_position
+        self.blackboard.enemies_orientation = self.enemies_orientation
+        self.blackboard.enemies_speed = self.enemies_speed
 
     def run(self):
 
-        self.state_machine.update_game_information()
+        self.update_blackboard()
+        op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
+        # rospy.logwarn(op_code)
+        # rospy.logwarn(angle)
+        # rospy.logwarn(speed)
+        # rospy.logwarn(dist)
 
-        if self.game_state == 0:  # Stopped
-            param_A, param_B, param_C = self.state_machine.set_to_stop_game()
+        param_C = False
+        if op_code == OpCodes.SPIN:
+            vector = 360
+        else:
+            vector = np.array([np.cos(angle), np.sin(angle)])
 
-        elif self.game_state == 1:  # Normal Play
-            param_A, param_B, param_C = self.state_machine.in_normal_game()
-            # rospy.logfatal(str(param_A)+" "+ str(param_B))
+        param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
 
-        elif self.game_state == 2:  # Freeball
-
-            if self.id == self.freeball_robot:
-                rospy.logfatal(str(self.id)+" Vo bate freeball")
-                param_A, param_B, param_C = self.freeball_routine()
-            else:
-                self.game_state = 1
-                param_A, param_B, param_C = self.state_machine.in_freeball_game()
-
-        elif self.game_state == 3:  # Penalty
-
-            if self.id == self.penalty_robot:
-                rospy.logfatal(str(self.id)+" Vo bate penalty")
-                param_A, param_B, param_C = self.penalty_routine()
-            else:
-                self.game_state = 1
-                param_A, param_B, param_C = self.state_machine.in_penalty_game()
-
-        elif self.game_state == 4:  # meta
-            param_A, param_B, param_C = self.state_machine.in_meta_game()
-
-        else:  # I really really really Dont Know
-            print("wut")
         # ========================================================
         #             SOFTWARE        |    HARDWARE
         # Param A :    LEFT           |      Theta
@@ -148,8 +178,8 @@ class Robot():
         self.add_to_buffer(self.velocity_buffer, 10, param_A)
         self.add_to_buffer(self.velocity_buffer, 10, param_B)
 
-        #self.add_to_buffer(self.position_buffer, 10, self.position)
-        if param_C: # if is hardware
+        # self.add_to_buffer(self.position_buffer, 10, self.position)
+        if param_C:  # if is hardware
             self.left_speed = param_B
             self.right_speed = param_B
         else:
@@ -169,23 +199,38 @@ class Robot():
             #                str(self.team_side))
             self.changed_game_state = False
 
+    def translate_vector_to_motor_speed(self, vector, speed):
+
+        if type(vector) is float or type(vector) is int:
+            return speed, -speed
+
+        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.correct_orientation,
+                                                                 [np.cos(self.orientation), np.sin(self.orientation)],
+                                                                 vector, only_forward=False)
+        forward = self.correct_orientation
+        correction = self.pid.update(diff_angle)
+
+        if not forward:
+            speed = -speed
+
+        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction))
+
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.position - self.ball_position)
         return int(distance) & 0xFF
 
     def read_parameters(self):
-        #TODO: ler parametros do robot na funcao init
+        # TODO: ler parametros do robot na funcao init
         pass
 
     def debug(self):
         pass
 
     def add_to_buffer(self, buffer, buffer_size, element):
-        if(len(buffer) > buffer_size):
+        if (len(buffer) > buffer_size):
             buffer.pop(0)
 
         buffer.append(element)
-
 
     # ATTENTION: for now pass just np arrays or numbers please !!
     def buffer_mean(self, buffer):
@@ -194,10 +239,11 @@ class Robot():
         for i in range(length):
             sum += buffer[i]
         if length != 0:
-            return sum/length
+            return sum / length
         else:
-            return sum/1
-# ATTENTION: just use if you have a list of np.arrays of dim 2 !!
+            return sum / 1
+
+    # ATTENTION: just use if you have a list of np.arrays of dim 2 !!
     def buffer_polyfit(self, buffer, degree):
         x = []
         y = []
@@ -211,13 +257,13 @@ class Robot():
         if np.all(self.position):
             self.true_pos = self.position
 
-        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance = 25):
+        if behind_ball(self.ball_position, self.true_pos, self.team_side, _distance=25):
             param_1, param_2, _ = self.state_machine.movement.move_to_point(
                 220, np.array(self.position),
                 [np.cos(self.orientation), np.sin(self.orientation)],
-                np.array([(not self.team_side)*150, 65]))
+                np.array([(not self.team_side) * 150, 65]))
 
-            return param_1, param_2, SOFTWARE #0.0, 250, HARDWARE
+            return param_1, param_2, SOFTWARE  # 0.0, 250, HARDWARE
         else:
             self.game_state = 1
             return self.state_machine.in_penalty_game()
@@ -232,7 +278,7 @@ class Robot():
                 robot_vector=[np.cos(self.orientation), np.sin(self.orientation)],
                 robot_speed=np.array([0, 0]),
                 obstacle_position=self.enemies_position,
-                obstacle_speed=[[0,0]]*5,
+                obstacle_speed=[[0, 0]] * 5,
                 ball_position=self.ball_position,
                 only_forward=False,
                 speed_prediction=True)
@@ -251,16 +297,16 @@ class Robot():
         """
         if sum(self.velocity_buffer):
 
-        #     # if np.any( abs(position_sum - np.array(position)) < 3 ):
-        #     #     return True
+            #     # if np.any( abs(position_sum - np.array(position)) < 3 ):
+            #     #     return True
 
-        #     # position_sum = self.buffer_mean(self.position_buffer)
+            #     # position_sum = self.buffer_mean(self.position_buffer)
 
-        #     # diff = abs(position_sum - np.array(position))
-        #     # diff = (diff[0] < 0.5) and (diff[1] < 0.5)
+            #     # diff = abs(position_sum - np.array(position))
+            #     # diff = (diff[0] < 0.5) and (diff[1] < 0.5)
 
             if ((self.speed[0] < 1) and (self.speed[1] < 1)):
-                self.stuck_counter+=1
+                self.stuck_counter += 1
                 return (self.stuck_counter > 60)
             else:
                 if (self.stuck_counter > 0):
@@ -271,4 +317,14 @@ class Robot():
         return False
 
     def get_fake_stuck(self, position):
-            return False
+        return False
+
+    @staticmethod
+    def normalize(speed):
+        """Normalize robot speed
+            :param speed: int
+            :return: return int
+        """
+        if abs(speed) > 255:
+            return 255 * speed / abs(speed)
+        return speed

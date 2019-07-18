@@ -19,7 +19,7 @@ def unitVector(vector):
     return vector / np.linalg.norm(vector)
 
 
-def angleBetween(v1, v2, abs=True):
+def angle_between(v1, v2, abs:bool= True) -> float:
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
     cosang = np.dot(v1, v2)
     sinang = np.cross(v1, v2)
@@ -81,7 +81,7 @@ def min_diff_vec_and_opposite(num, orientation, vec, goal):
     rand = random.random()
     gamma_value = stats.gamma.cdf(num, a=10, scale=0.8)
     if rand < gamma_value:
-        if angleBetween(vec, goal) <= angleBetween(opposite_vector(vec), goal):
+        if angle_between(vec, goal) <= angle_between(opposite_vector(vec), goal):
             return True, 0
         return False, 0
     else:
@@ -100,8 +100,8 @@ def forward_min_diff(num, orientation, vec, goal, only_forward=False):
     """
     tmp, new_gamma_count = min_diff_vec_and_opposite(num, orientation, vec, goal)
     if tmp or only_forward:
-        return True, angleBetween(vec, goal, abs=False), new_gamma_count
-    return False, angleBetween(opposite_vector(vec), goal, abs=False), new_gamma_count
+        return True, angle_between(vec, goal, abs=False), new_gamma_count
+    return False, angle_between(opposite_vector(vec), goal, abs=False), new_gamma_count
 
 def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800, angle = 3,k = 0.01):
     p1 = np.array(p1)
@@ -123,7 +123,7 @@ def get_orientation_and_angle(orientation, robot_vector, goal_vector,do_nothing_
 
     cos_do_nothing = np.cos((np.pi/180.0)*(90-do_nothing_angle))
     #(90-do_nothing_angle/2.0))
-    theta = angleBetween(robot_vector, goal_vector, abs=False)
+    theta = angle_between(robot_vector, goal_vector, abs=False)
 
     if abs(cos) < cos_do_nothing:
         return orientation, theta# maintains the same
@@ -133,7 +133,8 @@ def get_orientation_and_angle(orientation, robot_vector, goal_vector,do_nothing_
         else:
             return False, theta # forward
 
-def raio_vetores_range(robot_position, robot_vector, ball_position, atack_goal,  speed_max=255, upper_bound=800,k = 0.01,range_limit = 10):
+
+def predict_speed(robot_position, robot_vector, ball_position, atack_goal,  speed_max=255, upper_bound=800,k = 0.01,range_limit = 10):
     ret = upper_bound
     robot_position = np.array(robot_position)
     robot_vector   = np.array(robot_vector)
