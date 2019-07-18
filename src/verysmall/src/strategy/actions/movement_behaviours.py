@@ -1,6 +1,7 @@
 from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import univectorField
 from robot_module.movement.definitions import OpCodes
+from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between
 from abc import ABC, abstractmethod
@@ -23,7 +24,8 @@ class SpinTask:
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return TaskStatus.RUNNING, (OpCodes.SPIN_CW, 3.0, 255, .0)
+        return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
+                                                   team_side=blackboard.team_side), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):

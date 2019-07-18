@@ -161,6 +161,8 @@ class Robot():
         param_C = False
         if op_code == OpCodes.SPIN_CW:
             param_A, param_B = 255,-255
+        elif op_code == OpCodes.SPIN_CCW:
+            param_A, param_B = -255,255
         elif op_code == OpCodes.STOP:
             param_A, param_B = 0,0
         else:
