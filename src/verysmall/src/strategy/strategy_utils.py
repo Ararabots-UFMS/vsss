@@ -1,5 +1,5 @@
 from enum import Enum
-
+from robot_module.movement.definitions import OpCodes
 import numpy as np
 from utils import math_utils
 import math
@@ -224,12 +224,12 @@ def spin_direction(ball_position, robot_position, team_side):
     """
     if (team_side == LEFT):
         if (robot_position[1] >= 65):
-            return CCW
-        return CW
+            return OpCodes.SPIN_CCW
+        return OpCodes.SPIN_CW
     else:
         if (robot_position[1] < 65):
-            return CW
-        return CCW
+            return OpCodes.SPIN_CW
+        return OpCodes.SPIN_CCW
 
 
 def border_stuck(position_buffer, orientation):

@@ -2,5 +2,8 @@ from enum import Enum
 
 
 class OpCodes(Enum):
-    NORMAL = 0
-    SPIN = 1
+    STOP = 0
+    NORMAL = 1
+    SPIN_CW = 2
+    SPIN_CCW = 3
+

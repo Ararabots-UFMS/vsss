@@ -10,9 +10,9 @@
         "product": "9230",
         "vendor": "05a3"
     },
-    "freeball_player": 4,
+    "freeball_player": 0,
     "meta_player": 2,
     "penalty_player": 0,
-    "side": 0,
+    "side": 1,
     "time": 1
 }

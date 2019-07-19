@@ -120,15 +120,17 @@ class Robot():
 
         self.pid = PID(kp=self.pid_list['KP'], ki=self.pid_list['KI'], kd=self.pid_list['KD'])
 
-    def update_blackboard(self):
+    def update_game_state_blackboard(self):
         self.blackboard.game_state = GameStates(self.game_state)
         self.blackboard.team_side = self.team_side
         self.blackboard.attack_goal = not self.team_side
+        self.blackboard.team_color = self.team_color
 
         self.blackboard.freeball_robot_id = self.freeball_robot
         self.blackboard.meta_robot_id = self.meta_robot
         self.blackboard.penalty_robot_id = self.penalty_robot
 
+    def update_game_info_blackboard(self):
         self.blackboard.ball_position = self.ball_position
         self.blackboard.ball_speed = self.ball_speed
 
@@ -141,7 +143,6 @@ class Robot():
         self.blackboard.orientation = self.orientation
         self.blackboard.speed = self.speed
 
-        self.blackboard.team_color = self.team_color
         self.blackboard.team_pos = self.team_pos
         self.blackboard.team_orientation = self.team_orientation
         self.blackboard.team_speed = self.team_speed
@@ -151,8 +152,6 @@ class Robot():
         self.blackboard.enemies_speed = self.enemies_speed
 
     def run(self):
-
-        self.update_blackboard()
         op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
         # rospy.logwarn(op_code)
         # rospy.logwarn(angle)
@@ -160,12 +159,15 @@ class Robot():
         # rospy.logwarn(dist)
 
         param_C = False
-        if op_code == OpCodes.SPIN:
-            vector = 360
+        if op_code == OpCodes.SPIN_CW:
+            param_A, param_B = 255,-255
+        elif op_code == OpCodes.SPIN_CCW:
+            param_A, param_B = -255,255
+        elif op_code == OpCodes.STOP:
+            param_A, param_B = 0,0
         else:
             vector = np.array([np.cos(angle), np.sin(angle)])
-
-        param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
+            param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
 
         # ========================================================
         #             SOFTWARE        |    HARDWARE

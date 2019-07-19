@@ -1,11 +1,13 @@
 from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import univectorField
 from robot_module.movement.definitions import OpCodes
+from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between
 from abc import ABC, abstractmethod
 from typing import List
 import numpy as np
+from rospy import logfatal
 
 
 class StopAction:
@@ -14,7 +16,7 @@ class StopAction:
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return TaskStatus.SUCCESS, (OpCodes.NORMAL, .0, 0, .0)
+        return TaskStatus.RUNNING, (OpCodes.STOP, .0, 0, .0)
 
 
 class SpinTask:
@@ -22,7 +24,8 @@ class SpinTask:
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return TaskStatus.RUNNING, (OpCodes.SPIN, 3.0, 255, .0)
+        return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
+                                                   team_side=blackboard.team_side), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
@@ -54,6 +57,8 @@ class UnivectorTask(ABC):
 
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
+
+        self.univector_field.update_attack_side(blackboard.attack_goal)
 
         self.univector_field.updateObstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.position, np.array([0, 0]),  # blackboard.speed,
@@ -103,5 +108,5 @@ class ChargeWithBall:
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
-
+        logfatal(distance_to_goal)
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
