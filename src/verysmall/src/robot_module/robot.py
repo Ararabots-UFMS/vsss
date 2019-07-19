@@ -122,15 +122,17 @@ class Robot():
         self.correct_orientation = 0
         self.gamma_count = 0
 
-    def update_blackboard(self):
+    def update_game_state_blackboard(self):
         self.blackboard.game_state = GameStates(self.game_state)
         self.blackboard.team_side = self.team_side
         self.blackboard.attack_goal = not self.team_side
+        self.blackboard.team_color = self.team_color
 
         self.blackboard.freeball_robot_id = self.freeball_robot
         self.blackboard.meta_robot_id = self.meta_robot
         self.blackboard.penalty_robot_id = self.penalty_robot
 
+    def update_game_info_blackboard(self):
         self.blackboard.ball_position = self.ball_position
         self.blackboard.ball_speed = self.ball_speed
 
@@ -143,7 +145,6 @@ class Robot():
         self.blackboard.orientation = self.orientation
         self.blackboard.speed = self.speed
 
-        self.blackboard.team_color = self.team_color
         self.blackboard.team_pos = self.team_pos
         self.blackboard.team_orientation = self.team_orientation
         self.blackboard.team_speed = self.team_speed
@@ -153,7 +154,6 @@ class Robot():
         self.blackboard.enemies_speed = self.enemies_speed
 
     def run(self):
-        self.update_blackboard()
         op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
         left, right = self._controller.get_wheels_speeds(op_code, speed, angle, dist)
         msg = self._hardware.normalize_speeds(STDMsg(left, right))
@@ -161,71 +161,6 @@ class Robot():
         if self._sender is not None:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
-
-
-    """ def run(self):
-
-        self.update_blackboard()
-        op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
-        # rospy.logwarn(op_code)
-        # rospy.logwarn(angle)
-        # rospy.logwarn(speed)
-        # rospy.logwarn(dist)
-
-        param_C = False
-        if op_code == OpCodes.SPIN:
-            vector = 360
-        else:
-            vector = np.array([np.cos(angle), np.sin(angle)])
-
-        param_A, param_B = self.translate_vector_to_motor_speed(vector, speed)
-
-        # ========================================================
-        #             SOFTWARE        |    HARDWARE
-        # Param A :    LEFT           |      Theta
-        # Param B :    RIGHT          |      Speed
-        # ========================================================
-
-        self.add_to_buffer(self.velocity_buffer, 10, param_A)
-        self.add_to_buffer(self.velocity_buffer, 10, param_B)
-
-        # self.add_to_buffer(self.position_buffer, 10, self.position)
-        if param_C:  # if is hardware
-            self.left_speed = param_B
-            self.right_speed = param_B
-        else:
-            self.left_speed = param_A
-            self.right_speed = param_B
-            msg = STDMsg(self.left_speed, self.right_speed)
-
-        if self._sender is not None:
-            priority = self.get_priority()
-            self._sender.send(priority, self._hardware.encode(msg))
-
-        if self._should_debug:
-            pass
-
-        if self.changed_game_state:
-            # rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
-            #                str(self.team_side))
-            self.changed_game_state = False
-    """
-
-    def translate_vector_to_motor_speed(self, vector, speed):
-
-        if type(vector) is float or type(vector) is int:
-            return speed, -speed
-
-        forward, diff_angle, self.gamma_count = forward_min_diff(self.gamma_count, self.correct_orientation,
-                                                                 [np.cos(self.orientation), np.sin(self.orientation)],
-                                                                 vector, only_forward=False)
-        forward = self.correct_orientation
-        correction = self.pid.update(diff_angle)
-
-        if not forward:
-            speed = -speed
-
-        return self.normalize(int(speed + correction)), self.normalize(int(speed - correction))
 
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.position - self.blackboard.ball_position)

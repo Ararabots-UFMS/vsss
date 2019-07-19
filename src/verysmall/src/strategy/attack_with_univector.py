@@ -34,5 +34,5 @@ class AttackerWithUnivectorBT(Selector):
         if result != TaskStatus.FAILURE and action is not None:
             return action
         else:
-            return OpCodes.NORMAL, 0.0, 0, .0
+            return OpCodes.STOP, 0.0, 0, .0
 
