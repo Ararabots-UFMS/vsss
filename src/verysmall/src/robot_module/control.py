@@ -3,15 +3,18 @@ import numpy as np
 import math
 from bisect import bisect_left
 from time import time
-import robot_module.robot as robot
+#import robot_module.robot as robot
 from robot_module.PID import PIDController
+from robot_module.movement.definitions import OpCodes
+
 from utils.math_utils import DEG2RAD, FORWARD, BACKWARDS
 import utils.math_utils as mth 
+
 
 Constants = Tuple[int, float, float, float]
 
 class Control:
-    def __init__(self, myrobot: robot.Robot,
+    def __init__(self, myrobot,
                        constants: List[Constants]) -> None:
         self._myrobot = myrobot
 
@@ -21,17 +24,27 @@ class Control:
         self._lower_angle_tol = math.pi/2.0 - self._hysteresis_angle_window
 
         self._pid_constants_set = sorted(constants)
+        self._speed_keys = [s[0] for s in self._pid_constants_set] # TODO: get a better name
         self._pidController = PIDController()
         self._pid_last_use = time()
         self._pid_reset_time = 0.032 # 2 frames
 
-
-    # TODO: CHANGE WHEN OPCODES COME 
-    def get_wheels_speeds(self, opcode, 
+    def get_wheels_speeds(self, opcode: OpCodes, 
                                 speed: np.array,
                                 angle: float,
                                 distance: float) -> Tuple[float, float]:
+
+        if opcode == OpCodes.NORMAL:
+            return self._follow_vector(speed, angle, distance)
+        elif opcode == OpCodes.SPIN_CCW:
+            return -255, 255
+        elif opcode == OpCodes.SPIN_CW:
+            return 255, -255
+        else:
+            return 0, 0
         
+    
+    def _follow_vector(self, speed, angle, distance) -> Tuple[float, float]:
         self.set_head(angle)
         diff_angle = self.get_diff_angle(angle)
 
@@ -67,7 +80,7 @@ class Control:
         return mth.min_angle(orientation, target_angle)
     
     def interpolate_constants(self, speed: float) -> Tuple[float, float, float]:
-        i = bisect_left(self._pid_constants_set, speed)
+        i = bisect_left(self._speed_keys, speed)
         
         if self._pid_constants_set[i][0] == speed:
             return self._pid_constants_set[i][1:]

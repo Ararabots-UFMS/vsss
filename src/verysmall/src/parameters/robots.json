@@ -1,8 +1,8 @@
 {
     "robot_1": {
-        "active": 0,
-        "bluetooth_mac_address": "LUIS_ESPALHA_LIXO",
-        "body_id": "LUIS_ESPALHA_LIXO",
+        "active": 1,
+        "bluetooth_mac_address": "Tijolinho",
+        "body_id": "Tijolinho",
         "role": "Atacker With Univector",
         "tag_number": 0
     },

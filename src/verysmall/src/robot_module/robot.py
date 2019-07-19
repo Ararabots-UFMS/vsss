@@ -10,7 +10,6 @@ from strategy.strategy_utils import GameStates
 from strategy.attack_with_univector import AttackerWithUnivectorBT
 from utils.math_utils import forward_min_diff
 from utils.json_handler import JsonHandler
-from robot_module.movement.control.PID import PID
 from robot_module.movement.definitions import OpCodes
 from robot_module.control import Control
 
@@ -40,7 +39,7 @@ class Robot():
         self._should_debug = should_debug
 
         self.pid_list = bodies_unpack[self.robot_body]
-        constants = [self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD']]
+        constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
         
         self._hardware = RobotHardware()
         self._controller = Control(self, constants)
@@ -164,7 +163,7 @@ class Robot():
             self._sender.send(priority, self._hardware.encode(msg))
 
 
-    def run(self):
+    """ def run(self):
 
         self.update_blackboard()
         op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
@@ -210,6 +209,7 @@ class Robot():
             # rospy.logfatal("Robo_" + self.robot_name + ": Run("+self.game_state_string[self.game_state]+") side: " +
             #                str(self.team_side))
             self.changed_game_state = False
+    """
 
     def translate_vector_to_motor_speed(self, vector, speed):
 
