@@ -15,4 +15,4 @@ class SenderPublisher:
             self.publisher.publish(priority, socket_id, msg)
         except rospy.ROSException as e:
             rospy.logfatal(self.TAG+" "+str(socket_id)+": UNABLE TO PUBLISH MESSAGE: " 
-                           + __repr__(msg) + " " +repr(e))
+                           + repr(msg) + " " +repr(e))

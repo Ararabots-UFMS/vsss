@@ -10,6 +10,7 @@ from robot_module.movement.definitions import OpCodes
 from utils.math_utils import DEG2RAD, FORWARD, BACKWARDS
 import utils.math_utils as mth 
 
+import rospy
 
 Constants = Tuple[int, float, float, float]
 
@@ -45,7 +46,12 @@ class Control:
         
     
     def _follow_vector(self, speed, angle, distance) -> Tuple[float, float]:
+        aux = self._head
         self.set_head(angle)
+        if aux != self._head:
+            head = "BACKWARDS" if self._head == BACKWARDS else "FORWARD"
+            rospy.logfatal("HEAD TOGGLED! NOW IS " + head)
+
         diff_angle = self.get_diff_angle(angle)
 
         t = time()

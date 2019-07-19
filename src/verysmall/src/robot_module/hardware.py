@@ -55,7 +55,10 @@ class RobotHardware:
     
     def update_allowed_speed(self, target_abs_speed: float) -> None:
         t = time()
-        
+
+        if target_abs_speed > self._hardware_max_speed:
+            target_abs_speed = self._hardware_max_speed
+
         if target_abs_speed < self._allowed_speed:
             self._allowed_speed = target_abs_speed
             self._last_step_time = t
