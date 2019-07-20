@@ -7,7 +7,7 @@ from time import time
 from robot_module.PID import PIDController
 from robot_module.movement.definitions import OpCodes
 
-from utils.math_utils import DEG2RAD, FORWARD, BACKWARDS
+from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
 import utils.math_utils as mth 
 
 import rospy
@@ -20,7 +20,7 @@ class Control:
         self._myrobot = myrobot
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 10 * DEG2RAD
+        self._hysteresis_angle_window = 15 * DEG2RAD
         self._upper_angle_tol = math.pi/2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi/2.0 - self._hysteresis_angle_window
 
@@ -46,11 +46,7 @@ class Control:
         
     
     def _follow_vector(self, speed, angle, distance) -> Tuple[float, float]:
-        aux = self._head
         self.set_head(angle)
-        if aux != self._head:
-            head = "BACKWARDS" if self._head == BACKWARDS else "FORWARD"
-            rospy.logfatal("HEAD TOGGLED! NOW IS " + head)
 
         diff_angle = self.get_diff_angle(angle)
 
@@ -66,15 +62,14 @@ class Control:
         if self._head == FORWARD:
             return speed + correction, speed - correction
         else:
-            return -speed - correction, -speed + correction
+            return -speed + correction, -speed - correction
         
 
     def set_head(self, angle: float) -> np.array:
-        diff = mth.min_angle(self._myrobot.orientation, angle)
-
-        if diff > self._upper_angle_tol:
+        abs_diff = abs(mth.min_angle(self._myrobot.orientation, angle))
+        if abs_diff > self._upper_angle_tol:
             self._head = BACKWARDS
-        elif diff < self._lower_angle_tol:
+        elif abs_diff < self._lower_angle_tol:
             self._head = FORWARD
     
     def get_diff_angle(self, target_angle: float) -> float:

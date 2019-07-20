@@ -30,7 +30,7 @@ class RobotHardware:
     
     def encodeSTDMsg(self, msg: STDMsg) -> List[int]:
         message = []
-        left, right = msg.left_speed, msg.right_speed
+        left, right = int(msg.left_speed), int(msg.right_speed)
 
         if msg.left_speed >= 0 and msg.right_speed >= 0:
             message.append(self.SET_MOTOR_CODE | self.LEFTFORWARD_RIGHTFORWARD)

@@ -40,9 +40,10 @@ class Robot():
 
         self.pid_list = bodies_unpack[self.robot_body]
         constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
-        
+
         self._hardware = RobotHardware()
         self._controller = Control(self, constants)
+
 
         # True position for penalty
         self.true_pos = np.array([.0, .0])
@@ -161,7 +162,7 @@ class Robot():
         if self._sender is not None:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
-
+            
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.position - self.blackboard.ball_position)
         return int(distance) & 0xFF
