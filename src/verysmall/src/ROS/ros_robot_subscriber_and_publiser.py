@@ -37,7 +37,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
         self.robot.changed_game_state = True
-        self.robot.state_machine = self.robot.strategies[self.robot.role]
+        self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.role]
         self.robot.team_color = data.team_color
         self.robot.update_game_state_blackboard()
 

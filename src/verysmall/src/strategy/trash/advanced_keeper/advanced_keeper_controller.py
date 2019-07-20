@@ -328,7 +328,7 @@ class AdvancedGKController():
         mean = self.robot.buffer_mean(self.buffer)
 
         if distance_point(self.ball_position, mean) > DEFENCE_THRESHOLD:
-            polynom = self.robot.buffer_polyfit(self.buffer, 1)
+            polynom = None#self.robot.buffer_polyfit(self.buffer, 1)
 
             position = polynom(MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X))
 

@@ -26,7 +26,7 @@ class ZagueiroController():
     def __init__(self, _robot_obj, _robot_body="Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
         self.robot = _robot_obj
-        self.robot.get_stuck = self.robot.get_fake_stuck
+        #self.robot.get_stuck = self.robot.get_fake_stuck
         self.position = None
         self.orientation = None
         self.team_speed = None
