@@ -1,6 +1,11 @@
+from typing import Tuple
+from robot_module.movement.definitions import OpCodes
 from enum import Enum
 import rospy
 
+angle = distance = float
+speed = int
+ACTION = Tuple[OpCodes, angle, speed, distance]
 
 class TaskStatus(Enum):
     SUCCESS = 0
@@ -79,9 +84,6 @@ class Sequence:
     def run(self, blackboard):
 
         for c in self.children:
-            # if not issubclass(type(c), Sequence):
-            #     rospy.logwarn(c.name)
-
             status, action = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:

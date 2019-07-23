@@ -29,7 +29,10 @@ class SpinTask:
 
 
 class UnivectorTask(ABC):
-    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+    def __init__(self, name: str, 
+                       max_speed: int = 250, 
+                       acceptance_radius: float = 10.0, 
+                       speed_prediction: bool = True):
         self.name = name
         self.speed = max_speed
         self.speed_prediction = speed_prediction

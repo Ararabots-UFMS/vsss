@@ -27,7 +27,7 @@ class AttackerWithUnivectorBT(Selector):
         normal.children.append(SpinTask('Spin'))  # Spin
         self.children.append(normal)
 
-    def run(self, blackboard):
+    def run(self, blackboard: BlackBoard) -> ACTION:
 
         result, action = super().run(blackboard)
 
