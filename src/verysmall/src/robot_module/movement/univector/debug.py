@@ -70,7 +70,7 @@ def drawField(img, univetField):
     for l in range(0, h, 3):
         for c in range(0, w, 3):
             pos = [c, -l]
-            v = univetField.getVec(_robotPos=pos, _vRobot=[0,0])
+            v = univetField.get_vec(_robotPos=pos, _vRobot=[0, 0])
 
             s = cm2pixel(np.array([c, l]))
             new = cm2pixel(np.array(pos)) + 10*v
@@ -90,7 +90,7 @@ def drawPath(img, start, end, univetField):
     t0 = time.time()
 
     while(np.linalg.norm(currentPos - end) >= beta):
-        v = univetField.getVec(_robotPos=currentPos, _vRobot=[0,0])
+        v = univetField.get_vec(_robotPos=currentPos, _vRobot=[0, 0])
         newPos = currentPos + (alpha*np.array(v))
         _newPos = cm2pixel(newPos).astype(int)
 
@@ -132,9 +132,9 @@ if __name__ == "__main__":
 
         # Creates the univector field
         univetField = univectorField(attack_goal=RIGHT)
-        univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
-        univetField.updateBall(ball)
-        univetField.updateObstacles(obstacle, vObstacle)
+        univetField.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
+        univetField.update_ball(ball)
+        univetField.update_obstacles(obstacle, vObstacle)
 
 
         drawField(imgField2, univetField)

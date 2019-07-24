@@ -1,5 +1,5 @@
 from strategy.behaviour import TaskStatus, BlackBoard
-from robot_module.movement.univector.un_field import univectorField
+from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
@@ -44,8 +44,8 @@ class UnivectorTask(ABC):
         DMIN = univector_list['DMIN']
         LDELTA = univector_list['LDELTA']
 
-        self.univector_field = univectorField()
-        self.univector_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univector_field = UnivectorField()
+        self.univector_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
 
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
@@ -60,7 +60,7 @@ class UnivectorTask(ABC):
 
         self.univector_field.update_attack_side(blackboard.attack_goal)
 
-        self.univector_field.updateObstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.position, np.array([0, 0]),  # blackboard.speed,
                                                          objective_position)
         speed = self.speed

@@ -6,7 +6,7 @@ import time
 from .auxiliary import *
 import copy
 from utils.json_handler import JsonHandler
-from robot_module.movement.univector.un_field import univectorField
+from robot_module.movement.univector.un_field import UnivectorField
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
 
@@ -62,7 +62,7 @@ class virtualField():
         self.height_conv = 0.998 * self.height / 130
         self.angle_conversion_factor = 180 / math.pi
 
-        self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
+        self.univetField = UnivectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
         self.draw_vectors = False
 
         self.field_origin = (self.proportion_width(5.882), self.proportion_height(99.9))
@@ -84,7 +84,7 @@ class virtualField():
         self.K0 = univector_list['K0']
         self.DMIN = univector_list['DMIN']
         self.LDELTA = univector_list['LDELTA']
-        self.univetField.updateConstants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
+        self.univetField.update_constants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
 
         if is_rgb:
             self.colors = {"blue": [0, 0, 255],
@@ -389,8 +389,8 @@ class virtualField():
         self.plot_ball(ball_center)
 
         if self.draw_vectors:
-            self.univetField.updateBall(ball_center)
-            self.univetField.updateObstacles(robotlistA,robot_speed_away)
+            self.univetField.update_ball(ball_center)
+            self.univetField.update_obstacles(robotlistA, robot_speed_away)
 
         self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
         self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=robot_speed_away)
@@ -418,7 +418,7 @@ class virtualField():
         it = 0
         while (distance >= beta) and it < 45:
 
-            v = self.univetField.getVecWithBall(_robotPos=currentPos, _vRobot=[0, 0], _ball = end)
+            v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0], _ball = end)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
             cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
