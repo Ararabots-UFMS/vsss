@@ -26,13 +26,3 @@ class AttackerWithUnivectorBT(Selector):
         normal.children.append(GoToBallUsingUnivector('FollowBall'))  # FollowBall
         normal.children.append(SpinTask('Spin'))  # Spin
         self.children.append(normal)
-
-    def run(self, blackboard: BlackBoard) -> ACTION:
-
-        result, action = super().run(blackboard)
-
-        if result != TaskStatus.FAILURE and action is not None:
-            return action
-        else:
-            return OpCodes.STOP, 0.0, 0, .0
-

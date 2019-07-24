@@ -5,7 +5,7 @@ from robot_module.hardware import RobotHardware
 from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
-from strategy.behaviour import BlackBoard
+from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.strategy_utils import GameStates
 from strategy.attack_with_univector import AttackerWithUnivectorBT
 from utils.json_handler import JsonHandler
@@ -126,8 +126,11 @@ class Robot:
         self.blackboard.enemies_speed = self.enemies_speed
 
     def run(self):
-        op_code, angle, speed, dist = self.behaviour_tree.run(self.blackboard)
-        left, right = self._controller.get_wheels_speeds(op_code, speed, angle, dist)
+        task_status, action = self.behaviour_tree.run(self.blackboard)
+        if task_status == TaskStatus.FAILURE or task_status is None:
+            action = (OpCodes.STOP, 0.0, 0, 0)
+            
+        left, right = self._controller.get_wheels_speeds(*action)
         msg = self._hardware.normalize_speeds(STDMsg(left, right))
         
         if self._sender is not None:

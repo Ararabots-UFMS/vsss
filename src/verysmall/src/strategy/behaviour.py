@@ -105,12 +105,9 @@ class Selector:
         self.name = name
         self.children = []
 
-    def run(self, blackboard):
+    def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
-            # if not issubclass(type(c), Sequence):
-            #     rospy.logwarn(c.name)
-
             status, action = c.run(blackboard)
 
             if status != TaskStatus.FAILURE:

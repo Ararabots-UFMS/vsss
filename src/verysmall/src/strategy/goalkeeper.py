@@ -1,4 +1,4 @@
-from strategy.behaviour import Selector, BlackBoard, ACTION
+from strategy.behaviour import Selector, BlackBoard, ACTION, TaskStatus
 
 class GoalKeeper(Selector):
     def __init__(self, name: str = "behave"):
@@ -8,4 +8,4 @@ class GoalKeeper(Selector):
     def run(self, blackboard: BlackBoard) -> ACTION:
         result, action = super().run(blackboard)
 
-        if result != # stop pro comidao
+        if result != TaskStatus.
