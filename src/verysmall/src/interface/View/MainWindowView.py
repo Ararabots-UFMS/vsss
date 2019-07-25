@@ -115,7 +115,6 @@ class MainWindowView:
             self.arena.image = self.virtualField.field
 
             if self.virtualField.draw_vectors:
-
                 self.debug_counter = 0
                 self.last_index, self.debug_vector = self.reader.pop_item_debug()
 

@@ -10,15 +10,10 @@ sys.path.append('../../../')
 from utils.math_utils import gaussian
 from strategy.strategy_utils import section, CENTER
 from typing import Tuple, List
-from rospy import logfatal
 
 LEFT = 0
 RIGHT = 1
 
-
-# def angleWithX(p, x=np.array([1.0, 0.0])):
-#     theta = atan2(np.cross(x, p), np.dot(x, p))
-#     return theta
 
 def wrap2pi(theta: float) -> float:
     if theta > pi:
@@ -233,6 +228,15 @@ class UnivectorField:
         else:
             return np.array([1.0, 0.0])
 
+    @staticmethod
+    def get_attack_goal_position(attack_goal: bool) -> np.ndarray:
+        """
+        Return the position of the goal, given attacking side  and section of the object
+        :param team_side: int
+        :return: np.array([x,y])
+        """
+        return np.array([attack_goal * 150, 65])
+
     def update_obstacles(self, _obstacles: np.ndarray, _obsSpeeds: np.ndarray) -> None:
         self.obstacles = np.array(_obstacles)
         self.obstaclesSpeed = np.array(_obsSpeeds)
@@ -242,20 +246,7 @@ class UnivectorField:
         self.vRobot = np.array(_vRobot)
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
 
-    # def setRotationAndAttackGoal(self, rotation, attack_goal):
-    #     self.mv2GoalField.attack_goal = attack_goal
-    #     self.mv2GoalField.rotation_support = rotation
-
-    # def set_rotation(self, _rotation):
-    #
-    #     self.univector_rotation_axis = _rotation
-    #
-    #     if self.univector_rotation_axis:
-    #         self.mv2GoalField = self.mv2Goal_with_rotation
-    #     else:
-    #         self.mv2GoalField = self.mv2Goal
-
-    def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> None:
+    def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> np.ndarray:
         self.RADIUS = _RADIUS
         self.KR = _KR
         self.K0 = _K0
@@ -274,17 +265,14 @@ class UnivectorField:
             v_robot = np.array(_vRobot)
             self.update_robot(robot_pos, v_robot)
 
-        if _goal_pos is not None:
+        if _goal_pos is not None and _goal_axis is not None:
             goal_position = np.array(_goal_pos)
-            if _goal_axis is not None:
-                goal_axis = np.array(_goal_axis)
-            else:
-                goal_axis = np.array(self.attack_goal - self.origin, dtype=np.float32)
-            self.mv2Goal.update_axis(goal_position, )
+            goal_axis = np.array(_goal_axis)
+            self.mv2Goal.update_axis(goal_position, goal_axis)
 
-        closestCenter = np.array([None, None])  # array to store the closest center
+        closest_center = np.array([None, None])  # array to store the closest center
         centers = []
-        minDistance = self.DMIN + 1
+        min_distance = self.DMIN + 1
 
         if self.obstacles.size:
             # get the Repulsive field centers
@@ -294,21 +282,21 @@ class UnivectorField:
                 centers.append(center)
 
             centers = np.asarray(centers)
-            distVect = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
-            index = np.argmin(distVect)  # index of closest center
-            closestCenter = centers[index]
-            minDistance = distVect[index]
+            dist_vec = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
+            index = np.argmin(dist_vec)  # index of closest center
+            closest_center = centers[index]
+            min_distance = dist_vec[index]
 
-            fi_auf = self.avdObsField.fi_auf(self.robotPos, _vPos=closestCenter, _theta=True)
+            fi_auf = self.avdObsField.fi_auf(self.robotPos, _vPos=closest_center, _theta=True)
 
         # the first case when the robot is to close from an obstacle
-        if minDistance <= self.DMIN:
+        if min_distance <= self.DMIN:
             return fi_auf
         else:
-            fi_tuf = self.mv2GoalField.fi_tuf(self.robotPos)
+            fi_tuf = self.mv2Goal.fi_tuf(self.robotPos)
             # Checks if at least one obstacle exist
             if self.obstacles.size:
-                g = gaussian(minDistance - self.DMIN, self.LDELTA)
+                g = gaussian(min_distance - self.DMIN, self.LDELTA)
                 # a + jb
                 # c + jd
                 # a*c + jad + jcb -b*d
@@ -324,18 +312,17 @@ class UnivectorField:
             else:  # if there is no obstacles
                 return fi_tuf
 
-    def get_vec(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
-        angle = self.get_angle_vec(_robotPos, _vRobot, _ball)
+    def get_vec_with_ball(self, _robotPos: np.ndarray = None,
+                          _vRobot: np.ndarray = None,
+                          _ball: np.ndarray = None,
+                          _attack_goal: bool = RIGHT) -> np.ndarray:
+        angle = self.get_angle_with_ball(_robotPos, _vRobot, _ball, _attack_goal)
         return np.asarray([np.cos(angle), np.sin(angle)])
 
-    def get_vec_with_ball(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
-        # logfatal(_ball)
-        # logfatal(section(_ball) == CENTER)
-        self.set_rotation(section(_ball) == CENTER)
-        angle = self.get_angle_vec(_robotPos, _vRobot, _ball)
-        return np.asarray([np.cos(angle), np.sin(angle)])
-
-    def get_angle_with_ball(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
-        self.set_rotation(section(_ball) == CENTER)
-        angle = self.get_angle_vec(_robotPos, _vRobot, _ball)
-        return angle
+    def get_angle_with_ball(self, _robotPos: np.ndarray = None,
+                            _vRobot: np.ndarray = None,
+                            _ball: np.ndarray = None,
+                            _attack_goal: bool = RIGHT) -> float:
+        return self.get_angle_vec(_robotPos, _vRobot, _ball,
+                                  np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
+                                  )
