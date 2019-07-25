@@ -8,6 +8,7 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.strategy_utils import GameStates
 from strategy.attack_with_univector import AttackerWithUnivectorBT
+from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
 from robot_module.control import Control
 
@@ -82,7 +83,7 @@ class Robot:
         self.behaviour_trees = [
             AttackerWithUnivectorBT(),
             AttackerWithUnivectorBT(),
-            AttackerWithUnivectorBT(),
+            GoalKeeper(),
             AttackerWithUnivectorBT(),
             AttackerWithUnivectorBT(),
             AttackerWithUnivectorBT()

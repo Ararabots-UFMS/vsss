@@ -47,7 +47,7 @@ class Control:
     
     def _follow_vector(self, speed: int, 
                              angle: float, 
-                             distance: float) -> Tuple[float, float]:
+                             distance: float) -> Tuple[float, float]:      
         self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)

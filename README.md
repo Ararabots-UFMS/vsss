@@ -6,3 +6,6 @@
 * Logical Board
 * Interfaces
 
+# Strategy
+
+
