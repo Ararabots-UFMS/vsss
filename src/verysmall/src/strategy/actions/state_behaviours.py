@@ -13,21 +13,6 @@ class InState:
 
         return TaskStatus.FAILURE, None
 
-
-class PenaltyTask(Sequence):
-    def __init__(self, name="Penalty"):
-        super().__init__(name)
-        self.children.append()
-
-    def run(self, blackboard: BlackBoard):
-        if blackboard.game_state != GameStates.PENALTY:
-            return TaskStatus.SUCCESS, None
-
-        status, action = super().run(blackboard)
-
-        return status, action
-
-
 class ChangeState:
     def __init__(self, name, _target_state):
         self.name = name
