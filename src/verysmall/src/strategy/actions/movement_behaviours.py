@@ -77,6 +77,18 @@ class UnivectorTask(ABC):
 
         return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
 
+class GoToPositionUsingUnivector(UnivectorTask):
+
+    def __init__(self, name="Go to position", max_speed: int = 75, acceptance_radius: float = 10.0, speed_prediction: bool = False, position=None):
+        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+        self.position = position
+
+    def set_position(self, new_pos):
+        self.position = new_pos
+
+    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+
+        return self.go_to_objective(blackboard, self.position)
 
 class GoToBallUsingUnivector(UnivectorTask):
 

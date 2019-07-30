@@ -3,6 +3,6 @@
   "Atacker With Univector" : 1,
   "Goalkeeper"  : 2,
   "Zagueiro" : 3,
-  "Set PID Machine" : 4,
+  "PID Calibration" : 4,
   "Naive keeper" : 5
 }
