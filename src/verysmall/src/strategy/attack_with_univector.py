@@ -14,15 +14,15 @@ class AttackerWithUnivectorBT(Selector):
         super().__init__(name)
 
         stopped = Sequence('Stopped')
-        stopped.children.append(InState('CheckStoppedState', GameStates.STOPPED))
-        stopped.children.append(StopAction('Wait'))
-        self.children.append(stopped)
+        stopped.add_child(InState('CheckStoppedState', GameStates.STOPPED))
+        stopped.add_child(StopAction('Wait'))
+        self.add_child(stopped)
 
-        self.children.append(Penalty())
-        self.children.append(FreeBall())
+        self.add_child(Penalty())
+        self.add_child(FreeBall())
 
         normal = Sequence('Normal')
-        normal.children.append(InState('CheckNormalState', GameStates.NORMAL))
-        normal.children.append(GoToBallUsingUnivector('FollowBall'))  # FollowBall
-        normal.children.append(SpinTask('Spin'))  # Spin
-        self.children.append(normal)
+        normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
+        normal.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
+        normal.add_child(SpinTask('Spin'))  # Spin
+        self.add_child(normal)
