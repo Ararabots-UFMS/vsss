@@ -108,14 +108,13 @@ class Sequence(TreeNode):
         super().__init__(name)
 
     def run(self, blackboard):
-
         for c in self.children:
             status, action = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:
                 return status, action
 
-        return TaskStatus.SUCCESS, None
+        return TaskStatus.SUCCESS, (-1, 0, 0, 0)
 
 
 class Selector(TreeNode):
@@ -134,8 +133,7 @@ class Selector(TreeNode):
 
         for c in self.children:
             status, action = c.run(blackboard)
-
             if status != TaskStatus.FAILURE:
                 return status, action
 
-        return TaskStatus.FAILURE, None
+        return TaskStatus.FAILURE, (-1, 0, 0, 0)

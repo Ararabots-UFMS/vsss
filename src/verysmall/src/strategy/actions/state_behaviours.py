@@ -8,6 +8,7 @@ class InState:
         self.desired_state = _desired_state
 
     def run(self, blackboard):
+        import rospy
         if self.desired_state == blackboard.game_state:
             return TaskStatus.SUCCESS, None
 

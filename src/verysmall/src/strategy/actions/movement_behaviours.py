@@ -2,13 +2,14 @@ from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import univectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
-from strategy.behaviour import ACTION
+from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 import numpy as np
 from rospy import logfatal
+import math
 
 
 class StopAction:
@@ -115,15 +116,20 @@ class ChargeWithBall:
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
 
-class GoToGoalCenter(UnivectorTask):
+class GoToGoalCenter(TreeNode):
     def __init__(self, name: str = "GoToGoalCenter", 
-                       max_speed: int = 120, 
-                       acceptance_radius: float = 5.0, 
-                       speed_prediction: bool = False):
-        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+                       max_speed: int = 255, 
+                       acceptance_radius: float = 10.0):
+        super().__init__(name)
+        self.acceptance_radius = acceptance_radius
+        self.max_speed = max_speed
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        ret = self.go_to_objective(blackboard, blackboard.home_goal_pos)
-        import rospy
-        rospy.logfatal(ret)
-        return ret
+        direction = blackboard.home_goal_pos - blackboard.position
+        distance = np.linalg.norm(direction)
+
+        if distance < self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
+
+        theta = math.atan2(direction[1], direction[0])
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)

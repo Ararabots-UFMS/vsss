@@ -130,10 +130,9 @@ class Robot:
         task_status, action = self.behaviour_tree.run(self.blackboard)
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
-            
+
         left, right = self._controller.get_wheels_speeds(*action)
         msg = self._hardware.normalize_speeds(STDMsg(left, right))
-        
         if self._sender is not None:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
