@@ -1,6 +1,13 @@
+from typing import Tuple
+from robot_module.movement.definitions import OpCodes
 from enum import Enum
+from abc import abstractmethod
 import rospy
+import numpy as np
 
+angle = distance = float
+speed = int
+ACTION = Tuple[OpCodes, angle, speed, distance]
 
 class TaskStatus(Enum):
     SUCCESS = 0
@@ -14,7 +21,10 @@ class BlackBoard:
     def __init__(self):
         self.game_state = None
         self.team_side = None
-        self.attack_goal = None
+        
+        self._attack_goal = None
+        self.attack_goal_pos = None
+        self.home_goal_pos = None
 
         self.freeball_robot_id = None
         self.meta_robot_id = None
@@ -38,6 +48,16 @@ class BlackBoard:
         self.enemies_position = None
         self.enemies_orientation = None
         self.enemies_speed = None
+    
+    @property
+    def attack_goal(self) -> int:
+        return self._attack_goal
+    
+    @attack_goal.setter
+    def attack_goal(self, value: int) -> None:
+        self._attack_goal = value
+        self.attack_goal_pos = np.array([self._attack_goal * 150, 65])
+        self.home_goal_pos = np.array([(1 - self._attack_goal) * 150, 65])
 
     def __repr__(self):
         return 'BlackBoard:\n' + \
@@ -62,8 +82,20 @@ class BlackBoard:
                '\t--self.enemies_orientation: ' + str(self.enemies_orientation) + '\n' + \
                '\t--self.enemies_speed: ' + str(self.enemies_speed) + '\n'
 
+class TreeNode:
+    def __init__(self, name):
+        self.name = name
+        self.children = []
+    
+    def add_child(self, child_node) -> None:
+        self.children.append(child_node)
 
-class Sequence:
+    @abstractmethod
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        raise Exception("subclass must override run")
+        pass
+
+class Sequence(TreeNode):
     """
         A sequence runs each task in order until one fails,
         at which point it returns FAILURE. If all tasks succeed, a SUCCESS
@@ -73,15 +105,11 @@ class Sequence:
     """
 
     def __init__(self, name):
-        self.name = name
-        self.children = []
+        super().__init__(name)
 
     def run(self, blackboard):
 
         for c in self.children:
-            # if not issubclass(type(c), Sequence):
-            #     rospy.logwarn(c.name)
-
             status, action = c.run(blackboard)
 
             if status != TaskStatus.SUCCESS:
@@ -90,7 +118,7 @@ class Sequence:
         return TaskStatus.SUCCESS, None
 
 
-class Selector:
+class Selector(TreeNode):
     """
         A selector runs each task in order until one succeeds,
         at which point it returns SUCCESS. If all tasks fail, a FAILURE
@@ -99,16 +127,12 @@ class Selector:
         or FAILURE is returned from the subtask.
     """
 
-    def __init__(self, name):
-        self.name = name
-        self.children = []
+    def __init__(self, name: str):
+        super().__init__(name)
 
-    def run(self, blackboard):
+    def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
-            # if not issubclass(type(c), Sequence):
-            #     rospy.logwarn(c.name)
-
             status, action = c.run(blackboard)
 
             if status != TaskStatus.FAILURE:

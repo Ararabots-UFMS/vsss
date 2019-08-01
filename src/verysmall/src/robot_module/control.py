@@ -30,9 +30,9 @@ class Control:
         self._pid_last_use = time()
         self._pid_reset_time = 0.032 # 2 frames
 
-    def get_wheels_speeds(self, opcode: OpCodes, 
-                                speed: np.array,
+    def get_wheels_speeds(self, opcode: OpCodes,
                                 angle: float,
+                                speed: int,
                                 distance: float) -> Tuple[float, float]:
 
         if opcode == OpCodes.NORMAL:
@@ -45,7 +45,9 @@ class Control:
             return 0, 0
         
     
-    def _follow_vector(self, speed, angle, distance) -> Tuple[float, float]:
+    def _follow_vector(self, speed: int, 
+                             angle: float, 
+                             distance: float) -> Tuple[float, float]:      
         self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)

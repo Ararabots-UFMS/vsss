@@ -407,7 +407,7 @@ class virtualField():
         end = np.array(end)
 
         newPos = None
-        alpha = 3.5
+        alpha = 5.0 #3.5
         beta = 3.5
         point_lines = []
 

@@ -1,0 +1,6 @@
+rospkg
+pyBluez
+scipy
+python-statemachine
+defusedxml
+sklearn

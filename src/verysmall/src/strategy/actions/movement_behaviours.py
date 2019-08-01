@@ -2,10 +2,11 @@ from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
+from strategy.behaviour import ACTION
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 import numpy as np
 from rospy import logfatal
 
@@ -15,7 +16,7 @@ class StopAction:
     def __init__(self, name):
         self.name = name
 
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (OpCodes.STOP, .0, 0, .0)
 
 
@@ -23,13 +24,16 @@ class SpinTask:
     def __init__(self, name):
         self.name = name
 
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
                                                    team_side=blackboard.team_side), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
-    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+    def __init__(self, name: str, 
+                       max_speed: int = 250, 
+                       acceptance_radius: float = 10.0, 
+                       speed_prediction: bool = True):
         self.name = name
         self.speed = max_speed
         self.speed_prediction = speed_prediction
@@ -48,7 +52,7 @@ class UnivectorTask(ABC):
         self.univector_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
 
     @abstractmethod
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         raise Exception("subclass must override run method")
         pass
 
@@ -78,8 +82,7 @@ class GoToBallUsingUnivector(UnivectorTask):
     def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return self.go_to_objective(blackboard, blackboard.ball_position)
 
 
@@ -87,8 +90,8 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
     def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return self.go_to_objective(blackboard, np.array([blackboard.attack_goal * 150, 65]))
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        return self.go_to_objective(blackboard, blackboard.attack_goal_pos)
 
 
 class ChargeWithBall:
@@ -97,8 +100,8 @@ class ChargeWithBall:
         self.name = name
         self.max_speed = max_speed
 
-    def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        goal_vector = np.array([blackboard.attack_goal * 150, 65]) - blackboard.position
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        goal_vector = blackboard.attack_goal_pos - blackboard.position
 
         angle = angle_between(
             [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
@@ -108,3 +111,17 @@ class ChargeWithBall:
         distance_to_goal = np.linalg.norm(goal_vector)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+
+
+class GoToGoalCenter(UnivectorTask):
+    def __init__(self, name: str = "GoToGoalCenter", 
+                       max_speed: int = 120, 
+                       acceptance_radius: float = 5.0, 
+                       speed_prediction: bool = False):
+        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ret = self.go_to_objective(blackboard, blackboard.home_goal_pos)
+        import rospy
+        rospy.logfatal(ret)
+        return ret
