@@ -169,6 +169,49 @@ def section(pos):
     else:
         return ArenaSections.CENTER
 
+def univector_pos_section(pos):
+    """
+    Returns the section of the given object
+
+    :param pos: np.array([x, y])
+    :return: int
+    """
+    # Goal area
+    if inside_rectangle((0, 30), (15, 100), pos):
+        return ArenaSections.LEFT_GOAL_AREA
+    elif inside_rectangle((135, 30), (150, 100), pos):
+        return ArenaSections.RIGHT_GOAL_AREA
+    elif inside_range(-10, -0.1, pos[X]):
+        return ArenaSections.LEFT_GOAL
+    elif inside_range(150.1, 160, pos[X]):
+        return ArenaSections.RIGHT_GOAL
+    # Corners definition
+    elif inside_rectangle((0, 0), (SQUARE_SIDE, SQUARE_SIDE), pos):
+        return ArenaSections.LEFT_DOWN_CORNER
+    elif inside_rectangle((0, 130 - SQUARE_SIDE), (SQUARE_SIDE, 130), pos):
+        return ArenaSections.LEFT_UP_CORNER
+    elif inside_rectangle((150 - SQUARE_SIDE, 0), (150, SQUARE_SIDE), pos):
+        return ArenaSections.RIGHT_DOWN_CORNER
+    elif inside_rectangle((150 - SQUARE_SIDE, 130 - SQUARE_SIDE), (150, 130), pos):
+        return ArenaSections.RIGHT_UP_CORNER
+    elif inside_rectangle((0, HALF_SQUARE_SIDE), (15, 30), pos):
+        # Bottom line
+        return ArenaSections.LEFT_DOWN_BOTTOM_LINE
+    elif inside_rectangle((0, 100), (15, 130 - HALF_SQUARE_SIDE), pos):
+        return ArenaSections.LEFT_UP_BOTTOM_LINE
+    elif inside_rectangle((150 - HALF_SQUARE_SIDE, HALF_SQUARE_SIDE), (150, 30), pos):
+        return ArenaSections.RIGHT_DOWN_BOTTOM_LINE
+    elif inside_rectangle((135, 100), (150, 130 - HALF_SQUARE_SIDE), pos):
+        return ArenaSections.RIGHT_UP_BOTTOM_LINE
+    # Border
+    elif inside_range(130 - 12, 130, pos[Y]):
+        return ArenaSections.UP_BORDER
+    elif inside_range(0, 12, pos[Y]):
+        return ArenaSections.DOWN_BORDER
+    else:
+        return ArenaSections.CENTER
+
+
 
 def side_section(pos, team_side):
     """
