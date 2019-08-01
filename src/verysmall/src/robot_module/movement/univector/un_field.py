@@ -9,7 +9,7 @@ from math import cos, sin, atan2
 sys.path.append('../../../')
 from utils.math_utils import gaussian
 from strategy.strategy_utils import section, CENTER
-from strategy.arena_sections import ArenaSections, section, Axis, Offsets, HALF_ARENA_HEIGHT, HALF_ARENA_WIDTH
+from strategy.arena_sections import ArenaSections, section, univector_pos_section, Axis, Offsets, HALF_ARENA_HEIGHT, HALF_ARENA_WIDTH
 from typing import Tuple, List
 import rospy
 
@@ -326,17 +326,16 @@ class UnivectorField:
                             _ball: np.ndarray = None,
                             _attack_goal: bool = RIGHT) -> float:
 
-        section_num = section(_ball)
+        section_num = univector_pos_section(_ball)
 
         if section_num == ArenaSections.CENTER:
             correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
         else:
             correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
-            #rospy.logwarn(correct_axis)
 
         offset = self.get_correct_offset(_ball, section_num)
 
-        return self.get_angle_vec(_robotPos, _vRobot, _ball + offset, correct_axis)
+        return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
 
     def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections, attack_goal: bool = RIGHT) -> np.ndarray:
 

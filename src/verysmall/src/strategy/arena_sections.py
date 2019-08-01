@@ -11,7 +11,8 @@ RIGHT = 1
 
 HALF_ARENA_HEIGHT = 65
 HALF_ARENA_WIDTH = 75
-
+MAX_H_SIZE = 130
+MAX_W_SIZE = 150
 
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
@@ -61,19 +62,19 @@ Offsets = [
 
     array([0.0, 0.0]),  # LEFT_GOAL
     array([0.0, 0.0]),  # RIGHT_GOAL
-    array([2.0, -2.0]),  # LEFT_UP_CORNER
-    array([2.0, 2.0]),  # LEFT_DOWN_CORNER
-    array([-2.0, -2.0]),  # RIGHT_UP_CORNER
-    array([-2.0, 2.0]),  # RIGHT_DOWN_CORNER
+    array([1.0, -1.0]),  # LEFT_UP_CORNER
+    array([1.0, 1.0]),  # LEFT_DOWN_CORNER
+    array([-1.0, -1.0]),  # RIGHT_UP_CORNER
+    array([-1.0, 1.0]),  # RIGHT_DOWN_CORNER
 
-    array([0.0, -2.0]),  # UP_BORDER
-    array([0.0, 2.0]),  # DOWN_BORDER
+    array([0.0, -1.0]),  # UP_BORDER
+    array([0.0, 1.0]),  # DOWN_BORDER
     array([0.0, 0.0]),  # CENTER
 
-    array([2.0, 0.0]),  # LEFT_DOWN_BOTTOM_LINE
-    array([2.0, 0.0]),  # LEFT_UP_BOTTOM_LINE
-    array([-2.0, 0.0]),  # RIGHT_DOWN_BOTTOM_LINE
-    array([-2.0, 0.0])  # RIGHT_UP_BOTTOM_LINE
+    array([1.0, 0.0]),  # LEFT_DOWN_BOTTOM_LINE
+    array([1.0, 0.0]),  # LEFT_UP_BOTTOM_LINE
+    array([-1.0, 0.0]),  # RIGHT_DOWN_BOTTOM_LINE
+    array([-1.0, 0.0])  # RIGHT_UP_BOTTOM_LINE
 ]
 
 BALL_SIZE = 4
@@ -176,41 +177,28 @@ def univector_pos_section(pos):
     :param pos: np.array([x, y])
     :return: int
     """
-    # Goal area
-    if inside_rectangle((0, 30), (15, 100), pos):
-        return ArenaSections.LEFT_GOAL_AREA
-    elif inside_rectangle((135, 30), (150, 100), pos):
-        return ArenaSections.RIGHT_GOAL_AREA
-    elif inside_range(-10, -0.1, pos[X]):
-        return ArenaSections.LEFT_GOAL
-    elif inside_range(150.1, 160, pos[X]):
-        return ArenaSections.RIGHT_GOAL
-    # Corners definition
-    elif inside_rectangle((0, 0), (SQUARE_SIDE, SQUARE_SIDE), pos):
-        return ArenaSections.LEFT_DOWN_CORNER
-    elif inside_rectangle((0, 130 - SQUARE_SIDE), (SQUARE_SIDE, 130), pos):
-        return ArenaSections.LEFT_UP_CORNER
-    elif inside_rectangle((150 - SQUARE_SIDE, 0), (150, SQUARE_SIDE), pos):
-        return ArenaSections.RIGHT_DOWN_CORNER
-    elif inside_rectangle((150 - SQUARE_SIDE, 130 - SQUARE_SIDE), (150, 130), pos):
-        return ArenaSections.RIGHT_UP_CORNER
-    elif inside_rectangle((0, HALF_SQUARE_SIDE), (15, 30), pos):
-        # Bottom line
-        return ArenaSections.LEFT_DOWN_BOTTOM_LINE
-    elif inside_rectangle((0, 100), (15, 130 - HALF_SQUARE_SIDE), pos):
-        return ArenaSections.LEFT_UP_BOTTOM_LINE
-    elif inside_rectangle((150 - HALF_SQUARE_SIDE, HALF_SQUARE_SIDE), (150, 30), pos):
-        return ArenaSections.RIGHT_DOWN_BOTTOM_LINE
-    elif inside_rectangle((135, 100), (150, 130 - HALF_SQUARE_SIDE), pos):
-        return ArenaSections.RIGHT_UP_BOTTOM_LINE
-    # Border
-    elif inside_range(130 - 12, 130, pos[Y]):
-        return ArenaSections.UP_BORDER
-    elif inside_range(0, 12, pos[Y]):
-        return ArenaSections.DOWN_BORDER
-    else:
-        return ArenaSections.CENTER
+    
+    if pos[0] > MAX_W_SIZE - 10 or pos[0] < 10:
+        side = pos[0] > MAX_W_SIZE - 10
 
+        if pos[1] < 10:
+            return ArenaSections.LEFT_DOWN_CORNER if side == LEFT else ArenaSections.RIGHT_DOWN_CORNER 
+        elif pos[1] < 45:
+            return ArenaSections.LEFT_DOWN_BOTTOM_LINE if side == LEFT else ArenaSections.RIGHT_DOWN_BOTTOM_LINE
+        elif pos[1] < 85:
+            return ArenaSections.LEFT_GOAL if side == LEFT else ArenaSections.RIGHT_GOAL
+        elif pos[1] < 120:
+            return ArenaSections.LEFT_UP_BOTTOM_LINE if side == LEFT else ArenaSections.RIGHT_UP_BOTTOM_LINE
+        else:
+            return ArenaSections.LEFT_UP_CORNER if side == LEFT else ArenaSections.RIGHT_UP_CORNER
+
+    else:
+        if pos[1] > MAX_H_SIZE - 10:
+            return ArenaSections.UP_BORDER
+        elif pos[1] < 10:
+            return ArenaSections.DOWN_BORDER
+        else:
+            return ArenaSections.CENTER
 
 
 def side_section(pos, team_side):

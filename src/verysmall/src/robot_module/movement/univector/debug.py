@@ -8,7 +8,7 @@ import cv2
 import math
 import time
 
-from un_field import univectorField
+from un_field import UnivectorField
 
 LEFT = 0
 RIGHT = 1
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         drawBall(imgField2, cm2pixel(ball))
 
         # Creates the univector field
-        univetField = univectorField(attack_goal=RIGHT)
+        univetField = UnivectorField()
         univetField.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
         univetField.update_ball(ball)
         univetField.update_obstacles(obstacle, vObstacle)
