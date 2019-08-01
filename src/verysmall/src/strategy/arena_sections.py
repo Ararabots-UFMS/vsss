@@ -55,6 +55,27 @@ Axis = [
     array([0.0, -1.0])  # RIGHT_UP_BOTTOM_LINE
 ]
 
+Offsets = [
+    array([0.0, 0.0]),  # LEFT_GOAL_AREA
+    array([0.0, 0.0]),  # RIGHT_GOAL_AREA
+
+    array([0.0, 0.0]),  # LEFT_GOAL
+    array([0.0, 0.0]),  # RIGHT_GOAL
+    array([2.0, -2.0]),  # LEFT_UP_CORNER
+    array([2.0, 2.0]),  # LEFT_DOWN_CORNER
+    array([-2.0, -2.0]),  # RIGHT_UP_CORNER
+    array([-2.0, 2.0]),  # RIGHT_DOWN_CORNER
+
+    array([0.0, -2.0]),  # UP_BORDER
+    array([0.0, 2.0]),  # DOWN_BORDER
+    array([0.0, 0.0]),  # CENTER
+
+    array([2.0, 0.0]),  # LEFT_DOWN_BOTTOM_LINE
+    array([2.0, 0.0]),  # LEFT_UP_BOTTOM_LINE
+    array([-2.0, 0.0]),  # RIGHT_DOWN_BOTTOM_LINE
+    array([-2.0, 0.0])  # RIGHT_UP_BOTTOM_LINE
+]
+
 BALL_SIZE = 4
 ROBOT_SIZE = 7
 
