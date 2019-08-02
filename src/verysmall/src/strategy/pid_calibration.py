@@ -18,10 +18,12 @@ class CalibrationTree(Selector):
 
         patrol = Sequence('Patrol')
         self.my_litte_univector = GoToPositionUsingUnivector(position=next(self.waypoints_list))
-        spin_task = Timer(exec_time=2)
+        patrol.children.append(self.my_litte_univector)
+
+        spin_task = Timer(exec_time=3)
         spin_task.add_child(SpinTask())
         patrol.children.append(spin_task)
-        patrol.children.append(self.my_litte_univector)
+
         self.children.append(patrol)
 
     def run(self, blackboard):

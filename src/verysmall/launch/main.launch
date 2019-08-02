@@ -1,5 +1,5 @@
 <launch>
   <node name="$(anon main)" pkg="verysmall" type="main.py" cwd="node" required="true" />
-  <!--<node name="$(anon message_server)" pkg="verysmall" type="message_server_node.py" 
-    cwd="node" required="true"/>-->
+  <node name="$(anon message_server)" pkg="verysmall" type="message_server_node.py" 
+    cwd="node" required="true"/>
 </launch>

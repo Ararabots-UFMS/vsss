@@ -12,7 +12,7 @@ from rospy import logfatal
 
 class StopAction:
 
-    def __init__(self, name):
+    def __init__(self, name = 'Stop Task'):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
@@ -20,7 +20,7 @@ class StopAction:
 
 
 class SpinTask:
-    def __init__(self, name):
+    def __init__(self, name = 'Spin Task'):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):

@@ -3,6 +3,7 @@ from abc import abstractmethod
 from typing import Tuple
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
+import rospy
 
 class Decorator:
     def __init__(self, name):
@@ -49,4 +50,5 @@ class Timer(Decorator):
             if self.current_time - self.initial_time < self.exec_time:
                 return self.child.run(blackboard)
             else:
+                self.initial_time = time.time()
                 return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
