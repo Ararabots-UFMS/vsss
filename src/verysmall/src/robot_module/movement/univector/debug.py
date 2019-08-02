@@ -9,6 +9,7 @@ import math
 import time
 
 from un_field import univectorField
+from functools import partial
 
 LEFT = 0
 RIGHT = 1
@@ -24,6 +25,12 @@ enemyColor = (0, 255, 255)
 ballColor = (31, 136, 246)
 pathColor = (255, 0, 255)
 
+global RADIUS
+global KR
+global K0
+global DMIN
+global LDELTA
+
 RADIUS = 5.0
 KR = 15
 K0 = 25
@@ -31,10 +38,12 @@ DMIN = 5
 LDELTA = 4.5
 
 def getObstacle():
-    return np.array([random.randint(0, w-1), -random.randint(0, h-1)])
+    return np.array([75, -75])
+    #return np.array([random.randint(0, w-1), -random.randint(0, h-1)])
 
 def getBall():
-    return np.array([random.randint(0, w-1), -random.randint(0, h-1)])
+    return np.array([50, -50])
+    #return np.array([random.randint(0, w-1), -random.randint(0, h-1)])
 
 def getRobot():
     return np.array([random.randint(0, w-1), -random.randint(0, h-1)])
@@ -108,54 +117,66 @@ def drawPath(img, start, end, univetField):
     return True, None
 
 
+def on_trackbar(val, origin):
+    constants[origin] = val 
+    univetField.updateConstants(constants['RADIUS'], constants['KR'], constants['K0'], 
+    constants['DMIN'], constants['LDELTA'])
+    draw_field()
+
+global original
+
+global robot
+global ball
+global enemy
+global constants
+
+def draw_field():
+    imgField2 = np.copy(original)
+
+    obstacle = np.array([[15,-15], [110,-15] , [15,-110], [110,-110] ])
+    vObstacle = np.array([[10,0],[0,-10],[0,10],[-10,0]])
+
+    # Drawing components
+    drawRobot(imgField2, robot)
+    drawObstacles(imgField2, obstacle)
+    drawBall(imgField2, cm2pixel(ball))
+
+    drawField(imgField2, univetField)
+    #ret, pos = drawPath(imgField2, robot, ball, univetField)
+
+    cv2.imshow('field', imgField2)
+
 if __name__ == "__main__":
-    imgField = cv2.imread('img/vss-field.jpg')
 
-    rep = EPOCH
-    i = 0
-    while rep > 0:
-        imgField2 = np.copy(imgField)
+    original = cv2.imread('img/vss-field.jpg')
+    cv2.imshow('field', original)
+    cv2.createTrackbar('RADIUS', 'field' , int(RADIUS),  100, partial(on_trackbar, origin='RADIUS'))
+    cv2.createTrackbar('KR', 'field' , KR,  100, partial(on_trackbar, origin='KR'))
+    cv2.createTrackbar('K0', 'field' , K0,  100, partial(on_trackbar, origin='K0'))
+    cv2.createTrackbar('DMIN', 'field' , DMIN,  100, partial(on_trackbar, origin='DMIN'))
+    cv2.createTrackbar('LDELTA', 'field' , int(LDELTA),  100, partial(on_trackbar, origin='LDELTA'))
 
-        robot = getRobot()
-        ball = getBall()
+    constants = {
+        'RADIUS' : RADIUS ,
+        'KR' : KR ,
+        'K0' : K0 ,
+        'DMIN' : DMIN ,
+        'LDELTA' : LDELTA 
+    }
 
-        obstacle = np.array([[]])
-        vObstacle = np.array([[0, 0]])
+    robot = getRobot()
+    ball = getBall()
+    enemy = getObstacle()
 
-        obstacle = np.array([getObstacle()])
-        vObstacle = np.array([[0,0]])
-
-        # Drawing components
-        drawRobot(imgField2, robot)
-        drawObstacles(imgField2, obstacle)
-        drawBall(imgField2, cm2pixel(ball))
-
-        # Creates the univector field
-        univetField = univectorField(attack_goal=RIGHT)
-        univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
-        univetField.updateBall(ball)
-        univetField.updateObstacles(obstacle, vObstacle)
+    obstacle = np.array([[15,-15], [100,-15] , [15,-100], [100,-100] ])
+    vObstacle = np.array([[15,0],[0,-15],[0,15],[-15,0]])
 
 
-        drawField(imgField2, univetField)
-        ret, pos = drawPath(imgField2, robot, ball, univetField)
+    # Creates the univector field
+    univetField = univectorField(attack_goal=RIGHT)
+    univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+    univetField.updateBall(ball)
+    univetField.updateObstacles(obstacle, vObstacle)
 
-        # display the path in the field
-        if not SIMULATION:
-            cv2.imshow('field', imgField2)
-            cv2.waitKey(0)
-            break
-        else:
-            if not ret:
-                cv2.imwrite('./erros/Erro-'+ str(i)+'.jpg', imgField2)
-                nomeArquivo = './erros/log/Erro-'+str(i)+'.txt'
-                arquivo = open(nomeArquivo, 'w+')
-                texto = "Obstacles: " + str(obstacle) + '\n'
-                texto += "Ball: " + str(ball) + '\n'
-                texto += "Robot: " + str(pos) + '\n'
-                arquivo.writelines(texto)
-                arquivo.close()
-
-            rep -= 1
-            print("SIMULATION", i)
-            i += 1
+    draw_field()
+    cv2.waitKey(0)
