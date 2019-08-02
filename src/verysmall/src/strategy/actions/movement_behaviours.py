@@ -1,5 +1,5 @@
 from strategy.behaviour import TaskStatus, BlackBoard
-from robot_module.movement.univector.un_field import univectorField
+from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
 from strategy.behaviour import ACTION, TreeNode
@@ -49,8 +49,8 @@ class UnivectorTask(ABC):
         DMIN = univector_list['DMIN']
         LDELTA = univector_list['LDELTA']
 
-        self.univector_field = univectorField()
-        self.univector_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univector_field = UnivectorField()
+        self.univector_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
 
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -63,15 +63,13 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
 
-        self.univector_field.update_attack_side(blackboard.attack_goal)
-
-        self.univector_field.updateObstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.position, np.array([0, 0]),  # blackboard.speed,
-                                                         objective_position)
+                                                         objective_position, _attack_goal=blackboard.attack_goal)
         speed = self.speed
         if self.speed_prediction:
             raio = predict_speed(blackboard.position, [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
-                                 objective_position, self.univector_field.get_attack_goal())
+                                 objective_position, self.univector_field.get_attack_goal_axis(blackboard.attack_goal))
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
@@ -124,7 +122,7 @@ class ChargeWithBall:
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
-        logfatal(distance_to_goal)
+
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
 

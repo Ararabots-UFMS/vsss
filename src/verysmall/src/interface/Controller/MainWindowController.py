@@ -184,7 +184,7 @@ class MainWindowController:
         elif ptr.value() < 16:
             if ptr.value() == 13:
                 self.wait_window_close(self.debug_controller)
-                self.view.virtualField.set_draw_vectors(self.debug_params['robot_vector'])
+                self.view.virtualField.set_draw_vectors(self.debug_params['movement_predict_simulation'])
                 self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
             elif ptr.value() == 14:
                 self.wait_window_close(self.connection_controller)
@@ -316,4 +316,4 @@ class MainWindowController:
         self.pub.set_team_side(ptr.value())
         self.game_opt["side"] = ptr.value()
         self.pub.publish()
-        self.view.virtualField.univetField.update_attack_side(not ptr.value())
+        self.view.virtualField.attack_goal = not ptr.value()

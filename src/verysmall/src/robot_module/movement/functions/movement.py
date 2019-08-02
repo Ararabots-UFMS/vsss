@@ -7,7 +7,7 @@ from utils.math_utils import angle_between, distancePoints, unitVector, forward_
 from utils.json_handler import JsonHandler
 
 from ..control.PID import PID
-from ..univector.un_field import univectorField
+from ..univector.un_field import UnivectorField
 from rospy import logfatal
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
@@ -40,11 +40,11 @@ class Movement():
         self.gamma_count = 0
         self.simulation = False
         if type(attack_goal) is int:
-            self.univet_field = univectorField(attack_goal=self.attack_goal)
+            self.univet_field = UnivectorField(attack_goal=self.attack_goal)
         else:
-            self.univet_field = univectorField(attack_goal=attack_goal, _rotation=True)
+            self.univet_field = UnivectorField(attack_goal=attack_goal, _rotation=True)
 
-        self.univet_field.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univet_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
         self.pid_type = _pid_type
         self.debug_topic = _debug_topic
 
@@ -84,11 +84,11 @@ class Movement():
         :return: returns nothing
         """
         #TODO: Testar a predicao dos vetores
-        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
         vec_result = np.array([0.0, 0.0])
         robot_position_aux = robot_position
         for i in range(number_of_predictions):
-            vec = self.univet_field.getVec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
+            vec = self.univet_field.get_vec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
             vec_result += np.array(vec)
             robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
 
@@ -108,8 +108,8 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
 
         if speed_prediction:
             # central area speed
@@ -133,8 +133,8 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.updateObstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.getVecWithBall(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
         return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
 
     def in_goal_position(self, robot_position, goal_position):
