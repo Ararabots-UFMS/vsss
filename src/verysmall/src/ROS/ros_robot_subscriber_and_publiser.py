@@ -37,8 +37,9 @@ class RosRobotSubscriberAndPublisher:
         self.robot.freeball_robot = data.freeball_robot
         self.robot.meta_robot = data.meta_robot
         self.robot.changed_game_state = True
-        self.robot.state_machine = self.robot.strategies[self.robot.role]
+        self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.role]
         self.robot.team_color = data.team_color
+        self.robot.update_game_state_blackboard()
 
     def read_topic(self, data) -> None:
         """
@@ -82,7 +83,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.enemies_position = np.asarray(self.robot.enemies_position)
         self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
         self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
-        
+        self.robot.update_game_info_blackboard()
         self.robot.run()
 
     def debug_publish(self, _vector):

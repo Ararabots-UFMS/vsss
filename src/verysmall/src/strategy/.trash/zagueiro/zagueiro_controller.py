@@ -5,7 +5,7 @@ import numpy as np
 from .zagueiro import Zagueiro, MyModel
 from math import pi
 from robot_module.movement.functions.movement import Movement
-from utils.math_utils import angleBetween, distancePoints
+from utils.math_utils import angle_between, distancePoints
 from utils.json_handler import JsonHandler
 from strategy.strategy_utils import *
 
@@ -26,7 +26,7 @@ class ZagueiroController():
     def __init__(self, _robot_obj, _robot_body="Nenhum", _debug_topic = None):
         self.pid_type = SOFTWARE
         self.robot = _robot_obj
-        self.robot.get_stuck = self.robot.get_fake_stuck
+        #self.robot.get_stuck = self.robot.get_fake_stuck
         self.position = None
         self.orientation = None
         self.team_speed = None

@@ -31,7 +31,7 @@ class VisionNode:
         """
         self.team_colors = ['blue', 'yellow']
         self.yellow_robots = 5
-        self.blue_robots = 5
+        self.blue_robots = 1
         self.show = False
         self.state_changed = 0
 

@@ -6,7 +6,7 @@ from strategy.strategy_utils import *
 from .advanced_keeper import AdvancedGK, MyModel
 from robot_module.movement.functions.movement import Movement
 from utils.json_handler import JsonHandler
-from utils.math_utils import angleBetween
+from utils.math_utils import angle_between
 
 bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 
@@ -328,7 +328,7 @@ class AdvancedGKController():
         mean = self.robot.buffer_mean(self.buffer)
 
         if distance_point(self.ball_position, mean) > DEFENCE_THRESHOLD:
-            polynom = self.robot.buffer_polyfit(self.buffer, 1)
+            polynom = None#self.robot.buffer_polyfit(self.buffer, 1)
 
             position = polynom(MAX_X*self.team_side + ((-1)**(self.team_side)*MIN_X))
 

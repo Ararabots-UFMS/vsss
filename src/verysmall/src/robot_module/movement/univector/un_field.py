@@ -356,3 +356,8 @@ class univectorField:
         self.setRotation(section(_ball) == CENTER)
         angle = self.getAngleVec(_robotPos, _vRobot, _ball)
         return np.asarray([np.cos(angle), np.sin(angle)])
+
+    def get_angle_with_ball(self, _robotPos=[None, None], _vRobot=[None, None], _ball=[None, None]):
+        self.setRotation(section(_ball) == CENTER)
+        angle = self.getAngleVec(_robotPos, _vRobot, _ball)
+        return angle
