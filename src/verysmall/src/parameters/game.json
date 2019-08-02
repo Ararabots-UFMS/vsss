@@ -1,9 +1,9 @@
 {
     "ROS_IP": [
-        "lo",
-        "127.0.0.1"
+        "enp0s25",
+        "10.0.0.2"
     ],
-    "ROS_MASTER_URI": "http://127.0.0.1:11311",
+    "ROS_MASTER_URI": "http://10.0.0.1:11311",
     "camera": {
         "file": "",
         "name": "USB 2.0 Camera",

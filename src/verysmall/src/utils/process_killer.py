@@ -21,7 +21,7 @@ class ProcessKiller():
 		try:
 			list_of_pid = sb.check_output("pgrep "+process_name, shell=True).split("\n")
 			list_of_pid.pop()
-		except sb.CalledProcessError as e:
+		except Exception as e:
 			list_of_pid = []
 			
 		return list_of_pid
