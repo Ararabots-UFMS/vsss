@@ -56,7 +56,7 @@ class Stopped(Sequence):
 
 class BaseTree(Selector):
     def __init__(self, name: str = "BaseTree"):
-        super.__init__(name)
+        super().__init__(name)
 
         self.add_child(Stopped('Stopped'))
         self.add_child(Penalty('Penalty'))
