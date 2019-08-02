@@ -1,8 +1,7 @@
 from strategy.behaviour import BlackBoard, Sequence, Selector, TaskStatus
 from strategy.actions.state_behaviours import InState, ChangeState
 from strategy.actions.game_behaviours import IsBehindBall
-from strategy.actions.movement_behaviours import ChargeWithBall, univectorField, GoToBallUsingUnivector, \
-    GoToAttackGoalUsingUnivector, StopAction
+from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
 
 
