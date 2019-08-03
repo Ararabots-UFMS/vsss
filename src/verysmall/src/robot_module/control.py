@@ -20,7 +20,7 @@ class Control:
                        max_fine_movment_speed) -> None:
         self._myrobot = myrobot
         self._max_fine_movment_speed = max_fine_movment_speed
-        self._alpha = 30 # centimeters
+        self._alpha = 20 # centimeters
 
         self._head = FORWARD
         self._hysteresis_angle_window = 15 * DEG2RAD
@@ -56,9 +56,7 @@ class Control:
         diff_angle = self.get_diff_angle(angle)
 
         speed = self.get_optimal_speed(speed, diff_angle, distance)
-        
-        if speed < 0 or speed > 255:
-            rospy.logfatal("FUDEO NO CONTROLE VIADO")
+        rospy.logfatal(repr(distance) + " " + repr(speed))
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
@@ -114,8 +112,9 @@ class Control:
                                 diff_angle: float, 
                                 target_distance: float) -> float:
         
-        if target_speed < self._max_fine_movment_speed or \
-           diff_angle*RAD2DEG < 10:
+        if target_speed < self._max_fine_movment_speed:
+            return target_speed
+        elif diff_angle*RAD2DEG < 10 and target_distance > 2*self._alpha:
             return target_speed
         else:
             optimal_speed = self.sigmoid(target_speed, target_distance)
@@ -125,5 +124,5 @@ class Control:
                       distance: float) -> float:
         scale = target_speed - self._max_fine_movment_speed
 
-        s = scale / (1 + math.exp(-distance + self._alpha)) 
+        s = scale / (1 + math.exp(0.08*(-distance + self._alpha))) 
         return s + self._max_fine_movment_speed
