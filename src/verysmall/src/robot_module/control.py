@@ -20,7 +20,7 @@ class Control:
                        max_fine_movment_speed) -> None:
         self._myrobot = myrobot
         self._max_fine_movment_speed = max_fine_movment_speed
-        self._alpha = 20 # centimeters
+        self._alpha = 40 # centimeters
 
         self._head = FORWARD
         self._hysteresis_angle_window = 15 * DEG2RAD
@@ -124,5 +124,5 @@ class Control:
                       distance: float) -> float:
         scale = target_speed - self._max_fine_movment_speed
 
-        s = scale / (1 + math.exp(0.08*(-distance + self._alpha))) 
+        s = scale / (1 + math.exp(0.6*(-distance + self._alpha))) 
         return s + self._max_fine_movment_speed
