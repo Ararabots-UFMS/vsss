@@ -37,9 +37,10 @@ class Robot:
 
         self.pid_list = bodies_unpack[self.robot_body]
         constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
+        self._max_fine_movment_speed = 110
+        self._controller = Control(self, constants, self._max_fine_movment_speed)
 
         self._hardware = RobotHardware()
-        self._controller = Control(self, constants)
 
         # True position for penalty
         self.true_pos = np.array([.0, .0])

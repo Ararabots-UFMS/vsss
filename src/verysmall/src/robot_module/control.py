@@ -16,8 +16,11 @@ Constants = Tuple[int, float, float, float]
 
 class Control:
     def __init__(self, myrobot,
-                       constants: List[Constants]) -> None:
+                       constants: List[Constants],
+                       max_fine_movment_speed) -> None:
         self._myrobot = myrobot
+        self._max_fine_movment_speed = max_fine_movment_speed
+        self._alpha = 30 # centimeters
 
         self._head = FORWARD
         self._hysteresis_angle_window = 15 * DEG2RAD
@@ -51,6 +54,11 @@ class Control:
         self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
+
+        speed = self.get_optimal_speed(speed, diff_angle, distance)
+        
+        if speed < 0 or speed > 255:
+            rospy.logfatal("FUDEO NO CONTROLE VIADO")
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
@@ -101,5 +109,21 @@ class Control:
                 i -= 1
             
             return self._pid_constants_set[i][1:]
+    
+    def get_optimal_speed(self, target_speed: float,
+                                diff_angle: float, 
+                                target_distance: float) -> float:
+        
+        if target_speed < self._max_fine_movment_speed or \
+           diff_angle*RAD2DEG < 10:
+            return target_speed
+        else:
+            optimal_speed = self.sigmoid(target_speed, target_distance)
+            return optimal_speed
+    
+    def sigmoid(self, target_speed: float,
+                      distance: float) -> float:
+        scale = target_speed - self._max_fine_movment_speed
 
-
+        s = scale / (1 + math.exp(-distance + self._alpha)) 
+        return s + self._max_fine_movment_speed
