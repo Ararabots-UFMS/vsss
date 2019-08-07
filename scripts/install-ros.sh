@@ -18,4 +18,5 @@ source ~/.bashrc
 sudo apt install python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
 
 # python
-pip3 install rospkg catkin-tools
+sudo apt-get install python3-pip python3-yaml
+sudo pip3 install rospkg catkin_pkg
