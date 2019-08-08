@@ -80,7 +80,7 @@ class GeneralObjSeeker:
         return np.array([start_col, start_line]), img[start_line:end_line, start_col:end_col]
 
     def get_obj_pos(self, img):
-        if cv2.__version__ == '4.1.1-pre':
+        if cv2.__version__[0] == '4':
             cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
             _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)

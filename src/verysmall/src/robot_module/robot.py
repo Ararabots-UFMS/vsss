@@ -35,6 +35,7 @@ class Robot:
         self._should_debug = should_debug
 
         constants = self.get_pid_constants_set()
+        rospy.logwarn(constants)
         self._max_fine_movment_speed = 50
         self._controller = Control(self, constants, self._max_fine_movment_speed)
 
@@ -102,7 +103,7 @@ class Robot:
         pid_dict = bodies[self.robot_body]
         for speed in pid_dict:
             ctes = pid_dict[speed]
-            pid_set.append((speed, ctes["KP"], ctes["KI"], ctes["KD"]))
+            pid_set.append((int(speed), ctes["KP"], ctes["KI"], ctes["KD"]))
         
         return pid_set
 
