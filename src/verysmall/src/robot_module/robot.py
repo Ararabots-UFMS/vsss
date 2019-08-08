@@ -1,3 +1,4 @@
+from typing import List, Tuple
 import rospy
 import numpy as np
 from robot_module.hardware import RobotHardware
@@ -12,8 +13,6 @@ from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
 from robot_module.control import Control
-
-bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 
 
 class Robot:
@@ -35,8 +34,7 @@ class Robot:
         self._socket_id = socket_id
         self._should_debug = should_debug
 
-        self.pid_list = bodies_unpack[self.robot_body]
-        constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
+        constants = self.get_pid_constants_set()
         self._max_fine_movment_speed = 50
         self._controller = Control(self, constants, self._max_fine_movment_speed)
 
@@ -96,6 +94,18 @@ class Robot:
         self.blackboard = BlackBoard()
 
         self.stuck_counter = 0
+    
+    def get_pid_constants_set(self) -> List[Tuple]:
+        pid_set = []
+        bodies = JsonHandler.read("parameters/bodies.json", escape=True)
+        
+        pid_dict = bodies[self.robot_body]
+        for speed in pid_dict:
+            ctes = pid_dict[speed]
+            pid_set.append((speed, ctes["KP"], ctes["KI"], ctes["KD"]))
+        
+        return pid_set
+
 
     def update_game_state_blackboard(self):
         self.blackboard.game_state = GameStates(self.game_state)
