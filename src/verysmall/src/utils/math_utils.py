@@ -50,6 +50,13 @@ def distancePoints(a, b):
     """Distance between two points"""
     return ((a[0]-b[0])**2 + (a[1]-b[1])**2)**0.5
 
+def clamp(value , min, max):
+    if value < min:
+        value = min
+    elif value > max:
+        value = max
+    return value
+
 
 def maxAbs(x, y):
     """Return the maximum absolute value"""
