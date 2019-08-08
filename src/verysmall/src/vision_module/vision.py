@@ -22,7 +22,7 @@ HEIGHT = 1
 class Vision:
 
     def __init__(self, camera, num_blue_robots, num_yellow_robots,
-                 params_file_name="", colors_params = "", method=""):
+                 params_file_name="", colors_params = "", method="", vision_owner:str = 'Player_One'):
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -46,7 +46,7 @@ class Vision:
         self.blue_team_speed = np.array([[0.0,0.0]] * 5)
 
         # Subscribes to the game topic
-        rospy.Subscriber('game_topic_1', game_topic, self.on_game_state_change)
+        rospy.Subscriber(vision_owner, game_topic, self.on_game_state_change)
 
         self.game_state = None
 

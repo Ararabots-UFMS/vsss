@@ -24,7 +24,7 @@ class Robot:
                  team_side: int,
                  team_color: int,
                  robot_role: int,
-                 _game_topic_name: str,
+                 _owner_name: str,
                  socket_id: int = -1,
                  should_debug: int = 0):
 
@@ -34,6 +34,7 @@ class Robot:
         self.tag = tag
         self._socket_id = socket_id
         self._should_debug = should_debug
+        self.owner_name = _owner_name
 
         self.pid_list = bodies_unpack[self.robot_body]
         constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
@@ -77,9 +78,9 @@ class Robot:
             rospy.logfatal("Using fake bluetooth")
             self._sender = None
         else:
-            self._sender = Sender(self._socket_id)
+            self._sender = Sender(self._socket_id, self.owner_name)
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, self._should_debug)
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
 
         self.behaviour_trees = [
             AttackerWithUnivectorBT(),

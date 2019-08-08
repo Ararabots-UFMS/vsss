@@ -12,10 +12,11 @@ from ROS.ros_game_topic_publisher import GameTopicPublisher
 from ROS.main_window_controller_subscriber import MainWindowControllerSubscriber
 from coach.Coach import Coach
 
+
 class MainWindowController:
     def __init__(self, model: dict,
-                _coach: Coach, 
-                _game_topic_publisher: GameTopicPublisher):
+                 _coach: Coach,
+                 _game_topic_publisher: GameTopicPublisher):
         """
         This class os resonsible for managing the main window
         """
@@ -39,8 +40,8 @@ class MainWindowController:
                                                           model.debug_params['robot_vector'],
                                                           model.debug_params['things'],
                                                           self.robot_params)
-        
-        self.subs =  MainWindowControllerSubscriber(self._connection_status_listener)
+
+        self.subs = MainWindowControllerSubscriber(self._connection_status_listener, _game_topic_publisher.get_owner())
 
         # Creates the game topic
         self.pub = _game_topic_publisher
@@ -50,14 +51,14 @@ class MainWindowController:
 
         # Since our primary keys are the keys of the dict it self
         # and since our DataBase is simple, it can be stored as simple strings
-        self.robot_roles_keys = sorted(self.robot_roles, key=self.robot_roles.get) #sorted(self.robot_roles.keys())
+        self.robot_roles_keys = sorted(self.robot_roles, key=self.robot_roles.get)  # sorted(self.robot_roles.keys())
         self.robot_bluetooth_keys = self.robot_bluetooth.keys()
 
         # Fast access array to use a dict as an simple array
-        self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
-        self.assigned_robot_text = ["Jogador "+str(x) for x in range(1, 6)]
+        self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
+        self.assigned_robot_text = ["Jogador " + str(x) for x in range(1, 6)]
         self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
-        
+
         self.view.team_color.value(self.game_opt["time"])
         self.pub.set_team_color(self.view.team_color.value())
 
@@ -94,16 +95,15 @@ class MainWindowController:
             self.view.robot_params[num].callback(self.parameters_button)
             self.view.robot_roles[num].callback(self.role_choice)
             self.view.robot_radio_button[num].callback(self.radio_choice)
-            
+
         self.view.top_menu.callback(self.top_menu_choice)
         self.view.play_button.callback(self.action_button_clicked)
 
         self.view.team_color.callback(self.on_color_change)
         self.view.team_side.callback(self.on_side_change)
-        
-        #self._initialize_game_topic()
+
+        # self._initialize_game_topic()
         self.view.end()
-        
 
     def _initialize_game_topic(self):
         self.pub.publish()
@@ -131,12 +131,12 @@ class MainWindowController:
             # Drop-down choice box
             # This integer, again, is for the value of item in the
             # Drop-down choice box
-            
+
             for item in self.robot_roles_keys:
                 # Add the key of the dictionary to the drop-down...
                 # again
                 current_item = int(self.robot_roles[item])
-                self.view.robot_roles[num].insert(current_item,item,0,None,None,0)
+                self.view.robot_roles[num].insert(current_item, item, 0, None, None, 0)
 
                 if current_robot['role'] == item:
                     # Same as above
@@ -176,9 +176,9 @@ class MainWindowController:
             self.pub.send_vision_operation(ptr.value())
 
         if ptr.value() < 9:
-            if ptr.value() == 7: # Connection controller
+            if ptr.value() == 7:  # Connection controller
                 self.wait_window_close(self.connection_controller)
-            if ptr.value() == 8: # Bluetooth Controller
+            if ptr.value() == 8:  # Bluetooth Controller
                 self.wait_window_close(self.bluetooth_controller)
 
         elif ptr.value() < 16:
@@ -228,11 +228,11 @@ class MainWindowController:
         isMacAddress, mac = self.get_mac_address(ptr.id)
 
         if isMacAddress:
-            if ptr.value() == True: # add
+            if ptr.value() == True:  # add
                 r = self.pub.add_or_remove_socket_on_messageserver(ServerOpCode.ADD.value, ptr.id, mac)
-            else: # remove
+            else:  # remove
                 r = self.pub.add_or_remove_socket_on_messageserver(ServerOpCode.REMOVE.value, ptr.id, mac)
-        
+
         if not isMacAddress or r != ServerOpCode.ERROR.value:
             self.coach.set_robot_active(ptr.id, ptr.value())
             self.robot_params[self.faster_hash[ptr.id]]['active'] = ptr.value()
@@ -298,14 +298,13 @@ class MainWindowController:
         self.game_opt["time"] = value
         self.set_robot_plot_color(value)
 
-    def set_robot_plot_color(self, is_yellow = True):
+    def set_robot_plot_color(self, is_yellow=True):
         if is_yellow:
-            self.view.home_color = 1  #  home team color
-            self.view.away_color = 0    # away team color
+            self.view.home_color = 1  # home team color
+            self.view.away_color = 0  # away team color
         else:
             self.view.home_color = 0  # home team color
-            self.view.away_color = 1    # away team color
-
+            self.view.away_color = 1  # away team color
 
     def on_side_change(self, ptr):
         """

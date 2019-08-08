@@ -22,7 +22,7 @@ class GeneralMultObjSeeker:
            :return: objecs: np.array([float, float]).shape([k, 2])
            object has the position of the center of each object in img
         """
-        if cv2.__version__ == '4.1.1-pre':
+        if cv2.__version__[0] == '4':
             cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
             _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)

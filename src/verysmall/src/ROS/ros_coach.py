@@ -22,17 +22,18 @@ class RosCoach:
         self.player_process = {}
         self.player_nodes = {}
 
-    def create_and_store_node(self, robot, active, variables):
+    def create_and_store_node(self, robot, robot_name, active, variables):
         """
         Creates a robot node and stores its process for later use
         :param robot: String
+        :param robot_name: String
         :param active: Bool
         :param variables: String
         :return: nothing
         """
         # creates a node with robot list arguments
         node = roslaunch.core.Node('verysmall', 'robot_node.py',
-                                   name=robot,
+                                   name=robot_name,
                                    args=variables)
 
         # Lets store the node for future alterations
