@@ -29,3 +29,5 @@ class Attacker(BaseTree):
                                             acceptance_radius=2,
                                             speed_prediction=False)
         tree.add_child(GoToBallUsingUnivector(go_to_ball)
+
+        return tree

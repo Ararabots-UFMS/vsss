@@ -21,17 +21,19 @@ class VisionOperations(Enum):
     CROPPER = 2
     COLOR_CALIBRATION = 3
 
+
 class VisionNode:
     """
     A node for spinning the Vision
     """
-    def __init__(self, color=0):
+
+    def __init__(self, vision_owner: str = 'Player_One'):
         """
         :param color: int
         """
         self.team_colors = ['blue', 'yellow']
         self.yellow_robots = 5
-        self.blue_robots = 1
+        self.blue_robots = 3
         self.show = False
         self.state_changed = 0
 
@@ -49,7 +51,7 @@ class VisionNode:
         self.camera = Camera(device, "parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=False)
 
         self.vision = Vision(self.camera, self.blue_robots, self.yellow_robots,
-                             arena_params, colors_params, method="color_segmentation")
+                             arena_params, colors_params, method="color_segmentation", vision_owner=vision_owner)
         self.vision.game_on = True
 
         self.thread = Thread(target=self.vision.run, args=())
@@ -69,14 +71,15 @@ class VisionNode:
         self.state_changed = req.operation
         return success
 
+
 if __name__ == "__main__":
 
     try:
-        color = int(sys.argv[2])
+        owner_name = sys.argv[2]
     except IndexError:
-        color = 1
+        owner_name = 1
 
-    vision_node = VisionNode(color)
+    vision_node = VisionNode(owner_name)
     rate = rospy.Rate(1)  # 30hz
 
     while not rospy.is_shutdown():

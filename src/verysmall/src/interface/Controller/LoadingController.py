@@ -8,8 +8,10 @@ class LoadingController:
 
     def start(self, label_text = "Carregando Assets"):
         self.load_thread = LoadingView(label_text)
+        self.load_thread.DoRun = True
         self.load_thread.start()
 
     def stop(self):
+        sleep(0.5)
         self.load_thread.DoRun = False
         self.load_thread.join()
