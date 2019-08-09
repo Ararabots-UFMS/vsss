@@ -46,7 +46,6 @@ class Control:
             return 255, -255
         else:
             return 0, 0
-        
     
     def _follow_vector(self, speed: int, 
                              angle: float, 
