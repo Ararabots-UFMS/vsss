@@ -8,7 +8,7 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.strategy_utils import GameStates
-from strategy.attack_with_univector import AttackerWithUnivectorBT
+from strategy.attacker import Attacker
 from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
@@ -81,12 +81,12 @@ class Robot:
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, _game_topic_name, self._should_debug)
 
         self.behaviour_trees = [
-            AttackerWithUnivectorBT(),
-            AttackerWithUnivectorBT(),
+            Attacker(),
+            Attacker(),
             GoalKeeper(),
-            AttackerWithUnivectorBT(),
+            Attacker(),
             CalibrationTree(),
-            AttackerWithUnivectorBT()
+            Attacker()
         ]
 
         self.behaviour_tree = self.behaviour_trees[0]

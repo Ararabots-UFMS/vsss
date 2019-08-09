@@ -8,6 +8,7 @@ import numpy as np
 angle = distance = float
 speed = int
 ACTION = Tuple[OpCodes, angle, speed, distance]
+NO_ACTION = (-1, 0, 0, 0)
 
 class TaskStatus(Enum):
     SUCCESS = 0
@@ -87,13 +88,12 @@ class TreeNode:
         self.name = name
         self.children = []
     
-    def add_child(self, child_node) -> None:
-        self.children.append(child_node)
+    def add_child(self, node: TreeNode) -> None:
+        self.children.append(node)
 
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         raise Exception("subclass must override run")
-        pass
 
 class Sequence(TreeNode):
     """
@@ -114,7 +114,7 @@ class Sequence(TreeNode):
             if status != TaskStatus.SUCCESS:
                 return status, action
 
-        return TaskStatus.SUCCESS, (-1, 0, 0, 0)
+        return TaskStatus.SUCCESS, NO_ACTION
 
 
 class Selector(TreeNode):
@@ -136,4 +136,4 @@ class Selector(TreeNode):
             if status != TaskStatus.FAILURE:
                 return status, action
 
-        return TaskStatus.FAILURE, (-1, 0, 0, 0)
+        return TaskStatus.FAILURE, NO_ACTION

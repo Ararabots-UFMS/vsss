@@ -56,7 +56,7 @@ class Control:
         diff_angle = self.get_diff_angle(angle)
 
         speed = self.get_optimal_speed(speed, diff_angle, distance)
-        rospy.logfatal(repr(distance) + " " + repr(speed))
+        # rospy.logfatal(repr(distance) + " " + repr(speed))
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
