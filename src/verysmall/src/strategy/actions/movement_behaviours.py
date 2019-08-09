@@ -143,10 +143,6 @@ class MarkBallOnAxis(TreeNode):
     
         
 
-        
-
-
-
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
                  max_speed: int = 0, 
