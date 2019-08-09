@@ -46,24 +46,26 @@ class Control:
             return 255, -255
         else:
             return 0, 0
-        
     
     def _follow_vector(self, speed: int, 
                              angle: float, 
-                             distance: float) -> Tuple[float, float]:      
+                             distance: float,
+                             optimal_speed: bool = False) -> Tuple[float, float]:      
         self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
-
-        speed = self.get_optimal_speed(speed, diff_angle, distance)
-        # rospy.logfatal(repr(distance) + " " + repr(speed))
+        
+        if optimal_speed == True:
+            speed = self.get_optimal_speed(speed, diff_angle, distance)
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
             self._pidController.reset()
         self._pid_last_use = t
-
+        
         constants = self.interpolate_constants(speed)
+        rospy.logfatal(speed)
+        rospy.logfatal(constants)
         self._pidController.set_constants(*constants)
         correction = self._pidController.update(diff_angle)
 
@@ -94,10 +96,10 @@ class Control:
         if self._pid_constants_set[i][0] == speed:
             return self._pid_constants_set[i][1:]
         elif 0 < i < len(self._pid_constants_set):
-            w1 = self._pid_constants_set[i-1][0] - speed
+            w1 = speed - self._pid_constants_set[i-1][0]
             set1 = np.array(self._pid_constants_set[i-1][1:])
             
-            w2 = speed - self._pid_constants_set[i][0]
+            w2 = self._pid_constants_set[i][0] - speed
             set2 = np.array(self._pid_constants_set[i][1:])
             
             norm = self._pid_constants_set[i][0] - self._pid_constants_set[i-1][0]
