@@ -11,30 +11,32 @@ class GameTopicPublisher:
     This class can publish Game related messages on a 'Game topic' Topic
     :return: nothing
     """
-    def __init__(self, isnode=False, _game_opt = None, _robot_params = None, _robot_name_roles = None, topic_number = 0):
+
+    def __init__(self, isnode=False, _game_opt=None, _robot_params=None, _robot_name_roles=None, owner_id='Player_One'):
         """
         :param isnode: Boolean
         :param _game_opt: Game json
         :param _robot_params: Robots Json
         :param _robot_name_roles: Robot roles Json
-        :param topic_number: int
+        :param owner_id: int
         """
         if isnode:  # if this a separeted node
             rospy.init_node('game', anonymous=True)
 
         # else is only a publisher
-        self.name = 'game_topic_'+str(topic_number)
+        self.name = 'game_topic_' + str(owner_id)
+        self.owner_id = str(owner_id)
 
         self.pub = rospy.Publisher(self.name, game_topic, queue_size=1)
         self.msg = game_topic()
         self.msg.robot_roles = [0, 0, 0, 0, 0]
-        
+
         self.game_opt = _game_opt
         self.robot_params = _robot_params
         self.robot_name_roles = _robot_name_roles
 
         # Init message values
-        self.faster_hash = ['robot_'+str(x) for x in range(1, 6)]
+        self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
 
         for robot_id in range(5):
             role_name = self.robot_params[self.faster_hash[robot_id]]['role']
@@ -42,7 +44,7 @@ class GameTopicPublisher:
 
         self.set_freeball_robot(self.game_opt['freeball_player'])
         self.set_penalty_robot(self.game_opt['penalty_player'])
-        self.set_meta_robot(self.game_opt['meta_player']) 
+        self.set_meta_robot(self.game_opt['meta_player'])
 
         self.set_team_side(self.game_opt['side'])
         self.set_team_color(self.game_opt['time'])
@@ -50,10 +52,10 @@ class GameTopicPublisher:
         # Variable for storing proxy
         self.vision_proxy = None
         self._messageserver_proxy = None
+        self.message_server_name = None
 
         self.register_vision_service()
-        self._register_messageserver_service()
-        
+        self._register_messageserver_service(self.owner_id)
 
     def set_game_state(self, _game_state):
         """
@@ -69,6 +71,9 @@ class GameTopicPublisher:
         :return: nothing
         """
         return self.name
+
+    def get_owner(self):
+        return self.owner_id
 
     def set_robot_role(self, robot_id, role):
         """
@@ -145,8 +150,8 @@ class GameTopicPublisher:
         :return: nothing
         """
         self.msg.team_side = side
-    
-    def set_team_color(self, color:int) -> None:
+
+    def set_team_color(self, color: int) -> None:
         """ Set side of the game, yellow(1) or blue(0)? """
         self.msg.team_color = color
 
@@ -160,23 +165,23 @@ class GameTopicPublisher:
         except rospy.ROSException as e:
             rospy.logfatal(e)
 
-    def _register_messageserver_service(self):
-        wait_for_service('message_server_service')
-        self._messageserver_proxy = ServiceProxy('message_server_service',
-                                                  message_server_service)
+    def _register_messageserver_service(self, owner_id=None):
+        suffix = '' if owner_id is None else '_'+owner_id
+        self.message_server_name = 'message_server_service' + suffix
+        wait_for_service(self.message_server_name)
+        self._messageserver_proxy = ServiceProxy(self.message_server_name,
+                                                 message_server_service)
 
-    
-    def add_or_remove_socket_on_messageserver(self, opcode: int, 
-                                              socket_id:int,
+    def add_or_remove_socket_on_messageserver(self, opcode: int,
+                                              socket_id: int,
                                               mac_addr: List[int]) -> int:
-        wait_for_service('message_server_service')
+        wait_for_service(self.message_server_name)
         try:
             r = self._messageserver_proxy(opcode, socket_id, mac_addr)
             return r
         except ServiceException as e:
             print("Message server service request error " + repr(e))
             return ServerOpCode.ERROR.value
-
 
     def register_vision_service(self):
         """

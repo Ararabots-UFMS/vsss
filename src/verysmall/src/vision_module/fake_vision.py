@@ -1,10 +1,7 @@
 import rospy
 import sys
 import cv2
-from camera.camera import Camera
-from threading import Thread
-from vision import Vision
-from time import time
+
 import os
 from enum import Enum
 old_path = sys.path[0]
@@ -33,8 +30,8 @@ class VisionNode:
 
         self.mercury = RosVisionPublisher(True)
         self.msg = things_position()
-        self.msg.team_pos[0] = 75
-        self.msg.team_pos[1] = 75
+        self.msg.yellow_team_pos[0] = 75
+        self.msg.yellow_team_pos[1] = 75
         self.msg.ball_pos[0] = 5
         self.msg.ball_pos[1] = 2
         self.state = 0
