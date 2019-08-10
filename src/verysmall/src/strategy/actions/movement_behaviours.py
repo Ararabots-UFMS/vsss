@@ -112,12 +112,13 @@ class ChargeWithBall:
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
         self.name = name
         self.max_speed = max_speed
+        self.x_vector = np.array([1.0,0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         goal_vector = blackboard.attack_goal_pos - blackboard.position
 
         angle = angle_between(
-            [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
+            self.x_vector,
             goal_vector
         )
 
@@ -153,10 +154,6 @@ class MarkBallOnAxis(TreeNode):
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                      self._max_speed, 
                                      .0)
-
-        
-
-
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
