@@ -26,4 +26,4 @@ src/CMakeLists\.txt
 
 *.mypy_cache/
 
-src/verysmall/src/interface/Assets/Cache/
+src/verysmall/src/interface/Assets/Cache/*
