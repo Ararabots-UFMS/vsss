@@ -4,5 +4,5 @@
   "Goalkeeper"  : 2,
   "Zagueiro" : 3,
   "PID Calibration" : 4,
-  "Naive keeper" : 5
+  "Defender" : 5
 }

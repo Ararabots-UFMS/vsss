@@ -131,7 +131,7 @@ class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
                  max_speed: int = 0, 
                  axis: np.ndarray = np.array([.0,1.0])):
-        super().__init__()
+        super().__init__(name)
         self.max_speed = max_speed
         self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
     
