@@ -20,7 +20,7 @@ class Control:
                        max_fine_movment_speed) -> None:
         self._myrobot = myrobot
         self._max_fine_movment_speed = max_fine_movment_speed
-        self._alpha = 40 # centimeters
+        self._alpha = 15 # centimeters
 
         self._head = FORWARD
         self._hysteresis_angle_window = 15 * DEG2RAD
@@ -50,7 +50,7 @@ class Control:
     def _follow_vector(self, speed: int, 
                              angle: float, 
                              distance: float,
-                             optimal_speed: bool = False) -> Tuple[float, float]:      
+                             optimal_speed: bool = True) -> Tuple[float, float]:      
         self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
@@ -92,10 +92,16 @@ class Control:
     
     def interpolate_constants(self, speed: float) -> Tuple[float, float, float]:
         i = bisect_left(self._speed_keys, speed)
+        rospy.logfatal(i)
+
+        if i == len(self._pid_constants_set):
+            i -= 1
+            return self._pid_constants_set[i][1:]
         
         if self._pid_constants_set[i][0] == speed:
             return self._pid_constants_set[i][1:]
-        elif 0 < i < len(self._pid_constants_set):
+        
+        if 0 < i < len(self._pid_constants_set):
             w1 = speed - self._pid_constants_set[i-1][0]
             set1 = np.array(self._pid_constants_set[i-1][1:])
             
@@ -103,12 +109,7 @@ class Control:
             set2 = np.array(self._pid_constants_set[i][1:])
             
             norm = self._pid_constants_set[i][0] - self._pid_constants_set[i-1][0]
-            return (w1*set1 + w2*set2) / norm
-        else:
-            if i == len(self._pid_constants_set):
-                i -= 1
-            
-            return self._pid_constants_set[i][1:]
+            return (w1*set1 + w2*set2) / norm        
     
     def get_optimal_speed(self, target_speed: float,
                                 diff_angle: float, 

@@ -16,8 +16,10 @@ class Attacker(BaseTree):
 
         normal = Sequence('Normal')
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
-        
-        normal.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
+        normal.add_child(self.naive_go_to_ball())
+
+
+        #normal.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
         normal.add_child(SpinTask('Spin'))  # Spin
         self.add_child(normal)
     
@@ -25,9 +27,9 @@ class Attacker(BaseTree):
         tree = Sequence("Go ball when ball in central area")
         tree.add_child(IsBallInsideCentralArea("Check ball"))
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle", 
-                                            max_speed=180,
-                                            acceptance_radius=2,
+                                            max_speed=100,
+                                            acceptance_radius=7,
                                             speed_prediction=False)
-        tree.add_child(GoToBallUsingUnivector(go_to_ball)
+        tree.add_child(go_to_ball)
 
         return tree

@@ -42,6 +42,7 @@ class Robot:
 
         self._hardware = RobotHardware()
 
+        self.blackboard = BlackBoard()
         # True position for penalty
         self.true_pos = np.array([.0, .0])
         self.velocity_buffer = []
@@ -80,8 +81,6 @@ class Robot:
         else:
             self._sender = Sender(self._socket_id, self.owner_name)
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
-
         self.behaviour_trees = [
             Attacker(),
             Attacker(),
@@ -91,11 +90,10 @@ class Robot:
             Attacker()
         ]
 
-        self.behaviour_tree = self.behaviour_trees[0]
-
-        self.blackboard = BlackBoard()
-
+        self.behaviour_tree = self.behaviour_trees[robot_role]
         self.stuck_counter = 0
+
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
     
     def get_pid_constants_set(self) -> List[Tuple]:
         pid_set = []

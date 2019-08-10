@@ -1,9 +1,12 @@
 from typing import Tuple
-from robot_module.movement.definitions import OpCodes
 from enum import Enum
 from abc import abstractmethod
 import rospy
 import numpy as np
+
+
+from robot_module.movement.definitions import OpCodes
+
 
 angle = distance = float
 speed = int
@@ -88,7 +91,7 @@ class TreeNode:
         self.name = name
         self.children = []
     
-    def add_child(self, node: TreeNode) -> None:
+    def add_child(self, node) -> None:
         self.children.append(node)
 
     @abstractmethod

@@ -3,11 +3,10 @@ import numpy as np
 from math import sin
 import rospy
 
-from strategy.behaviour import BlackBoard, OpCodes
+from strategy.behaviour import BlackBoard, OpCodes, TaskStatus
 from strategy.strategy_utils import behind_ball
-from strategy.base_trees import TreeNode, TaskStatus
-from strategy.behaviour import ACTION, NO_ACTION
-from utils.math_utils import angle_between
+from strategy.behaviour import ACTION, NO_ACTION, TreeNode
+from utils.math_utils import angle_between 
 
 class IsBehindBall:
     def __init__(self, name: str, distance: int):
@@ -55,16 +54,17 @@ class IsBallInsideCentralArea(TreeNode):
         super().__init__(name)
         self._width = width
         self._height = height
-        self._center = np.array(150, 130) / 2
+        self._center = np.array([150, 130]) / 2
         self._tl = self._br = None
         self.update_corners()
     
     def update_corners(self) -> None:
-        vec = np.array(self._width, -self._height) / 2
+        vec = np.array([self._width, -self._height]) / 2
         self._tl = self._center - vec
         self._br = self._center + vec
     
-    def run(self, ball_pos: np.ndarray) -> Tuple[TaskStatus, ACTION]:
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_pos = blackboard.ball_position
         if self._tl[0] <= ball_pos[0] < self._br[0] and \
            self._br[1] <= ball_pos[1] < self._tl[1]:
            return TaskStatus.SUCCESS, NO_ACTION
