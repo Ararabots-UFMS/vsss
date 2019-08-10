@@ -14,6 +14,7 @@ HALF_ARENA_WIDTH = 75
 MAX_H_SIZE = 130
 MAX_W_SIZE = 150
 
+
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
     RIGHT_GOAL_AREA = 1
@@ -33,6 +34,9 @@ class ArenaSections(Enum):
     LEFT_UP_BOTTOM_LINE = 12
     RIGHT_DOWN_BOTTOM_LINE = 13
     RIGHT_UP_BOTTOM_LINE = 14
+
+    LEFT_CRITICAL_LINE = 15
+    RIGHT_CRITICAL_LINE = 16
 
 
 Axis = [

@@ -1,7 +1,7 @@
 from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
-from strategy.strategy_utils import spin_direction
+from strategy.strategy_utils import spin_direction, ball_on_attack_side, robot_behind_ball
 from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
@@ -90,6 +90,7 @@ class GoToPositionUsingUnivector(UnivectorTask):
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
         return self.go_to_objective(blackboard, self.position)
 
+
 class GoToBallUsingUnivector(UnivectorTask):
 
     def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
@@ -141,11 +142,6 @@ class MarkBallOnAxis(TreeNode):
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
     
-        
-
-        
-
-
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
@@ -162,6 +158,7 @@ class AlignWithAxis(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
             return TaskStatus.RUNNING, (OpCodes.NORMAL, self.angle_to_correct, self.max_speed, .0)
+
 
 class GoToGoalCenter(TreeNode):
     def __init__(self, name: str = "GoToGoalCenter", 
@@ -209,3 +206,37 @@ class GoToPosition(TreeNode):
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
 
+
+class PushToAttack(TreeNode):
+    def __init__(self, name: str = 'Push ball to the other side of field',
+                 max_speed: int = 255):
+        self.name = name
+        self.max_speed = max_speed
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+
+        if ball_on_attack_side(blackboard):
+            return TaskStatus.FAILURE, (OpCodes.INVALID, .0, 0, .0)
+        else:
+
+            if robot_behind_ball(blackboard):
+                path = blackboard.ball_position - blackboard.position
+                distance = np.linalg.norm(path)
+                theta = math.atan2(path[1], path[0])
+                return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+
+            else:
+                return TaskStatus.FAILURE, (OpCodes.INVALID, .0, 0, .0)
+
+
+class GoToBallUsingMove2Point(TreeNode):
+    def __init__(self, name: str = "GoToBallUsingMove2Point",
+                 max_speed = 200):
+        self.max_speed = max_speed
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        direction = blackboard.position - blackboard.ball_position
+        distance = np.linalg.norm(direction)
+        theta = math.atan2(direction[1], direction[0])
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)

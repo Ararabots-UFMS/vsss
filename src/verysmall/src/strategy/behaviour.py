@@ -95,6 +95,7 @@ class TreeNode:
         raise Exception("subclass must override run")
         pass
 
+
 class Sequence(TreeNode):
     """
         A sequence runs each task in order until one fails,

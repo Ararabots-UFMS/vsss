@@ -1,5 +1,6 @@
 from enum import Enum
 from robot_module.movement.definitions import OpCodes
+from strategy.behaviour import BlackBoard
 import numpy as np
 from utils import math_utils
 import math
@@ -33,6 +34,9 @@ LEFT_DOWN_BOTTOM_LINE = 11
 LEFT_UP_BOTTOM_LINE = 12
 RIGHT_DOWN_BOTTOM_LINE = 13
 RIGHT_UP_BOTTOM_LINE = 14
+
+LEFT_CRITICAL_LINE = 15
+RIGHT_CRITICAL_LINE = 16
 
 BALL_SIZE = 4
 ROBOT_SIZE = 7
@@ -139,6 +143,11 @@ def section(pos):
         return UP_BORDER
     elif inside_range(0, 12, pos[Y]):
         return DOWN_BORDER
+    #critical position
+    elif inside_range(0, 30, pos[X]):
+        return LEFT_CRITICAL_LINE
+    elif inside_range(120, 150, pos[X]):
+        return RIGHT_CRITICAL_LINE
     else:
         return CENTER
 
@@ -271,3 +280,22 @@ def border_stuck(position_buffer, orientation):
         return False
     # else:
     #    return False
+
+
+def ball_on_attack_side(blackboard: BlackBoard) -> bool:
+    return on_attack_side(blackboard.ball_position, blackboard.team_side)
+
+
+def robot_behind_ball(blackboard: BlackBoard) -> bool:
+    return behind_ball(blackboard.position, blackboard.ball_position, blackboard.team_side)
+
+
+def ball_on_critical_position(blackboard: BlackBoard) -> bool:
+    sec = section(blackboard.ball_position)
+    return sec in [LEFT_CRITICAL_LINE, RIGHT_CRITICAL_LINE]
+
+
+def ball_on_border(blackboard: BlackBoard) -> bool:
+    if not ball_on_attack_side(blackboard.ball_position) and not ball_on_critical_position(blackboard.ball_position):
+        sec = section(blackboard.ball_position)
+    return sec in BORDER_NORMALS.keys()
