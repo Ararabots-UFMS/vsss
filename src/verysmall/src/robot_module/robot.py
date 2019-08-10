@@ -1,3 +1,4 @@
+from typing import List, Tuple
 import rospy
 import numpy as np
 from robot_module.hardware import RobotHardware
@@ -7,13 +8,11 @@ from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.strategy_utils import GameStates
-from strategy.attack_with_univector import AttackerWithUnivectorBT
+from strategy.attacker import Attacker
 from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
 from robot_module.control import Control
-
-bodies_unpack = JsonHandler().read("parameters/bodies.json", escape=True)
 
 
 class Robot:
@@ -36,12 +35,14 @@ class Robot:
         self._should_debug = should_debug
         self.owner_name = _owner_name
 
-        self.pid_list = bodies_unpack[self.robot_body]
-        constants = [(255, self.pid_list['KP'], self.pid_list['KI'], self.pid_list['KD'])]
+        constants = self.get_pid_constants_set()
+        rospy.logwarn(constants)
+        self._max_fine_movment_speed = 50
+        self._controller = Control(self, constants, self._max_fine_movment_speed)
 
         self._hardware = RobotHardware()
-        self._controller = Control(self, constants)
 
+        self.blackboard = BlackBoard()
         # True position for penalty
         self.true_pos = np.array([.0, .0])
         self.velocity_buffer = []
@@ -80,22 +81,31 @@ class Robot:
         else:
             self._sender = Sender(self._socket_id, self.owner_name)
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
-
         self.behaviour_trees = [
-            AttackerWithUnivectorBT(),
-            AttackerWithUnivectorBT(),
+            Attacker(),
+            Attacker(),
             GoalKeeper(),
-            AttackerWithUnivectorBT(),
+            Attacker(),
             CalibrationTree(),
-            AttackerWithUnivectorBT()
+            Attacker()
         ]
 
-        self.behaviour_tree = self.behaviour_trees[0]
-
-        self.blackboard = BlackBoard()
-
+        self.behaviour_tree = self.behaviour_trees[robot_role]
         self.stuck_counter = 0
+
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
+    
+    def get_pid_constants_set(self) -> List[Tuple]:
+        pid_set = []
+        bodies = JsonHandler.read("parameters/bodies.json", escape=True)
+        
+        pid_dict = bodies[self.robot_body]
+        for speed in pid_dict:
+            ctes = pid_dict[speed]
+            pid_set.append((int(speed), ctes["KP"], ctes["KI"], ctes["KD"]))
+        
+        return pid_set
+
 
     def update_game_state_blackboard(self):
         self.blackboard.game_state = GameStates(self.game_state)
