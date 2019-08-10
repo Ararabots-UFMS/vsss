@@ -296,6 +296,6 @@ def ball_on_critical_position(blackboard: BlackBoard) -> bool:
 
 
 def ball_on_border(blackboard: BlackBoard) -> bool:
-    if not ball_on_attack_side(blackboard.ball_position) and not ball_on_critical_position(blackboard.ball_position):
+    if not ball_on_attack_side(blackboard) and not ball_on_critical_position(blackboard):
         sec = section(blackboard.ball_position)
     return sec in BORDER_NORMALS.keys()

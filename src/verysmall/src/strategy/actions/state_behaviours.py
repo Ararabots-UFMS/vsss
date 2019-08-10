@@ -9,9 +9,11 @@ class InState:
 
     def run(self, blackboard):
         import rospy
+        rospy.logfatal("estado:" + repr(self.desired_state))
         if self.desired_state == blackboard.game_state:
+            rospy.logfatal("estou no estado:" + repr(self.desired_state))
             return TaskStatus.SUCCESS, None
-
+        rospy.logfatal("nao estou em:" + repr(self.desired_state))
         return TaskStatus.FAILURE, None
 
 class ChangeState:

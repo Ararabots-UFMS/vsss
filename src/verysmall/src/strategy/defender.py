@@ -15,18 +15,19 @@ class Defender(BaseTree):
         super().__init__(name)
         normal = Sequence('Normal')
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
-
+        rospy.logfatal("PINTO 1")
         defend = Selector("Defend")
 
         prepare_for_ball = Sequence("PrepareForBall")
         prepare_for_ball.add_child(AmIAttacking("AmIAttacking"))
-        prepare_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
+        prepare_for_ball.add_child(StopAction("StopAction"))
+        # prepare_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
 
         defend.add_child(prepare_for_ball)#3
 
         go_for_ball = Sequence("GoForBall")
         go_for_ball.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
-
+        make_a_move = Selector("MakeAMove")
         defend_border = Sequence("DefendBorder")
         defend_border.add_child(IsBallInBorder("IsBallInBorder"))
 
@@ -36,18 +37,23 @@ class Defender(BaseTree):
         defend_border.add_child(do_spin)
 
         defend_border.add_child(GoToBallUsingMove2Point("GoToBallUsingMove2Point"))
-        go_for_ball.add_child(defend_border)
-
-        go_for_ball.add_child(GoToBallUsingUnivector)
+        make_a_move.add_child(defend_border)
+        make_a_move.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
+        # go_for_ball.add_child(defend_border)
+        go_for_ball.add_child(make_a_move)
+        go_for_ball.add_child(GoToBallUsingUnivector("GoToBallUsingUnivector"))
 
         defend.add_child(go_for_ball)#2
-
+        rospy.logfatal("PINTO 2")
         wait_for_ball = Sequence("WaitForBall")
         wait_for_ball.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
-        wait_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
+        wait_for_ball.add_child(StopAction("StopAction"))
+        # wait_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
 
         defend.add_child(wait_for_ball)#1
 
         normal.add_child(defend)
+        rospy.logfatal("PINTO 3")
         normal.add_child(StopAction("StopAction"))
-
+        rospy.logfatal("PINTO 4")
+        self.add_child(normal)

@@ -132,6 +132,7 @@ class Robot:
     def run(self):
         task_status, action = self.behaviour_tree.run(self.blackboard)
         if task_status == TaskStatus.FAILURE or task_status is None:
+            rospy.logfatal("PINTO pi ele so ta parado")
             action = (OpCodes.STOP, 0.0, 0, 0)
 
         left, right = self._controller.get_wheels_speeds(*action)

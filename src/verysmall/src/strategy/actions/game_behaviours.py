@@ -2,6 +2,8 @@ from strategy.behaviour import *
 from strategy.strategy_utils import behind_ball, ball_on_critical_position, ball_on_attack_side, ball_on_border,\
     near_ball
 
+import rospy
+
 
 class IsBehindBall:
     def __init__(self, name, distance):
@@ -16,13 +18,15 @@ class IsBehindBall:
 
 
 class AmIAttacking(TreeNode):
-    def __init__(self, name: str = "IsEnemyAttacking"):
+    def __init__(self, name: str = "AmIAttacking"):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if ball_on_attack_side(blackboard):
-            return TaskStatus.SUCCESS, None
 
+        if ball_on_attack_side(blackboard):
+            rospy.logfatal("PINTO: AmIAttacking")
+            return TaskStatus.SUCCESS, None
+        rospy.logfatal("PINTO: n AmIAttacking")
         return TaskStatus.FAILURE, None
 
 
@@ -31,7 +35,9 @@ class IsBallInRangeOfDefense(TreeNode):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if ball_on_critical_position(blackboard):
+
+        if not ball_on_critical_position(blackboard) and not ball_on_attack_side(blackboard):
+            rospy.logfatal("PINTO isball in rangerof devense")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
@@ -42,7 +48,9 @@ class IsBallInBorder(TreeNode):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+
         if ball_on_border(blackboard):
+            rospy.logfatal("PINTO isball in border")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
@@ -53,7 +61,9 @@ class IsNearBall(TreeNode):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+
         if near_ball(blackboard.position, blackboard.ball_position):
+            rospy.logfatal("PINTO isnier bol")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
