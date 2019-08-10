@@ -27,7 +27,7 @@ class Attacker(BaseTree):
         tree = Sequence("Go ball when ball in central area")
         tree.add_child(IsBallInsideCentralArea("Check ball"))
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle", 
-                                            max_speed=100,
+                                            max_speed=150,
                                             acceptance_radius=7,
                                             speed_prediction=False)
         tree.add_child(go_to_ball)

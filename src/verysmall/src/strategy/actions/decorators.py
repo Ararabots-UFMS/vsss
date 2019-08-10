@@ -35,7 +35,7 @@ class InvertOutput(Decorator):
         super().__init__(name)
 
     def run(self, blackboard: BlackBoard):
-        if self.child is None:
+        if self.children is None:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
         else:
             for c in self.children:                
@@ -58,7 +58,7 @@ class Timer(Decorator):
         self.current_time = None
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if self.child is None:
+        if self.children is None:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
         else:
             for c in self.children:

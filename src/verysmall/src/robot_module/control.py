@@ -23,7 +23,7 @@ class Control:
         self._alpha = 15 # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 15 * DEG2RAD
+        self._hysteresis_angle_window = 20 * DEG2RAD
         self._upper_angle_tol = math.pi/2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi/2.0 - self._hysteresis_angle_window
 
@@ -64,8 +64,7 @@ class Control:
         self._pid_last_use = t
         
         constants = self.interpolate_constants(speed)
-        rospy.logfatal(speed)
-        rospy.logfatal(constants)
+
         self._pidController.set_constants(*constants)
         correction = self._pidController.update(diff_angle)
 
@@ -92,8 +91,7 @@ class Control:
     
     def interpolate_constants(self, speed: float) -> Tuple[float, float, float]:
         i = bisect_left(self._speed_keys, speed)
-        rospy.logfatal(i)
-
+        
         if i == len(self._pid_constants_set):
             i -= 1
             return self._pid_constants_set[i][1:]
@@ -127,5 +125,5 @@ class Control:
                       distance: float) -> float:
         scale = target_speed - self._max_fine_movment_speed
 
-        s = scale / (1 + math.exp(0.6*(-distance + self._alpha))) 
+        s = scale / (1 + math.exp(0.5*(-distance + self._alpha))) 
         return s + self._max_fine_movment_speed
