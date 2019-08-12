@@ -8,6 +8,7 @@ from utils.math_utils import predict_speed, angle_between, clamp
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 import numpy as np
+
 import rospy
 from rospy import logfatal
 import math
@@ -98,7 +99,6 @@ class GoToBallUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("PINTO aqui nois ta no univetor")
         return self.go_to_objective(blackboard, blackboard.ball_position)
 
 
@@ -138,13 +138,12 @@ class MarkBallOnAxis(TreeNode):
         self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("PINTO: markball")
         direction = clamp(blackboard.ball_position) - blackboard.position
         distance = np.linalg.norm(direction)
 
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
-    
+
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
@@ -238,7 +237,7 @@ class GoToBallUsingMove2Point(TreeNode):
         self.max_speed = max_speed
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("PINTO: going to ball using univector")
+        rospy.logfatal("PINTO: going to ball using move2point")
         direction = blackboard.position - blackboard.ball_position
         distance = np.linalg.norm(direction)
         theta = math.atan2(direction[1], direction[0])

@@ -14,11 +14,16 @@ robot/movement/functions/\.hidden
 
 robot/movement/control/\.hidden
 
+*.hidden
+
 \.idea/
 
 src/CMakeLists\.txt
 
 *.avi
 
-*.vscode/
+.vscode/
+
 *.mypy_cache/
+
+src/verysmall/src/interface/Assets/Cache/*

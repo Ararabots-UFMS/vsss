@@ -19,12 +19,12 @@ class CalibrationTree(Selector):
         self.children.append(stop_sequence)
 
         patrol = Sequence('Patrol')
-        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list))
+        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), max_speed=150)
         patrol.children.append(self.straight_line_movement)
 
         spin_task = Timer(exec_time=2)
         spin_task.add_child(SpinTask())
-        patrol.children.append(spin_task)
+        #patrol.children.append(spin_task)
 
         self.children.append(patrol)
 
