@@ -16,7 +16,7 @@ class Defender(BaseTree):
 
         normal = Sequence("Normal")
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
-        normal.add_child(MarkBallOnAxis("Marcar"))
+
         defend = Selector("Defend")
 
         border = Sequence("Border")
@@ -28,61 +28,14 @@ class Defender(BaseTree):
 
         middle = Sequence("Middle")
         middle.add_child(IsBallInRangeOfDefense("InRangeOfDefense"))
-        middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=5))
+        middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=5, max_speed=150, speed_prediction=False))
         middle.add_child(ChargeWithBall("ChargeWithBall"))
 
         defend.add_child(middle)
 
         mark = Sequence("Mark")
-        mark.add_child(GoToPosition("GoToPosition",))
+        mark.add_child(MarkBallOnAxis("MarkBallonAxis"))
 
         defend.add_child(mark)
         normal.add_child(defend)
         self.add_child(normal)
-
-
-
-        # normal = Sequence('Normal')
-        # normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
-        # rospy.logfatal("PINTO 1")
-        # defend = Selector("Defend")
-        #
-        # prepare_for_ball = Sequence("PrepareForBall")
-        # prepare_for_ball.add_child(AmIAttacking("AmIAttacking"))
-        # prepare_for_ball.add_child(StopAction("StopAction"))
-        # # prepare_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
-        #
-        # defend.add_child(prepare_for_ball)#3
-        #
-        # go_for_ball = Sequence("GoForBall")
-        # go_for_ball.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
-        # make_a_move = Selector("MakeAMove")
-        # defend_border = Sequence("DefendBorder")
-        # defend_border.add_child(IsBallInBorder("IsBallInBorder"))
-        #
-        # do_spin = Sequence("DoSpin")
-        # do_spin.add_child(IsNearBall("IsNearBall"))
-        # do_spin.add_child(SpinTask("SpinTask"))
-        # defend_border.add_child(do_spin)
-        #
-        # defend_border.add_child(GoToBallUsingMove2Point("GoToBallUsingMove2Point"))
-        # make_a_move.add_child(defend_border)
-        # make_a_move.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
-        # # go_for_ball.add_child(defend_border)
-        # go_for_ball.add_child(make_a_move)
-        # go_for_ball.add_child(GoToBallUsingUnivector("GoToBallUsingUnivector"))
-        #
-        # defend.add_child(go_for_ball)#2
-        # rospy.logfatal("PINTO 2")
-        # wait_for_ball = Sequence("WaitForBall")
-        # wait_for_ball.add_child(IsBallInRangeOfDefense("IsBallInRangeOfDefense"))
-        # wait_for_ball.add_child(StopAction("StopAction"))
-        # # wait_for_ball.add_child(MarkBallOnAxis("MarkBallOnAxis"))
-        #
-        # defend.add_child(wait_for_ball)#1
-        #
-        # normal.add_child(defend)
-        # rospy.logfatal("PINTO 3")
-        # normal.add_child(StopAction("StopAction"))
-        # rospy.logfatal("PINTO 4")
-        # self.add_child(normal)
