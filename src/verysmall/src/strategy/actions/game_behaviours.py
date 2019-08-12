@@ -96,7 +96,7 @@ class IsBallInRangeOfDefense(TreeNode):
         if not ball_on_critical_position(blackboard) and not ball_on_attack_side(blackboard):
             rospy.logfatal("PINTO isball in rangerof devense")
             return TaskStatus.SUCCESS, None
-
+        rospy.logfatal("Num ta na defesa")
         return TaskStatus.FAILURE, None
 
 
@@ -109,7 +109,7 @@ class IsBallInBorder(TreeNode):
         if ball_on_border(blackboard):
             rospy.logfatal("PINTO isball in border")
             return TaskStatus.SUCCESS, None
-
+        rospy.logfatal("Num ta na borda")
         return TaskStatus.FAILURE, None
 
 

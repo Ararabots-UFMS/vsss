@@ -24,12 +24,14 @@ class StopAction:
 
 
 class SpinTask:
-    def __init__(self, name = 'Spin Task'):
+    def __init__(self, name = 'Spin Task', invert: bool = False):
         self.name = name
+        self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
-                                                   team_side=blackboard.team_side), 0.0, 255, .0)
+        rospy.logfatal("ITS SPIN TIME "+repr(self.invert))
+        return TaskStatus.RUNNING, (spin_direction(blackboard.position,
+                                                   team_side=blackboard.team_side, invert=self.invert), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
@@ -132,17 +134,26 @@ class ChargeWithBall:
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
                  max_speed: int = 0, 
-                 axis: np.ndarray = np.array([.0,1.0])):
+                 axis: np.ndarray = np.array([.0,1.0]),
+                 begin = 0,
+                 end = 130,
+                 acceptance_radius = 1):
         super().__init__(name)
         self.max_speed = max_speed
         self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
+        self.begin = begin
+        self.end = end
+        self.acceptance_radius = acceptance_radius
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        direction = clamp(blackboard.ball_position) - blackboard.position
+        rospy.logfatal("EU TO MARCANDO")
+        direction = clamp(blackboard.ball_position[1], self.begin, self.end) - blackboard.position
         distance = np.linalg.norm(direction)
+        theta = math.atan2(direction[1], direction[0])
 
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
 
 
 class AlignWithAxis(TreeNode):
@@ -233,13 +244,36 @@ class PushToAttack(TreeNode):
 
 class GoToBallUsingMove2Point(TreeNode):
     def __init__(self, name: str = "GoToBallUsingMove2Point",
-                 max_speed = 200):
-        self.max_speed = max_speed
+                 speed = 100, acceptance_radius: float = 6):
+        self.speed = speed
+        self.acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("PINTO: going to ball using move2point")
-        direction = blackboard.position - blackboard.ball_position
+        direction = blackboard.ball_position - blackboard.position
         distance = np.linalg.norm(direction)
         theta = math.atan2(direction[1], direction[0])
+        rospy.logfatal(distance)
+        if distance < self.acceptance_radius:
+            rospy.logfatal("ITS SHOW TIME")
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
+
+# class WalkInLine(TreeNode):
+#     def __init__(self, name: str = "WalkInLine",
+#                  speed = 100, acceptance_radius: float = 6,
+#                  target_position: list = [75, 65]):
+#         self.speed = speed
+#         self.acceptance_radius = acceptance_radius
+#         self.target_position = target_position
+#
+#     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+#         direction = (self.target_position[ ] - blackboard.position
+#         distance = np.linalg.norm(direction)
+#         theta = math.atan2(direction[1], direction[0])
+#         rospy.logfatal(distance)
+#         if distance < self.acceptance_radius:
+#             rospy.logfatal("ITS SHOW TIME")
+#             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
+#
+#         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)

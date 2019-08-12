@@ -1,6 +1,6 @@
 {
-    "movement_predict_simulation": 0,
-    "robot_vector": 0,
+    "movement_predict_simulation": 1,
+    "robot_vector": 1,
     "things": {
         "ball": 0,
         "robot_1": 1,
