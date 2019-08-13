@@ -2,7 +2,8 @@ from verysmall.msg import things_position, game_topic, debug_topic
 import rospy
 import numpy as np
 from struct import unpack
-
+from strategy.strategy_utils import GameStates
+from strategy.behaviour import Goal
 
 class RosRobotSubscriberAndPublisher:
     """
@@ -30,13 +31,14 @@ class RosRobotSubscriberAndPublisher:
         :param data: ROS game topic message
         :return: nothing
         """
-        self.robot.game_state = data.game_state
-        self.robot.team_side = data.team_side
-        self.robot.role = data.robot_roles[self.robot.id]        
-        self.robot.penalty_robot = data.penalty_robot
-        self.robot.freeball_robot = data.freeball_robot
-        self.robot.meta_robot = data.meta_robot
-        self.robot.changed_game_state = True
+        self.robot.blackboard.game.state = GameStates(data.game_state)
+        self.robot.blackboard.home_goal.side = data.team_side
+        self.robot.blackboard.enemy_goal.side = not data.team_side
+        self.robot.blackboard.robot.role = data.robot_roles[self.robot.id]
+        self.robot.blackboard.game.penalty_robot_id = data.penalty_robot
+        self.robot.blackboard.game.freeball_robot_id = data.freeball_robot
+        self.robot.blackboard.game.meta_robot_id = data.meta_robot
+
         self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.role]
         self.robot.team_color = data.team_color
         self.robot.update_game_state_blackboard()
@@ -47,34 +49,36 @@ class RosRobotSubscriberAndPublisher:
         :param data: ROS Things position message
         :return: nothing
         """
-        self.robot.ball_position = np.array(data.ball_pos) / 100.0
-        self.robot.ball_speed = np.array(data.ball_speed) / 100.0
+        self.robot.blackboard.ball.position = np.array(data.ball_pos) / 100.0
+        self.robot.blackboard.ball.speed = np.array(data.ball_speed) / 100.0
         
         if(self.robot.team_color == 1): # yellow
-            self.robot.team_pos = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
-            self.robot.team_orientation = np.array(data.yellow_team_orientation) / 10000.0
-            self.robot.team_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
+            friends_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
+            friends_orientation = np.array(data.yellow_team_orientation) / 10000.0
+            friends_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
             enemies_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.blue_team_orientation) / 10000.0
             enemies_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
         else: # blue
-            self.robot.team_pos = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
-            self.robot.team_orientation = np.array(data.blue_team_orientation) / 10000.0
-            self.robot.team_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
+            friends_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
+            friends_orientation = np.array(data.blue_team_orientation) / 10000.0
+            friends_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
             enemies_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.yellow_team_orientation) / 10000.0
             enemies_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
+        self.robot.blackboard.robot.position = friends_position[self.robot.tag]
+        self.robot.blackboard.robot.orientation = friends_orientation[self.robot.tag]
+        self.robot.blackboard.robot.speed = friends_speed[self.robot.tag]
 
-        self.robot.position = self.robot.team_pos[self.robot.tag]
-        self.robot.orientation = self.robot.team_orientation[self.robot.tag]
-        self.robot.speed = self.robot.team_speed[self.robot.tag]
-
-        self.robot.enemies_position = []
-        self.robot.enemies_orientation = []
-        self.robot.enemies_speed = []
+        self.robot.blackboard.home_team.number_of_robots = 0
+        self.robot.blackboard.enemy_team.number_of_robots = 0
 
         for i in range(5):
+
+            if np.any(friends_position[i]):
+                pass
+
             if np.any(enemies_position[i]):
                 self.robot.enemies_position.append(enemies_position[i])
                 self.robot.enemies_orientation.append(enemies_orientation[i])
