@@ -4,6 +4,7 @@ from strategy.behaviour import BlackBoard
 import numpy as np
 from utils import math_utils
 import math
+import rospy
 
 CW = 0
 CCW = 1
@@ -143,13 +144,9 @@ def section(pos):
         return UP_BORDER
     elif inside_range(0, 12, pos[Y]):
         return DOWN_BORDER
-    #critical position
-    elif inside_range(0, 30, pos[X]):
-        return LEFT_CRITICAL_LINE
-    elif inside_range(120, 150, pos[X]):
-        return RIGHT_CRITICAL_LINE
     else:
         return CENTER
+
 
 
 def extended_area(pos, team_side):
@@ -222,23 +219,25 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     return False
 
 
-def spin_direction(ball_position, robot_position, team_side):
+def spin_direction(robot_position, team_side, invert=False):
     """
     Returns the direction of the spin
-    :params ball_position: np.array([x,y])
     :params robot_position: np.array([x,y])
     :params team_side: int
+    :params invert: bool
 
     :return: int
     """
-    if (team_side == LEFT):
-        if (robot_position[1] >= 65):
-            return OpCodes.SPIN_CCW
-        return OpCodes.SPIN_CW
+
+    if team_side == LEFT:
+        if robot_position[1] >= 65:
+            return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
+        return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
+
     else:
-        if (robot_position[1] < 65):
-            return OpCodes.SPIN_CW
-        return OpCodes.SPIN_CCW
+        if robot_position[1] < 65:
+            return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
+        return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
 
 
 def border_stuck(position_buffer, orientation):
@@ -291,11 +290,11 @@ def robot_behind_ball(blackboard: BlackBoard) -> bool:
 
 
 def ball_on_critical_position(blackboard: BlackBoard) -> bool:
-    sec = section(blackboard.ball_position)
-    return sec in [LEFT_CRITICAL_LINE, RIGHT_CRITICAL_LINE]
+    return inside_range(0, 30, blackboard.ball_position[X]) or inside_range(120, 150, blackboard.ball_position[X])
 
 
 def ball_on_border(blackboard: BlackBoard) -> bool:
+    sec = section(blackboard.ball_position)
     if not ball_on_attack_side(blackboard) and not ball_on_critical_position(blackboard):
         sec = section(blackboard.ball_position)
     return sec in BORDER_NORMALS.keys()

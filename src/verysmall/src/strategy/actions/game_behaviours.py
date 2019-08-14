@@ -81,9 +81,7 @@ class AmIAttacking(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_attack_side(blackboard):
-            rospy.logfatal("PINTO: AmIAttacking")
             return TaskStatus.SUCCESS, None
-        rospy.logfatal("PINTO: n AmIAttacking")
         return TaskStatus.FAILURE, None
 
 
@@ -94,9 +92,7 @@ class IsBallInRangeOfDefense(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if not ball_on_critical_position(blackboard) and not ball_on_attack_side(blackboard):
-            rospy.logfatal("PINTO isball in rangerof devense")
             return TaskStatus.SUCCESS, None
-
         return TaskStatus.FAILURE, None
 
 
@@ -107,9 +103,7 @@ class IsBallInBorder(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_border(blackboard):
-            rospy.logfatal("PINTO isball in border")
             return TaskStatus.SUCCESS, None
-
         return TaskStatus.FAILURE, None
 
 
@@ -120,7 +114,6 @@ class IsNearBall(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if near_ball(blackboard.position, blackboard.ball_position):
-            rospy.logfatal("PINTO isnier bol")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None

@@ -9,8 +9,6 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 import numpy as np
 
-import rospy
-from rospy import logfatal
 import math
 
 
@@ -24,12 +22,13 @@ class StopAction:
 
 
 class SpinTask:
-    def __init__(self, name = 'Spin Task'):
+    def __init__(self, name = 'Spin Task', invert: bool = False):
         self.name = name
+        self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
-                                                   team_side=blackboard.team_side), 0.0, 255, .0)
+        return TaskStatus.RUNNING, (spin_direction(blackboard.position,
+                                                   team_side=blackboard.team_side, invert=self.invert), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
@@ -115,12 +114,13 @@ class ChargeWithBall:
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
         self.name = name
         self.max_speed = max_speed
+        self.x_vector = np.array([1.0,0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         goal_vector = blackboard.attack_goal_pos - blackboard.position
 
         angle = angle_between(
-            [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
+            self.x_vector,
             goal_vector
         )
 
@@ -131,35 +131,54 @@ class ChargeWithBall:
 
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                 max_speed: int = 0, 
-                 axis: np.ndarray = np.array([.0,1.0])):
+                    max_speed: int = 255,
+                    axis: np.ndarray = np.array([.0,1.0]),
+                    acceptance_radius: float = 5,
+                    clamp_min: float = None,
+                    clamp_max: float = None
+                    ):
         super().__init__(name)
-        self.max_speed = max_speed
-        self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
-    
+        self._acceptance_radius = acceptance_radius
+        self._max_speed = max_speed
+        self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
+        self.turn_off_clamp = clamp_min is None and clamp_max is None
+        self._clamp_min = clamp_min
+        self._clamp_max = clamp_max
+
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        direction = clamp(blackboard.ball_position) - blackboard.position
-        distance = np.linalg.norm(direction)
 
-        if distance < self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
+        if self.turn_off_clamp:
+            direction = blackboard.ball_position[1] - blackboard.position[1]
+        else:
+            direction = clamp(blackboard.ball_position[1], self._clamp_min, self._clamp_max) - blackboard.position[1]
 
+        distance = abs(direction)
+
+        if distance < self._acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL,
+                                        -self._angle_to_correct if direction < 0 else self._angle_to_correct,
+                                        0, 0)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL,
+                                    -self._angle_to_correct if direction < 0 else self._angle_to_correct,
+                                    self._max_speed,distance)
+    
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                 max_speed: int = 0, 
-                 axis: np.ndarray = np.array([.0,1.0]),
-                 acceptance_radius: float = 0.0872665):
+                    max_speed: int = 0,
+                    axis: np.ndarray = np.array([.0,1.0]),
+                    acceptance_radius: float = 0.0872665):
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
-        self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
+        self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if abs(self.angle_to_correct - abs(blackboard.orientation)) <= self.acceptance_radius:
+        if abs(self._angle_to_correct - abs(blackboard.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
-            return TaskStatus.RUNNING, (OpCodes.NORMAL, self.angle_to_correct, self.max_speed, .0)
+            return TaskStatus.RUNNING, (OpCodes.NORMAL, self._angle_to_correct, self.max_speed, .0)
 
 
 class GoToGoalCenter(TreeNode):
@@ -233,13 +252,34 @@ class PushToAttack(TreeNode):
 
 class GoToBallUsingMove2Point(TreeNode):
     def __init__(self, name: str = "GoToBallUsingMove2Point",
-                 max_speed = 200):
-        self.max_speed = max_speed
+                 speed = 100, acceptance_radius: float = 6):
+        self.speed = speed
+        self.acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("PINTO: going to ball using move2point")
-        direction = blackboard.position - blackboard.ball_position
+        direction = blackboard.ball_position - blackboard.position
         distance = np.linalg.norm(direction)
         theta = math.atan2(direction[1], direction[0])
+        if distance < self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
+
+# class WalkInLine(TreeNode):
+#     def __init__(self, name: str = "WalkInLine",
+#                  speed = 100, acceptance_radius: float = 6,
+#                  target_position: list = [75, 65]):
+#         self.speed = speed
+#         self.acceptance_radius = acceptance_radius
+#         self.target_position = target_position
+#
+#     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+#         direction = (self.target_position[ ] - blackboard.position
+#         distance = np.linalg.norm(direction)
+#         theta = math.atan2(direction[1], direction[0])
+#         rospy.logfatal(distance)
+#         if distance < self.acceptance_radius:
+#             rospy.logfatal("ITS SHOW TIME")
+#             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
+#
+#         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
