@@ -5,20 +5,22 @@ from struct import unpack
 from strategy.strategy_utils import GameStates
 from strategy.behaviour import Goal
 
+
 class RosRobotSubscriberAndPublisher:
     """
     This class is responsible for reading and formatting ros messages for the robot node
     """
-    def __init__(self, _robot, _game_topic_name = 'game_topic_0', _should_debug = False):
+
+    def __init__(self, _robot, _game_topic_name='game_topic_0', _should_debug=False):
         """
         :param _robot: robot object
         """
-        rospy.Subscriber('things_position', things_position, self.read_topic , queue_size=10)
-        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic , queue_size=10)
+        rospy.Subscriber('things_position', things_position, self.read_topic, queue_size=10)
+        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic, queue_size=10)
 
         if _should_debug:
             rospy.logfatal(_game_topic_name)
-            self.pub = rospy.Publisher('debug_topic_'+_game_topic_name.split('_')[2], debug_topic, queue_size=1)
+            self.pub = rospy.Publisher('debug_topic_' + _game_topic_name.split('_')[2], debug_topic, queue_size=1)
 
         self.robot = _robot
 
@@ -34,14 +36,15 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.game.state = GameStates(data.game_state)
         self.robot.blackboard.home_goal.side = data.team_side
         self.robot.blackboard.enemy_goal.side = not data.team_side
+
         self.robot.blackboard.robot.role = data.robot_roles[self.robot.id]
+
         self.robot.blackboard.game.penalty_robot_id = data.penalty_robot
         self.robot.blackboard.game.freeball_robot_id = data.freeball_robot
         self.robot.blackboard.game.meta_robot_id = data.meta_robot
 
         self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.role]
         self.robot.team_color = data.team_color
-        self.robot.update_game_state_blackboard()
 
     def read_topic(self, data) -> None:
         """
@@ -51,18 +54,20 @@ class RosRobotSubscriberAndPublisher:
         """
         self.robot.blackboard.ball.position = np.array(data.ball_pos) / 100.0
         self.robot.blackboard.ball.speed = np.array(data.ball_speed) / 100.0
-        
-        if(self.robot.team_color == 1): # yellow
+
+        if (self.robot.team_color == 1):  # yellow
             friends_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             friends_orientation = np.array(data.yellow_team_orientation) / 10000.0
             friends_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
+
             enemies_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.blue_team_orientation) / 10000.0
             enemies_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
-        else: # blue
+        else:  # blue
             friends_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
             friends_orientation = np.array(data.blue_team_orientation) / 10000.0
             friends_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
+
             enemies_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.yellow_team_orientation) / 10000.0
             enemies_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
@@ -71,23 +76,19 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.robot.orientation = friends_orientation[self.robot.tag]
         self.robot.blackboard.robot.speed = friends_speed[self.robot.tag]
 
-        self.robot.blackboard.home_team.number_of_robots = 0
-        self.robot.blackboard.enemy_team.number_of_robots = 0
+        self.robot.blackboard.home_team.clear_variables()
+        self.robot.blackboard.enemy_team.clear_variables()
 
         for i in range(5):
 
             if np.any(friends_position[i]):
-                pass
-
+                self.robot.blackboard.home_team.set_robot_variables(friends_position[i],
+                                                                    friends_orientation[i],
+                                                                    friends_speed[i])
             if np.any(enemies_position[i]):
-                self.robot.enemies_position.append(enemies_position[i])
-                self.robot.enemies_orientation.append(enemies_orientation[i])
-                self.robot.enemies_speed.append(enemies_speed[i])
-
-        self.robot.enemies_position = np.asarray(self.robot.enemies_position)
-        self.robot.enemies_orientation = np.asarray(self.robot.enemies_orientation)
-        self.robot.enemies_speed = np.asarray(self.robot.enemies_speed)
-        self.robot.update_game_info_blackboard()
+                self.robot.blackboard.enemy_team.set_robot_variables(enemies_position[i],
+                                                                     enemies_orientation[i],
+                                                                     enemies_speed[i])
         self.robot.run()
 
     def debug_publish(self, _vector):
@@ -99,7 +100,7 @@ class RosRobotSubscriberAndPublisher:
         """
 
         self.debug_msg.vector = _vector
-        
+
         try:
             self.pub.publish(self.debug_msg)
         except rospy.ROSException as e:

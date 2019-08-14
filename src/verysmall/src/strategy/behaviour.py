@@ -160,17 +160,37 @@ class Game:
 
 class Team(ABC):
     def __init__(self):
-        self.position = np.array([0, 0] for _ in range(5))
-        self.speed = np.array([0, 0] for _ in range(5))
-        self.orientation = np.array([0, 0] for _ in range(5))
+        self.position = np.array([[0, 0] for _ in range(5)])
+        self.speed = np.array([[0, 0] for _ in range(5)])
+        self.orientation = np.array([[0, 0] for _ in range(5)])
         self.robots = None
         self.number_of_robots = 0
+
+    def clear_variables(self):
+        self.number_of_robots = 0
+
+    def set_robot_variables(self, robot_position, robot_orientation, robot_speed):
+
+        self.position[self.number_of_robots] = robot_position
+        self.orientation[self.number_of_robots] = robot_orientation
+        self.speed[self.number_of_robots] = robot_speed
+
+        self.robots[self.number_of_robots].position = robot_position
+        self.robots[self.number_of_robots].orientation = robot_orientation
+        self.robots[self.number_of_robots].speed = robot_speed
+
+        self.number_of_robots += 1
 
     def __len__(self):
         return self.number_of_robots
 
     def __getitem__(self, item):
         return self.robots[item]
+
+    def __getattribute__(self, item):
+        if item[0] not in ['n', 'r']:
+            return super().__getattribute__(item)[:self.number_of_robots]
+        return super().__getattribute__(item)
 
 
 class EnemyTeam(Team):
