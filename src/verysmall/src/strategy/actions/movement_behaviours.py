@@ -129,37 +129,36 @@ class ChargeWithBall:
 
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                 max_speed: int = 255, 
-                 axis: np.ndarray = np.array([.0,1.0]),
-                 acceptance_radius: float = 5,
-                 clamp_min: float = 40.0,
-                 clamp_max: float = 90.0
-                 ):
+                    clamp_min: np.ndarray,
+                    clamp_max: np.ndarray,
+                    max_speed: int = 255, 
+                    acceptance_radius: float = 5):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
         self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
+
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+
         direction = clamp(blackboard.ball_position[1], self._clamp_min, self._clamp_max) - blackboard.position[1]
         distance = abs(direction)
         
         if distance < self._acceptance_radius:
             return TaskStatus.RUNNING, (OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                         0, distance)
+                                            0, distance)
         
         return TaskStatus.RUNNING, (OpCodes.NORMAL, 
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                      self._max_speed, 
-                                     .0)
-
+                                        .0)
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                 max_speed: int = 0, 
-                 axis: np.ndarray = np.array([.0,1.0]),
-                 acceptance_radius: float = 0.0872665):
+                    max_speed: int = 0, 
+                    axis: np.ndarray = np.array([.0,1.0]),
+                    acceptance_radius: float = 0.0872665):
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
