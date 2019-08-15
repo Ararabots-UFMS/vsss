@@ -55,7 +55,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.ball.position = np.array(data.ball_pos) / 100.0
         self.robot.blackboard.ball.speed = np.array(data.ball_speed) / 100.0
 
-        if (self.robot.team_color == 1):  # yellow
+        if self.robot.team_color == 1:  # yellow
             friends_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             friends_orientation = np.array(data.yellow_team_orientation) / 10000.0
             friends_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0

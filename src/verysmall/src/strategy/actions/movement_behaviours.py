@@ -63,7 +63,7 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.position, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(blackboard.enemy_team.get_all_positions(), [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
