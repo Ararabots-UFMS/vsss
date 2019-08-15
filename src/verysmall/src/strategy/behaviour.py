@@ -188,7 +188,7 @@ class Team(ABC):
         return self.robots[item]
 
     def __getattribute__(self, item):
-        if item[0] not in ['n', 'r']:
+        if item[0] in ['speed', 'orientation', 'position']:
             return super().__getattribute__(item)[:self.number_of_robots]
         return super().__getattribute__(item)
 

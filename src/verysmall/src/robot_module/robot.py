@@ -150,5 +150,5 @@ class Robot:
             self._sender.send(priority, self._hardware.encode(msg))
 
     def get_priority(self) -> int:
-        distance = np.linalg.norm(self.blackboard.position - self.blackboard.ball_position)
+        distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF

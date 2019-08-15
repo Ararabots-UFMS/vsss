@@ -32,8 +32,9 @@ class VisionNode:
         self.msg = things_position()
         self.msg.yellow_team_pos[0] = 75
         self.msg.yellow_team_pos[1] = 75
-        self.msg.ball_pos[0] = 5
-        self.msg.ball_pos[1] = 2
+        self.ball_pos = [0, 0]
+        self.ball_pos[0] = 5
+        self.ball_pos[1] = 2
         self.state = 0
 
         # Creates the service responsible for vision modes and operations
@@ -42,21 +43,24 @@ class VisionNode:
     def tick(self):
 
         if self.state == 0:
-            self.msg.ball_pos[0] += 1
-            if self.msg.ball_pos[0] == 145:
+            self.ball_pos[0] += 1
+            if self.ball_pos[0] == 145:
                 self.state = 1
         elif self.state == 1:
-            self.msg.ball_pos[1]+= 1
-            if self.msg.ball_pos[1] == 130:
+            self.ball_pos[1]+= 1
+            if self.ball_pos[1] == 130:
                 self.state = 2
         elif self.state == 2:
-            self.msg.ball_pos[0]-=1
-            if self.msg.ball_pos[0] == 5:
+            self.ball_pos[0]-=1
+            if self.ball_pos[0] == 5:
                 self.state = 3
         else:
-            self.msg.ball_pos[1]-=1
-            if self.msg.ball_pos[1] == 2:
-                self.state = 0 
+            self.ball_pos[1]-=1
+            if self.ball_pos[1] == 2:
+                self.state = 0
+
+        self.msg.ball_pos[0] = self.ball_pos[0]*100
+        self.msg.ball_pos[1] = self.ball_pos[1]*100
 
         self.mercury.pub.publish(self.msg)
 

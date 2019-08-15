@@ -43,7 +43,7 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.game.freeball_robot_id = data.freeball_robot
         self.robot.blackboard.game.meta_robot_id = data.meta_robot
 
-        self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.role]
+        self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.blackboard.robot.role]
         self.robot.team_color = data.team_color
 
     def read_topic(self, data) -> None:
@@ -75,6 +75,10 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.robot.position = friends_position[self.robot.tag]
         self.robot.blackboard.robot.orientation = friends_orientation[self.robot.tag]
         self.robot.blackboard.robot.speed = friends_speed[self.robot.tag]
+
+        self.robot.position = friends_position[self.robot.tag]
+        self.robot.speed = friends_speed[self.robot.tag]
+        self.robot.orientation = friends_orientation[self.robot.tag]
 
         self.robot.blackboard.home_team.clear_variables()
         self.robot.blackboard.enemy_team.clear_variables()
