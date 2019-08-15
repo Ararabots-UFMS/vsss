@@ -12,6 +12,13 @@ class GoalKeeper(BaseTree):
         normal = Sequence("Normal")
         normal.add_child(InState("CheckNormalState", GameStates.NORMAL))
         #normal.add_child(GoToGoalCenter(max_speed=120, acceptance_radius=3))
-        normal.add_child(MarkBallOnAxis())
+
+        self.markBallOnY = MarkBallOnYAxis() 
+        normal.add_child(self.markBallOnY)
         #normal.add_child(AlignWithAxis())
         self.add_child(normal)
+    
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        pass
+

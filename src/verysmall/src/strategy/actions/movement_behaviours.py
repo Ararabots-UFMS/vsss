@@ -1,4 +1,4 @@
-from strategy.behaviour import TaskStatus, BlackBoard
+from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
@@ -127,33 +127,33 @@ class ChargeWithBall:
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
 
-class MarkBallOnAxis(TreeNode):
-    def __init__(self, name: str = "AlignWithYAxis",
-                    clamp_min: np.ndarray,
-                    clamp_max: np.ndarray,
-                    max_speed: int = 255, 
-                    acceptance_radius: float = 5):
+class MarkBallOnYAxis(TreeNode):
+    def __init__(self, clamp_min: np.ndarray,
+                       clamp_max: np.ndarray,
+                       max_speed: int = 255,
+                       name: str = "AlignWithYAxis", 
+                       acceptance_radius: float = 5):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
-        self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
 
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_y = blackboard.ball_position[1]
+        y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
+        target_pos = np.array(self._clamp_min[0], y)
+        
+        direction = target_pos - blackboard.position
+        distance = np.linalg.norm(direction)
 
-        direction = clamp(blackboard.ball_position[1], self._clamp_min, self._clamp_max) - blackboard.position[1]
-        distance = abs(direction)
-        
         if distance < self._acceptance_radius:
-            return TaskStatus.RUNNING, (OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                            0, distance)
+            return TaskStatus.SUCCESS, NO_ACTION
         
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, 
-                                    -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                     self._max_speed, 
-                                        .0)
+        theta = math.atan2(direction[1], direction[0])
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
+
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
                     max_speed: int = 0, 
