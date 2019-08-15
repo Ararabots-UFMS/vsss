@@ -6,7 +6,7 @@ from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from abc import ABC, abstractmethod
-from typing import List, Tuple
+from typing import List, Tuple, Iterable
 import numpy as np
 from rospy import logfatal
 import math
@@ -128,8 +128,8 @@ class ChargeWithBall:
 
 
 class MarkBallOnYAxis(TreeNode):
-    def __init__(self, clamp_min: np.ndarray,
-                       clamp_max: np.ndarray,
+    def __init__(self, clamp_min: Iterable,
+                       clamp_max: Iterable,
                        max_speed: int = 255,
                        name: str = "AlignWithYAxis", 
                        acceptance_radius: float = 5):
@@ -137,6 +137,10 @@ class MarkBallOnYAxis(TreeNode):
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
 
+        self._clamp_min = np.array(clamp_min)
+        self._clamp_max = np.array(clamp_max)
+
+    def set_clamps(self, clamp_min: Iterable, clamp_max: Iterable) -> None:
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
 
