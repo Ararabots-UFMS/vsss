@@ -4,14 +4,10 @@ import math
 
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import section, LEFT, RIGHT
+from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
 
 CW = 0
 CCW = 1
-
-BORDER_NORMALS = {4: [1.0, -1.0], 5: [1.0, 1.0], 6: [-1.0, -1.0], 7: [-1.0, 1.0], 8: [0.0, 1.0], 9: [0.0, -1.0],
-                  11: [1.0, 0.0],
-                  12: [1.0, 0.0], 13: [-1.0, 0.0], 14: [-1.0, 0.0]}
 
 
 class GameStates(Enum):
