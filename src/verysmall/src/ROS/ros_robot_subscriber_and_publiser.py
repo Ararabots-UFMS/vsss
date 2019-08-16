@@ -83,16 +83,13 @@ class RosRobotSubscriberAndPublisher:
         self.robot.blackboard.home_team.clear_variables()
         self.robot.blackboard.enemy_team.clear_variables()
 
-        for i in range(5):
+        self.robot.blackboard.home_team.set_robot_variables(friends_position,
+                                                            friends_orientation,
+                                                            friends_speed)
 
-            if np.any(friends_position[i]):
-                self.robot.blackboard.home_team.set_robot_variables(friends_position[i],
-                                                                    friends_orientation[i],
-                                                                    friends_speed[i])
-            if np.any(enemies_position[i]):
-                self.robot.blackboard.enemy_team.set_robot_variables(enemies_position[i],
-                                                                     enemies_orientation[i],
-                                                                     enemies_speed[i])
+        self.robot.blackboard.enemy_team.set_robot_variables(enemies_position,
+                                                             enemies_orientation,
+                                                             enemies_speed)
         self.robot.run()
 
     def debug_publish(self, _vector):
