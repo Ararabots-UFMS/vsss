@@ -1,9 +1,14 @@
 from typing import Iterable
+import rospy
+
 from strategy.behaviour import *
 from strategy.actions.state_behaviours import InState
 from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, MarkBallOnYAxis
+from strategy.actions.game_behaviours import IsInAttackSide
+from strategy.actions.decorators import InvertOutput
 from strategy.base_trees import Penalty, FreeBall, BaseTree
 from strategy.strategy_utils import GameStates
+
 
 
 class GoalKeeper(BaseTree):
@@ -14,23 +19,44 @@ class GoalKeeper(BaseTree):
         self.add_child(normal)
 
         normal.add_child(InState("CheckNormalState", GameStates.NORMAL))
-        normal.add_child(GoToGoalCenter(max_speed=120, acceptance_radius=3))
+        normal.add_child(self._ball_on_attack_side_tree())
 
-        self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90], acceptance_radius=10) 
-        normal.add_child(self.markBallOnY)
+        self.markBallOnY = None
+        normal.add_child(self._ball_on_defense_side_tree)
+    
+    def _ball_on_attack_side_tree(self) -> TreeNode:
+        tree = Sequence("BallInAttackSide")
+        tree.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball_position))
+        tree.add_child(GoToGoalCenter(max_speed=120, acceptance_radius=3))
+        tree.add_child(AlignWithAxis())
+        return tree
+    
+    def _ball_on_defense_side_tree(self) -> TreeNode:
+        tree = Sequence("BallInDeffenseSide")
+        inverter = InvertOutput()
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball_position))
+        tree.add_child(inverter)
+
+        self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90], 
+                                            max_speed = 180,
+                                            acceptance_radius=3)
+        tree.add_child(self.markBallOnY)
+
+        return tree
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         self.setYAxis(blackboard)
-        super().run(blackboard)
+        return super().run(blackboard)
     
     def setYAxis(self, blackboard: BlackBoard) -> None:
-        self.markBallOnY.set_clamps(*self.get_clamps(blackboard))
+        a = self.get_clamps(blackboard)
+        self.markBallOnY.set_clamps(*a)
     
     def get_clamps(self, blackboard: BlackBoard) -> Tuple[Iterable, Iterable]:
         a = 75 - blackboard.home_goal_pos[0]
         s = 1 if a > 0 else -1
 
-        x = blackboard.home_goal_pos + s*10
-        return [x, 30], [x, 90]
+        x = blackboard.home_goal_pos[0] + s*8
+        return ([x, 30], [x, 90])
 
 

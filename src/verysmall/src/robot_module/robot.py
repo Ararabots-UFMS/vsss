@@ -37,7 +37,7 @@ class Robot:
 
         constants = self.get_pid_constants_set()
         rospy.logwarn(constants)
-        self._max_fine_movment_speed = 50
+        self._max_fine_movment_speed = 80
         self._controller = Control(self, constants, self._max_fine_movment_speed)
 
         self._hardware = RobotHardware()

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Callable
 from strategy.behaviour import *
 from strategy.strategy_utils import behind_ball
 from strategy import arena_sections
@@ -73,3 +73,24 @@ class IsBallInsideCentralArea(TreeNode):
            return TaskStatus.SUCCESS, NO_ACTION
         else:
             return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsInAttackSide(TreeNode):
+    def __init__(self, name: str, get_pos: Callable[[BlackBoard], np.ndarray]):
+        super.__init__(name)
+        self._get_pos = get_pos
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        side = blackboard.team_side
+        x_left = 75*(1-side)
+        x_right = 75*(2 - side)
+
+        x_obj = self._get_pos(blackboard)[0]
+        
+        if x_left < x_obj < x_right:
+            status = TaskStatus.SUCCESS
+        else:
+            status = TaskStatus.FAILURE
+        
+        return status, NO_ACTION
+

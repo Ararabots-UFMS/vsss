@@ -57,6 +57,7 @@ class Control:
         
         if optimal_speed == True:
             speed = self.get_optimal_speed(speed, diff_angle, distance)
+            rospy.logfatal(speed)
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:

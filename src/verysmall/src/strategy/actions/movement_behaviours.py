@@ -147,8 +147,8 @@ class MarkBallOnYAxis(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_y = blackboard.ball_position[1]
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
-        target_pos = np.array(self._clamp_min[0], y)
         
+        target_pos = np.array([self._clamp_min[0], y])
         direction = target_pos - blackboard.position
         distance = np.linalg.norm(direction)
 
