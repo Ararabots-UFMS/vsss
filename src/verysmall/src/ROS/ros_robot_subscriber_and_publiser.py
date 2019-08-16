@@ -80,9 +80,6 @@ class RosRobotSubscriberAndPublisher:
         self.robot.speed = friends_speed[self.robot.tag]
         self.robot.orientation = friends_orientation[self.robot.tag]
 
-        self.robot.blackboard.home_team.clear_variables()
-        self.robot.blackboard.enemy_team.clear_variables()
-
         self.robot.blackboard.home_team.set_robot_variables(friends_position,
                                                             friends_orientation,
                                                             friends_speed)

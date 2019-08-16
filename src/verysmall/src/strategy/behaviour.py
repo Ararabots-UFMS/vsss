@@ -176,7 +176,6 @@ class Team(ABC):
         self.number_of_robots = 0
 
         for robot_position, robot_orientation, robot_speed in zip(robot_positions, robot_orientations, robot_speeds):
-            print(robot_position, robot_orientation, robot_speed)
             if np.any(robot_position):
                 self._positions[self.number_of_robots] = robot_position
                 self._orientations[self.number_of_robots] = robot_orientation
