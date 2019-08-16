@@ -12,18 +12,18 @@ from rospy import logfatal
 import math
 
 
-class StopAction:
+class StopAction(TreeNode):
 
     def __init__(self, name: str = 'Stop Task'):
-        self.name = name
+        super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (OpCodes.STOP, .0, 0, .0)
 
 
-class SpinTask:
+class SpinTask(TreeNode):
     def __init__(self, name='Spin Task'):
-        self.name = name
+        super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
@@ -111,10 +111,10 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
         return self.go_to_objective(blackboard, blackboard.enemy_goal.position)
 
 
-class ChargeWithBall:
+class ChargeWithBall(TreeNode):
 
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
-        self.name = name
+        super().__init__(name)
         self.max_speed = max_speed
         self.x_vector = np.array([1.0, 0.0])
 

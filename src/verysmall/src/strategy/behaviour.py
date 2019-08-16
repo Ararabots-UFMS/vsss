@@ -1,7 +1,6 @@
 from typing import Tuple
 from enum import Enum
 from abc import abstractmethod, ABC
-import rospy
 import numpy as np
 from strategy.strategy_utils import GameStates
 from strategy.arena_sections import RIGHT, LEFT
@@ -160,26 +159,38 @@ class Game:
 
 class Team(ABC):
     def __init__(self):
-        self._positions = np.array([[0, 0] for _ in range(5)])
-        self._speeds = np.array([[0, 0] for _ in range(5)])
-        self._orientations = np.array([[0, 0] for _ in range(5)])
-        self.robots = None
+        self._positions = np.array([])
+        self._speeds = np.array([])
+        self._orientations = np.array([])
+        self.robots = []
+        self.number_of_robots = 0
+        self.maximum_number_of_robots = 0
+
+    def create_new_robot(self):
+        self._positions = np.append(self._positions, [[0, 0]])
+        self._speeds = np.append(self._speeds, [[0, 0]])
+        self._orientations = np.append(self._orientations, 0)
+
+    def set_robot_variables(self, robot_positions, robot_orientations, robot_speeds):
+
         self.number_of_robots = 0
 
-    def clear_variables(self):
-        self.number_of_robots = 0
+        for robot_position, robot_orientation, robot_speed in zip(robot_positions, robot_orientations, robot_speeds):
+            print(robot_position, robot_orientation, robot_speed)
+            if np.any(robot_position):
+                self.number_of_robots += 1
 
-    def set_robot_variables(self, robot_position, robot_orientation, robot_speed):
+                if self.number_of_robots > self.maximum_number_of_robots:
+                    self.maximum_number_of_robots = self.number_of_robots
+                    self.create_new_robot()
 
-        self._positions[self.number_of_robots] = robot_position
-        self._orientations[self.number_of_robots] = robot_orientation
-        self._speeds[self.number_of_robots] = robot_speed
+                self._positions[self.number_of_robots-1] = robot_position
+                self._orientations[self.number_of_robots-1] = robot_orientation
+                self._speeds[self.number_of_robots-1] = robot_speed
 
-        self.robots[self.number_of_robots].position = robot_position
-        self.robots[self.number_of_robots].orientation = robot_orientation
-        self.robots[self.number_of_robots].speed = robot_speed
-
-        self.number_of_robots += 1
+                self.robots[self.number_of_robots-1].position = robot_position
+                self.robots[self.number_of_robots-1].orientation = robot_orientation
+                self.robots[self.number_of_robots-1].speed = robot_speed
 
     def __len__(self):
         return self.number_of_robots
@@ -206,10 +217,25 @@ class Team(ABC):
 class EnemyTeam(Team):
     def __init__(self):
         super().__init__()
-        self.robots = [MovingBody() for _ in range(5)]
+
+    def create_new_robot(self):
+        self.robots.append(MovingBody())
+        super().create_new_robot()
 
 
 class HomeTeam(Team):
     def __init__(self):
         super().__init__()
-        self.robots = [FriendlyRobot() for _ in range(5)]
+
+    def create_new_robot(self):
+        self.robots.append(FriendlyRobot())
+        super().create_new_robot()
+
+
+if __name__ == '__main__':
+speed = [[0, 0] for _ in range(5)]
+orie = [0 for _ in range(5)]
+pos = [[0, 1] for _ in range(5)]
+
+enemy_team = EnemyTeam()
+enemy_team.set_robot_variables(pos, orie, speed)
