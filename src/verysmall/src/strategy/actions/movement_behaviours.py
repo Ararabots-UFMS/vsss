@@ -111,9 +111,9 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
 
 class ChargeWithBall:
 
-    def __init__(self, name='ChargeWithBall', max_speed: int = 255):
+    def __init__(self, name='ChargeWithBall', speed: int = 255):
         self.name = name
-        self.max_speed = max_speed
+        self.speed = speed
         self.x_vector = np.array([1.0,0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -126,12 +126,12 @@ class ChargeWithBall:
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.speed, distance_to_goal)
 
 
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                    max_speed: int = 255,
+                    speed: int = 255,
                     axis: np.ndarray = np.array([.0,1.0]),
                     acceptance_radius: float = 5,
                     clamp_min: float = None,
@@ -139,7 +139,7 @@ class MarkBallOnAxis(TreeNode):
                     ):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
-        self._max_speed = max_speed
+        self._speed = speed
         self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
         self.turn_off_clamp = clamp_min is None and clamp_max is None
         self._clamp_min = clamp_min
@@ -161,7 +161,7 @@ class MarkBallOnAxis(TreeNode):
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                    self._max_speed,distance)
+                                    self._speed,distance)
     
 
 class AlignWithAxis(TreeNode):
@@ -264,22 +264,3 @@ class GoToBallUsingMove2Point(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
-
-# class WalkInLine(TreeNode):
-#     def __init__(self, name: str = "WalkInLine",
-#                  speed = 100, acceptance_radius: float = 6,
-#                  target_position: list = [75, 65]):
-#         self.speed = speed
-#         self.acceptance_radius = acceptance_radius
-#         self.target_position = target_position
-#
-#     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-#         direction = (self.target_position[ ] - blackboard.position
-#         distance = np.linalg.norm(direction)
-#         theta = math.atan2(direction[1], direction[0])
-#         rospy.logfatal(distance)
-#         if distance < self.acceptance_radius:
-#             rospy.logfatal("ITS SHOW TIME")
-#             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
-#
-#         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
