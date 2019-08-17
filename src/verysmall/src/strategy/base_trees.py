@@ -21,7 +21,8 @@ class Penalty(Sequence):
 
         self.add_child(check_if_behind_ball)
 
-        charge_with_ball = GoToAttackGoalUsingUnivector('FollowGoal', acceptance_radius=5, speed_prediction=False) #ChargeWithBall("ChargeWithBall", max_speed=220)
+        charge_with_ball = GoToAttackGoalUsingUnivector('FollowGoal', acceptance_radius=5,
+                                                        speed_prediction=False)  # ChargeWithBall("ChargeWithBall", max_speed=220)
 
         self.add_child(charge_with_ball)
 
@@ -52,6 +53,7 @@ class Stopped(Sequence):
         self.add_child(InState('CheckStoppedState', GameStates.STOPPED))
         self.add_child(StopAction('Wait'))
 
+
 class FreeWayAttack(Sequence):
     def __init__(self, name: str = "FreeWayAttack"):
         super().__init__(name)
@@ -60,8 +62,6 @@ class FreeWayAttack(Sequence):
         self.add_child(IsTheWayFree("CheckIfTheWayIsFree", 10))
         charge_with_ball = ChargeWithBall("ChargeWithFreeWay", 200)
         self.add_child(charge_with_ball)
-
-
 
 
 class BaseTree(Selector):

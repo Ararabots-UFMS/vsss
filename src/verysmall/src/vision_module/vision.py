@@ -22,7 +22,7 @@ HEIGHT = 1
 class Vision:
 
     def __init__(self, camera, num_blue_robots, num_yellow_robots,
-                 params_file_name="", colors_params = "", method="", vision_owner:str = 'Player_One'):
+                 params_file_name="", colors_params="", method="", vision_owner: str = 'Player_One'):
 
         # This object will be responsible for publish the game state info
         # at the bus. Mercury is the gods messenger
@@ -38,12 +38,12 @@ class Vision:
         # Home team info
         self.yellow_team_pos = np.array([[0.0, 0.0]] * 5)
         self.yellow_team_orientation = np.array([0.0] * 5)
-        self.yellow_team_speed = np.array([[0.0,0.0]] * 5)
+        self.yellow_team_speed = np.array([[0.0, 0.0]] * 5)
 
         # Adv team info
-        self.blue_team_pos = np.array([[0.0,0.0]] * 5)
+        self.blue_team_pos = np.array([[0.0, 0.0]] * 5)
         self.blue_team_orientation = np.array([0.0] * 5)
-        self.blue_team_speed = np.array([[0.0,0.0]] * 5)
+        self.blue_team_speed = np.array([[0.0, 0.0]] * 5)
 
         # Subscribes to the game topic
         rospy.Subscriber(vision_owner, game_topic, self.on_game_state_change)
@@ -55,7 +55,6 @@ class Vision:
         self.params_file_name = params_file_name
         self.num_yellow_robots = num_yellow_robots
         self.num_blue_robots = num_blue_robots
-        self.yellow_tag = "aruco"
 
         self.arena_vertices = []
         self.arena_size = ()
@@ -77,7 +76,7 @@ class Vision:
 
         # Creates the lists to the home team and the adversary
         self.yellow_team = [Things() for _ in range(num_yellow_robots)]
-        self.blue_team =[Things() for _ in range(num_blue_robots)]
+        self.blue_team = [Things() for _ in range(num_blue_robots)]
 
         # Object to store ball info
         self.ball = Things()
@@ -90,6 +89,9 @@ class Vision:
             self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
             print("Method not recognized!")
+
+        # seekers description
+        self.seekers = {}
 
         if self.params_file_name != "":
             self.load_params()
@@ -105,12 +107,12 @@ class Vision:
         # The hawk eye object will be responsible to locate and identify all
         # objects at the field
         hawk_eye_extra_params = []
-        if self.yellow_tag == "aruco":
+
+        if "aruco" in self.seekers.values():
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
-        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.yellow_tag, self.num_yellow_robots, 
+        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.seekers, self.num_yellow_robots,
                                 self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
-
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -140,7 +142,7 @@ class Vision:
 
     def update_fps(self):
         self.new_time = time.time()
-        self.fps =  1/(self.new_time - self.last_time)##self.computed_frames / (time.time() - self.t0)
+        self.fps = 1 / (self.new_time - self.last_time)  ##self.computed_frames / (time.time() - self.t0)
         self.last_time = self.new_time
 
     def set_origin_and_factor(self):
@@ -148,13 +150,13 @@ class Vision:
             and finds the (0,0) pos of the field in the image """
 
         # for x
-        x = np.sort(self.arena_vertices[:,0])
+        x = np.sort(self.arena_vertices[:, 0])
 
         # xo is the third smaller vertice element because the first two ones are
         # the goal vertices
         xo = x[2]
 
-        y_sorted = np.sort(self.arena_vertices[:,1])
+        y_sorted = np.sort(self.arena_vertices[:, 1])
 
         upper_y = y_sorted[0]
 
@@ -171,7 +173,8 @@ class Vision:
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""
         params = self.json_handler.read(self.params_file_name)
-
+        self.seekers = self.json_handler.read("parameters/game.json")["seekers"]
+        rospy.logfatal(self.seekers)
         self.arena_vertices = np.array(params['arena_vertices'])
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
         self.arena_size = (params['arena_size'][0], params['arena_size'][1])
@@ -237,10 +240,19 @@ class Vision:
                 self.set_dark_border()
 
                 self.pipeline()
+                if self.seekers["yellow"] == "aruco":
+                    yellow_seg = 255 - self.yellow_seg
+                else:
+                    yellow_seg = self.yellow_seg
 
-                self.hawk_eye.seek_yellow_team(255-self.yellow_seg, self.yellow_team)
+                if self.seekers["blue"] == "aruco":
+                    blue_seg = 255 - self.blue_seg
+                else:
+                    blue_seg = self.blue_seg
 
-                self.hawk_eye.seek_blue_team(self.blue_seg, self.blue_team)
+                self.hawk_eye.seek_yellow_team(yellow_seg, self.yellow_team, self.hawk_eye.yellow_team_seeker)
+
+                self.hawk_eye.seek_blue_team(blue_seg, self.blue_team, self.hawk_eye.blue_team_seeker)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
@@ -262,8 +274,8 @@ class Vision:
                 speeds_list[id] = thing.speed
 
     def send_message(self, ball: bool = False,
-                           yellow_team: bool = False,
-                           blue_team: bool = False) -> None:
+                     yellow_team: bool = False,
+                     blue_team: bool = False) -> None:
         """ This function will return the message in the right format to be
             published in the ROS vision bus """
 
@@ -298,7 +310,7 @@ if __name__ == "__main__":
                colors_params, method="color_segmentation")
 
     v.game_on = True
-    
+
     t = Thread(target=v.run, args=())
     t.daemon = True
     t.start()
@@ -314,19 +326,19 @@ if __name__ == "__main__":
         if show:
             cv2.imshow('vision', cv2.cvtColor(arena, cv2.COLOR_HSV2BGR))
             cv2.imshow('segs', np.hstack([v.blue_seg, v.yellow_seg, v.ball_seg]))
-        if key == ord('q'): # exit
+        if key == ord('q'):  # exit
             v.pause()
             v.finish = True
             break
-        elif key == ord('s'): #show/hide
+        elif key == ord('s'):  # show/hide
             show = not show
             if show == False:
                 cv2.destroyWindow("vision")
                 cv2.destroyWindow("segs")
-        elif key == ord('c'): # open cropper
+        elif key == ord('c'):  # open cropper
             v.params_setter.run()
             v.load_params()
-        elif key == ord('g'): # "get color"
+        elif key == ord('g'):  # "get color"
             v.color_calibrator.run()
             v.load_colors_params()
         elif key == ord('f'):
