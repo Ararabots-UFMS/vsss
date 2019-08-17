@@ -24,41 +24,18 @@ class BlackBoard:
     def __init__(self):
         self.game = Game()
 
-        # self.game_state = None
-        # self.team_side = None
         self.enemy_goal = Goal()
         self.home_goal = Goal()
-        # self._attack_goal = None
-        # self.attack_goal_pos = None
-        # self.home_goal_pos = None
 
-        # self.freeball_robot_id = None
-        # self.meta_robot_id = None
-        # self.penalty_robot_id = None
         self.ball = MovingBody()
-        # self.ball_position = None
-        # self.ball_speed = None
+
         self.robot = FriendlyRobot()
-        # self.my_id = None
-        # self.role = None
-        # self.position = None
-        # self.true_pos = None
-        # self.orientation = None
-        # self.speed = None
 
-        # self.team_color = None
         self.home_team = HomeTeam()
-        # self.team_pos = None
-        # self.team_orientation = None
-        # self.team_speed = None
-
         self.enemy_team = EnemyTeam()
-        # self.enemies_position = None
-        # self.enemies_orientation = None
-        # self.enemies_speed = None
 
     def __repr__(self):
-        return 'BlackBoard:\n'
+        return 'BlackBoard:\n' + str(self.game) + "\n" + str(self.home_team) + str(self.enemy_team)
 
 
 class TreeNode:
@@ -124,6 +101,11 @@ class MovingBody:
         self.speed = np.array([0, 0])
         self.orientation = .0
 
+    def __repr__(self):
+        return "--position: " + str(self.position) + \
+               "--speed: " + str(self.speed) + \
+               "--orientation: " + str(self.orientation)
+
 
 class FriendlyRobot(MovingBody):
     def __init__(self):
@@ -156,6 +138,13 @@ class Game:
         self.freeball_robot_id = 0
         self.penalty_robot_id = 0
 
+    def __repr__(self):
+        return "-GameState: " + \
+               "\n--state: " + str(self.state) + \
+               "\n--meta_robot_id: " + str(self.meta_robot_id) + \
+               "\n--freeball_robot_id: " + str(self.freeball_robot_id) + \
+               "\n--penalty_robot_id: " + str(self.penalty_robot_id)
+
 
 class Team(ABC):
     def __init__(self):
@@ -165,6 +154,14 @@ class Team(ABC):
         self.robots = []
         self.number_of_robots = 0
         self.maximum_number_of_robots = 5
+
+    def __repr__(self):
+        return "--positions: " + str(self._positions.tolist()) + \
+               "\n--speeds: " + str(self._speeds.tolist()) + \
+               "\n--orientations: " + str(self._orientations.tolist()) + \
+               "\n--number_of_robots: " + str(self.number_of_robots) + \
+               "\n--maximum_number_of_robots: " + str(self.maximum_number_of_robots) + \
+               "\n--robots: " + str(self.robots)
 
     def create_new_robot(self):
         self._positions = np.append(self._positions, [[0, 0]], axis=0)
@@ -222,6 +219,9 @@ class EnemyTeam(Team):
         self.robots.append(MovingBody())
         super().create_new_robot()
 
+    def __repr__(self):
+        return "-EnemyTeam:\n" + super().__repr__()
+
 
 class HomeTeam(Team):
     def __init__(self):
@@ -232,15 +232,8 @@ class HomeTeam(Team):
         self.robots.append(FriendlyRobot())
         super().create_new_robot()
 
+    def __repr__(self):
+        return "-HomeTeam:\n" + super().__repr__()
 
-positions = np.array([[1, 0] for _ in range(7)])
-speeds = np.array([[0, 0] for _ in range(7)])
-orientations = np.array([0 for _ in range(7)])
-print(")")
-a = HomeTeam()
-a.set_robot_variables(positions, orientations, speeds)
 
-for homie in a:
-    print(homie.position)
-
-print(a.number_of_robots, a.maximum_number_of_robots)
+print(BlackBoard())
