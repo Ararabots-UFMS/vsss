@@ -1,4 +1,5 @@
 import sys
+
 import numpy as np
 
 sys.path.append('../')
@@ -8,10 +9,7 @@ from math import cos, sin, atan2
 
 sys.path.append('../../../')
 from utils.math_utils import gaussian
-from strategy.strategy_utils import section, CENTER
-from strategy.arena_sections import ArenaSections, section, univector_pos_section, Axis, Offsets, HALF_ARENA_HEIGHT, HALF_ARENA_WIDTH
-from typing import Tuple, List
-import rospy
+from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
 
 LEFT = 0
 RIGHT = 1
@@ -337,15 +335,15 @@ class UnivectorField:
 
         return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
 
-    def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections, attack_goal: bool = RIGHT) -> np.ndarray:
+    def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections,
+                         attack_goal: bool = RIGHT) -> np.ndarray:
 
         axis = Axis[section_num.value]
 
         if attack_goal == LEFT:
-            axis = axis*-1
+            axis = axis * -1
 
         return axis
 
     def get_correct_offset(self, position: np.ndarray, section_num: ArenaSections) -> np.ndarray:
         return Offsets[section_num.value]
-
