@@ -12,29 +12,29 @@ from rospy import logfatal
 import math
 
 
-class StopAction:
+class StopAction(TreeNode):
 
-    def __init__(self, name = 'Stop Task'):
-        self.name = name
+    def __init__(self, name: str = 'Stop Task'):
+        super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (OpCodes.STOP, .0, 0, .0)
 
 
-class SpinTask:
-    def __init__(self, name = 'Spin Task'):
-        self.name = name
+class SpinTask(TreeNode):
+    def __init__(self, name='Spin Task'):
+        super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return TaskStatus.RUNNING, (spin_direction(blackboard.ball_position,blackboard.position,
-                                                   team_side=blackboard.team_side), 0.0, 255, .0)
+        return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
+                                                   team_side=blackboard.home_goal.side), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
-    def __init__(self, name: str, 
-                       max_speed: int = 250, 
-                       acceptance_radius: float = 10.0, 
-                       speed_prediction: bool = True):
+    def __init__(self, name: str,
+                 max_speed: int = 250,
+                 acceptance_radius: float = 10.0,
+                 speed_prediction: bool = True):
         self.name = name
         self.speed = max_speed
         self.speed_prediction = speed_prediction
@@ -58,18 +58,20 @@ class UnivectorTask(ABC):
         pass
 
     def go_to_objective(self, blackboard: BlackBoard, objective_position):
-        distance_to_ball = np.linalg.norm(blackboard.position - objective_position)
+        distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
 
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
 
-        self.univector_field.update_obstacles(blackboard.enemies_position, [[0, 0]] * 5)  # blackboard.enemies_speed)
-        angle = self.univector_field.get_angle_with_ball(blackboard.position, np.array([0, 0]),  # blackboard.speed,
-                                                         objective_position, _attack_goal=blackboard.attack_goal)
+        self.univector_field.update_obstacles(blackboard.enemy_team.positions, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
+                                                         # blackboard.speed,
+                                                         objective_position, _attack_goal=blackboard.enemy_goal.side)
         speed = self.speed
         if self.speed_prediction:
-            raio = predict_speed(blackboard.position, [np.cos(blackboard.orientation), np.sin(blackboard.orientation)],
-                                 objective_position, self.univector_field.get_attack_goal_axis(blackboard.attack_goal))
+            raio = predict_speed(blackboard.robot.position,
+                                 [np.cos(blackboard.robot.orientation), np.sin(blackboard.robot.orientation)],
+                                 objective_position, self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
@@ -80,7 +82,8 @@ class UnivectorTask(ABC):
 
 class GoToPositionUsingUnivector(UnivectorTask):
 
-    def __init__(self, name="Go to position", max_speed: int = 75, acceptance_radius: float = 10.0, speed_prediction: bool = False, position=None):
+    def __init__(self, name="Go to position", max_speed: int = 75, acceptance_radius: float = 10.0,
+                 speed_prediction: bool = False, position=None):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
         self.position = position
 
@@ -90,13 +93,14 @@ class GoToPositionUsingUnivector(UnivectorTask):
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
         return self.go_to_objective(blackboard, self.position)
 
+
 class GoToBallUsingUnivector(UnivectorTask):
 
     def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return self.go_to_objective(blackboard, blackboard.ball_position)
+        return self.go_to_objective(blackboard, blackboard.ball.position)
 
 
 class GoToAttackGoalUsingUnivector(UnivectorTask):
@@ -104,18 +108,18 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return self.go_to_objective(blackboard, blackboard.attack_goal_pos)
+        return self.go_to_objective(blackboard, blackboard.enemy_goal.position)
 
 
-class ChargeWithBall:
+class ChargeWithBall(TreeNode):
 
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
-        self.name = name
+        super().__init__(name)
         self.max_speed = max_speed
-        self.x_vector = np.array([1.0,0.0])
+        self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        goal_vector = blackboard.attack_goal_pos - blackboard.position
+        goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
             self.x_vector,
@@ -129,66 +133,68 @@ class ChargeWithBall:
 
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                    max_speed: int = 255, 
-                    axis: np.ndarray = np.array([.0,1.0]),
-                    acceptance_radius: float = 5,
-                    clamp_min: float = None,
-                    clamp_max: float = None
-                    ):
+                 max_speed: int = 255,
+                 axis: np.ndarray = np.array([.0, 1.0]),
+                 acceptance_radius: float = 5,
+                 clamp_min: float = None,
+                 clamp_max: float = None
+                 ):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
-        self._angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
+        self._angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
         self.turn_off_clamp = clamp_min is None and clamp_max is None
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        
+
         if self.turn_off_clamp:
-            direction = blackboard.ball_position[1] - blackboard.position[1]
-        else:    
-            direction = clamp(blackboard.ball_position[1], self._clamp_min, self._clamp_max) - blackboard.position[1]
-        
+            direction = blackboard.ball.position[1] - blackboard.robot.position[1]
+        else:
+            direction = clamp(blackboard.ball.position[1], self._clamp_min, self._clamp_max) - \
+                        blackboard.robot.position[1]
+
         distance = abs(direction)
-        
+
         if distance < self._acceptance_radius:
-            return TaskStatus.RUNNING, (OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                            0, distance)
-        
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, 
+            return TaskStatus.RUNNING, (
+            OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
+            0, distance)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-                                        self._max_speed, 
-                                        .0)
-    
-        
+                                    self._max_speed,
+                                    .0)
+
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
-                    max_speed: int = 0, 
-                    axis: np.ndarray = np.array([.0,1.0]),
-                    acceptance_radius: float = 0.0872665):
+                 max_speed: int = 0,
+                 axis: np.ndarray = np.array([.0, 1.0]),
+                 acceptance_radius: float = 0.0872665):
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
-        self.angle_to_correct = angle_between(np.array([1.0,0.0]), axis)
-    
+        self.angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if abs(self.angle_to_correct - abs(blackboard.orientation)) <= self.acceptance_radius:
+        if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
             return TaskStatus.RUNNING, (OpCodes.NORMAL, self.angle_to_correct, self.max_speed, .0)
 
+
 class GoToGoalCenter(TreeNode):
-    def __init__(self, name: str = "GoToGoalCenter", 
-                       max_speed: int = 255, 
-                       acceptance_radius: float = 10.0):
+    def __init__(self, name: str = "GoToGoalCenter",
+                 max_speed: int = 255,
+                 acceptance_radius: float = 10.0):
         super().__init__(name)
         self.acceptance_radius = acceptance_radius
         self.max_speed = max_speed
-    
+
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        direction = blackboard.home_goal_pos - blackboard.position
+        direction = blackboard.home_goal.position - blackboard.robot.position
         distance = np.linalg.norm(direction)
 
         if distance < self.acceptance_radius:
@@ -205,7 +211,6 @@ class GoToPosition(TreeNode):
                  acceptance_radius: float = 10.0,
                  position: list = None,
                  target_pos: list = None):
-
         super().__init__(name)
         self.acceptance_radius = acceptance_radius
         self.max_speed = max_speed
@@ -216,7 +221,7 @@ class GoToPosition(TreeNode):
         self.target_pos = new_pos
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        path = self.target_pos - blackboard.position
+        path = self.target_pos - blackboard.robot.position
         distance = np.linalg.norm(path)
         theta = math.atan2(path[1], path[0])
 
@@ -224,4 +229,3 @@ class GoToPosition(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
-
