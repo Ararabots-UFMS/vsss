@@ -14,6 +14,7 @@ HALF_ARENA_WIDTH = 75
 MAX_H_SIZE = 130
 MAX_W_SIZE = 150
 
+
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
     RIGHT_GOAL_AREA = 1
@@ -77,6 +78,10 @@ Offsets = [
     array([-1.0, 0.0])  # RIGHT_UP_BOTTOM_LINE
 ]
 
+BORDER_NORMALS = {4: [1.0, -1.0], 5: [1.0, 1.0], 6: [-1.0, -1.0], 7: [-1.0, 1.0], 8: [0.0, 1.0], 9: [0.0, -1.0],
+                  11: [1.0, 0.0],
+                  12: [1.0, 0.0], 13: [-1.0, 0.0], 14: [-1.0, 0.0]}
+
 BALL_SIZE = 4
 ROBOT_SIZE = 7
 
@@ -85,6 +90,7 @@ def on_attack_side(pos, team_side, bias=0):
     """
    Verify if the object is in attack side (True) or in defense side(False)
 
+    :param bias:
    :param pos: np.array([x, y])
    :param team_side: int 0 ou 1
    :return: bool
@@ -116,14 +122,13 @@ def inside_range(a, b, num):
 
 
 def inside_rectangle(a, b, point):
-    '''
+    """
     Verify if point is inside rectangle made by opposite points a and b
-
+    :param point:
     :param a: first point that composes the square
     :param b: second point that composes the square
-    :param x: point to be verified
     :return: return true or false
-    '''
+    """
 
     return inside_range(a[X], b[X], point[X]) and inside_range(a[Y], b[Y], point[Y])
 
@@ -131,7 +136,6 @@ def inside_rectangle(a, b, point):
 def section(pos):
     """
     Returns the section of the given object
-
     :param pos: np.array([x, y])
     :return: int
     """
@@ -170,19 +174,19 @@ def section(pos):
     else:
         return ArenaSections.CENTER
 
+
 def univector_pos_section(pos):
     """
     Returns the section of the given object
-
     :param pos: np.array([x, y])
     :return: int
     """
-    
+
     if pos[0] > MAX_W_SIZE - 10 or pos[0] < 10:
         side = pos[0] > MAX_W_SIZE - 10
 
         if pos[1] < 10:
-            return ArenaSections.LEFT_DOWN_CORNER if side == LEFT else ArenaSections.RIGHT_DOWN_CORNER 
+            return ArenaSections.LEFT_DOWN_CORNER if side == LEFT else ArenaSections.RIGHT_DOWN_CORNER
         elif pos[1] < 45:
             return ArenaSections.LEFT_DOWN_BOTTOM_LINE if side == LEFT else ArenaSections.RIGHT_DOWN_BOTTOM_LINE
         elif pos[1] < 85:
@@ -204,11 +208,12 @@ def univector_pos_section(pos):
 def side_section(pos, team_side):
     """
     Return Attack_side and section of the object
+    :param team_side: bool
     :param pos: np.array([x, y])
     :return: (boolen, int)
     """
 
-    return (on_attack_side(pos, team_side), section(pos))
+    return on_attack_side(pos, team_side), section(pos)
 
 
 def goal_position(team_side):
@@ -219,5 +224,5 @@ def goal_position(team_side):
     """
 
     if team_side == LEFT:
-        return np.array([150, 65])
-    return np.array([0, 65])
+        return array([150, 65])
+    return array([0, 65])
