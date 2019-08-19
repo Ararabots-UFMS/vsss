@@ -203,10 +203,7 @@ class ParamsSetter:
         if(self.params_file == ""):
             self.params_file = raw_input("Please insert params file name: ")
 
-        if os.path.isfile(self.params_file):
-            params = json_handler.read(self.params_file)
-        else:
-            params = {}
+        params = json_handler.read(self.params_file)
 
         if not (self.matrix_transform is None) and not (self.arena_size is None):
             params['warp_matrix'] = self.matrix_transform.tolist()
