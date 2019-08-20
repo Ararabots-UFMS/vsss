@@ -12,6 +12,6 @@ class GoalKeeper(BaseTree):
         normal = Sequence("Normal")
         normal.add_child(InState("CheckNormalState", GameStates.NORMAL))
         #normal.add_child(GoToGoalCenter(max_speed=120, acceptance_radius=3))
-        normal.add_child(AlignWithAxis())
-        normal.add_child(MarkBallOnAxis(max_speed=200, acceptance_radius=5, clamp_min=35.0, clamp_max=90.0))
+        #normal.add_child(AlignWithAxis())
+        normal.add_child(MarkBallOnAxis(max_speed=200, acceptance_radius=5, clamp_min=10.0, clamp_max=110.0))
         self.add_child(normal)

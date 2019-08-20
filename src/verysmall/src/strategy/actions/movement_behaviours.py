@@ -63,7 +63,8 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, None
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.positions, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(blackboard.enemy_team.positions,
+                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
@@ -71,7 +72,8 @@ class UnivectorTask(ABC):
         if self.speed_prediction:
             raio = predict_speed(blackboard.robot.position,
                                  [np.cos(blackboard.robot.orientation), np.sin(blackboard.robot.orientation)],
-                                 objective_position, self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
+                                 objective_position,
+                                 self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
@@ -159,13 +161,14 @@ class MarkBallOnAxis(TreeNode):
 
         if distance < self._acceptance_radius:
             return TaskStatus.RUNNING, (
-            OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-            0, distance)
+                OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
+                0,
+                distance)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL,
+        return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                     self._max_speed,
-                                    .0)
+                                    distance)
 
 
 class AlignWithAxis(TreeNode):

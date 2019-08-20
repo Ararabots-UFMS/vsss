@@ -3,7 +3,7 @@ from bisect import bisect_left
 from time import time
 from typing import Tuple, List
 import numpy as np
-
+from rospy import logfatal
 import utils.math_utils as mth
 from robot_module.PID import PIDController
 from robot_module.movement.definitions import OpCodes
@@ -38,6 +38,8 @@ class Control:
 
         if opcode == OpCodes.NORMAL:
             return self._follow_vector(speed, angle, distance)
+        elif opcode == OpCodes.IGNORE_DISTANCE:
+            return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
             return -255, 255
         elif opcode == OpCodes.SPIN_CW:
