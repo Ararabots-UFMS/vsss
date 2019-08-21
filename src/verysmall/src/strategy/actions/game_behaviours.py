@@ -1,6 +1,6 @@
 from typing import Tuple
 from strategy.behaviour import *
-from strategy.strategy_utils import behind_ball
+from strategy.strategy_utils import behind_ball, distance_point
 from strategy import arena_utils
 from utils.math_utils import angle_between
 import numpy as np
@@ -12,7 +12,7 @@ from strategy.strategy_utils import behind_ball
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from utils.math_utils import angle_between
 
-
+# TODO: extend tree node
 class IsBehindBall:
     def __init__(self, name: str, distance: int):
         self.name = name
@@ -75,3 +75,13 @@ class IsBallInsideCentralArea(TreeNode):
             return TaskStatus.SUCCESS, NO_ACTION
         else:
             return TaskStatus.FAILURE, NO_ACTION
+
+class InsideMetaRange(TreeNode):
+    def __init__(self, name: str, distance: int = 25):
+        super().__init__(name)
+        self.distance = distance
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if distance_point(blackboard.robot.position, blackboard.home_goal.position) < self.distance:
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)

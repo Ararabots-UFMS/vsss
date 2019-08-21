@@ -1,6 +1,6 @@
 from strategy.behaviour import BlackBoard, Sequence, Selector, TaskStatus
 from strategy.actions.state_behaviours import InState, ChangeState
-from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree
+from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, InsideMetaRange
 from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
 
@@ -45,6 +45,21 @@ class FreeBall(Sequence):
         self.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
         self.add_child(GoToAttackGoalUsingUnivector('FollowGoal'))  # FollowBall
 
+class Meta(Sequence):
+    def __init__(self, name: str = "Meta"):
+        super().__init__(name)
+        check_state = InState("CheckMetaState", GameStates.META)
+        self.add_child(check_state)
+        check_if_inside_meta_range = Selector("InsideMetaRange")
+        out_of_meta_distance = InsideMetaRange('MetaDist', 25)
+        change_state = ChangeState("ReturnToNormal")
+        check_if_inside_meta_range.add_child(out_of_meta_distance)
+        check_if_inside_meta_range.add_child(change_state)
+
+        self.add_child(check_if_inside_meta_range)
+        charge_with_ball = GoToAttackGoalUsingUnivector("FollowGoal", acceptance_radius=5, speed_prediction=False)  
+        self.add_child(charge_with_ball)
+
 
 class Stopped(Sequence):
     def __init__(self, name: str = 'Stopped'):
@@ -71,3 +86,4 @@ class BaseTree(Selector):
         self.add_child(Stopped('Stopped'))
         self.add_child(Penalty('Penalty'))
         self.add_child(FreeBall('FreeBall'))
+        self.add_child(Meta("Meta"))
