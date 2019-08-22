@@ -34,6 +34,11 @@ class BlackBoard:
         self.home_team = HomeTeam()
         self.enemy_team = EnemyTeam()
 
+    def set_robot_variables(self, robot_position, robot_speed, robot_orientation):
+        self.robot.position = robot_position
+        self.robot.speed = robot_speed
+        self.robot.orientation = robot_orientation
+
     def __repr__(self):
         return 'BlackBoard:\n' + str(self.game) + "\n" + str(self.home_team) + str(self.enemy_team)
 
@@ -168,7 +173,7 @@ class Team(ABC):
         self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
         self._orientations = np.append(self._orientations, [0], axis=0)
 
-    def set_robot_variables(self, robot_positions, robot_orientations, robot_speeds):
+    def set_team_variables(self, robot_positions, robot_orientations, robot_speeds):
 
         self.number_of_robots = 0
 
