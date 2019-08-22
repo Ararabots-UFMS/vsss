@@ -17,7 +17,8 @@ class RobotHardware:
         self.LEFTFORWARD_RIGHTBACKWARD = 0x01  # 0000 0001
         self.LEFTBACKWARD_RIGHTFORWARD = 0x02  # 0000 0010
         self.LEFTBACKWARD_RIGHTBACKWARD = 0x03  # 0000 0011
-        self.SET_MOTOR_CODE = 0
+
+        self._current_motors_direction = self.LEFTFORWARD_RIGHTFORWARD
 
     def encode(self, msg: Union[STDMsg, SelfControlMsg]) -> List:
         if isinstance(msg, STDMsg):
@@ -29,25 +30,35 @@ class RobotHardware:
 
     def encode_std_msg(self, msg: STDMsg) -> List[int]:
         message = []
+        
+        self.set_current_direction(msg.left_speed, msg.right_speed)
+        message.append(self._current_motors_direction)
+        
         left, right = int(msg.left_speed), int(msg.right_speed)
-
-        if msg.left_speed >= 0 and msg.right_speed >= 0:
-            message.append(self.SET_MOTOR_CODE | self.LEFTFORWARD_RIGHTFORWARD)
-        elif msg.left_speed >= 0 and msg.right_speed <= 0:
-            message.append(self.SET_MOTOR_CODE | self.LEFTFORWARD_RIGHTBACKWARD)
-        elif msg.left_speed <= 0 and msg.right_speed >= 0:
-            message.append(self.SET_MOTOR_CODE | self.LEFTBACKWARD_RIGHTFORWARD)
-        else:
-            message.append(self.SET_MOTOR_CODE | self.LEFTBACKWARD_RIGHTBACKWARD)
-
         message.append(abs(left))
         message.append(abs(right))
 
         return message
+    
+    def set_current_direction(self, left_speed: float, right_speed: float) -> None:
+        if left_speed >= 0 and right_speed >= 0:
+            self._current_motors_direction = self.LEFTFORWARD_RIGHTFORWARD
+        elif left_speed >= 0 and right_speed <= 0:
+            self._current_motors_direction = self.LEFTFORWARD_RIGHTBACKWARD
+        elif left_speed <= 0 and right_speed >= 0:
+            self._current_motors_direction = self.LEFTBACKWARD_RIGHTFORWARD
+        else:
+            self._current_motors_direction = self.LEFTBACKWARD_RIGHTBACKWARD
 
     def normalize_speeds(self, msg: STDMsg) -> STDMsg:
+        old_direction = self._current_motors_direction
+        self.set_current_direction(msg.left_speed, msg.right_speed)
+        if old_direction != self._current_motors_direction:
+            self._allowed_speed = self._max_enable_speed
+
         max_abs_speed = max(abs(msg.left_speed), abs(msg.right_speed))
         self.update_allowed_speed(max_abs_speed)
+        
         left, right = self.limit_output(msg.left_speed, msg.right_speed)
         return STDMsg(left, right)
 

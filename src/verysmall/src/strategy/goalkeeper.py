@@ -16,13 +16,16 @@ class GoalKeeper(BaseTree):
         super().__init__(name)
 
         normal = Sequence("Normal")
-        self.add_child(normal)
-
         normal.add_child(InState("CheckNormalState", GameStates.NORMAL))
-        normal.add_child(self._ball_on_attack_side_tree())
-
+        self.add_child(normal)
+        
+        selector = Selector("dummy selector")
+        normal.add_child(selector)
+        
+        selector.add_child(self._ball_on_attack_side_tree())
+        
         self.markBallOnY = None
-        normal.add_child(self._ball_on_defense_side_tree())
+        selector.add_child(self._ball_on_defense_side_tree())
     
     def _ball_on_attack_side_tree(self) -> TreeNode:
         tree = Sequence("BallInAttackSide")
@@ -33,10 +36,12 @@ class GoalKeeper(BaseTree):
     
     def _ball_on_defense_side_tree(self) -> TreeNode:
         tree = Sequence("BallInDeffenseSide")
+        
         inverter = InvertOutput()
-        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball.position))
         tree.add_child(inverter)
-
+        
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball.position))
+        
         self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90], 
                                             max_speed = 180,
                                             acceptance_radius=3)
