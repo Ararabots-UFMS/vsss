@@ -79,11 +79,11 @@ class IsBallInsideCentralArea(TreeNode):
 
 class IsInAttackSide(TreeNode):
     def __init__(self, name: str, get_pos: Callable[[BlackBoard], np.ndarray]):
-        super.__init__(name)
+        super().__init__(name)
         self._get_pos = get_pos
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        side = blackboard.team_side
+        side = blackboard.home_goal.side
         x_left = 75*(1-side)
         x_right = 75*(2 - side)
 
