@@ -3,13 +3,9 @@ import rospy
 
 from strategy.behaviour import *
 from strategy.actions.state_behaviours import InState
-<<<<<<< HEAD
 from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, MarkBallOnYAxis
 from strategy.actions.game_behaviours import IsInAttackSide
 from strategy.actions.decorators import InvertOutput
-=======
-from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, MarkBallOnAxis
->>>>>>> ce4dceb2752822a52c446c82e128313b0ec99186
 from strategy.base_trees import Penalty, FreeBall, BaseTree
 from strategy.strategy_utils import GameStates
 
