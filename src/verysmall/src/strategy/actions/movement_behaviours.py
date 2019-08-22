@@ -56,7 +56,6 @@ class UnivectorTask(ABC):
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         raise Exception("subclass must override run method")
-        pass
 
     def go_to_objective(self, blackboard: BlackBoard, objective_position):
         distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)

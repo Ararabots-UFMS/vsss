@@ -34,7 +34,7 @@ class GoalKeeper(BaseTree):
     def _ball_on_defense_side_tree(self) -> TreeNode:
         tree = Sequence("BallInDeffenseSide")
         inverter = InvertOutput()
-        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball_position))
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball.position))
         tree.add_child(inverter)
 
         self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90], 

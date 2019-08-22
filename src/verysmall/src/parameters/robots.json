@@ -1,10 +1,10 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "Et_Bilu",
-        "body_id": "Et_Bilu",
+        "bluetooth_mac_address": "Tijolinho",
+        "body_id": "Tijolinho",
         "role": "Goalkeeper",
-        "tag_number": 1
+        "tag_number": 2
     },
     "robot_2": {
         "active": 0,

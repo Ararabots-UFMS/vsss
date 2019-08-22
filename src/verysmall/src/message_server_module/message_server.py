@@ -189,7 +189,7 @@ class MessageServer:
         self._adapter_lock.release()
 
     def _close(self, sock: BluetoothSocket) -> None:
-        rospy.logfatal("SOCKET: " + repr(sock))
+        rospy.logfatal("REMOVING SOCKET: " + repr(sock))
         self._adapter_lock.acquire()
         sock.close()
         self._adapter_lock.release()
