@@ -1,3 +1,9 @@
+from abc import ABC, abstractmethod
+from typing import List, Tuple, Iterable
+import numpy as np
+from rospy import logfatal
+import math
+
 from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
@@ -5,11 +11,6 @@ from strategy.strategy_utils import spin_direction
 from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
-from abc import ABC, abstractmethod
-from typing import List, Tuple, Iterable
-import numpy as np
-from rospy import logfatal
-import math
 
 
 class StopAction(TreeNode):
