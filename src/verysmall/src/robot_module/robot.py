@@ -152,3 +152,6 @@ class Robot:
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
+
+    def get_next_speed(self):
+        return (self._hardware._allowed_speed + self._hardware._speed_step) % 256
