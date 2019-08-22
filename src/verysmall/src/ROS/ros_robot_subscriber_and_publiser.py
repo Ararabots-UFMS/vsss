@@ -72,14 +72,6 @@ class RosRobotSubscriberAndPublisher:
             enemies_orientation = np.array(data.yellow_team_orientation) / 10000.0
             enemies_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
-        self.robot.blackboard.robot.position = friends_position[self.robot.tag]
-        self.robot.blackboard.robot.orientation = friends_orientation[self.robot.tag]
-        self.robot.blackboard.robot.speed = friends_speed[self.robot.tag]
-
-        self.robot.position = friends_position[self.robot.tag]
-        self.robot.speed = friends_speed[self.robot.tag]
-        self.robot.orientation = friends_orientation[self.robot.tag]
-
         self.robot.blackboard.home_team.set_robot_variables(friends_position,
                                                             friends_orientation,
                                                             friends_speed)
