@@ -4,8 +4,8 @@ import math
 
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
-
+#from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
+#from strategy.behaviour import BlackBoard
 CW = 0
 CCW = 1
 

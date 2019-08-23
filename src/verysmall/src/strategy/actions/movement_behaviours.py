@@ -22,7 +22,7 @@ class StopAction(TreeNode):
 
 
 class SpinTask(TreeNode):
-    def __init__(self, name='Spin Task'):
+    def __init__(self, name='Spin Task', invert=False):
         super().__init__(name)
         self.invert = invert
 
