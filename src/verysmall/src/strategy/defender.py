@@ -27,9 +27,12 @@ class Defender(BaseTree):
         defend.add_child(border)
 
         middle = Sequence("Middle")
-        middle.add_child(IsBallInRangeOfDefense("InRangeOfDefense"))
-        middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=5, max_speed=150, speed_prediction=False))
-        middle.add_child(ChargeWithBall("ChargeWithBall"))
+        middle.add_child(GoToBallUsingMove2Point("Move2Point"))
+        # middle.add_child(ChargeWithBall("ChargeWithBall"))
+        middle.add_child(SpinTask("Spin", invert=True))
+        # middle.add_child(IsBallInRangeOfDefense("InRangeOfDefense"))
+        # middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=5, max_speed=150, speed_prediction=False))
+        # middle.add_child(ChargeWithBall("ChargeWithBall"))
 
         defend.add_child(middle)
 
