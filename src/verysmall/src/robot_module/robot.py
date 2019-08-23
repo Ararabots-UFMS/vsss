@@ -38,7 +38,7 @@ class Robot:
 
         constants = self.get_pid_constants_set()
         rospy.logwarn(constants)
-        self._max_fine_movment_speed = 50
+        self._max_fine_movment_speed = 80
         self._controller = Control(self, constants, self._max_fine_movment_speed)
 
         self._hardware = RobotHardware()
@@ -154,3 +154,6 @@ class Robot:
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
+
+    def get_next_speed(self):
+        return (self._hardware._allowed_speed + self._hardware._speed_step) % 256
