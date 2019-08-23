@@ -4,8 +4,7 @@ import math
 
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
-#from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
-#from strategy.behaviour import BlackBoard
+from strategy.arena_utils import ArenaSections, section, LEFT, RIGHT, BORDER_NORMALS, on_attack_side
 CW = 0
 CCW = 1
 
@@ -112,3 +111,22 @@ def border_stuck(position_buffer, orientation):
         return False
     # else:
     #    return False
+
+
+def ball_on_attack_side(ball_position, team_side) -> bool:
+    return on_attack_side(ball_position, team_side)
+
+
+def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
+    return behind_ball(robot_position, ball_position, team_side)
+
+
+def ball_on_critical_position(ball_position) -> bool:
+    sec = section(ball_position)
+    return sec in [ArenaSections.LEFT_CRITICAL_LINE, ArenaSections.RIGHT_CRITICAL_LINE]
+
+
+def ball_on_border(ball_position, team_side) -> bool:
+    if not ball_on_attack_side(ball_position, team_side) and not ball_on_critical_position(ball_position):
+        sec = section(ball_position)
+    return sec in BORDER_NORMALS.keys()

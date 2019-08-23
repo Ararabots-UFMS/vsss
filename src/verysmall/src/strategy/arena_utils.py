@@ -1,6 +1,5 @@
 from enum import Enum
 from numpy import array
-from strategy.behaviour import BlackBoard
 
 X = 0
 Y = 1
@@ -232,6 +231,3 @@ def goal_position(team_side):
     return array([0, 65])
 
 
-def ball_on_critical_position(blackboard: BlackBoard) -> bool:
-    sec = section(blackboard.ball_position)
-    return sec in [ArenaSections.LEFT_CRITICAL_LINE, ArenaSections.RIGHT_CRITICAL_LINE]

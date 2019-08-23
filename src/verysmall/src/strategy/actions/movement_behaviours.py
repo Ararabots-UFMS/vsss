@@ -261,7 +261,7 @@ class GoToBallUsingMove2Point(TreeNode):
         self.acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        direction = blackboard.ball_position - blackboard.position
+        direction = blackboard.ball.position - blackboard.robot.position
         distance = np.linalg.norm(direction)
         theta = math.atan2(direction[1], direction[0])
         if distance < self.acceptance_radius:
