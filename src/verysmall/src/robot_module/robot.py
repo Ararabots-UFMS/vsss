@@ -52,7 +52,7 @@ class Robot:
         # Receive from vision
         self.ball_position = None
         self.ball_speed = None
-        
+
         self.position = None
         self.orientation = None
         self.speed = None
@@ -82,8 +82,6 @@ class Robot:
         else:
             self._sender = Sender(self._socket_id, self.owner_name)
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
-
         self.behaviour_trees = [
             Attacker(),
             Attacker(),
@@ -96,12 +94,13 @@ class Robot:
         self.behaviour_tree = self.behaviour_trees[robot_role]
         self.stuck_counter = 0
 
-        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_'+str(self.owner_name), self._should_debug)
+        self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_' + str(self.owner_name),
+                                                          self._should_debug)
 
     def get_pid_constants_set(self) -> List[Tuple]:
         pid_set = []
         bodies = JsonHandler.read("parameters/bodies.json", escape=True)
-
+        
         pid_dict = bodies[self.robot_body]
         for speed in pid_dict:
             ctes = pid_dict[speed]
@@ -153,5 +152,5 @@ class Robot:
             self._sender.send(priority, self._hardware.encode(msg))
             
     def get_priority(self) -> int:
-        distance = np.linalg.norm(self.blackboard.position - self.blackboard.ball_position)
+        distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
