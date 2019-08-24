@@ -153,15 +153,25 @@ class MarkBallOnYAxis(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_y = blackboard.ball.position[1]
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
-        
+
         target_pos = np.array([self._clamp_min[0], y])
         direction = target_pos - blackboard.robot.position
         distance = np.linalg.norm(direction)
 
         if distance < self._acceptance_radius:
             return TaskStatus.SUCCESS, NO_ACTION
+
+        direction /= distance
         
-        theta = math.atan2(direction[1], direction[0])
+        x_distance = abs(blackboard.robot.position[0] - self._clamp_min[0])
+        alpha = 1 / (1 + math.exp(x_distance - self._acceptance_radius))
+        y_sign = -1 if direction[1] < 0 else 1
+        direction_on_target = np.array([0, y_sign])
+
+        final_direction = alpha*direction + (1 - alpha)*direction_on_target
+        
+        
+        theta = math.atan2(final_direction[1], final_direction[0])
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
 
 class AlignWithAxis(TreeNode):
