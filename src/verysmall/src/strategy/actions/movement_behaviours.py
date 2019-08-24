@@ -269,21 +269,22 @@ class GoToBallUsingMove2Point(TreeNode):
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
 
-# class WalkInLine(TreeNode):
-#     def __init__(self, name: str = "WalkInLine",
-#                  speed = 100, acceptance_radius: float = 6,
-#                  target_position: list = [75, 65]):
-#         self.speed = speed
-#         self.acceptance_radius = acceptance_radius
-#         self.target_position = target_position
-#
-#     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-#         direction = (self.target_position[ ] - blackboard.position
-#         distance = np.linalg.norm(direction)
-#         theta = math.atan2(direction[1], direction[0])
-#         rospy.logfatal(distance)
-#         if distance < self.acceptance_radius:
-#             rospy.logfatal("ITS SHOW TIME")
-#             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
-#
-#         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
+
+class GoBack(TreeNode):
+    def __init__(self, name: str = 'GoBacl',
+                 max_speed: int = 80,
+                 acceptance_radius: float = 10.0):
+        super().__init__(name)
+        self.acceptance_radius = acceptance_radius
+        self.max_speed = max_speed
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        target_position = [75., blackboard.robot.position[1]]
+        path = target_position - blackboard.robot.position
+        distance = np.linalg.norm(path)
+        theta = math.atan2(path[1], path[0])
+
+        if distance <= self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)

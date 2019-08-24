@@ -1,5 +1,8 @@
 from typing import Tuple
+
+from strategy.arena_utils import on_attack_side
 from strategy.behaviour import *
+from strategy import arena_utils
 from strategy.strategy_utils import behind_ball, near_ball, ball_on_border, ball_on_critical_position, ball_on_attack_side
 from utils.math_utils import angle_between
 import numpy as np
@@ -117,6 +120,17 @@ class IsNearBall(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if near_ball(blackboard.robot.position, blackboard.ball.position):
+            return TaskStatus.SUCCESS, None
+
+        return TaskStatus.FAILURE, None
+
+
+class AmIInAttackField(TreeNode):
+    def __init__(self, name: str = "AmIInAttackField"):
+        self.name = name
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
