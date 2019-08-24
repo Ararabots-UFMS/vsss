@@ -28,7 +28,7 @@ class SpinTask(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
-                                                   team_side=blackboard.home_goal.side), 0.0, 255, .0)
+                                                   team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
@@ -78,7 +78,7 @@ class UnivectorTask(ABC):
 
         status = TaskStatus.RUNNING
 
-        return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
+        return status, (OpCodes.IGNORE_DISTANCE, angle, speed, distance_to_ball)
 
 
 class GoToPositionUsingUnivector(UnivectorTask):
@@ -129,7 +129,7 @@ class ChargeWithBall(TreeNode):
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE, angle, self.max_speed, distance_to_goal)
 
 
 class MarkBallOnAxis(TreeNode):

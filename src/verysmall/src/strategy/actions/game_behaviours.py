@@ -99,12 +99,13 @@ class IsBallInRangeOfDefense(TreeNode):
 
 
 class IsBallInBorder(TreeNode):
-    def __init__(self, name: str = "IsballInBorder"):
+    def __init__(self, name: str = "IsBallInBorder"):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
+            rospy.logfatal("borda")
             return TaskStatus.SUCCESS, None
         return TaskStatus.FAILURE, None
 
