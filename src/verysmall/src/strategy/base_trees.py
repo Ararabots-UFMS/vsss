@@ -61,7 +61,8 @@ class Meta(Sequence):
         meta.add_child(change_state)
 
         self.add_child(meta)
-        charge_with_ball = GoToAttackGoalUsingUnivector("FollowGoal", acceptance_radius=5, speed_prediction=False)  
+        charge_with_ball = GoToAttackGoalUsingUnivector("FollowGoal",
+        acceptance_radius=5, speed_prediction=False)  
         self.add_child(charge_with_ball)
 
 
