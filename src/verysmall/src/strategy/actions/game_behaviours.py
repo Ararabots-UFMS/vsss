@@ -19,7 +19,9 @@ class IsBehindBall:
         self.distance = distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if behind_ball(blackboard.ball.position, blackboard.robot.last_know_location, blackboard.home_goal.side, self.distance):
+        if behind_ball(blackboard.ball.position,
+        blackboard.robot.last_know_location, blackboard.home_goal.side, 
+        self.distance):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
@@ -31,26 +33,31 @@ class IsTheWayFree:
         self.free_way_distance = free_way_distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        v_ball_enemy_goal = blackboard.enemy_goal.position - blackboard.ball.position
+        enemy_goal_pos = blackboard.enemy_goal.position
+        ball_pos = blackboard.ball.position
+        v_ball_enemy_goal = enemy_goal_pos - ball_pos
 
         task_result = TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
 
-        for enemy_position in blackboard.enemy_team.position:
+        for enemy_position in blackboard.enemy_team.positions:
             enemy_goal = blackboard.enemy_goal.side
             v_ball_enemy = enemy_position - blackboard.ball.position
             theta = angle_between(v_ball_enemy_goal, v_ball_enemy, abs=False)
-            enemy_path_distance = np.linalg.norm(v_ball_enemy) * sin(theta)
+            enemy_to_path_distance = np.linalg.norm(v_ball_enemy) * sin(theta)
+            
             if arena_utils.section(enemy_position).value != enemy_goal:
+
+                ball_x = blackboard.ball.position[0]
+                enemy_x = enemy_position[0]
                 if enemy_goal:
-                    if abs(enemy_path_distance) <= self.free_way_distance and enemy_position[0] > \
-                            blackboard.ball.position[0]:
-                        task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-                        break
+                    is_enemy_in_way = enemy_x > ball_x
                 else:
-                    if abs(enemy_path_distance) <= self.free_way_distance and enemy_position[0] < \
-                            blackboard.ball.position[0]:
-                        task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-                        break
+                    is_enemy_in_way = enemy_x < ball_x
+
+                if abs(enemy_to_path_distance) <= self.free_way_distance and \
+                    is_enemy_in_way :
+                    task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+                    break
         return task_result
 
 
@@ -81,7 +88,8 @@ class InsideMetaRange(TreeNode):
         super().__init__(name)
         self.distance = distance
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if distance_point(blackboard.robot.position, blackboard.home_goal.position) < self.distance:
+        if distance_point(blackboard.robot.position,
+        blackboard.home_goal.position) < self.distance:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)

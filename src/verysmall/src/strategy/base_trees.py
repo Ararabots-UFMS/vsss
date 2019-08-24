@@ -91,4 +91,3 @@ class BaseTree(Selector):
         self.add_child(Stopped('Stopped'))
         self.add_child(Penalty('Penalty'))
         self.add_child(FreeBall('FreeBall'))
-        self.add_child(Meta("Meta"))

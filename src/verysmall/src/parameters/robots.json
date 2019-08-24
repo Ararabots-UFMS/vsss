@@ -3,8 +3,8 @@
         "active": 0,
         "bluetooth_mac_address": "Et_Bilu",
         "body_id": "Et_Bilu",
-        "role": "Goalkeeper",
-        "tag_number": 0
+        "role": "Atacante",
+        "tag_number": 1
     },
     "robot_2": {
         "active": 0,
