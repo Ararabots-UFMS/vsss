@@ -8,7 +8,7 @@ from utils.math_utils import predict_speed, angle_between, clamp
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 import numpy as np
-from rospy import logfatal
+import rospy
 import math
 
 
@@ -285,6 +285,7 @@ class GoBack(TreeNode):
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
+            rospy.logfatal("convergiu")
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)

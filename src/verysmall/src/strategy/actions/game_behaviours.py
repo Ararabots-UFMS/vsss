@@ -125,12 +125,25 @@ class IsNearBall(TreeNode):
         return TaskStatus.FAILURE, None
 
 
-class AmIInAttackField(TreeNode):
-    def __init__(self, name: str = "AmIInAttackField"):
+class AmIInDefenseField(TreeNode):
+    def __init__(self, name: str = "AmIInDefenseField"):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
+        if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
+            rospy.logfatal("na defesa")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
+
+
+class IsNearBall:
+    def __init__(self, name: str, distance=6.):
+        self.name = name
+        self.distance = distance
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if near_ball(blackboard.ball.position, blackboard.robot.position, self.distance):
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)

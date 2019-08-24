@@ -4,7 +4,7 @@ from strategy.behaviour import *
 from strategy.actions.movement_behaviours import MarkBallOnAxis, GoToBallUsingUnivector, SpinTask, \
     GoToBallUsingMove2Point, ChargeWithBall, GoBack
 from strategy.actions.state_behaviours import InState
-from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInAttackField
+from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall
 from strategy.strategy_utils import GameStates
 from strategy.base_trees import BaseTree
 
@@ -28,19 +28,26 @@ class Defender(BaseTree):
 
         middle = Sequence("Middle")
         middle.add_child(IsBallInRangeOfDefense("InRangeOfDefense"))
-        middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=6, max_speed=130,
+        middle.add_child(GoToBallUsingUnivector("UsingUnivector", acceptance_radius=5, max_speed=130,
                                                 speed_prediction=False))
         middle.add_child(ChargeWithBall("ChargeWithBall"))
 
         defend.add_child(middle)
 
         mark = Sequence("Mark")
-        reposition = Sequence("reposition")
-        reposition.add_child(AmIInAttackField("AmIInAttackField"))
-        reposition.add_child(GoBack("GoBack", acceptance_radius=3))
-        mark.append(reposition)
 
-        mark.add_child(MarkBallOnAxis("MarkBallonAxis", acceptance_radius=1))
+        reposition = Selector("reposition")
+        kick = Sequence("Kick")
+        kick.add_child(IsNearBall("nearBall"))
+        kick.add_child(SpinTask("Spin", invert=True))
+
+        reposition.add_child(kick)
+        reposition.add_child(AmIInDefenseField("AmIInAttackField"))
+        reposition.add_child(GoBack("GoBack", acceptance_radius=15))
+
+        mark.add_child(reposition)
+        
+        mark.add_child(MarkBallOnAxis("MarkBallonAxis"))
 
         defend.add_child(mark)
         normal.add_child(defend)

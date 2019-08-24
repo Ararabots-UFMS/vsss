@@ -64,14 +64,14 @@ def spin_direction(ball_position, robot_position, team_side, invert=False):
     :return: int
     """
 
-    if team_side == LEFT and not invert:
+    if team_side == LEFT:
         if robot_position[1] >= 65:
-            return OpCodes.SPIN_CCW
-        return OpCodes.SPIN_CW
+            return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
+        return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
     else:
         if robot_position[1] < 65:
-            return OpCodes.SPIN_CW
-        return OpCodes.SPIN_CCW
+            return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
+        return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
 
 
 def border_stuck(position_buffer, orientation):
