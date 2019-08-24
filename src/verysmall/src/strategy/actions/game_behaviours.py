@@ -46,18 +46,23 @@ class IsTheWayFree:
             enemy_to_path_distance = np.linalg.norm(v_ball_enemy) * sin(theta)
             
             if arena_utils.section(enemy_position).value != enemy_goal:
-
+                # É utilizado o x da bola, pois caso o adversário esteja entre 
+                # o robô e a bola, o univector trata a situação
                 ball_x = blackboard.ball.position[0]
                 enemy_x = enemy_position[0]
+
+                # Evita que o caminho seja considerado obstruído por 
+                # adversários atrás do robô
                 if enemy_goal:
                     is_enemy_in_way = enemy_x > ball_x
                 else:
                     is_enemy_in_way = enemy_x < ball_x
 
+
                 if abs(enemy_to_path_distance) <= self.free_way_distance and \
                     is_enemy_in_way :
                     task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-                    break
+                    break # Interrompe o loop para o primeiro robô no caminho.
         return task_result
 
 
