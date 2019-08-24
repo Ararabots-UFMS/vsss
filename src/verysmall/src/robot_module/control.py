@@ -1,16 +1,13 @@
-from typing import Tuple, List
-import numpy as np
 import math
 from bisect import bisect_left
 from time import time
-# import robot_module.robot as robot
+from typing import Tuple, List
+import numpy as np
+from rospy import logfatal
+import utils.math_utils as mth
 from robot_module.PID import PIDController
 from robot_module.movement.definitions import OpCodes
-
 from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
-import utils.math_utils as mth
-
-import rospy
 
 Constants = Tuple[int, float, float, float]
 
@@ -41,6 +38,8 @@ class Control:
 
         if opcode == OpCodes.NORMAL:
             return self._follow_vector(speed, angle, distance)
+        elif opcode == OpCodes.IGNORE_DISTANCE:
+            return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
             return -255, 255
         elif opcode == OpCodes.SPIN_CW:
@@ -56,8 +55,9 @@ class Control:
 
         diff_angle = self.get_diff_angle(angle)
 
-        if optimal_speed == True:
+        if optimal_speed:
             speed = self.get_optimal_speed(speed, diff_angle, distance)
+            speed = min(speed, self._myrobot.get_next_speed())
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
@@ -125,5 +125,5 @@ class Control:
                 distance: float) -> float:
         scale = target_speed - self._max_fine_movement_speed
 
-        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha)))
+        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha * 1.5)))
         return s + self._max_fine_movement_speed
