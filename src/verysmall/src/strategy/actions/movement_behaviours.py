@@ -163,16 +163,15 @@ class MarkBallOnYAxis(TreeNode):
 
         direction /= distance
         
-        x_distance = abs(blackboard.robot.position[0] - self._clamp_min[0])
-        alpha = 1 / (1 + math.exp(x_distance - self._acceptance_radius))
+        alpha = 1 / (1 + math.exp(-distance + self._acceptance_radius))
         y_sign = -1 if direction[1] < 0 else 1
         direction_on_target = np.array([0, y_sign])
 
         final_direction = alpha*direction + (1 - alpha)*direction_on_target
-        
-        
+        logfatal(final_direction)        
         theta = math.atan2(final_direction[1], final_direction[0])
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
+
+        return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE, theta, self._max_speed, distance)
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",

@@ -43,7 +43,7 @@ class GoalKeeper(BaseTree):
         inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b : b.ball.position))
         
         self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90], 
-                                            max_speed = 180,
+                                            max_speed=180,
                                             acceptance_radius=3)
         tree.add_child(self.markBallOnY)
 
