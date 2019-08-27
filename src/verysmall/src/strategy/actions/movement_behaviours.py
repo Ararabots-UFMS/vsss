@@ -163,7 +163,12 @@ class MarkBallOnYAxis(TreeNode):
 
         direction /= distance
         
-        alpha = 1 / (1 + math.exp(-distance + self._acceptance_radius))
+        # alpha = 1 / (1 + math.exp(-distance + self._acceptance_radius))
+        def gaussian(m, v):
+            return math.exp(-(m**2) / (2 * (v**2)))
+        
+        alpha = gaussian(distance - self._acceptance_radius, 4.5)
+
         y_sign = -1 if direction[1] < 0 else 1
         direction_on_target = np.array([0, y_sign])
 
