@@ -407,14 +407,14 @@ class virtualField():
         end = np.array(end)
 
         newPos = None
-        alpha = 5.0 #3.5
+        alpha = 2.0 #3.5
         beta = 3.5
         point_lines = []
 
         distance = np.linalg.norm(currentPos - end)
         it = 0
 
-        while (distance >= beta) and it < 45:
+        while (distance >= beta) and it < 120:
             v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0],
                                                    _ball=end, _attack_goal=self.attack_goal)
             newPos = currentPos + (alpha * v)

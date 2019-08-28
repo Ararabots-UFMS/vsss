@@ -37,7 +37,7 @@ class Control:
                           distance: float) -> Tuple[float, float]:
 
         if opcode == OpCodes.NORMAL:
-            return self._follow_vector(speed, angle, distance)
+            return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.IGNORE_DISTANCE:
             return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
@@ -57,7 +57,8 @@ class Control:
 
         if optimal_speed:
             speed = self.get_optimal_speed(speed, diff_angle, distance)
-            speed = min(speed, self._myrobot.get_next_speed())
+
+        speed = min(speed, self._myrobot.get_next_speed())
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:

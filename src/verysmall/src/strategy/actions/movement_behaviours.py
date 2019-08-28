@@ -172,8 +172,9 @@ class MarkBallOnYAxis(TreeNode):
         y_sign = -1 if direction[1] < 0 else 1
         direction_on_target = np.array([0, y_sign])
 
-        final_direction = alpha*direction + (1 - alpha)*direction_on_target
-        logfatal(final_direction)        
+        final_direction = alpha*direction_on_target + (1 - alpha)*direction
+        #final_direction = direction
+        #logfatal(final_direction)
         theta = math.atan2(final_direction[1], final_direction[0])
 
         return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE, theta, self._max_speed, distance)

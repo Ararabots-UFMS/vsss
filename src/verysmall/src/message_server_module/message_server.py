@@ -114,7 +114,6 @@ class MessageServer:
             self._update_socket_status(socket_id, ServerOpCode.INACTIVE)
             socket = s[1]
             self._close(socket)
-            sleep(self.socket_timeout)
         return response
 
     def _lock_sockets(self):
@@ -192,4 +191,5 @@ class MessageServer:
         rospy.logfatal("REMOVING SOCKET: " + repr(sock))
         self._adapter_lock.acquire()
         sock.close()
+        sleep(self.socket_timeout)
         self._adapter_lock.release()

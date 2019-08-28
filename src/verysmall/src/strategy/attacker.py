@@ -26,7 +26,7 @@ class Attacker(BaseTree):
     
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
-        tree.add_child(IsBallInsideCentralArea("Check ball"))
+        #tree.add_child(IsBallInsideCentralArea("Check ball"))
         ignore_failure = IgnoreFailure()
         ignore_failure.add_child(FreeWayAttack())
         tree.add_child(ignore_failure)

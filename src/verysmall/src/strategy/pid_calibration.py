@@ -12,7 +12,7 @@ import numpy as np
 class CalibrationTree(Selector):
     def __init__(self, name="behave"):
         super().__init__(name)
-        self.waypoints_list = cycle([(50, 50), (100, 50), (100, 100), (50, 100)])
+        self.waypoints_list = cycle([(37.5, 25), (112.5, 25), (112.5, 105), (37.5, 105)])
         stop_sequence = Sequence('Stop Sequence')
         stop_sequence.children.append(InState('Stopped Game?', GameStates.STOPPED))
         stop_sequence.children.append(StopAction('Wait'))
