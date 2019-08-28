@@ -18,7 +18,7 @@ class Control:
                  max_fine_movment_speed) -> None:
         self._myrobot = myrobot
         self._max_fine_movment_speed = max_fine_movment_speed
-        self._alpha = 15  # centimeters
+        self._alpha = 10  # centimeters
 
         self._head = FORWARD
         self._hysteresis_angle_window = 10 * DEG2RAD
@@ -37,7 +37,7 @@ class Control:
                           distance: float) -> Tuple[float, float]:
 
         if opcode == OpCodes.NORMAL:
-            return self._follow_vector(speed, angle, distance, optimal_speed=False)
+            return self._follow_vector(speed, angle, distance)
         elif opcode == OpCodes.IGNORE_DISTANCE:
             return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
@@ -126,5 +126,5 @@ class Control:
                 distance: float) -> float:
         scale = target_speed - self._max_fine_movment_speed
 
-        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha * 1.5)))
+        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha)))
         return s + self._max_fine_movment_speed

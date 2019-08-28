@@ -62,6 +62,6 @@ class GoalKeeper(BaseTree):
         s = 1 if a > 0 else -1
 
         x = blackboard.home_goal.position[0] + s*8
-        return ([x, 30], [x, 90])
+        return ([x, 40], [x, 90])
 
 

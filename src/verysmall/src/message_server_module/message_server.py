@@ -77,7 +77,7 @@ class MessageServer:
 
             try:
                 self._connect(sock, mac_str, 1)
-                sock.settimeout(self.socket_timeout)
+                #sock.settimeout(self.socket_timeout)
 
                 self._sockets[socket_id] = (mac_str, sock)
 

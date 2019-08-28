@@ -177,7 +177,7 @@ class MarkBallOnYAxis(TreeNode):
         #logfatal(final_direction)
         theta = math.atan2(final_direction[1], final_direction[0])
 
-        return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE, theta, self._max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
