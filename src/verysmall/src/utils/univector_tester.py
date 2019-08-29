@@ -7,6 +7,7 @@ from robot_module.movement.univector.un_field import UnivectorField
 from strategy.arena_utils import MAX_W_SIZE, MAX_H_SIZE
 from robot_module.movement.univector.debug import enemyColor, teamColor
 import cv2
+from functools import partial
 
 enemies = [[int(0.25 * MAX_W_SIZE), int(0.75 * MAX_H_SIZE)],
            [int(0.5 * MAX_W_SIZE), int(0.25 * MAX_H_SIZE)],
@@ -14,6 +15,7 @@ enemies = [[int(0.25 * MAX_W_SIZE), int(0.75 * MAX_H_SIZE)],
            ]
 enemies_speed = np.array([[0, 0] for _ in range(len(enemies))])
 
+global point_global
 
 def drawRobot(img, robotPos, enemy=False):
     if enemy:
@@ -76,8 +78,7 @@ def drawPath(img, start, end, univetField, new_uni=False, should_draw=False):
             else:
                 cv2.line(img, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), (255, 255, 0), 3)
 
-            cv2.imshow('field', img)
-            cv2.waitKey(1)
+            #cv2.waitKey(1)
 
         if (time.time() - t0) > 0.5:
             return False, newPos
@@ -85,6 +86,30 @@ def drawPath(img, start, end, univetField, new_uni=False, should_draw=False):
         currentPos = newPos
         _currentPos = _newPos
     return True, None
+
+def redraw(imagem_original, univetField):
+
+    robo, bola = point_global
+
+    imgField2 = np.copy(imagem_original)
+
+    drawBall(imgField2, cm2pixel(bola))
+    for enemy_pos in enemies:
+        drawRobot(imgField2, enemy_pos, True)
+
+    drawPath(imgField2, robo, bola, univetField, False, should_draw)
+
+    drawPath(imgField2, robo, bola, None, True, should_draw)
+
+    cv2.imshow("Path", imgField2)
+    #cv2.waitKey(1)
+
+def callback(key, img, uni, scale, value):
+    uni.__setattr__(key, value/scale)
+    uni.update_constants(uni.RADIUS, uni.KR, uni.K0, uni.DMIN, uni.LDELTA)
+    
+    
+
 
 
 if __name__ == "__main__":
@@ -105,31 +130,37 @@ if __name__ == "__main__":
     univetField.update_obstacles(enemies, enemies_speed)
 
     juan_vector = old_vector = total_points = 0
-    should_draw = False
+    should_draw = True
+
+    range = 10000
+    scale = 100
+    cv2.namedWindow("Path", 1)
+    cv2.imshow("Path", imgField)
+    cv2.createTrackbar("RADIUS", "Path", int(RADIUS*scale), range, partial(callback,"RADIUS", imgField, univetField, scale))
+    cv2.createTrackbar("KR", "Path", int(KR*scale), range, partial(callback,"KR", imgField, univetField, scale))
+    cv2.createTrackbar("K0", "Path", int(K0*scale), range, partial(callback,"K0", imgField, univetField, scale))
+    cv2.createTrackbar("DMIN", "Path", int(DMIN*scale), range, partial(callback,"DMIN", imgField, univetField, scale))
+    cv2.createTrackbar("LDELTA", "Path", int(LDELTA*scale), range, partial(callback,"LDELTA", imgField, univetField, scale))
+    
+    point_global = None
+    quero_mais = True
 
     for point in content:
-        imgField2 = np.copy(imgField)
+        if not quero_mais:
+            break
 
-        if should_draw:
-            drawBall(imgField2, cm2pixel(point[1]))
-            for enemy_pos in enemies:
-                drawRobot(imgField2, enemy_pos, True)
+        while quero_mais:
+            point_global = point
+            redraw(imgField, univetField)
+            key  = cv2.waitKey(int(1/60*1000)) & 0xFF
+    
+            if key == ord('q'): 
+                cv2.destroyAllWindows()
+                quero_mais = False
 
-        result, _ = drawPath(imgField2, point[0], point[1], univetField, False, should_draw)
-        old_vector += result
+            if key == ord('s'):
+                const = {"RADIUS": univetField.RADIUS, "KR": univetField.KR, "K0": univetField.K0, "DMIN": univetField.DMIN, "LDELTA": univetField.LDELTA}
+                JsonHandler().write(const, "parameters/univector_constants.json")
 
-        result, _ = drawPath(imgField2, point[0], point[1], None, True, should_draw)
-        juan_vector += result
-
-        # cv2.imshow('field', imgField2)
-        if should_draw:
-            cv2.waitKey(0)
-
-        total_points += 1
-
-        if total_points % 100 == 0:
-            print("Old Vector Success Rate: " + str(old_vector / total_points))
-            print("Juan Vector Success Rate: " + str(juan_vector / total_points))
-
-    print("Old Vector Success Rate: " + str(old_vector / total_points))
-    print("Juan Vector Success Rate: " + str(juan_vector / total_points))
+            if key == 13:
+                break

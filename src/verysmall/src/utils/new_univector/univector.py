@@ -2,11 +2,11 @@ from math import pi, sqrt, cos, sin, atan2
 import utils.new_univector.math_utils as math_utils
 import numpy as np
 
-de =  12#5.37
-kr = 6
-ko = 40
-d_min = 8.5
-delta = 4.5
+de =  5.37#5.37
+kr = 4.15
+ko = 0.12
+d_min = 3.48
+delta = 4.57
 
 
 def v_obs():
