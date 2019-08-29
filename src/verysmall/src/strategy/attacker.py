@@ -2,10 +2,11 @@ from strategy.behaviour import *
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.actions.state_behaviours import InState
 from strategy.actions.game_behaviours import IsBallInsideCentralArea
-from strategy.strategy_utils import GameStates
+from strategy.strategy_utils import GameStates, behind_ball
 from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask
 from robot_module.movement.definitions import OpCodes
 from strategy.actions.decorators import IgnoreFailure
+from strategy.arena_utils import inside_rectangle
 
 
 import rospy
@@ -35,3 +36,10 @@ class Attacker(BaseTree):
         tree.add_child(go_to_ball)
 
         return tree
+
+    def enemy_goal-line_behaviour():
+        robot_position = blackboard.robot.position
+        ball_position = blackboard.ball.position
+        
+
+        if robot_position and ball_position 
