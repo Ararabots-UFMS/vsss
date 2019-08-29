@@ -8,7 +8,7 @@ from robot_module.movement.definitions import OpCodes
 from strategy.actions.decorators import IgnoreFailure
 from strategy.arena_utils import inside_rectangle
 
-
+import numpy as np
 import rospy
 
 
@@ -37,9 +37,15 @@ class Attacker(BaseTree):
 
         return tree
 
-    def enemy_goal-line_behaviour():
-        robot_position = blackboard.robot.position
+    def enemy_goalline_behaviour(self):
+        self.robot_position = blackboard.robot.position
         ball_position = blackboard.ball.position
         
+        if blackboard.enemy_goal.side == "LEFT":
+            enemy_goalline = np.array([16, 0])
+        else:
+            enemy_goalline = np.array([134, 0])
 
-        if robot_position and ball_position 
+        if self.robot_position[0] <= enemy_goalline[0] and ball_position[0] <= enemy_goalline[0]:
+            debug_print = "Pinto"
+            logfatal(debug_print)
