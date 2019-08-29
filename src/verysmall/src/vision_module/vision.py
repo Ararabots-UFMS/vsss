@@ -69,7 +69,8 @@ class Vision:
 
         # Super necessary to compute the robots positions
         self.origin = None
-        self.conversion_factor = None
+        self.conversion_factor_x = None
+        self.conversion_factor_y = None
 
         self.game_on = False
         self.finish = False
@@ -111,8 +112,9 @@ class Vision:
         if "aruco" in self.seekers.values():
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
 
-        self.hawk_eye = HawkEye(self.origin, self.conversion_factor, self.seekers, self.num_yellow_robots,
-                                self.num_blue_robots, self.arena_image.shape, hawk_eye_extra_params)
+        self.hawk_eye = HawkEye(self.origin, self.conversion_factor_x, self.conversion_factor_y,
+                                self.seekers, self.num_yellow_robots, self.num_blue_robots,
+                                self.arena_image.shape, hawk_eye_extra_params)
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -154,21 +156,25 @@ class Vision:
 
         # xo is the third smaller vertice element because the first two ones are
         # the goal vertices
-        xo = x[2]
+        xo = np.mean(x[2:6])
 
         y_sorted = np.sort(self.arena_vertices[:, 1])
 
-        upper_y = y_sorted[0]
+        upper_y = np.mean(y_sorted[:2])
 
         # the yo origin is the most bottom vertice
-        yo = y_sorted[-1]
+        yo = np.mean(y_sorted[-2:])
         self.origin = np.array([xo, yo])
+
+        rightmost_x = np.mean(x[10:14])
 
         # The height in pixels is the diff between yo and ymax
         height_px = abs(yo - upper_y)
+        width_px = abs(xo - rightmost_x)
 
         # now just calculate the pixel to cm factor
-        self.conversion_factor = 130.0 / height_px
+        self.conversion_factor_x = 150.0 / width_px
+        self.conversion_factor_y = 130.0 / height_px
 
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""

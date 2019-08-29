@@ -17,6 +17,10 @@
         "blue": "aruco",
         "yellow": "aruco"
     },
+<<<<<<< HEAD
     "side": 1,
+=======
+    "side": 0,
+>>>>>>> dev
     "time": 0
 }
