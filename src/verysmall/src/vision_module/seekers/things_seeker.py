@@ -145,11 +145,12 @@ class HawkEye:
 
     # https://docs.opencv.org/master/d9/d8b/tutorial_py_contours_hierarchy.html#gsc.tab=0
 
-    def __init__(self, field_origin, conversion_factor, seekers, num_robots_yellow_team,
+    def __init__(self, field_origin, conversion_factor_x, conversion_factor_y, seekers, num_robots_yellow_team,
                  num_robots_blue_team, img_shape, aux_params):
 
         self.field_origin = field_origin
-        self.conversion_factor = conversion_factor
+        self.conversion_factor_x = conversion_factor_x
+        self.conversion_factor_y = conversion_factor_y
         self.rad_to_degree_factor = 180.0 / math.pi
         self.num_robots_yellow_team = num_robots_yellow_team
         self.num_robots_blue_team = num_robots_blue_team
@@ -184,9 +185,9 @@ class HawkEye:
     def pixel_to_real_world(self, pos):
         # This function expects that pos is a 1D numpy array
         pos = pos - self.field_origin
-        pos[1] *= -1
-
-        return pos * self.conversion_factor
+        pos[0] *= self.conversion_factor_x
+        pos[1] *= -self.conversion_factor_y
+        return pos
 
     def aruco_seek(self, img, robots_list, seeker):
         """ This function expects a binary image with the team robots and a list
