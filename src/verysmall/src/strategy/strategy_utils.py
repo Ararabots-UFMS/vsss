@@ -6,6 +6,8 @@ from utils import math_utils
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
 
+import rospy
+
 CW = 0
 CCW = 1
 
@@ -45,14 +47,16 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     :params team_side: int
     :return: boolean
     """
+    
+    deltaY = abs(ball_position[1] - robot_position[1])
+    
     if team_side == LEFT:
         if near_ball(ball_position, robot_position, _distance):
-            return robot_position[0] < ball_position[0]
+            return robot_position[0] <= ball_position[0] and deltaY <= 5 
     else:
         if near_ball(ball_position, robot_position, _distance):
-            return robot_position[0] > ball_position[0]
-    return False
-
+            return robot_position[0] >= ball_position[0] and deltaY <= 5
+    return False 
 
 def spin_direction(ball_position, robot_position, team_side):
     """
