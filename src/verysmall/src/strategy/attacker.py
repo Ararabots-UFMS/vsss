@@ -6,7 +6,7 @@ from strategy.strategy_utils import GameStates, behind_ball
 from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask
 from robot_module.movement.definitions import OpCodes
 from strategy.actions.decorators import IgnoreFailure
-from strategy.arena_utils import inside_rectangle
+from strategy.arena_utils import inside_rectangle, RIGHT, LEFT
 
 import numpy as np
 import rospy
@@ -19,8 +19,8 @@ class Attacker(BaseTree):
 
         normal = Sequence('Normal')
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
+        normal.add_child(enemy_goalline_behaviour("seilabeio"))
         normal.add_child(self.naive_go_to_ball())
-
 
         #normal.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
         normal.add_child(SpinTask('Spin'))  # Spin
@@ -37,15 +37,26 @@ class Attacker(BaseTree):
 
         return tree
 
-    def enemy_goalline_behaviour(self):
+class enemy_goalline_behaviour(TreeNode):
+    
+    def run(self, blackboard: BlackBoard):
         self.robot_position = blackboard.robot.position
         ball_position = blackboard.ball.position
         
-        if blackboard.enemy_goal.side == "LEFT":
-            enemy_goalline = np.array([16, 0])
+        if blackboard.enemy_goal.side == LEFT:
+            enemy_goalline = 16
+            #16cm in arena means the goal line
+            
+            if self.robot_position[0] <= enemy_goalline and ball_position[0] <= enemy_goalline:
+                debug_print = "Pinto"
+                rospy.logfatal(debug_print)
         else:
-            enemy_goalline = np.array([134, 0])
+            enemy_goalline = 134
+            #16cm in arena means the another goal line
+            
+            if self.robot_position[0] >= enemy_goalline and ball_position[0] >= enemy_goalline:
+                debug_print = "Pinto"
+                rospy.logfatal(debug_print)
 
-        if self.robot_position[0] <= enemy_goalline[0] and ball_position[0] <= enemy_goalline[0]:
-            debug_print = "Pinto"
-            logfatal(debug_print)
+        return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        
