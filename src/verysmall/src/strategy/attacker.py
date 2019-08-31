@@ -25,8 +25,8 @@ class Attacker(BaseTree):
         normal.add_child(normal_actions)
         
         normal_actions.add_child(self.ball_and_robot_in_attack_goalline())
-        normal_actions.add_child(self.naive_go_to_ball())
-        normal_actions.add_child(SpinTask('Spin'))  # Spin 
+        #normal_actions.add_child(self.naive_go_to_ball())
+        #normal_actions.add_child(SpinTask('Spin'))  # Spin 
         
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
@@ -42,9 +42,9 @@ class Attacker(BaseTree):
     
     def ball_and_robot_in_attack_goalline(self) -> TreeNode:
         tree = Sequence('BallAndRobotInAttackGoalLine')
-        tree.add_child(Verify_EnemyGoalLine("EnemyGoalLine"))
-        tree.add_child(IsBehindBall('IsBehindBall', 10))
-        tree.add_child(ChargeWithBall('Atack'))
+        #tree.add_child(Verify_EnemyGoalLine("EnemyGoalLine"))
+        #tree.add_child(IsBehindBall('IsBehindBall', 10))
+        tree.add_child(ChargeWithBall('Attack'))
 
         return tree
 
@@ -54,18 +54,16 @@ class Verify_EnemyGoalLine(TreeNode):
         self.robot_position = blackboard.robot.position
         ball_position = blackboard.ball.position
         
-        if blackboard.enemy_goal.side == RIGHT:
+        if blackboard.enemy_goal.side == LEFT:
             enemy_goalline = 16
             #16cm in arena means the goal line
-            
-            if self.robot_position[0] >= enemy_goalline and ball_position[0] >= enemy_goalline:
+            if self.robot_position[0] <= enemy_goalline and ball_position[0] <= enemy_goalline:
                 return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         
-        elif blackboard.enemy_goal.side == LEFT:
+        elif blackboard.enemy_goal.side == RIGHT:
             enemy_goalline = 134
             #134cm in arena means the another goal line
-            
-            if self.robot_position[0] <= enemy_goalline and ball_position[0] <= enemy_goalline:
+            if self.robot_position[0] >= enemy_goalline and ball_position[0] >= enemy_goalline:
                 return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
             
 

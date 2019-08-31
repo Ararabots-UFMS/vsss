@@ -112,8 +112,8 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
 
 
 class ChargeWithBall(TreeNode):
-
-    def __init__(self, name='ChargeWithBall', max_speed: int = 255):
+    
+    def __init__(self, name='ChargeWithBall', max_speed: int = 250):
         super().__init__(name)
         self.max_speed = max_speed
         self.x_vector = np.array([1.0, 0.0])
@@ -123,13 +123,13 @@ class ChargeWithBall(TreeNode):
 
         angle = angle_between(
             self.x_vector,
-            goal_vector
+            goal_vector,
+            abs=False
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
-
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
-
+       
 
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
