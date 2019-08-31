@@ -163,7 +163,6 @@ class MarkBallOnYAxis(TreeNode):
 
         direction /= distance
         
-        # alpha = 1 / (1 + math.exp(-distance + self._acceptance_radius))
         def gaussian(m, v):
             return math.exp(-(m**2) / (2 * (v**2)))
         
@@ -173,8 +172,6 @@ class MarkBallOnYAxis(TreeNode):
         direction_on_target = np.array([0, y_sign])
 
         final_direction = alpha*direction_on_target + (1 - alpha)*direction
-        #final_direction = direction
-        #logfatal(final_direction)
         theta = math.atan2(final_direction[1], final_direction[0])
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
