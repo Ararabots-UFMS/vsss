@@ -15,7 +15,8 @@ enemies = [[int(0.25 * MAX_W_SIZE), int(0.75 * MAX_H_SIZE)],
            ]
 enemies_speed = np.array([[0, 0] for _ in range(len(enemies))])
 
-global point_global
+global point_global, old_vector, juan_vector
+juan_vector = old_vector = total_points = 0
 
 def drawRobot(img, robotPos, enemy=False):
     if enemy:
@@ -87,7 +88,10 @@ def drawPath(img, start, end, univetField, new_uni=False, should_draw=False):
         _currentPos = _newPos
     return True, None
 
-def redraw(imagem_original, univetField):
+def redraw(imagem_original, univetField, can_count = False, should_draw = True):
+
+    global old_vector
+    global juan_vector
 
     robo, bola = point_global
 
@@ -97,11 +101,18 @@ def redraw(imagem_original, univetField):
     for enemy_pos in enemies:
         drawRobot(imgField2, enemy_pos, True)
 
-    drawPath(imgField2, robo, bola, univetField, False, should_draw)
+    result, _ = drawPath(imgField2, robo, bola, univetField, False, should_draw)
+    
+    if can_count:
+        old_vector += result
 
-    drawPath(imgField2, robo, bola, None, True, should_draw)
+    result, _ = drawPath(imgField2, robo, bola, None, True, should_draw)
+    
+    if can_count:
+        juan_vector += result
 
-    cv2.imshow("Path", imgField2)
+    if should_draw:
+        cv2.imshow("Path", imgField2)
     #cv2.waitKey(1)
 
 def callback(key, img, uni, scale, value):
@@ -116,7 +127,7 @@ if __name__ == "__main__":
     imgField = cv2.imread('../robot_module/movement/univector/img/vss-field.jpg')
 
     content = read_file()
-    # content = np.array([[[100, 75], [int(0.05 * MAX_W_SIZE), int(0.75 * MAX_H_SIZE)]]])
+    # content = np.array([[[100, 75], [int(0.05 * MAX_W_SIZE), int(0.75 * MAX_H_SIZE)]]]    
     univector_list = JsonHandler().read("parameters/univector_constants.json")
 
     # Creates the univector field
@@ -130,28 +141,37 @@ if __name__ == "__main__":
     univetField.update_obstacles(enemies, enemies_speed)
 
     juan_vector = old_vector = total_points = 0
-    should_draw = True
+    should_draw = False
 
-    range = 10000
-    scale = 100
-    cv2.namedWindow("Path", 1)
-    cv2.imshow("Path", imgField)
-    cv2.createTrackbar("RADIUS", "Path", int(RADIUS*scale), range, partial(callback,"RADIUS", imgField, univetField, scale))
-    cv2.createTrackbar("KR", "Path", int(KR*scale), range, partial(callback,"KR", imgField, univetField, scale))
-    cv2.createTrackbar("K0", "Path", int(K0*scale), range, partial(callback,"K0", imgField, univetField, scale))
-    cv2.createTrackbar("DMIN", "Path", int(DMIN*scale), range, partial(callback,"DMIN", imgField, univetField, scale))
-    cv2.createTrackbar("LDELTA", "Path", int(LDELTA*scale), range, partial(callback,"LDELTA", imgField, univetField, scale))
+    if should_draw:
+        range = 10000
+        scale = 100
+        cv2.namedWindow("Path", 1)  
+        cv2.imshow("Path", imgField)
+        cv2.createTrackbar("RADIUS", "Path", int(RADIUS*scale), range, partial(callback,"RADIUS", imgField, univetField, scale))
+        cv2.createTrackbar("KR", "Path", int(KR*scale), range, partial(callback,"KR", imgField, univetField, scale))
+        cv2.createTrackbar("K0", "Path", int(K0*scale), range, partial(callback,"K0", imgField, univetField, scale))
+        cv2.createTrackbar("DMIN", "Path", int(DMIN*scale), range, partial(callback,"DMIN", imgField, univetField, scale))
+        cv2.createTrackbar("LDELTA", "Path", int(LDELTA*scale), range, partial(callback,"LDELTA", imgField, univetField, scale))
     
     point_global = None
     quero_mais = True
+    old_vector = juan_vector = 0
 
     for point in content:
         if not quero_mais:
             break
 
-        while quero_mais:
-            point_global = point
-            redraw(imgField, univetField)
+        point_global = point
+        redraw(imgField, univetField, True, should_draw)
+        total_points += 1
+
+        if total_points % 100 == 0:
+            print("Old Vector Success Rate: " + str(old_vector / total_points))
+            print("Juan Vector Success Rate: " + str(juan_vector / total_points))
+
+        while quero_mais and should_draw:
+            redraw(imgField, univetField, False, should_draw)
             key  = cv2.waitKey(int(1/60*1000)) & 0xFF
     
             if key == ord('q'): 
@@ -164,3 +184,7 @@ if __name__ == "__main__":
 
             if key == 13:
                 break
+
+
+    print("Old Vector Success Rate: " + str(old_vector / total_points))
+    print("Juan Vector Success Rate: " + str(juan_vector / total_points))
