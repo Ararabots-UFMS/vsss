@@ -13,6 +13,7 @@ from vision_module import COLORS
 from verysmall.msg import game_topic
 from utils.json_handler import JsonHandler
 from ROS.ros_vision_publisher import RosVisionPublisher
+from time import sleep
 
 # @author Wellington Castro <wvmcastro>
 
@@ -73,6 +74,7 @@ class Vision:
         self.conversion_factor_y = None
 
         self.game_on = False
+        self.in_calibration_mode = False
         self.finish = False
 
         # Creates the lists to the home team and the adversary
@@ -121,6 +123,9 @@ class Vision:
         if self.game_state:
             self.hawk_eye.reset()
             self.reset_all_things()
+
+    def toggle_calibration(self):
+        self.in_calibration_mode = not self.in_calibration_mode
 
     def reset_all_things(self):
         # Used when the game state changes to playing
@@ -238,7 +243,7 @@ class Vision:
         while not self.finish:
 
             self.last_time = time.time()
-            while self.game_on:
+            while self.game_on and not self.in_calibration_mode:
                 self.raw_image = self.camera.read()
                 """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
@@ -264,6 +269,10 @@ class Vision:
 
                 self.send_message(ball=True, yellow_team=True, blue_team=True)
                 self.update_fps()
+
+            if self.in_calibration_mode:
+                sleep(0.016)
+
 
         self.camera.stop()
         self.camera.capture.release()
