@@ -80,32 +80,38 @@ if __name__ == "__main__":
         owner_name = 1
 
     vision_node = VisionNode(owner_name)
-    rate = rospy.Rate(1)  # 30hz
+    rate = rospy.Rate(1)  # 1hz
 
     while not rospy.is_shutdown():
         if vision_node.show:
             cv2.imshow('vision', cv2.cvtColor(vision_node.vision.arena_image, cv2.COLOR_HSV2BGR))
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
+                rate = rospy.Rate(1)  # 1hz
                 vision_node.show = not vision_node.show
                 cv2.destroyAllWindows()
                 vision_node.vision.computed_frames = 0
                 vision_node.vision.t0 = time()
         if vision_node.state_changed:  # Process requisition
             if vision_node.state_changed == VisionOperations.SHOW.value:
-                vision_node.show = not vision_node.show
+                rate = rospy.Rate(60)  # 60hz
+                vision_node.show = True  # not vision_node.show
 
             elif vision_node.state_changed == VisionOperations.CROPPER.value:
+                vision_node.vision.toggle_calibration(True)
                 vision_node.vision.params_setter.run()
                 vision_node.vision.load_params()
+                vision_node.vision.toggle_calibration(False)
 
             elif vision_node.state_changed == VisionOperations.COLOR_CALIBRATION.value:
                 # This will verify if the color segmentation technique is
                 # the chosen one
                 if vision_node.vision.colors_params_file != "":
                     # if it is, execute the color calibrator
+                    vision_node.vision.toggle_calibration(True)
                     vision_node.vision.color_calibrator.run()
                     vision_node.vision.load_colors_params()
+                    vision_node.vision.toggle_calibration(False)
 
             vision_node.state_changed = 0
         rate.sleep()
