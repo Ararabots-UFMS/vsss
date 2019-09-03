@@ -124,8 +124,11 @@ class Vision:
             self.hawk_eye.reset()
             self.reset_all_things()
 
-    def toggle_calibration(self):
-        self.in_calibration_mode = not self.in_calibration_mode
+    def toggle_calibration(self, new_value: bool = None) -> None:
+        if new_value:
+            self.in_calibration_mode = new_value
+        else:
+            self.in_calibration_mode = not self.in_calibration_mode
 
     def reset_all_things(self):
         # Used when the game state changes to playing
@@ -272,7 +275,6 @@ class Vision:
 
             if self.in_calibration_mode:
                 sleep(0.016)
-
 
         self.camera.stop()
         self.camera.capture.release()
