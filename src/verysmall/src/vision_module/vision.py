@@ -125,7 +125,7 @@ class Vision:
             self.reset_all_things()
 
     def toggle_calibration(self, new_value: bool = None) -> None:
-        if new_value:
+        if new_value is not None:
             self.in_calibration_mode = new_value
         else:
             self.in_calibration_mode = not self.in_calibration_mode
