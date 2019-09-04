@@ -36,9 +36,9 @@ class Control:
                           speed: int,
                           distance: float) -> Tuple[float, float]:
 
-        if opcode == OpCodes.NORMAL:
+        if opcode == OpCodes.SMOOTH:
             return self._follow_vector(speed, angle, distance)
-        elif opcode == OpCodes.IGNORE_DISTANCE:
+        elif opcode == OpCodes.NORMAL:
             return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
             return -255, 255
