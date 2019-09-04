@@ -206,7 +206,7 @@ class GoToGoalCenter(TreeNode):
 
 class GoToPosition(TreeNode):
 
-    def __init__(self, name: str = 'Straight Line Movement',
+    def __init__(self, name: str = "Straight Line Movement",
                  max_speed: int = 80,
                  acceptance_radius: float = 10.0,
                  position: list = None,

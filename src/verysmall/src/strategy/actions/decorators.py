@@ -67,3 +67,19 @@ class Timer(Decorator):
             else:
                 self.initial_time = time.time()
                 return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+
+class IgnoreSmoothing(Decorator):
+    def __init__(self, name: str = "IgnoreSmoothing"):
+        super().__init__(name)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if self.child is None:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        else:     
+            status, action = self.child.run(blackboard)
+            # TODO: Actions None
+            if status != TaskStatus.FAILURE and action is not None:
+                if action[0] == OpCodes.SMOOTH:
+                    rospy.logfatal("No smoothing. Can't stop me, bitch!")
+                    action = (OpCodes.NORMAL, action[1], action[2], action[3])
+            return status, action

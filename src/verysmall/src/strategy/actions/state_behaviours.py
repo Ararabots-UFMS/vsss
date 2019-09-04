@@ -1,5 +1,6 @@
 from strategy.behaviour import TaskStatus, Sequence, BlackBoard
 from strategy.strategy_utils import GameStates
+from robot_module.movement.definitions import OpCodes
 
 
 class InState:
@@ -9,7 +10,7 @@ class InState:
 
     def run(self, blackboard):
         if self.desired_state == blackboard.game.state:
-            return TaskStatus.SUCCESS, None
+            return TaskStatus.SUCCESS, ()
 
         return TaskStatus.FAILURE, None
 
