@@ -101,10 +101,29 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self):
+    def __init__(self, position_buffer_length=30):
         self.position = np.array([0, 0])
+        self._position_buffer_length = position_buffer_length
+        self.position_buffer_x = [0 for _ in range(position_buffer_length)]
+        self.position_buffer_y = [0 for _ in range(position_buffer_length)]
+
+        # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
         self.speed = np.array([0, 0])
         self.orientation = .0
+
+    def __setattr__(self, key, value):
+        if key == 'position' and (value[0] or value[1]):
+            self.position_buffer_x.pop()
+            self.position_buffer_x.append(value[0])
+            self.position_buffer_y.pop()
+            self.position_buffer_y.append(value[1])
+        super().__setattr__(key, value)
+
+    def get_predicted_position_over_seconds(self, seconds_in_future=1):
+        return np.array([
+            np.polyval(self.position_buffer_x, self._position_buffer_length + seconds_in_future - 1),
+            np.polyval(self.position_buffer_y, self._position_buffer_length + seconds_in_future - 1)
+        ])
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
