@@ -1,19 +1,15 @@
-import sys
-
 import numpy as np
-
-sys.path.append('../')
 import math
 from math import pi
-from math import cos, sin, atan2
+from math import cos, sin, atan2, exp
 
-sys.path.append('../../../')
-from utils.math_utils import gaussian
 from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
 
 LEFT = 0
 RIGHT = 1
 
+def gaussian(m, v):
+    return exp(-(m**2) / (2 * (v**2)))
 
 def wrap2pi(theta: float) -> float:
     if theta > pi:
@@ -297,16 +293,6 @@ class UnivectorField:
             # Checks if at least one obstacle exist
             if self.obstacles.size:
                 g = gaussian(min_distance - self.DMIN, self.LDELTA)
-                # a + jb
-                # c + jd
-                # a*c + jad + jcb -b*d
-                # a*c - b*d, j(ad+cb)
-                # fi_auf *= g
-                # fi_tuf *= (1.0-g)
-                # v1 = np.array([cos(fi_auf), sin(fi_auf)])
-                # v2 = np.array([cos(fi_tuf), sin(fi_tuf)])
-                # result = np.array([v1[0]*v2[0]-v1[1]*v2[1], v1[0]*v2[1]+v2[0]*v1[1]])
-                # return atan2(result[1], result[0])
                 diff = wrap2pi(fi_auf - fi_tuf)
                 return wrap2pi(g * diff + fi_tuf)
             else:  # if there is no obstacles

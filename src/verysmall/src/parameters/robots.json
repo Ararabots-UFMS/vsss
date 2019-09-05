@@ -1,10 +1,10 @@
 {
     "robot_1": {
         "active": 1,
-        "bluetooth_mac_address": "Et_Bilu",
-        "body_id": "Et_Bilu",
-        "role": "Atacante",
-        "tag_number": 2
+        "bluetooth_mac_address": "Jeremias",
+        "body_id": "Jeremias",
+        "role": "PID Calibration",
+        "tag_number": 0
     },
     "robot_2": {
         "active": 0,
