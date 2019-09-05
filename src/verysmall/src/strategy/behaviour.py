@@ -101,9 +101,9 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self, position_buffer_length=30):
+    def __init__(self, position_buffer_length=60):
         self.position = np.array([0, 0])
-        self._position_buffer_length = position_buffer_length
+        self._position_buffer_length = position_buffer_length/60
         self.position_buffer_x = [0 for _ in range(position_buffer_length)]
         self.position_buffer_y = [0 for _ in range(position_buffer_length)]
 
