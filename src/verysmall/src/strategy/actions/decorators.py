@@ -77,9 +77,6 @@ class IgnoreSmoothing(Decorator):
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
         else:     
             status, action = self.child.run(blackboard)
-            # TODO: Actions None
-            if status != TaskStatus.FAILURE and action is not None:
-                if action[0] == OpCodes.SMOOTH:
-                    rospy.logfatal("No smoothing. Can't stop me, bitch!")
-                    action = (OpCodes.NORMAL, action[1], action[2], action[3])
+            if action[0] == OpCodes.SMOOTH:
+                action = (OpCodes.NORMAL, action[1], action[2], action[3])
             return status, action

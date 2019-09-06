@@ -3,7 +3,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.actions.state_behaviours import InState
 from strategy.actions.game_behaviours import IsBallInsideCentralArea
 from strategy.strategy_utils import GameStates
-from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask
+from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask, ChargeWithBall
 from robot_module.movement.definitions import OpCodes
 from strategy.actions.decorators import IgnoreFailure, IgnoreSmoothing
 
@@ -25,9 +25,10 @@ class Attacker(BaseTree):
         ignore_failure.add_child(FreeWayAttack())
         normal.add_child(ignore_failure)
         ignore_smoothing = IgnoreSmoothing(name="Ignore smoothing free way attack")
-        ignore_smoothing.add_child(GoToBallUsingUnivector('FollowBall'))
-        normal.add_child(ignore_smoothing)
-        normal.add_child(SpinTask('Spin')) """
+        ignore_smoothing.add_child(GoToBallUsingUnivector(max_speed=0))
+        #normal.add_child(ignore_smoothing)
+        normal.add_child(GoToBallUsingUnivector())
+        #normal.add_child(SpinTask('Spin')) """
 
         self.add_child(normal)
         

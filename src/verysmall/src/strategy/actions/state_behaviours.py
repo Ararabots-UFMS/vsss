@@ -10,9 +10,9 @@ class InState:
 
     def run(self, blackboard):
         if self.desired_state == blackboard.game.state:
-            return TaskStatus.SUCCESS, ()
+            return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
-        return TaskStatus.FAILURE, None
+        return TaskStatus.FAILURE, (OpCodes.STOP, 0, 0, 0)
 
 
 class ChangeState:
@@ -22,4 +22,4 @@ class ChangeState:
 
     def run(self, blackboard):
         blackboard.game.state = self.target_state
-        return TaskStatus.FAILURE, None
+        return TaskStatus.FAILURE, (OpCodes.STOP, 0, 0, 0)
