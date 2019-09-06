@@ -14,6 +14,9 @@ HALF_ARENA_WIDTH = 75
 MAX_H_SIZE = 130
 MAX_W_SIZE = 150
 
+LEFT_GOAL_CENTER_X = 8 
+RIGHT_GOAL_CENTER_X = 134
+
 
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
@@ -62,10 +65,10 @@ Offsets = [
     array([0.0, 0.0]),  # RIGHT_GOAL_AREA
 
     array([0.0, 0.0]),  # LEFT_GOAL
-    array([0.0, 0.0]),  # RIGHT_GOAL
-    array([1.0, -1.0]),  # LEFT_UP_CORNER
-    array([1.0, 1.0]),  # LEFT_DOWN_CORNER
-    array([-1.0, -1.0]),  # RIGHT_UP_CORNER
+    array([0.0, 0.0]),  # RIGHT_GOALGoToPosition
+    array([1.0, -1.0]),  # LEFT_UP_CORNERGoToPosition
+    array([1.0, 1.0]),  # LEFT_DOWN_CORNERGoToPosition
+    array([-1.0, -1.0]),  # RIGHT_UP_CORNERGoToPosition
     array([-1.0, 1.0]),  # RIGHT_DOWN_CORNER
 
     array([0.0, -1.0]),  # UP_BORDER

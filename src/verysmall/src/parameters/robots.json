@@ -1,10 +1,10 @@
 {
     "robot_1": {
-        "active": 1,
-        "bluetooth_mac_address": "Jeremias",
-        "body_id": "Jeremias",
-        "role": "PID Calibration",
-        "tag_number": 0
+        "active": 0,
+        "bluetooth_mac_address": "Et_Bilu",
+        "body_id": "Et_Bilu",
+        "role": "Goalkeeper",
+        "tag_number": 1
     },
     "robot_2": {
         "active": 0,
@@ -24,7 +24,7 @@
         "active": 0,
         "bluetooth_mac_address": "Nenhum",
         "body_id": "Nenhum",
-        "role": "Atacante",
+        "role": "Atacker With Univector",
         "tag_number": 3
     },
     "robot_5": {

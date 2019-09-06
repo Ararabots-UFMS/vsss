@@ -2,6 +2,7 @@ from strategy.behaviour import TaskStatus, BlackBoard
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
+from strategy.arena_utils import LEFT_GOAL_CENTER_X, RIGHT_GOAL_CENTER_X, HALF_ARENA_HEIGHT
 from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
@@ -112,18 +113,19 @@ class GoToAttackGoalUsingUnivector(UnivectorTask):
 
 
 class ChargeWithBall(TreeNode):
-
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
         super().__init__(name)
         self.max_speed = max_speed
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        logfatal("CHARGE")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
             self.x_vector,
-            goal_vector
+            goal_vector,
+            False
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
@@ -207,7 +209,7 @@ class GoToGoalCenter(TreeNode):
 class GoToPosition(TreeNode):
 
     def __init__(self, name: str = 'Straight Line Movement',
-                 max_speed: int = 80,
+                 max_speed: int = 255,
                  acceptance_radius: float = 10.0,
                  position: list = None,
                  target_pos: list = None):
@@ -224,6 +226,36 @@ class GoToPosition(TreeNode):
         path = self.target_pos - blackboard.robot.position
         distance = np.linalg.norm(path)
         theta = math.atan2(path[1], path[0])
+
+        if distance <= self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, .0)
+
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
+
+class GoToGoalAreaCenter(TreeNode):
+
+    def __init__(self, name: str = "Go to goal area center",
+                 max_speed: int = 255,
+                 acceptance_radius: float = 10.0):
+        super().__init__(name)
+        self.acceptance_radius = acceptance_radius
+        self.max_speed = max_speed
+        self.target_pos = None
+
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]: 
+        team_goal_side = blackboard.home_goal
+        
+        if team_goal_side:
+            self.target_pos = (RIGHT_GOAL_CENTER_X, HALF_ARENA_HEIGHT)
+        else:
+            self.target_pos = (LEFT_GOAL_CENTER_X, HALF_ARENA_HEIGHT)
+
+        path = self.target_pos - blackboard.robot.position
+        distance = np.linalg.norm(path)
+        theta = math.atan2(path[1], path[0])
+
+        
 
         if distance <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, .0)

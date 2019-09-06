@@ -88,7 +88,7 @@ class IsBallInsideCentralArea(TreeNode):
         else:
             return TaskStatus.FAILURE, NO_ACTION
 
-class InsideMetaRange(TreeNode):
+class IsInsideMetaRange(TreeNode):
     def __init__(self, name: str, distance: int = 25):
         super().__init__(name)
         self.distance = distance
@@ -98,3 +98,28 @@ class InsideMetaRange(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+class IsInsideGoal(TreeNode):
+    def __init__(self, name: str):
+        super().__init__(name)
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]: 
+        robot_pos = blackboard.robot.position
+        team_goal_side = blackboard.home_goal.side
+        # Sinal do shift: 1 se o team_goal_side é LEFT e -1 se é RIGHT
+        sign = 1 if team_goal_side else -1 
+
+        shift = sign * 3
+        # Posição do robô deslocada no eixo X em direção ao gol
+        shifted_robot_pos = np.array([robot_pos[0] + shift, robot_pos[1]])
+        section = arena_utils.section(shifted_robot_pos).value
+        """
+        Os enums LEFT e RIGHT tem valores 0 e 1. Como os enums LEFT_GOAL e 
+        RIGHT_GOAL tem 2 e 3, respectivamente, a subtração do gol da seção do 
+        campo na qual o robô se encontra garante que este está dentro do gol 
+        aliado
+        """
+        if section - team_goal_side == 2: 
+            rospy.logfatal("Goal")
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
