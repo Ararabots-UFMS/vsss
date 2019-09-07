@@ -126,8 +126,8 @@ class MovingBody:
 
     def get_predicted_position_over_seconds(self, seconds_in_future=0.5):
 
-        fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 5)
-        fity = np.polyfit(self.time_buffer, self.position_buffer_y, 5)
+        fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
+        fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
         px = np.poly1d(fitx)
         py = np.poly1d(fity)
         p = px(time.time() + seconds_in_future), py(time.time() + seconds_in_future)
