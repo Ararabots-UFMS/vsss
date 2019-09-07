@@ -15,9 +15,9 @@ Constants = Tuple[int, float, float, float]
 class Control:
     def __init__(self, myrobot,
                  constants: List[Constants],
-                 max_fine_movment_speed) -> None:
+                 max_fine_movement_speed) -> None:
         self._myrobot = myrobot
-        self._max_fine_movment_speed = max_fine_movment_speed
+        self._max_fine_movement_speed = max_fine_movement_speed
         self._alpha = 15  # centimeters
 
         self._head = FORWARD
@@ -36,9 +36,9 @@ class Control:
                           speed: int,
                           distance: float) -> Tuple[float, float]:
 
-        if opcode == OpCodes.NORMAL:
+        if opcode == OpCodes.SMOOTH:
             return self._follow_vector(speed, angle, distance)
-        elif opcode == OpCodes.IGNORE_DISTANCE:
+        elif opcode == OpCodes.NORMAL:
             return self._follow_vector(speed, angle, distance, optimal_speed=False)
         elif opcode == OpCodes.SPIN_CCW:
             return -255, 255
@@ -113,7 +113,7 @@ class Control:
                           diff_angle: float,
                           target_distance: float) -> float:
 
-        if target_speed < self._max_fine_movment_speed:
+        if target_speed < self._max_fine_movement_speed:
             return target_speed
         elif diff_angle * RAD2DEG < 10 and target_distance > 2 * self._alpha:
             return target_speed
@@ -123,7 +123,7 @@ class Control:
 
     def sigmoid(self, target_speed: float,
                 distance: float) -> float:
-        scale = target_speed - self._max_fine_movment_speed
+        scale = target_speed - self._max_fine_movement_speed
 
         s = scale / (1 + math.exp(0.5 * (-distance + self._alpha * 1.5)))
-        return s + self._max_fine_movment_speed
+        return s + self._max_fine_movement_speed

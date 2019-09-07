@@ -78,7 +78,7 @@ class UnivectorTask(ABC):
 
         status = TaskStatus.RUNNING
 
-        return status, (OpCodes.IGNORE_DISTANCE, angle, speed, distance_to_ball)
+        return status, (OpCodes.SMOOTH, angle, speed, distance_to_ball)
 
 
 class GoToPositionUsingUnivector(UnivectorTask):
@@ -129,7 +129,7 @@ class ChargeWithBall(TreeNode):
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.IGNORE_DISTANCE, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, angle, self.max_speed, distance_to_goal)
 
 
 class MarkBallOnAxis(TreeNode):
@@ -159,11 +159,10 @@ class MarkBallOnAxis(TreeNode):
         distance = abs(direction)
 
         if distance < self._acceptance_radius:
-            return TaskStatus.RUNNING, (
-            OpCodes.NORMAL, -self._angle_to_correct if direction < 0 else self._angle_to_correct,
-            0, distance)
+            return TaskStatus.RUNNING, (OpCodes.SMOOTH,
+                                        -self._angle_to_correct if direction < 0 else self._angle_to_correct, 0, distance)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL,
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                     self._max_speed,
                                     .0)
@@ -183,7 +182,7 @@ class AlignWithAxis(TreeNode):
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
-            return TaskStatus.RUNNING, (OpCodes.NORMAL, self.angle_to_correct, self.max_speed, .0)
+            return TaskStatus.RUNNING, (OpCodes.SMOOTH, self.angle_to_correct, self.max_speed, .0)
 
 
 class GoToGoalCenter(TreeNode):
@@ -199,10 +198,10 @@ class GoToGoalCenter(TreeNode):
         distance = np.linalg.norm(direction)
 
         if distance < self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
+            return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, distance)
 
         theta = math.atan2(direction[1], direction[0])
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
 
 
 class GoToPosition(TreeNode):
@@ -227,9 +226,9 @@ class GoToPosition(TreeNode):
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
+            return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, .0)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
 
 
 class PushToAttack(TreeNode):

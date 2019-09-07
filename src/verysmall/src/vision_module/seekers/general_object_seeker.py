@@ -81,7 +81,7 @@ class GeneralObjSeeker:
 
     def get_obj_pos(self, img):
         if cv2.__version__[0] == '4':
-            cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
             _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         

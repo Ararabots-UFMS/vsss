@@ -11,7 +11,7 @@
         "vendor": "05a3"
     },
     "freeball_player": 0,
-    "meta_player": 2,
+    "meta_player": 0,
     "penalty_player": 0,
     "seekers": {
         "blue": "aruco",
