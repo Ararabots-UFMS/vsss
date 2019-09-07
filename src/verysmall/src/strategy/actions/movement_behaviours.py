@@ -78,7 +78,7 @@ class UnivectorTask(ABC):
 
         status = TaskStatus.RUNNING
 
-        return status, (OpCodes.SMOOTH, angle, speed, distance_to_ball)
+        return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
 
 
 class GoToPositionUsingUnivector(UnivectorTask):
@@ -231,28 +231,6 @@ class GoToPosition(TreeNode):
         return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
 
 
-class PushToAttack(TreeNode):
-    def __init__(self, name: str = 'Push ball to the other side of field',
-                 max_speed: int = 255):
-        self.name = name
-        self.max_speed = max_speed
-
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-
-        if ball_on_attack_side(blackboard):
-            return TaskStatus.FAILURE, (OpCodes.INVALID, .0, 0, .0)
-        else:
-
-            if robot_behind_ball(blackboard):
-                path = blackboard.ball_position - blackboard.position
-                distance = np.linalg.norm(path)
-                theta = math.atan2(path[1], path[0])
-                return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
-
-            else:
-                return TaskStatus.FAILURE, (OpCodes.INVALID, .0, 0, .0)
-
-
 class GoToBallUsingMove2Point(TreeNode):
     def __init__(self, name: str = "GoToBallUsingMove2Point",
                  speed = 100, acceptance_radius: float = 6):
@@ -270,7 +248,7 @@ class GoToBallUsingMove2Point(TreeNode):
 
 
 class GoBack(TreeNode):
-    def __init__(self, name: str = 'GoBacl',
+    def __init__(self, name: str = 'GoBack',
                  max_speed: int = 80,
                  acceptance_radius: float = 10.0):
         super().__init__(name)
