@@ -62,7 +62,7 @@ class UnivectorTask(ABC):
         distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
 
         if distance_to_ball < self.acceptance_radius:
-            return TaskStatus.SUCCESS, None
+            return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0) 
 
         self.univector_field.update_obstacles(blackboard.enemy_team.positions, [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
@@ -97,7 +97,7 @@ class GoToPositionUsingUnivector(UnivectorTask):
 
 class GoToBallUsingUnivector(UnivectorTask):
 
-    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+    def __init__(self, name: str = "Follow Ball", max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -206,7 +206,7 @@ class GoToGoalCenter(TreeNode):
 
 class GoToPosition(TreeNode):
 
-    def __init__(self, name: str = 'Straight Line Movement',
+    def __init__(self, name: str = "Straight Line Movement",
                  max_speed: int = 80,
                  acceptance_radius: float = 10.0,
                  position: list = None,
