@@ -11,6 +11,11 @@ from strategy.strategy_utils import spin_direction
 from strategy.behaviour import ACTION, TreeNode
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
+from abc import ABC, abstractmethod
+from typing import List, Tuple
+import numpy as np
+import rospy
+import math
 
 
 class StopAction(TreeNode):
@@ -23,12 +28,13 @@ class StopAction(TreeNode):
 
 
 class SpinTask(TreeNode):
-    def __init__(self, name='Spin Task'):
+    def __init__(self, name='Spin Task', invert=False):
         super().__init__(name)
+        self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
-                                                   team_side=blackboard.home_goal.side), 0.0, 255, .0)
+                                                   team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255, .0)
 
 
 class UnivectorTask(ABC):
@@ -235,5 +241,42 @@ class GoToPosition(TreeNode):
 
         if distance <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, .0)
+
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
+
+
+class GoToBallUsingMove2Point(TreeNode):
+    def __init__(self, name: str = "GoToBallUsingMove2Point",
+                 speed = 100, acceptance_radius: float = 6):
+        self.speed = speed
+        self.acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        direction = blackboard.ball.position - blackboard.robot.position
+        distance = np.linalg.norm(direction)
+        theta = math.atan2(direction[1], direction[0])
+        if distance < self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
+
+
+class GoBack(TreeNode):
+    def __init__(self, name: str = 'GoBack',
+                 max_speed: int = 80,
+                 acceptance_radius: float = 10.0):
+        super().__init__(name)
+        self.acceptance_radius = acceptance_radius
+        self.max_speed = max_speed
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        target_position = [75., blackboard.robot.position[1]]
+        path = target_position - blackboard.robot.position
+        distance = np.linalg.norm(path)
+        theta = math.atan2(path[1], path[0])
+
+        if distance <= self.acceptance_radius:
+            rospy.logfatal("convergiu")
+            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
 
         return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)

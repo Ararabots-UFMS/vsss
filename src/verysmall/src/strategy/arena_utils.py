@@ -35,6 +35,9 @@ class ArenaSections(Enum):
     RIGHT_DOWN_BOTTOM_LINE = 13
     RIGHT_UP_BOTTOM_LINE = 14
 
+    LEFT_CRITICAL_LINE = 15
+    RIGHT_CRITICAL_LINE = 16
+
 
 Axis = [
     array([1.0, 0.0]),  # LEFT_GOAL_AREA
@@ -226,3 +229,5 @@ def goal_position(team_side):
     if team_side == LEFT:
         return array([150, 65])
     return array([0, 65])
+
+
