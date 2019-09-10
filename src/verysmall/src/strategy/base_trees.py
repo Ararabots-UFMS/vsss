@@ -1,6 +1,6 @@
 from strategy.behaviour import BlackBoard, Sequence, Selector, TaskStatus
 from strategy.actions.state_behaviours import InState, ChangeState
-from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree
+from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, InsideMetaRange
 from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
 
@@ -44,6 +44,26 @@ class FreeBall(Sequence):
         self.add_child(check_if_behind_ball)
         self.add_child(GoToBallUsingUnivector('FollowBall'))  # FollowBall
         self.add_child(GoToAttackGoalUsingUnivector('FollowGoal'))  # FollowBall
+
+class Meta(Sequence):
+    def __init__(self, name: str = "Meta"):
+        super().__init__(name)
+        check_state = InState("CheckMetaState", GameStates.META)
+        self.add_child(check_state)
+        meta = Selector("InsideMetaRange")
+        in_range_and_behind_the_ball = Sequence("InRangeAndBehindTheBall")
+        is_behind_the_ball = IsBehindBall("BehindTheBall", 25)
+        inside_meta_range = InsideMetaRange('MetaDist', 50)
+        in_range_and_behind_the_ball.add_child(is_behind_the_ball)
+        in_range_and_behind_the_ball.add_child(inside_meta_range)
+        change_state = ChangeState("ReturnToNormal", GameStates.NORMAL)
+        meta.add_child(in_range_and_behind_the_ball)
+        meta.add_child(change_state)
+
+        self.add_child(meta)
+        charge_with_ball = GoToAttackGoalUsingUnivector("FollowGoal",
+        acceptance_radius=5, speed_prediction=False)  
+        self.add_child(charge_with_ball)
 
 
 class Stopped(Sequence):

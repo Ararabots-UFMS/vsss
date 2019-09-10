@@ -5,24 +5,26 @@ from strategy.strategy_utils import GameStates
 from itertools import cycle
 from rospy import logwarn
 from robot_module.movement.definitions import OpCodes
-from strategy.actions.decorators import Timer
+from strategy.actions.decorators import Timer, IgnoreSmoothing
 import numpy as np
 
 
 class CalibrationTree(Selector):
     def __init__(self, name="behave"):
         super().__init__(name)
-        self.waypoints_list = cycle([(37.5, 25), (112.5, 25), (112.5, 105), (37.5, 105)])
+        self.waypoints_list = cycle([(37, 25), (117, 25), (117, 105), (37, 105)])
         stop_sequence = Sequence('Stop Sequence')
         stop_sequence.children.append(InState('Stopped Game?', GameStates.STOPPED))
         stop_sequence.children.append(StopAction('Wait'))
         self.children.append(stop_sequence)
 
         patrol = Sequence('Patrol')
-        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), max_speed=150)
-        patrol.children.append(self.straight_line_movement)
+        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), max_speed=200)
 
-        spin_task = Timer(exec_time=2)
+        ignore_smoothing = IgnoreSmoothing(name="Ignore smoothing pid")
+        ignore_smoothing.add_child(self.straight_line_movement)
+        patrol.children.append(ignore_smoothing)
+        spin_task = Timer(exec_time=3)
         spin_task.add_child(SpinTask())
         #patrol.children.append(spin_task)
 

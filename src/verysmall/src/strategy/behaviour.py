@@ -1,11 +1,12 @@
 from typing import Tuple
+import time
 from enum import Enum
 from abc import abstractmethod, ABC
 import numpy as np
 from strategy.strategy_utils import GameStates
 from strategy.arena_utils import RIGHT, LEFT
 from robot_module.movement.definitions import OpCodes
-
+from rospy import logwarn
 angle = distance = float
 speed = int
 ACTION = Tuple[OpCodes, angle, speed, distance]
@@ -33,6 +34,11 @@ class BlackBoard:
 
         self.home_team = HomeTeam()
         self.enemy_team = EnemyTeam()
+
+    def set_robot_variables(self, robot_position, robot_speed, robot_orientation):
+        self.robot.position = robot_position
+        self.robot.speed = robot_speed
+        self.robot.orientation = robot_orientation
 
     def __repr__(self):
         return 'BlackBoard:\n' + str(self.game) + "\n" + str(self.home_team) + str(self.enemy_team)
@@ -96,10 +102,36 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self):
+    def __init__(self, buffer_size=30):
         self.position = np.array([0, 0])
+        self._position_buffer_length = buffer_size / 60
+        self.position_buffer_x = [0 for _ in range(buffer_size)]
+        self.position_buffer_y = [0 for _ in range(buffer_size)]
+        self.time_buffer = [float(time.time()) for i in range(buffer_size)]
+
+        # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
         self.speed = np.array([0, 0])
         self.orientation = .0
+
+    def __setattr__(self, key, value):
+        if key == 'position' and (value[0] or value[1]):
+            self.position_buffer_x.pop(0)
+            self.position_buffer_x.append(value[0])
+            self.position_buffer_y.pop(0)
+            self.position_buffer_y.append(value[1])
+
+            self.time_buffer.pop(0)
+            self.time_buffer.append(float(time.time()))
+        super().__setattr__(key, value)
+
+    def get_predicted_position_over_seconds(self, seconds_in_future=0.5):
+
+        fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
+        fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
+        px = np.poly1d(fitx)
+        py = np.poly1d(fity)
+        p = px(time.time() + seconds_in_future), py(time.time() + seconds_in_future)
+        return np.array(p)
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
@@ -168,7 +200,7 @@ class Team(ABC):
         self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
         self._orientations = np.append(self._orientations, [0], axis=0)
 
-    def set_robot_variables(self, robot_positions, robot_orientations, robot_speeds):
+    def set_team_variables(self, robot_positions, robot_orientations, robot_speeds):
 
         self.number_of_robots = 0
 

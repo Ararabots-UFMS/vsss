@@ -61,7 +61,7 @@ class UnivectorTask(ABC):
         distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
 
         if distance_to_ball < self.acceptance_radius:
-            return TaskStatus.SUCCESS, None
+            return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0) 
 
         self.univector_field.update_obstacles(blackboard.enemy_team.positions,
                                               [[0, 0]] * 5)  # blackboard.enemies_speed)
@@ -79,7 +79,7 @@ class UnivectorTask(ABC):
 
         status = TaskStatus.RUNNING
 
-        return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
+        return status, (OpCodes.SMOOTH, angle, speed, distance_to_ball)
 
 
 class GoToPositionUsingUnivector(UnivectorTask):
@@ -98,7 +98,7 @@ class GoToPositionUsingUnivector(UnivectorTask):
 
 class GoToBallUsingUnivector(UnivectorTask):
 
-    def __init__(self, name, max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
+    def __init__(self, name: str = "Follow Ball", max_speed: int = 250, acceptance_radius: float = 10.0, speed_prediction: bool = True):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -130,7 +130,7 @@ class ChargeWithBall(TreeNode):
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, angle, self.max_speed, distance_to_goal)
 
 
 class MarkBallOnYAxis(TreeNode):
@@ -190,7 +190,7 @@ class AlignWithAxis(TreeNode):
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
-            return TaskStatus.RUNNING, (OpCodes.NORMAL, self.angle_to_correct, self.max_speed, .0)
+            return TaskStatus.RUNNING, (OpCodes.SMOOTH, self.angle_to_correct, self.max_speed, .0)
 
 
 class GoToGoalCenter(TreeNode):
@@ -206,15 +206,15 @@ class GoToGoalCenter(TreeNode):
         distance = np.linalg.norm(direction)
 
         if distance < self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, distance)
+            return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, distance)
 
         theta = math.atan2(direction[1], direction[0])
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
 
 
 class GoToPosition(TreeNode):
 
-    def __init__(self, name: str = 'Straight Line Movement',
+    def __init__(self, name: str = "Straight Line Movement",
                  max_speed: int = 80,
                  acceptance_radius: float = 10.0,
                  position: list = None,
@@ -234,6 +234,6 @@ class GoToPosition(TreeNode):
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
+            return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, .0)
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)

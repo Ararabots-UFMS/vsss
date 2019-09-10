@@ -1,8 +1,9 @@
 from typing import List, Tuple
 import rospy
 import numpy as np
-from robot_module.hardware import RobotHardware
+import cv2
 
+from robot_module.hardware import RobotHardware
 from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
@@ -13,7 +14,8 @@ from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
 from robot_module.control import Control
-
+from robot_module.movement.univector.debug import drawRobot, drawBall
+from interface.virtualField import virtualField, unit_convert, position_from_origin
 
 class Robot:
 
@@ -29,6 +31,7 @@ class Robot:
 
         # Parameters
         self.id = robot_id
+
         self.robot_body = robot_body
         self.tag = tag
         self._socket_id = socket_id
@@ -43,34 +46,16 @@ class Robot:
         self._hardware = RobotHardware()
 
         self.blackboard = BlackBoard()
-        # True position for penalty
-        self.true_pos = np.array([.0, .0])
+        self.blackboard.my_id = self.id
+        self.blackboard.home_goal.side = team_side
+        self.blackboard.enemy_goal.side = not team_side
+        self.blackboard.robot.role = robot_role
+
         self.velocity_buffer = []
         self.position_buffer = []
 
-        # Receive from vision
-        self.ball_position = None
-        self.ball_speed = None
-
-        self.position = None
-        self.orientation = None
-        self.speed = None
-
-        self.team_pos = None
-        self.team_orientation = None
-        self.team_speed = None
-        self.enemies_position = None
-        self.enemies_orientation = None
-        self.enemies_speed = None
-
         # Receive from game topic
         self.team_color = team_color
-        self.team_side = team_side
-        self.role = robot_role
-        self.game_state = 0
-        self.penalty_robot = None
-        self.freeball_robot = None
-        self.meta_robot = None
 
         self.left_speed = self.right_speed = 0
 
@@ -80,6 +65,9 @@ class Robot:
             self._sender = None
         else:
             self._sender = Sender(self._socket_id, self.owner_name)
+
+        # ROBOTO VISION
+        self.imgField = virtualField(4*150, 4*130)  # cv2.imread('src/robot_module/movement/univector/img/vss-field.jpg')
 
         self.behaviour_trees = [
             Attacker(),
@@ -96,6 +84,18 @@ class Robot:
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_' + str(self.owner_name),
                                                           self._should_debug)
 
+    @property
+    def position(self):
+        return self.blackboard.robot.position
+
+    @property
+    def speed(self):
+        return self.blackboard.robot.speed
+
+    @property
+    def orientation(self):
+        return self.blackboard.robot.orientation
+
     def get_pid_constants_set(self) -> List[Tuple]:
         pid_set = []
         bodies = JsonHandler.read("parameters/bodies.json", escape=True)
@@ -106,37 +106,6 @@ class Robot:
             pid_set.append((int(speed), ctes["KP"], ctes["KI"], ctes["KD"]))
 
         return pid_set
-
-    def update_game_state_blackboard(self):
-        self.blackboard.game_state = GameStates(self.game_state)
-        self.blackboard.team_side = self.team_side
-        self.blackboard.attack_goal = not self.team_side
-        self.blackboard.team_color = self.team_color
-
-        self.blackboard.freeball_robot_id = self.freeball_robot
-        self.blackboard.meta_robot_id = self.meta_robot
-        self.blackboard.penalty_robot_id = self.penalty_robot
-
-    def update_game_info_blackboard(self):
-        self.blackboard.ball_position = self.ball_position
-        self.blackboard.ball_speed = self.ball_speed
-
-        self.blackboard.my_id = self.id
-        self.blackboard.role = self.role
-        self.blackboard.position = self.position
-        if np.all(self.position):
-            self.blackboard.true_pos = self.position
-
-        self.blackboard.orientation = self.orientation
-        self.blackboard.speed = self.speed
-
-        self.blackboard.team_pos = self.team_pos
-        self.blackboard.team_orientation = self.team_orientation
-        self.blackboard.team_speed = self.team_speed
-
-        self.blackboard.enemies_position = self.enemies_position
-        self.blackboard.enemies_orientation = self.enemies_orientation
-        self.blackboard.enemies_speed = self.enemies_speed
 
     def run(self):
         task_status, action = self.behaviour_tree.run(self.blackboard)
@@ -149,9 +118,22 @@ class Robot:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
 
+        # self.roboto_vision()
+
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
 
     def get_next_speed(self):
         return (self._hardware._allowed_speed + self._hardware._speed_step) % 256
+
+    def roboto_vision(self):
+        self.imgField.plot_ball(self.blackboard.ball.position)
+        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(0.5)
+        ma_ball = unit_convert(ma_ball, self.imgField.width_conv, self.imgField.height_conv)
+        ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
+        #rospy.logwarn(ma_ball)
+        cv2.circle(self.imgField.field, ma_ball, self.imgField.ball_radius,
+                   self.imgField.colors["red"], -1)
+        cv2.imshow('Robot\'o Vision', self.imgField.field)
+        cv2.waitKey(1)

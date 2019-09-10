@@ -1,7 +1,7 @@
 {
     "ROS_IP": [
-        "wlp0s20f3",
-        "10.0.0.4"
+        "wlp3s0",
+        "10.0.0.5"
     ],
     "ROS_MASTER_URI": "http://10.0.0.2:11311",
     "camera": {
@@ -11,7 +11,7 @@
         "vendor": "05a3"
     },
     "freeball_player": 0,
-    "meta_player": 2,
+    "meta_player": 0,
     "penalty_player": 0,
     "seekers": {
         "blue": "aruco",

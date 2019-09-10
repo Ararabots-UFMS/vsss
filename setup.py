@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os
 import subprocess as sb
 #echo "source ~/ararabots/devel/setup.bash" >> ~/.bashrc
@@ -24,7 +24,8 @@ if __name__=="__main__":
 
     # Find ROS so we can put him on our bash
     if os.path.exists("/opt/ros/"):  # ROS IS INSTALLED
-        ros_version = sb.check_output("ls", cwd="/opt/ros/").strip("\n")
+        ros_version = sb.check_output("ls", cwd="/opt/ros/")
+        ros_version = ros_version.decode().strip('\n')
         path_to_ros = "/opt/ros/"+ros_version+"/"
         print("ROS Version : " + str.capitalize(ros_version))
         ros_found = True
