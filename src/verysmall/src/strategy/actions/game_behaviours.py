@@ -119,7 +119,6 @@ class IsBallInBorder(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
-            rospy.logfatal("borda")
             return TaskStatus.SUCCESS, None
         return TaskStatus.FAILURE, None
 
@@ -142,7 +141,6 @@ class AmIInDefenseField(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
-            rospy.logfatal("na defesa")
             return TaskStatus.SUCCESS, None
 
         return TaskStatus.FAILURE, None
@@ -160,7 +158,7 @@ class IsNearBall:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
-class InsideMetaRange(TreeNode):
+class IsInsideMetaRange(TreeNode):
     def __init__(self, name: str, distance: int = 25):
         super().__init__(name)
         self.distance = distance

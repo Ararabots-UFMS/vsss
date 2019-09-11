@@ -121,7 +121,6 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        logfatal("CHARGE")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
@@ -324,7 +323,6 @@ class GoBack(TreeNode):
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
-            rospy.logfatal("convergiu")
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
