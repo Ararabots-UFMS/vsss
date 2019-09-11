@@ -2,6 +2,7 @@ from strategy.behaviour import *
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.actions.state_behaviours import InState
 from strategy.actions.game_behaviours import IsBallInsideCentralArea
+from strategy.actions.decorators import IgnoreFailure
 from strategy.strategy_utils import GameStates
 from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask, ChargeWithBall
 from robot_module.movement.definitions import OpCodes
@@ -34,11 +35,16 @@ class Attacker(BaseTree):
         
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
-        tree.add_child(IsBallInsideCentralArea("Check ball"))
+        #tree.add_child(IsBallInsideCentralArea("Check ball"))
+        ignore_failure = IgnoreFailure()
+        ignore_failure.add_child(FreeWayAttack())
+        tree.add_child(ignore_failure)
+
+
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle", 
                                             max_speed=150,
                                             acceptance_radius=7,
-                                            speed_prediction=False)
+                                            speed_prediction=True)
         tree.add_child(go_to_ball)
 
         return tree

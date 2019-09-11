@@ -1,4 +1,10 @@
-from strategy.behaviour import TaskStatus, BlackBoard
+from abc import ABC, abstractmethod
+from typing import List, Tuple, Iterable
+import numpy as np
+from rospy import logfatal
+import math
+
+from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from robot_module.movement.univector.un_field import UnivectorField
 from robot_module.movement.definitions import OpCodes
 from strategy.strategy_utils import spin_direction
@@ -57,7 +63,6 @@ class UnivectorTask(ABC):
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         raise Exception("subclass must override run method")
-        pass
 
     def go_to_objective(self, blackboard: BlackBoard, objective_position):
         distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
@@ -65,7 +70,8 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0) 
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.positions, [[0, 0]] * 5)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(blackboard.enemy_team.positions,
+                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
@@ -73,13 +79,14 @@ class UnivectorTask(ABC):
         if self.speed_prediction:
             raio = predict_speed(blackboard.robot.position,
                                  [np.cos(blackboard.robot.orientation), np.sin(blackboard.robot.orientation)],
-                                 objective_position, self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
+                                 objective_position,
+                                 self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
         status = TaskStatus.RUNNING
 
-        return status, (OpCodes.NORMAL, angle, speed, distance_to_ball)
+        return status, (OpCodes.SMOOTH, angle, speed, distance_to_ball)
 
 
 class GoToPositionUsingUnivector(UnivectorTask):
@@ -169,6 +176,51 @@ class MarkBallOnAxis(TreeNode):
                                     self._max_speed,
                                     .0)
 
+
+
+
+class MarkBallOnYAxis(TreeNode):
+    def __init__(self, clamp_min: Iterable,
+                       clamp_max: Iterable,
+                       max_speed: int = 255,
+                       name: str = "AlignWithYAxis", 
+                       acceptance_radius: float = 5):
+        super().__init__(name)
+        self._acceptance_radius = acceptance_radius
+        self._max_speed = max_speed
+
+        self._clamp_min = np.array(clamp_min)
+        self._clamp_max = np.array(clamp_max)
+
+    def set_clamps(self, clamp_min: Iterable, clamp_max: Iterable) -> None:
+        self._clamp_min = clamp_min
+        self._clamp_max = clamp_max
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_y = blackboard.ball.position[1]
+        y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
+
+        target_pos = np.array([self._clamp_min[0], y])
+        direction = target_pos - blackboard.robot.position
+        distance = np.linalg.norm(direction)
+
+        if distance < self._acceptance_radius:
+            return TaskStatus.SUCCESS, NO_ACTION
+
+        direction /= distance
+        
+        def gaussian(m, v):
+            return math.exp(-(m**2) / (2 * (v**2)))
+        
+        alpha = gaussian(distance - self._acceptance_radius, 4.5)
+
+        y_sign = -1 if direction[1] < 0 else 1
+        direction_on_target = np.array([0, y_sign])
+
+        final_direction = alpha*direction_on_target + (1 - alpha)*direction
+        theta = math.atan2(final_direction[1], final_direction[0])
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
 
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",

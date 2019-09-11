@@ -1,5 +1,4 @@
-from typing import Tuple
-
+from typing import Tuple, Callable
 from strategy.arena_utils import on_attack_side
 from strategy.behaviour import *
 from strategy.strategy_utils import behind_ball, distance_point
@@ -11,7 +10,6 @@ from math import sin
 import rospy
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus, Goal, EnemyTeam, HomeTeam, FriendlyRobot, MovingBody
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
-
 
 
 # TODO: extend tree node
@@ -60,8 +58,9 @@ class IsTheWayFree:
                 else:
                     is_enemy_in_way = enemy_x < ball_x
 
+
                 if abs(enemy_to_path_distance) <= self.free_way_distance and \
-                        is_enemy_in_way :
+                    is_enemy_in_way :
                     task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
                     break  # Interrompe o loop para o primeiro robô no caminho.
         return task_result
@@ -90,15 +89,34 @@ class IsBallInsideCentralArea(TreeNode):
             return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsInAttackSide(TreeNode):
+    def __init__(self, name: str, get_pos: Callable[[BlackBoard], np.ndarray]):
+        super().__init__(name)
+        self._get_pos = get_pos
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        side = blackboard.home_goal.side
+        x_left = 75*(1-side)
+        x_right = 75*(2 - side)
+
+        x_obj = self._get_pos(blackboard)[0]
+        
+        if x_left < x_obj < x_right:
+            status = TaskStatus.SUCCESS
+        else:
+            status = TaskStatus.FAILURE
+        
+        return status, NO_ACTION
+
 class AmIAttacking(TreeNode):
     def __init__(self, name: str = "AmIAttacking"):
         self.name = name
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
-        if ball_on_attack_side(blackboard.ball.position):
-            return TaskStatus.SUCCESS, None
-        return TaskStatus.FAILURE, None
+        if ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side):
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
 class IsBallInRangeOfDefense(TreeNode):
@@ -108,8 +126,8 @@ class IsBallInRangeOfDefense(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and not \
                 ball_on_critical_position(blackboard.ball.position):
-            return TaskStatus.SUCCESS, None
-        return TaskStatus.FAILURE, None
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
 class IsBallInBorder(TreeNode):
@@ -119,20 +137,8 @@ class IsBallInBorder(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, None
-        return TaskStatus.FAILURE, None
-
-
-class IsNearBall(TreeNode):
-    def __init__(self, name: str = "IsNearBall"):
-        self.name = name
-
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-
-        if near_ball(blackboard.robot.position, blackboard.ball.position):
-            return TaskStatus.SUCCESS, None
-
-        return TaskStatus.FAILURE, None
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
 class AmIInDefenseField(TreeNode):
@@ -141,13 +147,13 @@ class AmIInDefenseField(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, None
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
 
-        return TaskStatus.FAILURE, None
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
 class IsNearBall:
-    def __init__(self, name: str, distance=6.):
+    def __init__(self, name: str = "IsNearBall", distance=6.):
         self.name = name
         self.distance = distance
 
@@ -162,7 +168,6 @@ class IsInsideMetaRange(TreeNode):
     def __init__(self, name: str, distance: int = 25):
         super().__init__(name)
         self.distance = distance
-
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if distance_point(blackboard.robot.position,
                           blackboard.home_goal.position) < self.distance:

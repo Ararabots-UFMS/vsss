@@ -266,6 +266,3 @@ class HomeTeam(Team):
 
     def __repr__(self):
         return "-HomeTeam:\n" + super().__repr__()
-
-
-print(BlackBoard())

@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from argparse import ArgumentParser
 from utils.json_handler import JsonHandler
 from vision_module.camera_module.camera import Camera
