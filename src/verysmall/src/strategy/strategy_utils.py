@@ -1,11 +1,11 @@
 from enum import Enum
 import numpy as np
 import math
+import rospy
 
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
-
+from strategy.arena_utils import ArenaSections, section, LEFT, RIGHT, BORDER_NORMALS, on_attack_side
 CW = 0
 CCW = 1
 
@@ -57,7 +57,7 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     
 
 
-def spin_direction(ball_position, robot_position, team_side):
+def spin_direction(ball_position, robot_position, team_side, invert=False):
     """
     Returns the direction of the spin
     :params ball_position: np.array([x,y])
@@ -66,14 +66,15 @@ def spin_direction(ball_position, robot_position, team_side):
 
     :return: int
     """
+
     if team_side == LEFT:
         if robot_position[1] >= 65:
-            return OpCodes.SPIN_CCW
-        return OpCodes.SPIN_CW
+            return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
+        return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
     else:
         if robot_position[1] < 65:
-            return OpCodes.SPIN_CW
-        return OpCodes.SPIN_CCW
+            return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
+        return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
 
 
 def border_stuck(position_buffer, orientation):
@@ -115,3 +116,22 @@ def border_stuck(position_buffer, orientation):
         return False
     # else:
     #    return False
+
+
+def ball_on_attack_side(ball_position, team_side) -> bool:
+    return on_attack_side(ball_position, team_side)
+
+
+def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
+    return behind_ball(robot_position, ball_position, team_side)
+
+
+def ball_on_critical_position(ball_position) -> bool:
+    return ball_position[0] < 30 or ball_position[0] > 120
+
+
+def ball_on_border(ball_position, team_side) -> bool:
+    if not ball_on_attack_side(ball_position, team_side) and not ball_on_critical_position(ball_position):
+        sec = section(ball_position)
+
+    return sec.value in BORDER_NORMALS.keys()

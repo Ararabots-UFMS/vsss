@@ -1,19 +1,22 @@
 from typing import List, Tuple
 import rospy
 import numpy as np
-from robot_module.hardware import RobotHardware
+import cv2
 
+from robot_module.hardware import RobotHardware
 from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.strategy_utils import GameStates
+from strategy.defender import Defender
 from strategy.attacker import Attacker
 from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
 from utils.json_handler import JsonHandler
 from robot_module.control import Control
-
+from robot_module.movement.univector.debug import drawRobot, drawBall
+from interface.virtualField import virtualField, unit_convert, position_from_origin
 
 class Robot:
 
@@ -64,13 +67,16 @@ class Robot:
         else:
             self._sender = Sender(self._socket_id, self.owner_name)
 
+        # ROBOTO VISION
+        self.imgField = virtualField(4*150, 4*130)  # cv2.imread('src/robot_module/movement/univector/img/vss-field.jpg')
+
         self.behaviour_trees = [
             Attacker(),
             Attacker(),
             GoalKeeper(),
             Attacker(),
             CalibrationTree(),
-            Attacker()
+            Defender()
         ]
 
         self.behaviour_tree = self.behaviour_trees[robot_role]
@@ -113,9 +119,22 @@ class Robot:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
 
+        # self.roboto_vision()
+
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
 
     def get_next_speed(self):
         return (self._hardware._allowed_speed + self._hardware._speed_step) % 256
+
+    def roboto_vision(self):
+        self.imgField.plot_ball(self.blackboard.ball.position)
+        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(0.5)
+        ma_ball = unit_convert(ma_ball, self.imgField.width_conv, self.imgField.height_conv)
+        ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
+        #rospy.logwarn(ma_ball)
+        cv2.circle(self.imgField.field, ma_ball, self.imgField.ball_radius,
+                   self.imgField.colors["red"], -1)
+        cv2.imshow('Robot\'o Vision', self.imgField.field)
+        cv2.waitKey(1)
