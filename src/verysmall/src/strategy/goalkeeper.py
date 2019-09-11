@@ -1,9 +1,11 @@
 from strategy.behaviour import *
 from strategy.actions.state_behaviours import InState
-from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, GoToPosition, GoToGoalAreaCenter
+from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, GoToPosition, GetOutOfGoal, \
+    MarkBallOnAxis
 from strategy.base_trees import Penalty, FreeBall, BaseTree
 from strategy.strategy_utils import GameStates
 from strategy.actions.game_behaviours import IsInsideGoal
+from strategy.actions.decorators import IgnoreSmoothing
 
 
 class GoalKeeper(BaseTree):
@@ -12,13 +14,21 @@ class GoalKeeper(BaseTree):
 
         normal = Sequence("Normal")
         normal.add_child(InState("CheckNormalState", GameStates.NORMAL))
-        get_out_of_goal = Selector("Get Out Of Goal")
-        get_out_of_goal.add_child(IsInsideGoal("IsGoalkeeperInsideGoal"))
-        move = Sequence("Move")
-        move.add_child(GoToGoalCenter(acceptance_radius=5.0))
-        move.add_child(GoToGoalAreaCenter(acceptance_radius=5.0))
-        get_out_of_goal.add_child(move)
-        normal.add_child(get_out_of_goal)
-        #normal.add_child(GoToGoalCenter(max_speed=120, acceptance_radius=3))
+        normal.add_child(OutOfGoalAction())
         normal.add_child(AlignWithAxis())
+        normal.add_child(MarkBallOnAxis())
+
         self.add_child(normal)
+
+
+class OutOfGoalAction(Selector):
+    def __init__(self, name: str = "Get Out Of Goal"):
+        super().__init__(name)
+        self.add_child(IsInsideGoal("IsGoalkeeperInsideGoal"))
+        self.add_child(GetOutOfGoal(max_speed=200, acceptance_radius=1.0))
+
+    def run(self, blackboard: BlackBoard):
+        status, action = super().run(blackboard)
+        if status == TaskStatus.SUCCESS:
+            self.children[1].target_pos = None
+        return status, action

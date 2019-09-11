@@ -6,11 +6,9 @@ from utils.math_utils import angle_between
 import numpy as np
 from math import sin
 import rospy
-
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus, Goal, EnemyTeam, HomeTeam, FriendlyRobot, MovingBody
-from strategy.strategy_utils import behind_ball
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
-from utils.math_utils import angle_between
+
 
 # TODO: extend tree node
 class IsBehindBall:
@@ -20,8 +18,8 @@ class IsBehindBall:
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if behind_ball(blackboard.ball.position,
-        blackboard.robot.last_know_location, blackboard.home_goal.side, 
-        self.distance):
+                       blackboard.robot.last_know_location, blackboard.home_goal.side,
+                       self.distance):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
@@ -44,7 +42,7 @@ class IsTheWayFree:
             v_ball_enemy = enemy_position - blackboard.ball.position
             theta = angle_between(v_ball_enemy_goal, v_ball_enemy, abs=False)
             enemy_to_path_distance = np.linalg.norm(v_ball_enemy) * sin(theta)
-            
+
             if arena_utils.section(enemy_position).value != enemy_goal:
                 # É utilizado o x da bola, pois caso o adversário esteja entre 
                 # o robô e a bola, o univector trata a situação
@@ -58,11 +56,10 @@ class IsTheWayFree:
                 else:
                     is_enemy_in_way = enemy_x < ball_x
 
-
                 if abs(enemy_to_path_distance) <= self.free_way_distance and \
-                    is_enemy_in_way :
+                        is_enemy_in_way:
                     task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-                    break # Interrompe o loop para o primeiro robô no caminho.
+                    break  # Interrompe o loop para o primeiro robô no caminho.
         return task_result
 
 
@@ -88,25 +85,29 @@ class IsBallInsideCentralArea(TreeNode):
         else:
             return TaskStatus.FAILURE, NO_ACTION
 
+
 class IsInsideMetaRange(TreeNode):
     def __init__(self, name: str, distance: int = 25):
         super().__init__(name)
         self.distance = distance
+
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if distance_point(blackboard.robot.position,
-        blackboard.home_goal.position) < self.distance:
+                          blackboard.home_goal.position) < self.distance:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
+
 class IsInsideGoal(TreeNode):
-    def __init__(self, name: str):
+    def __init__(self, name: str = "IsInsideGoal"):
         super().__init__(name)
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]: 
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         robot_pos = blackboard.robot.position
         team_goal_side = blackboard.home_goal.side
         # Sinal do shift: 1 se o team_goal_side é LEFT e -1 se é RIGHT
-        sign = 1 if team_goal_side else -1 
+        sign = 1 if team_goal_side else -1
 
         shift = sign * 3
         # Posição do robô deslocada no eixo X em direção ao gol
@@ -119,7 +120,6 @@ class IsInsideGoal(TreeNode):
         aliado
         """
         if section - team_goal_side == 2: 
-            rospy.logfatal("Goal")
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
