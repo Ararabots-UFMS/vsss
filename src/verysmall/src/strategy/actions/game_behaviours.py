@@ -137,7 +137,6 @@ class IsBallInBorder(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
         if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
-            rospy.logfatal("borda")
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 

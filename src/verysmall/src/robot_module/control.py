@@ -21,7 +21,7 @@ class Control:
         self._alpha = 10  # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 20 * DEG2RAD
+        self._hysteresis_angle_window = 90 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
 
