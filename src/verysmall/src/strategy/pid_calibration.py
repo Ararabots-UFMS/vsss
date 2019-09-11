@@ -35,6 +35,6 @@ class CalibrationTree(Selector):
         if status == TaskStatus.SUCCESS:
             self.straight_line_movement.set_new_target_pos(next(self.waypoints_list))
             action = (OpCodes.STOP, .0, 0, .0)
-        
+
         return status, action
 
