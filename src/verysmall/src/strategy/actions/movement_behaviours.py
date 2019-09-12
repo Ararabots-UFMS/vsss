@@ -173,13 +173,21 @@ class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithYAxis",
                  max_speed: int = 0,
                  axis: np.ndarray = np.array([.0, 1.0]),
-                 acceptance_radius: float = 0.0872665):
+                 acceptance_radius: float = 0.0872665, align_with_ball: bool = False):
+
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
         self.angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+        self.align_with_ball = align_with_ball
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if self.align_with_ball:
+            logfatal("align")
+            robot_pos = blackboard.robot.position
+            ball_pos = blackboard.ball.position
+            self.angle_to_correct = angle_between(np.array([1.0, 0.0]), ball_pos)
+
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:

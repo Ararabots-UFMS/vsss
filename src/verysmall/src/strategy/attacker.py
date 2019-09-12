@@ -3,7 +3,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.actions.state_behaviours import InState
 from strategy.actions.game_behaviours import IsBallInsideCentralArea, IsBehindBall
 from strategy.strategy_utils import GameStates, behind_ball
-from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask, ChargeWithBall
+from strategy.actions.movement_behaviours import StopAction, GoToBallUsingUnivector, SpinTask, ChargeWithBall, AlignWithAxis
 from robot_module.movement.definitions import OpCodes
 from strategy.actions.decorators import IgnoreFailure
 from strategy.arena_utils import inside_rectangle, RIGHT, LEFT
@@ -11,22 +11,22 @@ from strategy.arena_utils import inside_rectangle, RIGHT, LEFT
 import numpy as np
 import rospy
 
-
 class Attacker(BaseTree):
 
     def __init__(self, name='behave'):
         super().__init__(name)
 
         normal = Sequence('Normal')
-        self.add_child(normal)
 
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
         normal_actions = Selector('Normal Actions')
-        normal.add_child(normal_actions)
         
         normal_actions.add_child(self.ball_and_robot_in_attack_goalline())
+        normal.add_child(normal_actions)
+        #normal.add_child(AlignWithAxis(align_with_ball= True))
         #normal_actions.add_child(self.naive_go_to_ball())
         #normal_actions.add_child(SpinTask('Spin'))  # Spin 
+        self.add_child(normal)
         
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
@@ -40,11 +40,11 @@ class Attacker(BaseTree):
 
         return tree
     
+
     def ball_and_robot_in_attack_goalline(self) -> TreeNode:
         tree = Sequence('BallAndRobotInAttackGoalLine')
-        #tree.add_child(Verify_EnemyGoalLine("EnemyGoalLine"))
-        #tree.add_child(IsBehindBall('IsBehindBall', 10))
-        tree.add_child(ChargeWithBall('Attack'))
+        tree.add_child(Verify_EnemyGoalLine("EnemyGoalLine"))
+        #tree.add_child(ChargeWithBall('Attack'))
 
         return tree
 
@@ -53,7 +53,9 @@ class Verify_EnemyGoalLine(TreeNode):
     def run(self, blackboard: BlackBoard):
         self.robot_position = blackboard.robot.position
         ball_position = blackboard.ball.position
-        
+        orien = blackboard.robot.orientation
+        rospy.logfatal(orien)
+
         if blackboard.enemy_goal.side == LEFT:
             enemy_goalline = 16
             #16cm in arena means the goal line
@@ -68,4 +70,4 @@ class Verify_EnemyGoalLine(TreeNode):
             
 
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-        
+
