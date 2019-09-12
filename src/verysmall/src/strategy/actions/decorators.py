@@ -47,7 +47,7 @@ class InvertOutput(Decorator):
                 else:
                     return TaskStatus.FAILURE, action
 
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return status, action
 
 
 class Timer(Decorator):

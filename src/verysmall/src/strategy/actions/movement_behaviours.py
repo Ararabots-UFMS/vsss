@@ -197,7 +197,7 @@ class MarkBallOnYAxis(TreeNode):
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        ball_y = blackboard.ball.position[1]
+        ball_y = blackboard.ball.get_predicted_position_over_seconds()[1]
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
         target_pos = np.array([self._clamp_min[0], y])
