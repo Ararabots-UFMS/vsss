@@ -5,13 +5,12 @@ from strategy.behaviour import *
 from strategy.actions.state_behaviours import InState
 from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, MarkBallOnYAxis
 from strategy.actions.game_behaviours import IsInAttackSide
-from strategy.actions.decorators import InvertOutput
+from strategy.actions.decorators import InvertOutput, TriggerFunction, DoNTimes, IgnoreSmoothing, StatusChanged
 from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, GoToPosition, GetOutOfGoal, \
     MarkBallOnAxis
 from strategy.base_trees import Penalty, FreeBall, BaseTree
 from strategy.strategy_utils import GameStates
 from strategy.actions.game_behaviours import IsInsideGoal
-from strategy.actions.decorators import IgnoreSmoothing
 
 
 class GoalKeeper(BaseTree):
@@ -25,7 +24,15 @@ class GoalKeeper(BaseTree):
         normal_actions = Selector("NormalActions")
         normal.add_child(normal_actions)
 
-        normal_actions.add_child(OutOfGoalAction())
+        self.do_once = DoNTimes(n=1)
+        self.do_once.add_child(AlignWithAxis())
+        
+        status_changed = StatusChanged(function=self.reset_counter)
+        status_changed.add_child(OutOfGoalAction())
+        normal_actions.add_child(status_changed)
+
+        normal_actions.add_child(self.do_once)
+
         # invert = InvertOutput()
         # invert.add_child(AlignWithAxis())
         # normal_actions.add_child(invert)
@@ -37,6 +44,9 @@ class GoalKeeper(BaseTree):
 
         normal_actions.add_child(AlignWithAxis())
 
+    def reset_counter(self):
+        logwarn("AAAAAAAAAAAAAAAAAAAAAAaa")
+        self.do_once.n = 1
 
     def _ball_on_attack_side_tree(self) -> TreeNode:
         tree = Sequence("BallInAttackSide")
