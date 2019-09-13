@@ -2,6 +2,7 @@ from enum import Enum
 import numpy as np
 import math
 
+from strategy.behaviour import MovingBody
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
@@ -10,6 +11,7 @@ import rospy
 
 CW = 0
 CCW = 1
+DEGREE = float
 
 
 class GameStates(Enum):
@@ -50,13 +52,42 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     
     if team_side == LEFT:
         if near_ball(ball_position, robot_position, _distance):
-            rospy.logfatal("BEHIND")
             return robot_position[0] <= ball_position[0]
     else:
         if near_ball(ball_position, robot_position, _distance):
-            rospy.logfatal("BEHIND__")
             return robot_position[0] >= ball_position[0]
     return False 
+
+def is_behind_ball(ball_position: np.ndarray,
+                    robot: MovingBody, 
+                    team_side: int,
+                    max_distance: float = 10.0,
+                    max_angle: DEGREE = 15) -> bool:
+    
+    distance = np.linalg.norm(ball_position - robot.position)
+    
+    if distance > max_distance:
+        return False        
+    
+    theta = robot.orientation                
+    robot_vector = np.array([math.cos(theta), math.sin(theta)])
+    rb_vector = ball_position - robot.position
+    angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
+    angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
+
+    max_angle = max_angle * math_utils.DEG2RAD
+     
+    if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
+        return False
+        
+    if team_side == LEFT:
+        if ball_position[0] < robot.position[0]:
+            return False
+    else:
+        if ball_position[0] > robot.position[0]:
+            return False
+
+    return True
 
 def spin_direction(ball_position, robot_position, team_side):
     """
