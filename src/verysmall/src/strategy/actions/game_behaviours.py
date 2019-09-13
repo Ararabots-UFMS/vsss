@@ -1,6 +1,6 @@
 from typing import Tuple
 from strategy.behaviour import *
-from strategy.strategy_utils import behind_ball, distance_point
+from strategy.strategy_utils import is_behind_ball, distance_point
 from strategy import arena_utils
 from utils.math_utils import angle_between
 import numpy as np
@@ -19,9 +19,12 @@ class IsBehindBall:
         self.distance = distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if behind_ball(blackboard.ball.position,
-        blackboard.robot.last_know_location, blackboard.home_goal.side, 
-        self.distance):
+        if is_behind_ball(blackboard.ball.position,
+                        blackboard.robot,
+                        blackboard.home_goal.side, 
+                        self.distance,
+                        max_angle=32):
+            rospy.logfatal("Is Behind!")
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)

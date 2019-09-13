@@ -2,7 +2,6 @@ from enum import Enum
 import numpy as np
 import math
 
-from strategy.behaviour import MovingBody
 from utils import math_utils
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import section, LEFT, RIGHT, BORDER_NORMALS
@@ -59,7 +58,7 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     return False 
 
 def is_behind_ball(ball_position: np.ndarray,
-                    robot: MovingBody, 
+                    robot, 
                     team_side: int,
                     max_distance: float = 10.0,
                     max_angle: DEGREE = 15) -> bool:
@@ -81,10 +80,10 @@ def is_behind_ball(ball_position: np.ndarray,
         return False
         
     if team_side == LEFT:
-        if ball_position[0] < robot.position[0]:
+        if ball_position[0] > robot.position[0]:
             return False
     else:
-        if ball_position[0] > robot.position[0]:
+        if ball_position[0] < robot.position[0]:
             return False
 
     return True

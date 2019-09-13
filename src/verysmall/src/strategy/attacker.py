@@ -23,7 +23,6 @@ class Attacker(BaseTree):
         
         normal_actions.add_child(self.ball_and_robot_in_attack_goalline())
         normal.add_child(normal_actions)
-        #normal.add_child(AlignWithAxis(align_with_ball= True))
         #normal_actions.add_child(self.naive_go_to_ball())
         #normal_actions.add_child(SpinTask('Spin'))  # Spin 
         self.add_child(normal)
@@ -44,7 +43,8 @@ class Attacker(BaseTree):
     def ball_and_robot_in_attack_goalline(self) -> TreeNode:
         tree = Sequence('BallAndRobotInAttackGoalLine')
         tree.add_child(Verify_EnemyGoalLine("EnemyGoalLine"))
-        #tree.add_child(ChargeWithBall('Attack'))
+        tree.add_child(IsBehindBall('IsBehindBall', 20))       
+        tree.add_child(ChargeWithBall('Attack'))
 
         return tree
 
@@ -53,8 +53,6 @@ class Verify_EnemyGoalLine(TreeNode):
     def run(self, blackboard: BlackBoard):
         self.robot_position = blackboard.robot.position
         ball_position = blackboard.ball.position
-        orien = blackboard.robot.orientation
-        rospy.logfatal(orien)
 
         if blackboard.enemy_goal.side == LEFT:
             enemy_goalline = 16
