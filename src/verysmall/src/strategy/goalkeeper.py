@@ -1,16 +1,14 @@
 from typing import Iterable
-import rospy
 
-from strategy.behaviour import *
-from strategy.actions.state_behaviours import InState
-from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, MarkBallOnYAxis
+from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged
 from strategy.actions.game_behaviours import IsInAttackSide
-from strategy.actions.decorators import InvertOutput, TriggerFunction, DoNTimes, IgnoreSmoothing, StatusChanged
-from strategy.actions.movement_behaviours import GoToGoalCenter, StopAction, AlignWithAxis, GoToPosition, GetOutOfGoal, \
-    MarkBallOnAxis
-from strategy.base_trees import Penalty, FreeBall, BaseTree
-from strategy.strategy_utils import GameStates
 from strategy.actions.game_behaviours import IsInsideGoal
+from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal
+from strategy.actions.movement_behaviours import MarkBallOnYAxis
+from strategy.actions.state_behaviours import InState
+from strategy.base_trees import BaseTree
+from strategy.behaviour import *
+from strategy.strategy_utils import GameStates
 
 
 class GoalKeeper(BaseTree):
@@ -45,13 +43,12 @@ class GoalKeeper(BaseTree):
         normal_actions.add_child(AlignWithAxis())
 
     def reset_counter(self):
-        logwarn("AAAAAAAAAAAAAAAAAAAAAAaa")
         self.do_once.n = 1
 
     def _ball_on_attack_side_tree(self) -> TreeNode:
         tree = Sequence("BallInAttackSide")
         tree.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.position))
-        tree.add_child(GoToGoalCenter(max_speed=40, acceptance_radius=5))
+        tree.add_child(GoToGoalCenter(max_speed=40, acceptance_radius=3))
         tree.add_child(AlignWithAxis())
         return tree
 
@@ -61,7 +58,7 @@ class GoalKeeper(BaseTree):
         inverter = InvertOutput()
         tree.add_child(inverter)
 
-        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds()))
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(0.5)))
 
         self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90],
                                            max_speed=120,
@@ -79,11 +76,10 @@ class GoalKeeper(BaseTree):
         self.markBallOnY.set_clamps(*a)
 
     def get_clamps(self, blackboard: BlackBoard) -> Tuple[Iterable, Iterable]:
-        a = 75 - blackboard.home_goal.position[0]
-        s = 1 if a > 0 else -1
+        s = -1 if blackboard.home_goal.side else 1
 
-        x = blackboard.home_goal.position[0] + s * 8
-        return ([x, 40], [x, 90])
+        x = blackboard.home_goal.position[0] + s * 4
+        return [x, 40], [x, 90]
 
 
 class OutOfGoalAction(Sequence):
