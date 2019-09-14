@@ -195,8 +195,17 @@ class MarkBallOnYAxis(TreeNode):
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        att = 1-((abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH))/HALF_ARENA_WIDTH)
-        ball_y = blackboard.ball.get_predicted_position_over_seconds(0.5*att)[1]
+        norm_distance = abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
+        # att = 1 - abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
+        # att = 2-(2**(abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH))
+        # att = 1 - (-math.exp((blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH) + 1)
+        
+        if norm_distance > 0.6:
+            ball_y = blackboard.ball.position[1]
+        else:
+            att = 1 - norm_distance    
+            ball_y = blackboard.ball.get_predicted_position_over_seconds(0.5*att)[1]
+
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
         target_pos = np.array([self._clamp_min[0], y])
