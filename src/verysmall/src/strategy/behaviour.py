@@ -1,3 +1,4 @@
+from math import sqrt
 from typing import Tuple
 import time
 from enum import Enum
@@ -107,14 +108,19 @@ class MovingBody:
         self._position_buffer_length = buffer_size / 60
         self.position_buffer_x = [0 for _ in range(buffer_size)]
         self.position_buffer_y = [0 for _ in range(buffer_size)]
+
+        self.speed_buffer_x = [0 for _ in range(buffer_size)]
+        self.speed_buffer_y = [0 for _ in range(buffer_size)]
+
         self.time_buffer = [float(time.time()) for i in range(buffer_size)]
+
 
         # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
         self.speed = np.array([0, 0])
         self.orientation = .0
 
     def __setattr__(self, key, value):
-        if key == 'position' and (value[0] or value[1]):
+        if key == "position" and (value[0] or value[1]):
             self.position_buffer_x.pop(0)
             self.position_buffer_x.append(value[0])
             self.position_buffer_y.pop(0)
@@ -122,6 +128,12 @@ class MovingBody:
 
             self.time_buffer.pop(0)
             self.time_buffer.append(float(time.time()))
+
+        elif key == "speed" and (value[0] or value[1]):
+            self.speed_buffer_x.pop(0)
+            self.speed_buffer_x.append(value[0])
+            self.speed_buffer_y.pop(0)
+            self.speed_buffer_y.append(value[1])
         super().__setattr__(key, value)
 
     def get_predicted_position_over_seconds(self, seconds_in_future=0.5):
@@ -132,6 +144,35 @@ class MovingBody:
         py = np.poly1d(fity)
         p = px(time.time() + seconds_in_future), py(time.time() + seconds_in_future)
         return np.array(p)
+
+    def get_time_on_axis(self, x=None, y=None):
+        t = self.time_buffer[-1]
+        if x:
+            axis = 0
+            a = self.speed_buffer_x[-1]/self.time_buffer[-1]
+            b = self.speed_buffer_x[-1]
+            c0 = self.position_buffer_x
+            c = x
+        elif y:
+            axis = 1
+            a = self.speed_buffer_y[-1] / self.time_buffer[-1]
+            b = self.speed_buffer_y[-1]
+            c0 = self.position_buffer_y
+            c = y
+        if a != 0:
+
+            t1 = (sqrt(2*a(c-c0)+b**2) - b )/a
+            t2 = -((sqrt(2 * a(c - c0) + b ** 2) + b) / a)
+        else:
+            t1 = (c-c0)/b
+            t2 = t1
+
+        if t1 > t:
+            return t1
+        elif t2 > t:
+            return t2
+        return t
+
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
