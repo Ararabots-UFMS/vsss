@@ -98,7 +98,7 @@ class IsInAttackSide(TreeNode):
         self._get_pos = get_pos
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        side = blackboard.home_goal.side
+        side = blackboard.enemy_goal.side
         x_obj = self._get_pos(blackboard)[0]
         
         if (x_obj > 75 and side == RIGHT) or (x_obj < 75 and side == LEFT):
