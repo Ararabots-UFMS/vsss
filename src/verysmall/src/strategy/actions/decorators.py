@@ -100,23 +100,6 @@ class DoNTimes(Decorator):
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
-class TriggerFunction(Decorator):
-    def __init__(self, name: str = "CallFunction", function=None, args=None,
-                 trigger: TaskStatus = TaskStatus.SUCCESS):
-        super().__init__(name)
-        self._function = function
-        self._trigger = trigger
-        self._args = args
-
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        status, action = self.child.run(blackboard)
-
-        if self._trigger == status:
-            self._function(self._args)
-
-        return status, action
-
-
 class StatusChanged(Decorator):
     def __init__(self, name: str = "StatusChanged", function=None):
         super().__init__(name)

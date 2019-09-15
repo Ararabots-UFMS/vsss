@@ -31,16 +31,9 @@ class GoalKeeper(BaseTree):
 
         normal_actions.add_child(self.do_once)
 
-        # invert = InvertOutput()
-        # invert.add_child(AlignWithAxis())
-        # normal_actions.add_child(invert)
-        # normal_actions.add_child(MarkBallOnAxis())
-
         normal_actions.add_child(self._ball_on_attack_side_tree())
-        self.markBallOnY = None
+        self.mark_ball_on_y = None
         normal_actions.add_child(self._ball_on_defense_side_tree())
-
-        normal_actions.add_child(AlignWithAxis())
 
     def reset_counter(self):
         self.do_once.n = 1
@@ -53,27 +46,27 @@ class GoalKeeper(BaseTree):
         return tree
 
     def _ball_on_defense_side_tree(self) -> TreeNode:
-        tree = Sequence("BallInDeffenseSide")
+        tree = Sequence("BallInDefenseSide")
 
         inverter = InvertOutput()
         tree.add_child(inverter)
 
         inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(0.5)))
 
-        self.markBallOnY = MarkBallOnYAxis([10, 30], [10, 90],
-                                           max_speed=120,
-                                           acceptance_radius=5)
-        tree.add_child(self.markBallOnY)
+        self.mark_ball_on_y = MarkBallOnYAxis([10, 30], [10, 90],
+                                              max_speed=120,
+                                              acceptance_radius=5)
+        tree.add_child(self.mark_ball_on_y)
 
         return tree
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        self.setYAxis(blackboard)
+        self.set_y_axis(blackboard)
         return super().run(blackboard)
 
-    def setYAxis(self, blackboard: BlackBoard) -> None:
+    def set_y_axis(self, blackboard: BlackBoard) -> None:
         a = self.get_clamps(blackboard)
-        self.markBallOnY.set_clamps(*a)
+        self.mark_ball_on_y.set_clamps(*a)
 
     def get_clamps(self, blackboard: BlackBoard) -> Tuple[Iterable, Iterable]:
         s = -1 if blackboard.home_goal.side else 1

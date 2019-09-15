@@ -141,7 +141,7 @@ class ChargeWithBall(TreeNode):
 
 
 class MarkBallOnAxis(TreeNode):
-    def __init__(self, name: str = "AlignWithYAxis",
+    def __init__(self, name: str = "MarkBallOnAxis",
                  max_speed: int = 255,
                  axis: np.ndarray = np.array([.0, 1.0]),
                  acceptance_radius: float = 5,
@@ -181,7 +181,7 @@ class MarkBallOnYAxis(TreeNode):
     def __init__(self, clamp_min: Iterable,
                  clamp_max: Iterable,
                  max_speed: int = 255,
-                 name: str = "AlignWithYAxis",
+                 name: str = "MarkBallOnYAxis",
                  acceptance_radius: float = 5):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
@@ -196,15 +196,12 @@ class MarkBallOnYAxis(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         norm_distance = abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
-        # att = 1 - abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
-        # att = 2-(2**(abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH))
-        # att = 1 - (-math.exp((blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH) + 1)
         
         if norm_distance > 0.6:
             ball_y = blackboard.ball.position[1]
         else:
-            att = 1 - norm_distance    
-            ball_y = blackboard.ball.get_predicted_position_over_seconds(0.5*att)[1]
+            scalar = 1 - norm_distance
+            ball_y = blackboard.ball.get_predicted_position_over_seconds(0.5*scalar)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
@@ -232,7 +229,7 @@ class MarkBallOnYAxis(TreeNode):
 
 
 class AlignWithAxis(TreeNode):
-    def __init__(self, name: str = "AlignWithYAxis",
+    def __init__(self, name: str = "AlignWithAxis",
                  max_speed: int = 0,
                  axis: np.ndarray = np.array([.0, 1.0]),
                  acceptance_radius: float = 0.0872665):
