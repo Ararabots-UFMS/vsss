@@ -45,17 +45,13 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     :params team_side: int
     :return: boolean
     """
-    '''if team_side == LEFT:
+    if team_side == LEFT:
         if near_ball(ball_position, robot_position, _distance):
             return robot_position[0] < ball_position[0]
     else:
         if near_ball(ball_position, robot_position, _distance):
             return robot_position[0] > ball_position[0]
     return False
-    '''
-    robot_ball_vector = np.array([ball_position[0] - robot_position[0], ball_position[1] - robot_position[1]])
-    
-
 
 def spin_direction(ball_position, robot_position, team_side, invert=False):
     """
