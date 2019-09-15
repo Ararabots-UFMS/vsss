@@ -101,3 +101,32 @@ class InsideMetaRange(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+class IsRobotInsideEnemyGoalLine(TreeNode):
+    def run(self, blackboard: BlackBoard):
+        self.robot_position = blackboard.robot.position
+        ball_position = blackboard.ball.position
+        enemy_goallineY = [30, 100]
+        
+        if (ball_position[1] <= enemy_goallineY[0] or
+        ball_position[1] >= enemy_goallineY[1]):
+            
+            if (self.robot_position[1] <= enemy_goallineY[0] or
+            self.robot_position[1] >= enemy_goallineY[1]):
+                
+                if blackboard.enemy_goal.side == LEFT:
+                    enemy_goallineX = 16
+                    #16cm in arena means the goal line
+
+                    if self.robot_position[0] <= enemy_goallineX and ball_position[0] <= enemy_goallineX:
+                        return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+                
+                elif blackboard.enemy_goal.side == RIGHT:
+                    enemy_goallineX = 134
+                    #134cm in arena means the another goal line
+                    
+                    if self.robot_position[0] >= enemy_goallineX and ball_position[0] >= enemy_goallineX:
+                        return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+

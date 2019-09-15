@@ -1,10 +1,10 @@
 {
     "robot_1": {
         "active": 1,
-        "bluetooth_mac_address": "Jeremias",
-        "body_id": "Jeremias",
+        "bluetooth_mac_address": "Tijolinho",
+        "body_id": "Tijolinho",
         "role": "PID Calibration",
-        "tag_number": 0
+        "tag_number": 1
     },
     "robot_2": {
         "active": 0,

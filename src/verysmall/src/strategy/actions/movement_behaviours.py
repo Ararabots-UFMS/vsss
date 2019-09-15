@@ -119,6 +119,7 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        logfatal("charge")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(

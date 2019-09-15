@@ -66,6 +66,7 @@ def is_behind_ball(ball_position: np.ndarray,
     distance = np.linalg.norm(ball_position - robot.position)
     
     if distance > max_distance:
+        rospy.logfatal("distance")
         return False        
     
     theta = robot.orientation                
@@ -77,13 +78,16 @@ def is_behind_ball(ball_position: np.ndarray,
     max_angle = max_angle * math_utils.DEG2RAD
      
     if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
+        rospy.logfatal("angle")
         return False
         
     if team_side == LEFT:
         if ball_position[0] > robot.position[0]:
+            rospy.logfatal("lado")
             return False
     else:
-        if ball_position[0] < robot.position[0]:
+        if ball_position[0] > robot.position[0]:
+            rospy.logfatal("lado_else")
             return False
 
     return True
