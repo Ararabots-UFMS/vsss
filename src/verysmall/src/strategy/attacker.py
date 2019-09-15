@@ -17,16 +17,16 @@ class Attacker(BaseTree):
         super().__init__(name)
 
         normal = Sequence('Normal')
+        self.add_child(normal)
 
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
         normal_actions = Selector('Normal Actions')
-        
-        normal_actions.add_child(self.ball_and_robot_in_attack_goalline())
         normal.add_child(normal_actions)
-        normal_actions.add_child(self.naive_go_to_ball())
-        #normal_actions.add_child(SpinTask('Spin'))  # Spin 
-        self.add_child(normal)
         
+        normal_actions.add_child(self.ball_and_robot_in_enemy_goalline())
+        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
+        normal_actions.add_child(self.naive_go_to_ball())
+    
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
         #tree.add_child(IsBallInsideCentralArea("Check ball"))
@@ -35,12 +35,11 @@ class Attacker(BaseTree):
                                             acceptance_radius=7,
                                             speed_prediction=False)
         tree.add_child(go_to_ball)
-        #tree.add_child(SpinTask('Spin'))  # Spin 
+        tree.add_child(SpinTask('Spin'))  # Spin 
 
         return tree
     
-
-    def ball_and_robot_in_attack_goalline(self) -> TreeNode:
+    def ball_and_robot_in_enemy_goalline(self) -> TreeNode:
         tree = Sequence('BallAndRobotInAttackGoalLine')
         tree.add_child(IsRobotInsideEnemyGoalLine("EnemyGoalLine"))
         tree.add_child(IsBehindBall('IsBehindBall', 20))
