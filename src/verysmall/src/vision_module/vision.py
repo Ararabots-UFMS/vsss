@@ -181,6 +181,7 @@ class Vision:
         width_px = abs(xo - rightmost_x)
 
         # now just calculate the pixel to cm factor
+
         self.conversion_factor_x = 150.0 / width_px
         self.conversion_factor_y = 130.0 / height_px
 

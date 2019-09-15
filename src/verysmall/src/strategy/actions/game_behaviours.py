@@ -197,6 +197,6 @@ class IsInsideGoal(TreeNode):
         aliado
         """
         if section - team_goal_side == 2: 
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-        else:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
