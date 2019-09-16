@@ -201,7 +201,7 @@ class MarkBallOnYAxis(TreeNode):
             ball_y = blackboard.ball.position[1]
         else:
             scalar = 1 - norm_distance
-            t = blackboard.ball.get_time_on_axis(y=blackboard.robot.position[1])
+            t = blackboard.ball.get_time_on_axis(y=blackboard.robot.position[0])
             ball_y = blackboard.ball.get_predicted_position_over_seconds(t)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
