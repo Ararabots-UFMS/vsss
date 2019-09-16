@@ -145,36 +145,15 @@ class MovingBody:
         p = px(time.time() + seconds_in_future), py(time.time() + seconds_in_future)
         return np.array(p)
 
-    def get_time_on_axis(self, x=None, y=None):
-        t = self.time_buffer[-1]
-        if x:
-            axis = 0
-            a = self.speed_buffer_x[-1]/self.time_buffer[-1]
-            b = self.speed_buffer_x[-1]
-            c0 = self.position_buffer_x[-1]
-            c = x
-        elif y:
-            axis = 1
-            a = self.speed_buffer_y[-1] / self.time_buffer[-1]
-            b = self.speed_buffer_y[-1]
-            c0 = self.position_buffer_y[-1]
-            c = y
-        if a != 0:
+    def get_time_on_axis(self, axis, value):
+        fit_tx = np.polyfit(self.position_buffer_x, self.time_buffer, 1)
+        fit_ty = np.polyfit(self.position_buffer_y, self.time_buffer, 1)
+        ptx = np.poly1d(fit_tx)
+        pty = np.poly1d(fit_ty)
 
-            t1 = (sqrt(2*a*(c-c0)+b**2) - b )/a
-            t2 = -((sqrt(2 * a*(c - c0) + b ** 2) + b) / a)
-        elif b != 0:
-            t1 = (c-c0)/b
-            t2 = t1
-        else:
-            t1 = t2 = t
-
-        if t1 > t:
-            return  time.time() - t1
-        elif t2 > t:
-            return  time.time() - t2
-        return  time.time() - t
-
+        if axis == 0:
+            return pty(value)
+        return ptx(value)
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
