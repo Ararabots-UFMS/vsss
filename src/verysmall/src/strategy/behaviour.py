@@ -151,27 +151,29 @@ class MovingBody:
             axis = 0
             a = self.speed_buffer_x[-1]/self.time_buffer[-1]
             b = self.speed_buffer_x[-1]
-            c0 = self.position_buffer_x
+            c0 = self.position_buffer_x[-1]
             c = x
         elif y:
             axis = 1
             a = self.speed_buffer_y[-1] / self.time_buffer[-1]
             b = self.speed_buffer_y[-1]
-            c0 = self.position_buffer_y
+            c0 = self.position_buffer_y[-1]
             c = y
         if a != 0:
 
-            t1 = (sqrt(2*a(c-c0)+b**2) - b )/a
-            t2 = -((sqrt(2 * a(c - c0) + b ** 2) + b) / a)
-        else:
+            t1 = (sqrt(2*a*(c-c0)+b**2) - b )/a
+            t2 = -((sqrt(2 * a*(c - c0) + b ** 2) + b) / a)
+        elif b != 0:
             t1 = (c-c0)/b
             t2 = t1
+        else:
+            t1 = t2 = t
 
         if t1 > t:
-            return t1
+            return  time.time() - t1
         elif t2 > t:
-            return t2
-        return t
+            return  time.time() - t2
+        return  time.time() - t
 
 
     def __repr__(self):

@@ -55,7 +55,7 @@ class GoalKeeper(BaseTree):
 
         self.mark_ball_on_y = MarkBallOnYAxis([10, 30], [10, 90],
                                               max_speed=120,
-                                              acceptance_radius=5)
+                                              acceptance_radius=2)
         tree.add_child(self.mark_ball_on_y)
 
         return tree

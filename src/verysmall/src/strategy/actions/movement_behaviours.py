@@ -1,4 +1,5 @@
 import math
+import time
 from abc import ABC, abstractmethod
 from typing import Iterable
 from typing import Tuple
@@ -182,7 +183,7 @@ class MarkBallOnYAxis(TreeNode):
                  clamp_max: Iterable,
                  max_speed: int = 255,
                  name: str = "MarkBallOnYAxis",
-                 acceptance_radius: float = 5):
+                 acceptance_radius: float = 2):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
