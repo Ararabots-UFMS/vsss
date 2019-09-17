@@ -8,7 +8,6 @@ from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
-from strategy.strategy_utils import GameStates
 from strategy.defender import Defender
 from strategy.attacker import Attacker
 from strategy.pid_calibration import CalibrationTree

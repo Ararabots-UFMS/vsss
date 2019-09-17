@@ -1,13 +1,16 @@
 from typing import Tuple, Callable
+import numpy as np
+from math import sin
+import rospy
+
+
 from strategy.arena_utils import on_attack_side
 from strategy.behaviour import *
 from strategy.strategy_utils import behind_ball, distance_point
 from strategy import arena_utils
+from strategy.arena_utils import RIGHT, LEFT
 from strategy.strategy_utils import behind_ball, near_ball, ball_on_border, ball_on_critical_position, ball_on_attack_side
 from utils.math_utils import angle_between
-import numpy as np
-from math import sin
-import rospy
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus, Goal, EnemyTeam, HomeTeam, FriendlyRobot, MovingBody
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 
@@ -95,13 +98,10 @@ class IsInAttackSide(TreeNode):
         self._get_pos = get_pos
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        side = blackboard.home_goal.side
-        x_left = 75*(1-side)
-        x_right = 75*(2 - side)
-
+        side = blackboard.enemy_goal.side
         x_obj = self._get_pos(blackboard)[0]
         
-        if x_left < x_obj < x_right:
+        if (x_obj > 75 and side == RIGHT) or (x_obj < 75 and side == LEFT):
             status = TaskStatus.SUCCESS
         else:
             status = TaskStatus.FAILURE
