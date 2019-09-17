@@ -119,7 +119,7 @@ class Robot:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))
 
-        # self.roboto_vision()
+        self.roboto_vision()
 
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
@@ -130,7 +130,8 @@ class Robot:
 
     def roboto_vision(self):
         self.imgField.plot_ball(self.blackboard.ball.position)
-        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(0.5)
+        t = self.blackboard.ball.get_time_on_axis(0, self.blackboard.ball.position[0])
+        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(t)
         ma_ball = unit_convert(ma_ball, self.imgField.width_conv, self.imgField.height_conv)
         ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
         #rospy.logwarn(ma_ball)

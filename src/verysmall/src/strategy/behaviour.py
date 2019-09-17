@@ -103,7 +103,7 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self, buffer_size=30):
+    def __init__(self, buffer_size=60):
         self.position = np.array([0, 0])
         self._position_buffer_length = buffer_size / 60
         self.position_buffer_x = [0 for _ in range(buffer_size)]
@@ -137,7 +137,6 @@ class MovingBody:
         super().__setattr__(key, value)
 
     def get_predicted_position_over_seconds(self, seconds_in_future=0.5):
-
         fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
         fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
         px = np.poly1d(fitx)
@@ -146,14 +145,15 @@ class MovingBody:
         return np.array(p)
 
     def get_time_on_axis(self, axis, value):
-        fit_tx = np.polyfit(self.position_buffer_x, self.time_buffer, 1)
-        fit_ty = np.polyfit(self.position_buffer_y, self.time_buffer, 1)
+        t = time.time()
+        fit_tx = np.polyfit(self.position_buffer_x, self.time_buffer, 0)
+        fit_ty = np.polyfit(self.position_buffer_y, self.time_buffer, 0)
         ptx = np.poly1d(fit_tx)
         pty = np.poly1d(fit_ty)
 
         if axis == 0:
-            return pty(value)
-        return ptx(value)
+            return abs(t - ptx(value))
+        return abs(t - pty(value))
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
