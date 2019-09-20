@@ -42,10 +42,10 @@ Axis = [
 
     array([1.0, 0.0]),  # LEFT_GOAL
     array([1.0, 0.0]),  # RIGHT_GOAL
-    array([1.0, 1.0]),  # LEFT_UP_CORNER
-    array([1.0, -1.0]),  # LEFT_DOWN_CORNER
-    array([1.0, -1.0]),  # RIGHT_UP_CORNER
-    array([1.0, 1.0]),  # RIGHT_DOWN_CORNER
+    array([0.0, 1.0]),  # LEFT_UP_CORNER
+    array([0.0, -1.0]),  # LEFT_DOWN_CORNER
+    array([0.0, -1.0]),  # RIGHT_UP_CORNER
+    array([0.0, 1.0]),  # RIGHT_DOWN_CORNER
 
     array([1.0, 0.0]),  # UP_BORDER
     array([1.0, 0.0]),  # DOWN_BORDER

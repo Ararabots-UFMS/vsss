@@ -1,8 +1,8 @@
 {
     "robot_1": {
-        "active": 0,
-        "bluetooth_mac_address": "LUIS_ESPALHA_LIXO",
-        "body_id": "LUIS_ESPALHA_LIXO",
+        "active": 1,
+        "bluetooth_mac_address": "Et_Bilu",
+        "body_id": "Et_Bilu",
         "role": "Atacante",
         "tag_number": 2
     },
