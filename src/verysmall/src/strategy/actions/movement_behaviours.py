@@ -168,6 +168,8 @@ class MarkBallOnAxis(TreeNode):
                 target_position = predicted_position
             else:
                 target_position = blackboard.ball.position
+        else:
+            target_position = blackboard.ball.position
 
         if self.turn_off_clamp:
             direction = target_position[1] - blackboard.robot.position[1]
@@ -178,11 +180,11 @@ class MarkBallOnAxis(TreeNode):
         distance = abs(direction)
 
         if distance < self._acceptance_radius:
-            return TaskStatus.RUNNING, (OpCodes.SMOOTH,
+            return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                         -self._angle_to_correct if direction < 0 else self._angle_to_correct, 0,
                                         distance)
 
-        return TaskStatus.RUNNING, (OpCodes.SMOOTH,
+        return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                     self._max_speed,
                                     .0)
