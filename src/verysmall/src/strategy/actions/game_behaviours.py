@@ -108,6 +108,7 @@ class IsInAttackSide(TreeNode):
         
         return status, NO_ACTION
 
+
 class AmIAttacking(TreeNode):
     def __init__(self, name: str = "AmIAttacking"):
         self.name = name
