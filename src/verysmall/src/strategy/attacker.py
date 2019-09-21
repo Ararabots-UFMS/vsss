@@ -44,8 +44,7 @@ class Attacker(BaseTree):
         tree.add_child(IsRobotInsideEnemyGoalLine("EnemyGoalLine"))
         tree.add_child(IsBehindBall('IsBehindBall', 20))
         #manter distância alta para não ocorrer do robô perder a bola enquanto
-        # acelera
-        #tree.add_child(GoToAttackGoalUsingUnivector('Attack'))       
+        # acelera       
         tree.add_child(ChargeWithBall('Attack', 200))
 
         return tree

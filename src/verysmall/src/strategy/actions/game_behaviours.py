@@ -115,15 +115,13 @@ class IsRobotInsideEnemyGoalLine(TreeNode):
             self.robot_position[1] >= enemy_goallineY[1]):
                 
                 if blackboard.enemy_goal.side == LEFT:
-                    enemy_goallineX = 16
-                    #16cm in arena means the goal line
+                    enemy_goallineX = arena_utils.LEFT_GOAL_LINE
 
                     if self.robot_position[0] <= enemy_goallineX and ball_position[0] <= enemy_goallineX:
                         return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
                 
                 elif blackboard.enemy_goal.side == RIGHT:
-                    enemy_goallineX = 134
-                    #134cm in arena means the another goal line
+                    enemy_goallineX = arena_utils.RIGHT_GOAL_LINE
                     
                     if self.robot_position[0] >= enemy_goallineX and ball_position[0] >= enemy_goallineX:
                         return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
