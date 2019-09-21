@@ -17,6 +17,9 @@ MAX_W_SIZE = 150
 LEFT_GOAL_LINE = 16
 RIGHT_GOAL_LINE = 134
 
+LEFT_AREA_CENTER_X = 8
+RIGHT_AREA_CENTER_X = 142
+
 
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
@@ -37,6 +40,9 @@ class ArenaSections(Enum):
     LEFT_UP_BOTTOM_LINE = 12
     RIGHT_DOWN_BOTTOM_LINE = 13
     RIGHT_UP_BOTTOM_LINE = 14
+
+    LEFT_CRITICAL_LINE = 15
+    RIGHT_CRITICAL_LINE = 16
 
 
 Axis = [
@@ -65,10 +71,10 @@ Offsets = [
     array([0.0, 0.0]),  # RIGHT_GOAL_AREA
 
     array([0.0, 0.0]),  # LEFT_GOAL
-    array([0.0, 0.0]),  # RIGHT_GOAL
-    array([1.0, -1.0]),  # LEFT_UP_CORNER
-    array([1.0, 1.0]),  # LEFT_DOWN_CORNER
-    array([-1.0, -1.0]),  # RIGHT_UP_CORNER
+    array([0.0, 0.0]),  # RIGHT_GOALGoToPosition
+    array([1.0, -1.0]),  # LEFT_UP_CORNERGoToPosition
+    array([1.0, 1.0]),  # LEFT_DOWN_CORNERGoToPosition
+    array([-1.0, -1.0]),  # RIGHT_UP_CORNERGoToPosition
     array([-1.0, 1.0]),  # RIGHT_DOWN_CORNER
 
     array([0.0, -1.0]),  # UP_BORDER
@@ -100,6 +106,8 @@ def on_attack_side(pos, team_side, bias=0):
    """
     return (pos[0] > (75 - bias) and team_side == LEFT) or (pos[0] < (75 + bias) and team_side == RIGHT)
 
+def y_axis_section(pos):
+    return pos[1] > HALF_ARENA_HEIGHT
 
 def on_extended_attack_side(pos, team_side):
     """

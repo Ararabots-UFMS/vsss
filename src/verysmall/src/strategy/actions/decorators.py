@@ -47,7 +47,7 @@ class InvertOutput(Decorator):
                 else:
                     return TaskStatus.FAILURE, action
 
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return status, action
 
 
 class Timer(Decorator):
@@ -67,3 +67,51 @@ class Timer(Decorator):
             else:
                 self.initial_time = time.time()
                 return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+
+
+class IgnoreSmoothing(Decorator):
+    def __init__(self, name: str = "IgnoreSmoothing"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if self.child is None:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            status, action = self.child.run(blackboard)
+            if action[0] == OpCodes.SMOOTH:
+                action = (OpCodes.NORMAL, action[1], action[2], action[3])
+            return status, action
+
+
+class DoNTimes(Decorator):
+    def __init__(self, name: str = "Do N times", n: int = 1):
+        super().__init__(name)
+        self.n = n
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if self.child is None:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            if self.n > 0:
+                status, action = self.child.run(blackboard)
+                if status != TaskStatus.RUNNING:
+                    self.n -= 1
+                return status, action
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+
+class StatusChanged(Decorator):
+    def __init__(self, name: str = "StatusChanged", function=None):
+        super().__init__(name)
+        self.last_status = TaskStatus.SUCCESS
+        self._function = function
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        status, action = self.child.run(blackboard)
+
+        if status != self.last_status:
+            self._function()
+
+        self.last_status = status
+
+        return status, action

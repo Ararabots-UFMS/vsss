@@ -1,6 +1,6 @@
 from strategy.behaviour import BlackBoard, Sequence, Selector, TaskStatus
 from strategy.actions.state_behaviours import InState, ChangeState
-from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, InsideMetaRange
+from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, IsInsideMetaRange
 from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
 
@@ -50,10 +50,10 @@ class Meta(Sequence):
         super().__init__(name)
         check_state = InState("CheckMetaState", GameStates.META)
         self.add_child(check_state)
-        meta = Selector("InsideMetaRange")
+        meta = Selector("IsInsideMetaRange")
         in_range_and_behind_the_ball = Sequence("InRangeAndBehindTheBall")
         is_behind_the_ball = IsBehindBall("BehindTheBall", 25)
-        inside_meta_range = InsideMetaRange('MetaDist', 50)
+        inside_meta_range = IsInsideMetaRange('MetaDist', 50)
         in_range_and_behind_the_ball.add_child(is_behind_the_ball)
         in_range_and_behind_the_ball.add_child(inside_meta_range)
         change_state = ChangeState("ReturnToNormal", GameStates.NORMAL)

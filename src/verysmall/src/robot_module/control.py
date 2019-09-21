@@ -18,10 +18,10 @@ class Control:
                  max_fine_movement_speed) -> None:
         self._myrobot = myrobot
         self._max_fine_movement_speed = max_fine_movement_speed
-        self._alpha = 15  # centimeters
+        self._alpha = 10  # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 20 * DEG2RAD
+        self._hysteresis_angle_window = 15 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
 
@@ -58,6 +58,8 @@ class Control:
         if optimal_speed:
             speed = self.get_optimal_speed(speed, diff_angle, distance)
             speed = min(speed, self._myrobot.get_next_speed())
+
+        speed = min(speed, self._myrobot.get_next_speed())
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
@@ -125,5 +127,5 @@ class Control:
                 distance: float) -> float:
         scale = target_speed - self._max_fine_movement_speed
 
-        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha * 1.5)))
+        s = scale / (1 + math.exp(0.5 * (-distance + self._alpha)))
         return s + self._max_fine_movement_speed
