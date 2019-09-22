@@ -1,9 +1,10 @@
-from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine
+from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallAndRobotInsideAreas
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
+from strategy.arena_utils import ArenaSections
 
 
 class Attacker(BaseTree):
@@ -24,8 +25,8 @@ class Attacker(BaseTree):
 
     def naive_go_to_ball(self) -> TreeNode:
         tree = Sequence("Go ball when ball in central area")
-        #tree.add_child(IsBallInsideCentralArea("Check ball"))
-        go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle", 
+        # tree.add_child(IsBallInsideCentralArea("Check ball"))
+        go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle",
                                             max_speed=150,
                                             acceptance_radius=7,
                                             speed_prediction=False)
@@ -37,9 +38,23 @@ class Attacker(BaseTree):
     def ball_and_robot_in_enemy_goalline(self) -> TreeNode:
         tree = Sequence('BallAndRobotInAttackGoalLine')
         tree.add_child(IsRobotInsideEnemyGoalLine("EnemyGoalLine"))
-        tree.add_child(IsBehindBall('IsBehindBall', 20))
-        #manter distância alta para não ocorrer do robô perder a bola enquanto
+        spin_or_dash = Selector("SpinOrDash")
+        tree.add_child(spin_or_dash)
+
+        spin_sequence = Sequence("SpinSequence")
+        spin_or_dash.add_child(spin_sequence)
+
+        dash_sequence = Sequence("DashSequence")
+        spin_or_dash.add_child(dash_sequence)
+
+        spin_sequence.add_child(
+            IsBallAndRobotInsideAreas(areas=[ArenaSections.LEFT_DOWN_CORNER, ArenaSections.LEFT_UP_CORNER,
+                                             ArenaSections.RIGHT_DOWN_CORNER, ArenaSections.RIGHT_UP_CORNER]))
+        spin_sequence.add_child(SpinTask())
+
+        dash_sequence.add_child(IsBehindBall('IsBehindBall', 20))
+        # manter distância alta para não ocorrer do robô perder a bola enquanto
         # acelera
-        tree.add_child(ChargeWithBall('Attack', 200))
+        dash_sequence.add_child(ChargeWithBall('Attack', 200))
 
         return tree

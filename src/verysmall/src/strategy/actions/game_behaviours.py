@@ -1,10 +1,10 @@
 from math import sin
-from typing import Callable
+from typing import Callable, List
 
 import rospy
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side
+from strategy.arena_utils import on_attack_side, section
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus
@@ -26,7 +26,6 @@ class IsBehindBall:
                           blackboard.home_goal.side,
                           self.distance,
                           max_angle=32):
-            rospy.logfatal("Is Behind!")
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
@@ -127,6 +126,21 @@ class IsBallInRangeOfDefense(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and not \
                 ball_on_critical_position(blackboard.ball.position):
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+
+class IsBallAndRobotInsideAreas(TreeNode):
+    def __init__(self, name: str = "IsBallInsideAreas", areas: List = [], acceptance_radius=7):
+        super().__init__(name)
+        self._areas = areas
+        self._acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_section = section(blackboard.ball.position)
+        ball_distance = np.linalg.norm(blackboard.ball.position - blackboard.robot.position)
+
+        if ball_distance < self._acceptance_radius and ball_section in self._areas:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 

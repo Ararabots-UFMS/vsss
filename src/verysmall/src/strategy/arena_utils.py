@@ -106,8 +106,10 @@ def on_attack_side(pos, team_side, bias=0):
    """
     return (pos[0] > (75 - bias) and team_side == LEFT) or (pos[0] < (75 + bias) and team_side == RIGHT)
 
+
 def y_axis_section(pos):
     return pos[1] > HALF_ARENA_HEIGHT
+
 
 def on_extended_attack_side(pos, team_side):
     """

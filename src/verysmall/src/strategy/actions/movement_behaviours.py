@@ -4,6 +4,7 @@ from typing import Iterable
 from typing import Tuple
 
 import numpy as np
+import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
@@ -14,6 +15,7 @@ from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
+from utils.profiling_tools import log_warn
 
 
 class StopAction(TreeNode):
@@ -31,6 +33,7 @@ class SpinTask(TreeNode):
         self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        log_warn("Spin!")
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
                                                    team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255,
                                     .0)
@@ -127,6 +130,7 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        rospy.logfatal("Charge!")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
