@@ -1,4 +1,4 @@
-from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallAndRobotInsideAreas
+from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallInsideAreas, IsNearBall
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
@@ -48,8 +48,9 @@ class Attacker(BaseTree):
         spin_or_dash.add_child(dash_sequence)
 
         spin_sequence.add_child(
-            IsBallAndRobotInsideAreas(areas=[ArenaSections.LEFT_DOWN_CORNER, ArenaSections.LEFT_UP_CORNER,
-                                             ArenaSections.RIGHT_DOWN_CORNER, ArenaSections.RIGHT_UP_CORNER]))
+            IsBallInsideAreas(areas=[ArenaSections.LEFT_DOWN_CORNER, ArenaSections.LEFT_UP_CORNER,
+                                     ArenaSections.RIGHT_DOWN_CORNER, ArenaSections.RIGHT_UP_CORNER]))
+        spin_sequence.add_child(IsNearBall())
         spin_sequence.add_child(SpinTask())
 
         dash_sequence.add_child(IsBehindBall('IsBehindBall', 20))

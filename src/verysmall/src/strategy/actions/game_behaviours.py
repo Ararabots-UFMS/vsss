@@ -130,17 +130,14 @@ class IsBallInRangeOfDefense(TreeNode):
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
-class IsBallAndRobotInsideAreas(TreeNode):
+class IsBallInsideAreas(TreeNode):
     def __init__(self, name: str = "IsBallInsideAreas", areas: List = [], acceptance_radius=7):
         super().__init__(name)
         self._areas = areas
-        self._acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        ball_section = section(blackboard.ball.position)
-        ball_distance = np.linalg.norm(blackboard.ball.position - blackboard.robot.position)
 
-        if ball_distance < self._acceptance_radius and ball_section in self._areas:
+        if section(blackboard.ball.position) in self._areas:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
@@ -167,12 +164,12 @@ class AmIInDefenseField(TreeNode):
 
 
 class IsNearBall(TreeNode):
-    def __init__(self, name: str = "IsNearBall", distance=6.):
+    def __init__(self, name: str = "IsNearBall", acceptance_radius=6.):
         super().__init__(name)
-        self.distance = distance
+        self._acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if near_ball(blackboard.ball.position, blackboard.robot.position, self.distance):
+        if near_ball(blackboard.ball.position, blackboard.robot.position, self._acceptance_radius):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         else:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
