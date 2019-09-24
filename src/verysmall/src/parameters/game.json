@@ -6,7 +6,7 @@
     "ROS_MASTER_URI": "http://10.0.0.2:11311",
     "camera": {
         "file": "",
-        "name": "USB 2.0 Camera",
+        "name": "USB 2.0 Camera: HD USB Camera",
         "product": "9230",
         "vendor": "05a3"
     },

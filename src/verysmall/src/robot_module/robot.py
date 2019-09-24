@@ -1,21 +1,21 @@
 from typing import List, Tuple
-import rospy
-import numpy as np
+
 import cv2
+import numpy as np
+import rospy
 
-from robot_module.hardware import RobotHardware
-from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
-
+from interface.virtualField import virtualField, unit_convert, position_from_origin
+from robot_module.comunication.sender import Sender, STDMsg
+from robot_module.control import Control
+from robot_module.hardware import RobotHardware
+from strategy.attacker import Attacker
 from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
 from strategy.defender import Defender
-from strategy.attacker import Attacker
-from strategy.pid_calibration import CalibrationTree
 from strategy.goalkeeper import GoalKeeper
+from strategy.pid_calibration import CalibrationTree
 from utils.json_handler import JsonHandler
-from robot_module.control import Control
-from robot_module.movement.univector.debug import drawRobot, drawBall
-from interface.virtualField import virtualField, unit_convert, position_from_origin
+
 
 class Robot:
 
@@ -111,7 +111,6 @@ class Robot:
         task_status, action = self.behaviour_tree.run(self.blackboard)
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
-
         left, right = self._controller.get_wheels_speeds(*action)
         msg = self._hardware.normalize_speeds(STDMsg(left, right))
         if self._sender is not None:
