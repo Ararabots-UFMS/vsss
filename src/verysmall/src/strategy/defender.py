@@ -47,7 +47,7 @@ class Defender(BaseTree):
 
         mark.add_child(reposition)
         
-        mark.add_child(MarkBallOnAxis("MarkBallonAxis"))
+        mark.add_child(MarkBallOnAxis("MarkBallonAxis", predict_ball=False))
 
         defend.add_child(mark)
         normal.add_child(defend)

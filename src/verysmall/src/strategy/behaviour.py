@@ -1,3 +1,4 @@
+from math import sqrt
 from typing import Tuple
 import time
 from enum import Enum
@@ -105,19 +106,24 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self, buffer_size=30):
+    def __init__(self, buffer_size=60):
         self.position = np.array([0, 0])
         self._position_buffer_length = buffer_size / 60
         self.position_buffer_x = [0 for _ in range(buffer_size)]
         self.position_buffer_y = [0 for _ in range(buffer_size)]
+
+        self.speed_buffer_x = [0 for _ in range(buffer_size)]
+        self.speed_buffer_y = [0 for _ in range(buffer_size)]
+
         self.time_buffer = [float(time.time()) for i in range(buffer_size)]
+
 
         # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
         self.speed = np.array([0, 0])
         self.orientation = .0
 
     def __setattr__(self, key, value):
-        if key == 'position' and (value[0] or value[1]):
+        if key == "position" and (value[0] or value[1]):
             self.position_buffer_x.pop(0)
             self.position_buffer_x.append(value[0])
             self.position_buffer_y.pop(0)
@@ -125,16 +131,32 @@ class MovingBody:
 
             self.time_buffer.pop(0)
             self.time_buffer.append(float(time.time()))
+
+        elif key == "speed" and (value[0] or value[1]):
+            self.speed_buffer_x.pop(0)
+            self.speed_buffer_x.append(value[0])
+            self.speed_buffer_y.pop(0)
+            self.speed_buffer_y.append(value[1])
         super().__setattr__(key, value)
 
-    def get_predicted_position_over_seconds(self, seconds_in_future=0.5):
-
+    def get_predicted_position_over_seconds(self, t=0.5):
         fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
         fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
         px = np.poly1d(fitx)
         py = np.poly1d(fity)
-        p = px(time.time() + seconds_in_future), py(time.time() + seconds_in_future)
+        p = px(time.time() + t), py(time.time() + t)
         return np.array(p)
+
+    def get_time_on_axis(self, axis, value):
+        t = time.time()
+        fit_tx = np.polyfit(self.position_buffer_x, self.time_buffer, 0)
+        fit_ty = np.polyfit(self.position_buffer_y, self.time_buffer, 0)
+        ptx = np.poly1d(fit_tx)
+        pty = np.poly1d(fit_ty)
+
+        if axis == 0:
+            return abs(t - ptx(value))
+        return abs(t - pty(value))
 
     def __repr__(self):
         return "--position: " + str(self.position) + \

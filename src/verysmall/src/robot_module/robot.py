@@ -1,3 +1,4 @@
+import time
 from typing import List, Tuple
 
 import cv2
@@ -128,9 +129,15 @@ class Robot:
 
     def roboto_vision(self):
         self.imgField.plot_ball(self.blackboard.ball.position)
-        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(0.5)
+        temp = time.time()
+        t = self.blackboard.ball.get_time_on_axis(0, self.blackboard.ball.position[0])
+        rospy.logfatal(t)
+        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(t)
+
         ma_ball = unit_convert(ma_ball, self.imgField.width_conv, self.imgField.height_conv)
         ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
+        rospy.logfatal(ma_ball)
+        rospy.logfatal(self.blackboard.ball.position)
         #rospy.logwarn(ma_ball)
         cv2.circle(self.imgField.field, ma_ball, self.imgField.ball_radius,
                    self.imgField.colors["red"], -1)

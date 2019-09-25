@@ -51,11 +51,11 @@ class GoalKeeper(BaseTree):
         inverter = InvertOutput()
         tree.add_child(inverter)
 
-        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(0.5)))
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(b.ball.get_time_on_axis(axis=0,value=b.robot.position[0]))))
 
         self.mark_ball_on_y = MarkBallOnYAxis([10, 30], [10, 90],
                                               max_speed=120,
-                                              acceptance_radius=5)
+                                              acceptance_radius=2)
         tree.add_child(self.mark_ball_on_y)
 
         return tree
