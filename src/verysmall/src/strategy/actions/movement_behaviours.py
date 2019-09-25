@@ -9,12 +9,14 @@ import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
-from strategy.arena_utils import LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X, ROBOT_SIZE, y_axis_section, RIGHT, HALF_ARENA_WIDTH
+from strategy.arena_utils import LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X, ROBOT_SIZE, y_axis_section, RIGHT, \
+    HALF_ARENA_WIDTH
 from strategy.behaviour import ACTION, TreeNode
 from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
+from utils.profiling_tools import log_warn
 
 
 class StopAction(TreeNode):
@@ -32,6 +34,7 @@ class SpinTask(TreeNode):
         self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        log_warn("Spin!")
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
                                                    team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255,
                                     .0)
@@ -128,12 +131,13 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        rospy.logfatal("Charge!")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            False
+            abs=False
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
@@ -209,7 +213,7 @@ class MarkBallOnYAxis(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         norm_distance = abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
-        
+
         if norm_distance > 0.6:
             ball_y = blackboard.ball.position[1]
         else:
@@ -246,7 +250,8 @@ class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithAxis",
                  max_speed: int = 0,
                  axis: np.ndarray = np.array([.0, 1.0]),
-                 acceptance_radius: float = 0.0872665):
+                 acceptance_radius: float = 0.0872665, align_with_ball: bool = False):
+
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
