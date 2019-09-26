@@ -38,7 +38,7 @@ class VisionNode:
         self.state_changed = 0
 
         arena_params = "parameters/ARENA.json"
-        colors_params = "parameters/COLORS.json"
+        colors_params = "parameters/COLORS.bin"
 
         try:
             device = int(sys.argv[1])

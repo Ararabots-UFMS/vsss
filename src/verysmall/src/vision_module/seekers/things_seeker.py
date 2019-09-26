@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 import cv2
 import time
@@ -7,6 +8,7 @@ import rospy
 from .aruco_seeker import ArucoSeeker
 from .general_object_seeker import GeneralObjSeeker
 from .general_mult_obj_seeker import GeneralMultObjSeeker
+from vision_module.seekers.circular_color_tag_seeker import CircularColorTagSeeker
 
 # @author Wellington Castro <wvmcastro>
 
@@ -229,8 +231,21 @@ class HawkEye:
 
         if not (adv_centers is None) and adv_centers.size:
             for i in range(len(robots_list)):
-                pos = self.pixel_to_real_world(adv_centers[i, :])
+                pos = self.pixel_to_real_world(adv_centers[i, ...])
                 robots_list[i].update(i, pos)
+    
+    def color_seeker_seek(self, binary_img: np.ndarray, 
+                           color_img: np.ndarray, 
+                           robots_list: List, 
+                           seeker: CircularColorTagSeeker) -> None:
+        robots = seeker.seek(binary_img, color_img)
+
+        for robot in robots:
+            k = robot[0]
+            pos = self.pixel_to_real_world(robot[1])
+            theta = robot[2]
+            robots_list[k].update(k, pos, theta)
+
 
     def reset(self):
         self.yellow_team_seeker.reset()

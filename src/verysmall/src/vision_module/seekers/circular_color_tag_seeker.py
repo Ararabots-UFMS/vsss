@@ -2,6 +2,7 @@ from typing import List, Tuple
 import cv2
 import numpy as np
 import math
+import rospy
 
 IMAGE = np.ndarray
 ROBOT_STATE = Tuple[int, np.array, float]
@@ -26,12 +27,15 @@ class CircularColorTagSeeker:
         slices = self.get_crop_areas(first_centroids)
 
         patches = []
+        top_lefts = []
         for s in slices:
-            patches.append(color_img[s, ...])
+            patches.append(color_img[s[0], s[1], ...])
+            top_lefts.append(np.array([s[1].start, s[0].start]))
         
-        ids, second_centroids = self.segment_and_get_second_centroids(patches)
-
+        ids, second_centroids = self.segment_and_get_second_centroids(patches, top_lefts)
         robots = self.compute_robot_states(ids, first_centroids, second_centroids)
+        
+        return robots
     
     def get_main_color_centroids(self, img) -> List[np.ndarray]:
         cnts = self.get_contours(img)
@@ -41,9 +45,10 @@ class CircularColorTagSeeker:
         for cnt in cnts:
             m = cv2.moments(cnt)
             a = m["m00"]
-            cx = m["m10"] / a
-            cy = m["m01"] / a
-            centroids.append((centroids, np.array([cx, cy])))
+            if a != 0:    
+                cx = m["m10"] / a
+                cy = m["m01"] / a
+                centroids.append((a, np.array([cx, cy])))
         
         sorted(centroids, key = lambda x: x[0], reverse=True)
 
@@ -59,7 +64,8 @@ class CircularColorTagSeeker:
                     n += 1
         
         if self._radius_thresh < 0 and n != 0:
-            *_, self._radius_thresh = int(2.5 * cv2.minEnclosingCircle(cnts[0]))
+            *_, radius = cv2.minEnclosingCircle(cnts[0])
+            self._radius_thresh = 2.5 * radius
         
         return [centroids[i][1] for i in range (n)]
     
@@ -75,36 +81,35 @@ class CircularColorTagSeeker:
         
         slices = []
         for centroid in centroids:
-            x_min = max(0, centroid[0] - self._radius_thresh)
-            x_max = min(self._w, centroid[0] + self._radius_thresh)
-            y_min = max(0, centroid[1] - self._radius_thresh)
-            y_max = min(self._h, centroid[1] + self._radius_thresh)
+            x_min = int(max(0, centroid[0] - self._radius_thresh))
+            x_max = int(min(self._w, centroid[0] + self._radius_thresh))
+            y_min = int(max(0, centroid[1] - self._radius_thresh))
+            y_max = int(min(self._h, centroid[1] + self._radius_thresh))
 
-            slices.append((slice(y_min, y_max), slice(x_min, x_max)))
+            slices.append((slice(y_min, y_max, 1), slice(x_min, x_max, 1)))
         
         return slices
 
-    def segment_and_get_second_centroids(self, patches: List[IMAGE]) -> \
+    def segment_and_get_second_centroids(self, patches: List[IMAGE],
+                                               top_lefts: List[np.ndarray]) -> \
                                     Tuple[List[int], List[np.ndarray]]:
         
         centroids = []
         ids = []
         for i, color in enumerate(self._colors):
-            for patch in patches:
+            for j, patch in enumerate(patches):
                 thresholded = cv2.inRange(patch, color[0], color[1])
-                found = False
                 if np.any(thresholded):
-                    found  = True
-                    break
-                
-                cnt = self.get_contours(thresholded)[0]
-                if found == True:
+                    cnts = self.get_contours(thresholded)
+                    cnt = cnts[0]
                     m = cv2.moments(cnt)
                     a = m["m00"]
-                    cx = m["m10"] / a
-                    cy = m["m01"] / a
-                    centroids.append(np.array([cx, cy]))
-                    ids.append(i)
+                    if a != 0:
+                        cx = m["m10"] / a
+                        cy = m["m01"] / a
+                        centroids.append(top_lefts[j] + np.array([cx, cy]))
+                        ids.append(i)
+                break
         
         return ids, centroids
     

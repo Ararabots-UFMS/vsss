@@ -66,7 +66,12 @@ class ColorSegmentation:
             print("File load failed")
 
     def write_params(self):
-        with open(self.params_file, "wb+") as fp:
+        if self.params_file[0] != '/':
+            filename = os.environ['ROS_ARARA_ROOT'] + "src/" + self.params_file
+        else:
+            filename = self.params_file
+
+        with open(filename, "wb+") as fp:
             pickle.dump(self._threshs, fp)
 
     def onMouse_get_color(self, event, x, y, flags, arg):
