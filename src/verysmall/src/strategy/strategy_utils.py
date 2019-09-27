@@ -121,6 +121,7 @@ def spin_direction(ball_position, robot_position, team_side, invert=False):
         else:
             return direction
 
+
 def border_stuck(position_buffer, orientation):
     """
 
@@ -170,12 +171,16 @@ def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
     return behind_ball(robot_position, ball_position, team_side)
 
 
-def ball_on_critical_position(ball_position) -> bool:
-    return ball_position[0] < 30 or ball_position[0] > 120
+def ball_on_critical_position(ball_position, team_side) -> bool:
+    critical_y = ball_position[1] < 30 or ball_position[1] > 100
+    log_fatal(critical_y)
+    if team_side == LEFT:
+        return ball_position[0] < 30 and critical_y
+    return ball_position[0] > 120 and critical_y
 
 
 def ball_on_border(ball_position, team_side) -> bool:
-    if not ball_on_attack_side(ball_position, team_side) and not ball_on_critical_position(ball_position):
+    if not ball_on_attack_side(ball_position, team_side) and not ball_on_critical_position(ball_position, team_side):
         sec = section(ball_position)
 
     return sec.value in BORDER_NORMALS.keys()

@@ -17,6 +17,7 @@ from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
+from strategy.arena_utils import univector_pos_section, ArenaSections, HALF_ARENA_HEIGHT
 
 
 class StopAction(TreeNode):
@@ -103,6 +104,29 @@ class GoToPositionUsingUnivector(UnivectorTask):
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
         return self.go_to_objective(blackboard, self.position)
+
+
+class RecoverBallUsingUnivector(UnivectorTask):
+    def __init__(self, name: str = "Recover Ball Using Univector", max_speed: int = 250, acceptance_radius: float = 7.0,
+                 speed_prediction: bool = True):
+        super().__init__(name, max_speed, acceptance_radius, speed_prediction)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        distance_to_ball = np.linalg.norm(blackboard.robot.position - blackboard.ball.position)
+
+        if distance_to_ball < self.acceptance_radius:
+            return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
+
+        self.univector_field.update_obstacles(blackboard.enemy_team.positions,
+                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
+
+        axis = (0.0, 1.0) if blackboard.ball.position[1] > HALF_ARENA_HEIGHT else (0.0, -1.0)
+        angle = self.univector_field.get_angle_vec(blackboard.robot.position, blackboard.robot.orientation,
+                                                   blackboard.ball.position, axis)
+
+        status = TaskStatus.RUNNING
+
+        return status, (OpCodes.SMOOTH, angle, self.speed, distance_to_ball)
 
 
 class GoToBallUsingUnivector(UnivectorTask):
@@ -212,7 +236,7 @@ class MarkBallOnYAxis(TreeNode):
         self._clamp_max = clamp_max
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        norm_distance = abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
+        norm_distance = abs(blackboard.ball.position[0] - HALF_ARENA_WIDTH) / HALF_ARENA_WIDTH
 
         if norm_distance > 0.6:
             ball_y = blackboard.ball.position[1]
@@ -375,8 +399,8 @@ class GoToPosition(TreeNode):
 
 
 class GoToBallUsingMove2Point(TreeNode):
-    def __init__(self, name: str = "GoToBallUsingMove2Point",
-                 speed=100, acceptance_radius: float = 6):
+    def __init__(self, name: str = "GoToBallUsingMove2Point", speed=100, acceptance_radius: float = 6):
+        super().__init__(name)
         self.speed = speed
         self.acceptance_radius = acceptance_radius
 

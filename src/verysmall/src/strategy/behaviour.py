@@ -1,15 +1,14 @@
-from math import sqrt
-from typing import Tuple
 import time
-from enum import Enum
 from abc import abstractmethod, ABC
+from enum import Enum
+from typing import Tuple
+
 import numpy as np
-from rospy import logwarn
 
-
-from strategy.arena_utils import RIGHT, LEFT
-from strategy.strategy_utils import GameStates
 from robot_module.movement.definitions import OpCodes
+from strategy.arena_utils import RIGHT
+from strategy.strategy_utils import GameStates
+from utils.profiling_tools import log_warn
 
 angle = distance = float
 speed = int
@@ -76,7 +75,7 @@ class Sequence(TreeNode):
     def run(self, blackboard):
         for c in self.children:
             status, action = c.run(blackboard)
-
+            log_warn(c.name)
             if status != TaskStatus.SUCCESS:
                 return status, action
 
@@ -98,6 +97,7 @@ class Selector(TreeNode):
     def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
+            log_warn(c.name)
             status, action = c.run(blackboard)
             if status != TaskStatus.FAILURE:
                 return status, action

@@ -125,7 +125,17 @@ class IsBallInRangeOfDefense(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and not \
-                ball_on_critical_position(blackboard.ball.position):
+                ball_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+
+class IsBallInCriticalPosition(TreeNode):
+    def __init__(self, name: str = "IsBallInRangeOfDefense"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if ball_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
