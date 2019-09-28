@@ -163,6 +163,13 @@ def border_stuck(position_buffer, orientation):
     #    return False
 
 
+def ball_in_defender_range(ball_position: np.ndarray, team_side: bool) -> bool:
+    if team_side == LEFT:
+        return 30 < ball_position[0] < 75
+    else:
+        return 75 < ball_position[0] < 120
+
+
 def ball_on_attack_side(ball_position, team_side) -> bool:
     return on_attack_side(ball_position, team_side)
 

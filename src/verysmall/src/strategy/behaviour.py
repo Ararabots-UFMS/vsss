@@ -75,7 +75,7 @@ class Sequence(TreeNode):
     def run(self, blackboard):
         for c in self.children:
             status, action = c.run(blackboard)
-            log_warn(c.name)
+            # log_warn(c.name)
             if status != TaskStatus.SUCCESS:
                 return status, action
 
@@ -97,7 +97,7 @@ class Selector(TreeNode):
     def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
-            log_warn(c.name)
+            # log_warn(c.name)
             status, action = c.run(blackboard)
             if status != TaskStatus.FAILURE:
                 return status, action

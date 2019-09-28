@@ -4,13 +4,13 @@ from typing import Callable, List
 import rospy
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section
+from strategy.arena_utils import on_attack_side, section, LEFT
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus
 from strategy.strategy_utils import is_behind_ball, distance_point
 from strategy.strategy_utils import near_ball, ball_on_border, ball_on_critical_position, \
-    ball_on_attack_side
+    ball_on_attack_side, ball_in_defender_range
 from utils.math_utils import angle_between
 
 
@@ -124,8 +124,8 @@ class IsBallInRangeOfDefense(TreeNode):
         super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and not \
-                ball_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
+        if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and \
+                ball_in_defender_range(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
