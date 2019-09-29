@@ -35,7 +35,8 @@ class Defender(BaseTree):
 
         recover = Sequence("Recover")
         recover.add_child(IsBallInCriticalPosition())
-        recover.add_child(RecoverBallUsingUnivector())
+        recover.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
+        #recover.add_child(RecoverBallUsingUnivector())
         recover.add_child(SpinTask("Spin"))
         defend.add_child(recover)
 

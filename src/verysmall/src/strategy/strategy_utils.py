@@ -180,7 +180,6 @@ def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
 
 def ball_on_critical_position(ball_position, team_side) -> bool:
     critical_y = ball_position[1] < 30 or ball_position[1] > 100
-    log_fatal(critical_y)
     if team_side == LEFT:
         return ball_position[0] < 30 and critical_y
     return ball_position[0] > 120 and critical_y

@@ -35,7 +35,6 @@ class SpinTask(TreeNode):
         self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        log_warn("Spin!")
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
                                                    team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255,
                                     .0)
