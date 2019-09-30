@@ -23,7 +23,7 @@ class ColorSegmentation:
         self.camera = cam
 
         self._shortcuts = {'o': "orange", 'y': "yellow", 
-                           'b': "blue", 'g': "green"}
+                           'b': "blue", 'g': "green", 'p': "pink", 'i': "ice"}
 
         self._colors = self._shortcuts.values()
         self._threshs = {c : {"min": np.uint8((255, 255, 255)), "max": np.uint8((0, 0, 0))} 
@@ -139,6 +139,11 @@ class ColorSegmentation:
                 should_exit = True
             elif chr(key) in self._shortcuts:  # orange
                 c = self._shortcuts[chr(key)]
+                
+                if c not in self._threshs.keys():
+                    self._threshs[c] = {"min": np.uint8((255,255,255)),
+                                        "max": np.uint8((0,0,0))}
+
                 self.temp_min = self._threshs[c]["min"]
                 self.temp_max = self._threshs[c]["max"]
                 self.last_key = chr(key)
