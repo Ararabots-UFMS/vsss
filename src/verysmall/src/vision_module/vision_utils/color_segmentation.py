@@ -22,9 +22,10 @@ class ColorSegmentation:
         self.params_file = color_params_file
         self.camera = cam
 
-        self._colors = {"orange", "yellow", "blue", "green"}
         self._shortcuts = {'o': "orange", 'y': "yellow", 
                            'b': "blue", 'g': "green"}
+
+        self._colors = self._shortcuts.values()
         self._threshs = {c : {"min": np.uint8((255, 255, 255)), "max": np.uint8((0, 0, 0))} 
                             for c in self._colors}
         
@@ -168,7 +169,7 @@ def makeArgParser() -> ArgumentParser:
                         help="camera params file for lens correction")
     parser.add_argument("--color_params_file",
                         type=str,
-                        default="../../parameters/COLORS.json",
+                        default="../../parameters/COLORS.bin",
                         help="color params file to store the color thresholds")
     return parser
 

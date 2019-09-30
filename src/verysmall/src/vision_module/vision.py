@@ -119,6 +119,12 @@ class Vision:
 
         if "aruco" in self.seekers.values():
             hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
+        elif "color" in self.seekers.values():
+            primary_colors = {"blue", "yellow", "orange"}
+            secondary_colors = set(self._colors_thresholds.keys()) - primary_colors
+            thrs = self._colors_thresholds
+            for color in secondary_colors:
+                hawk_eye_extra_params.append((thrs[color]["min"], thrs[color]["max"]))
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor_x, self.conversion_factor_y,
                                 self.seekers, self.num_yellow_robots, self.num_blue_robots,
@@ -293,8 +299,10 @@ class Vision:
 
                 # self.hawk_eye.seek_blue_team(blue_seg, self.blue_team, self.hawk_eye.blue_team_seeker)
                 
-                self.hawk_eye.color_seeker_seek(self.blue_seg, self.arena_image, 
-                                                self.blue_team, self._color_seeker)
+                self.hawk_eye.color_seeker_seek(self.blue_seg,
+                                                self.blue_team,
+                                                self._color_seeker,
+                                                opt=self.arena_image)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 
@@ -348,7 +356,7 @@ if __name__ == "__main__":
     home_tag = "aruco"
 
     arena_params = "../parameters/ARENA.json"
-    colors_params = "../parameters/COLORS.json"
+    colors_params = "../parameters/COLORS.bin"
     camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, num_blue_robots, num_yellow_robots, arena_params,

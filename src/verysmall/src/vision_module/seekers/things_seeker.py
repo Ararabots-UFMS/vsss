@@ -157,13 +157,29 @@ class HawkEye:
         self.num_robots_yellow_team = num_robots_yellow_team
         self.num_robots_blue_team = num_robots_blue_team
 
+        if seekers["yellow"] == "aruco" or seekers["blue"] == "aruco":
+            camera_matrix = aux_params[0]
+            distortion_vector = aux_params[1]
+            aruco_seeker = ArucoSeeker(camera_matrix, 
+                                       distortion_vector,
+                                       self.num_robots_yellow_team)
+            
+            if seekers["yellow" == "aruco"]:
+                self.yellow_team_seeker = aruco_seeker
+                self.seek_yellow_team = self.aruco_seek
+        
+        if seekers["yellow"] == "color" or seekers["blue"] == "color":
+            color_seeker = CircularColorTagSeeker(aux_params)
+            if seekers["yellow"] == "color":
+                self.yellow_team_seeker = color_seeker
+                self.seek_yellow_team = self.color_seek
+
         if seekers["yellow"] == "aruco":
             camera_matrix = aux_params[0]
             distortion_vector = aux_params[1]
             self.yellow_team_seeker = ArucoSeeker(camera_matrix,
                                                   distortion_vector,
                                                   self.num_robots_yellow_team)
-
             self.seek_yellow_team = self.aruco_seek
         else:
             self.yellow_team_seeker = GeneralMultObjSeeker(num_robots_yellow_team)
@@ -180,8 +196,6 @@ class HawkEye:
             self.blue_team_seeker = GeneralMultObjSeeker(num_robots_blue_team)
             self.seek_blue_team = self.seek_multiple_object
 
-        # self.blue_team_seeker = GeneralMultObjSeeker(num_robots_blue_team)
-
         self.ball_seeker = GeneralObjSeeker(img_shape)
 
     def pixel_to_real_world(self, pos):
@@ -191,7 +205,7 @@ class HawkEye:
         pos[1] *= -self.conversion_factor_y
         return pos
 
-    def aruco_seek(self, img, robots_list, seeker):
+    def aruco_seek(self, img, robots_list, seeker, opt=None):
         """ This function expects a binary image with the team robots and a list
                     of Things objects to store the info """
 
@@ -216,7 +230,7 @@ class HawkEye:
             # if tags[i] in tags_in_game:
             robots_list[i].update(i, pos, orientation=_orientation)
 
-    def seek_ball(self, img, ball):
+    def seek_ball(self, img, ball, opt=None):
         """ Expects a binary image with just the ball and a Thing object to
             store the info """
 
@@ -226,7 +240,7 @@ class HawkEye:
 
         ball.update(0, pos)
 
-    def seek_multiple_object(self, img, robots_list, seeker):
+    def seek_multiple_object(self, img, robots_list, seeker, opt=None):
         adv_centers = seeker.seek(img)
 
         if not (adv_centers is None) and adv_centers.size:
@@ -234,10 +248,11 @@ class HawkEye:
                 pos = self.pixel_to_real_world(adv_centers[i, ...])
                 robots_list[i].update(i, pos)
     
-    def color_seeker_seek(self, binary_img: np.ndarray, 
-                           color_img: np.ndarray, 
+    def color_seek(self, binary_img: np.ndarray, 
                            robots_list: List, 
-                           seeker: CircularColorTagSeeker) -> None:
+                           seeker: CircularColorTagSeeker,
+                           opt = None) -> None:
+        color_img = opt
         robots = seeker.seek(binary_img, color_img)
 
         for robot in robots:
