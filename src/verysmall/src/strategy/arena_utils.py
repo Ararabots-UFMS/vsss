@@ -14,6 +14,9 @@ HALF_ARENA_WIDTH = 75
 MAX_H_SIZE = 130
 MAX_W_SIZE = 150
 
+LEFT_GOAL_LINE = 16
+RIGHT_GOAL_LINE = 134
+
 LEFT_AREA_CENTER_X = 8
 RIGHT_AREA_CENTER_X = 142
 
@@ -48,10 +51,10 @@ Axis = [
 
     array([1.0, 0.0]),  # LEFT_GOAL
     array([1.0, 0.0]),  # RIGHT_GOAL
-    array([1.0, 1.0]),  # LEFT_UP_CORNER
-    array([1.0, -1.0]),  # LEFT_DOWN_CORNER
-    array([1.0, -1.0]),  # RIGHT_UP_CORNER
-    array([1.0, 1.0]),  # RIGHT_DOWN_CORNER
+    array([0.0, 1.0]),  # LEFT_UP_CORNER
+    array([0.0, -1.0]),  # LEFT_DOWN_CORNER
+    array([0.0, -1.0]),  # RIGHT_UP_CORNER
+    array([0.0, 1.0]),  # RIGHT_DOWN_CORNER
 
     array([1.0, 0.0]),  # UP_BORDER
     array([1.0, 0.0]),  # DOWN_BORDER
@@ -103,8 +106,10 @@ def on_attack_side(pos, team_side, bias=0):
    """
     return (pos[0] > (75 - bias) and team_side == LEFT) or (pos[0] < (75 + bias) and team_side == RIGHT)
 
+
 def y_axis_section(pos):
     return pos[1] > HALF_ARENA_HEIGHT
+
 
 def on_extended_attack_side(pos, team_side):
     """
@@ -224,7 +229,6 @@ def side_section(pos, team_side):
     return on_attack_side(pos, team_side), section(pos)
 
 
-
 def goal_position(team_side):
     """
     Return the position of the goal, given attacking side  and section of the object
@@ -235,5 +239,3 @@ def goal_position(team_side):
     if team_side == LEFT:
         return array([150, 65])
     return array([0, 65])
-
-

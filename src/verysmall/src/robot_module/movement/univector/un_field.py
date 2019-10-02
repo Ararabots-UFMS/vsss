@@ -315,7 +315,17 @@ class UnivectorField:
         if section_num == ArenaSections.CENTER:
             correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
         else:
-            correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
+            if _attack_goal == RIGHT:
+                if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
+                    correct_axis = np.array([1.0, 0.0])
+                else:
+                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                    
+            else:
+                if section_num == ArenaSections.LEFT_DOWN_CORNER or section_num == ArenaSections.LEFT_UP_CORNER:
+                    correct_axis = np.array([-1.0, 0.0])
+                else:
+                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                 
+                
 
         offset = self.get_correct_offset(_ball, section_num)
 

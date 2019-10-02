@@ -1,13 +1,17 @@
-from enum import Enum
-import numpy as np
 import math
-import rospy
+from enum import Enum
 
-from utils import math_utils
+import numpy as np
+
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import ArenaSections, section, LEFT, RIGHT, BORDER_NORMALS, on_attack_side
+from strategy.arena_utils import on_attack_side
+from strategy.arena_utils import section, LEFT, BORDER_NORMALS
+from utils import math_utils
+from utils.profiling_tools import log_fatal
+
 CW = 0
 CCW = 1
+DEGREE = float
 
 
 class GameStates(Enum):
@@ -45,13 +49,42 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     :params team_side: int
     :return: boolean
     """
+
     if team_side == LEFT:
         if near_ball(ball_position, robot_position, _distance):
             return robot_position[0] < ball_position[0]
     else:
         if near_ball(ball_position, robot_position, _distance):
-            return robot_position[0] > ball_position[0]
+            return robot_position[0] >= ball_position[0]
     return False
+
+
+def is_behind_ball(ball_position: np.ndarray,
+                   robot,
+                   team_side: int,
+                   max_distance: float = 10.0,
+                   max_angle: DEGREE = 15) -> bool:
+    distance = np.linalg.norm(ball_position - robot.position)
+
+    if distance > max_distance:
+        return False
+
+    theta = robot.orientation
+    robot_vector = np.array([math.cos(theta), math.sin(theta)])
+    rb_vector = ball_position - robot.position
+    angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
+    angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
+
+    max_angle = max_angle * math_utils.DEG2RAD
+
+    if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
+        return False
+
+    if team_side == LEFT:
+        return robot.position[0] < ball_position[0]
+    else:
+        return robot.position[0] >= ball_position[0]
+
 
 def spin_direction(ball_position, robot_position, team_side, invert=False):
     """
@@ -62,16 +95,31 @@ def spin_direction(ball_position, robot_position, team_side, invert=False):
 
     :return: int
     """
+    ball_y_distance = ball_position[1] - robot_position[1]
+    direction = None
 
-    if team_side == LEFT:
-        if robot_position[1] >= 65:
-            return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
-        return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
-    else:
-        if robot_position[1] < 65:
+    if ball_y_distance >= 4:
+        direction = OpCodes.SPIN_CW if team_side == LEFT else OpCodes.SPIN_CCW
+    elif ball_y_distance <= -4:
+        direction = OpCodes.SPIN_CCW if team_side == LEFT else OpCodes.SPIN_CW
+
+    if direction is None:
+        if team_side == LEFT:
+            if robot_position[1] < 65:
+                return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
             return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
-        return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
-
+        else:
+            if robot_position[1] < 65:
+                return OpCodes.SPIN_CW if not invert else OpCodes.SPIN_CCW
+            return OpCodes.SPIN_CCW if not invert else OpCodes.SPIN_CW
+    else:
+        if invert:
+            if direction == OpCodes.SPIN_CW:
+                return OpCodes.SPIN_CCW
+            else:
+                return OpCodes.SPIN_CW
+        else:
+            return direction
 
 def border_stuck(position_buffer, orientation):
     """

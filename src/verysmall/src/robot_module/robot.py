@@ -1,22 +1,22 @@
+import time
 from typing import List, Tuple
-import rospy
-import numpy as np
+
 import cv2
+import numpy as np
+import rospy
 
-from robot_module.hardware import RobotHardware
-from robot_module.comunication.sender import Sender, STDMsg
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
-
-from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
-from strategy.strategy_utils import GameStates
-from strategy.defender import Defender
-from strategy.attacker import Attacker
-from strategy.pid_calibration import CalibrationTree
-from strategy.goalkeeper import GoalKeeper
-from utils.json_handler import JsonHandler
-from robot_module.control import Control
-from robot_module.movement.univector.debug import drawRobot, drawBall
 from interface.virtualField import virtualField, unit_convert, position_from_origin
+from robot_module.comunication.sender import Sender, STDMsg
+from robot_module.control import Control
+from robot_module.hardware import RobotHardware
+from strategy.attacker import Attacker
+from strategy.behaviour import BlackBoard, TaskStatus, OpCodes
+from strategy.defender import Defender
+from strategy.goalkeeper import GoalKeeper
+from strategy.pid_calibration import CalibrationTree
+from utils.json_handler import JsonHandler
+
 
 class Robot:
 
@@ -131,9 +131,15 @@ class Robot:
 
     def roboto_vision(self):
         self.imgField.plot_ball(self.blackboard.ball.position)
-        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(0.5)
+        temp = time.time()
+        t = self.blackboard.ball.get_time_on_axis(0, self.blackboard.ball.position[0])
+        rospy.logfatal(t)
+        ma_ball = self.blackboard.ball.get_predicted_position_over_seconds(t)
+
         ma_ball = unit_convert(ma_ball, self.imgField.width_conv, self.imgField.height_conv)
         ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
+        rospy.logfatal(ma_ball)
+        rospy.logfatal(self.blackboard.ball.position)
         #rospy.logwarn(ma_ball)
         cv2.circle(self.imgField.field, ma_ball, self.imgField.ball_radius,
                    self.imgField.colors["red"], -1)

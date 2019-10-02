@@ -1,4 +1,5 @@
 import math
+import time
 from abc import ABC, abstractmethod
 from typing import Iterable
 from typing import Tuple
@@ -8,12 +9,14 @@ import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
-from strategy.arena_utils import LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X, ROBOT_SIZE, y_axis_section, RIGHT, HALF_ARENA_WIDTH
+from strategy.arena_utils import LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X, ROBOT_SIZE, y_axis_section, RIGHT, \
+    HALF_ARENA_WIDTH
 from strategy.behaviour import ACTION, TreeNode
 from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from strategy.strategy_utils import spin_direction
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
+from utils.profiling_tools import log_warn
 
 
 class StopAction(TreeNode):
@@ -31,6 +34,7 @@ class SpinTask(TreeNode):
         self.invert = invert
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        log_warn("Spin!")
         return TaskStatus.RUNNING, (spin_direction(blackboard.ball.position, blackboard.robot.position,
                                                    team_side=blackboard.home_goal.side, invert=self.invert), 0.0, 255,
                                     .0)
@@ -127,12 +131,13 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        rospy.logfatal("Charge!")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            False
+            abs=False
         )
 
         distance_to_goal = np.linalg.norm(goal_vector)
@@ -146,7 +151,8 @@ class MarkBallOnAxis(TreeNode):
                  axis: np.ndarray = np.array([.0, 1.0]),
                  acceptance_radius: float = 5,
                  clamp_min: float = None,
-                 clamp_max: float = None
+                 clamp_max: float = None,
+                 predict_ball: bool = False
                  ):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
@@ -155,23 +161,34 @@ class MarkBallOnAxis(TreeNode):
         self.turn_off_clamp = clamp_min is None and clamp_max is None
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
+        self._predict_ball = predict_ball
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
 
-        if self.turn_off_clamp:
-            direction = blackboard.ball.position[1] - blackboard.robot.position[1]
+        if self._predict_ball:
+            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
+            predicted_position = blackboard.ball.get_predicted_position_over_seconds(t)
+            if abs(predicted_position[1] - blackboard.robot.position[1]) > self._acceptance_radius:
+                target_position = predicted_position
+            else:
+                target_position = blackboard.ball.position
         else:
-            direction = clamp(blackboard.ball.position[1], self._clamp_min, self._clamp_max) - \
+            target_position = blackboard.ball.position
+
+        if self.turn_off_clamp:
+            direction = target_position[1] - blackboard.robot.position[1]
+        else:
+            direction = clamp(target_position[1], self._clamp_min, self._clamp_max) - \
                         blackboard.robot.position[1]
 
         distance = abs(direction)
 
         if distance < self._acceptance_radius:
-            return TaskStatus.RUNNING, (OpCodes.SMOOTH,
+            return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                         -self._angle_to_correct if direction < 0 else self._angle_to_correct, 0,
                                         distance)
 
-        return TaskStatus.RUNNING, (OpCodes.SMOOTH,
+        return TaskStatus.RUNNING, (OpCodes.NORMAL,
                                     -self._angle_to_correct if direction < 0 else self._angle_to_correct,
                                     self._max_speed,
                                     .0)
@@ -182,7 +199,7 @@ class MarkBallOnYAxis(TreeNode):
                  clamp_max: Iterable,
                  max_speed: int = 255,
                  name: str = "MarkBallOnYAxis",
-                 acceptance_radius: float = 5):
+                 acceptance_radius: float = 2):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
@@ -196,12 +213,13 @@ class MarkBallOnYAxis(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         norm_distance = abs(blackboard.ball.position[0]-HALF_ARENA_WIDTH)/HALF_ARENA_WIDTH
-        
+
         if norm_distance > 0.6:
             ball_y = blackboard.ball.position[1]
         else:
             scalar = 1 - norm_distance
-            ball_y = blackboard.ball.get_predicted_position_over_seconds(0.5*scalar)[1]
+            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
+            ball_y = blackboard.ball.get_predicted_position_over_seconds(t)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
@@ -232,7 +250,8 @@ class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithAxis",
                  max_speed: int = 0,
                  axis: np.ndarray = np.array([.0, 1.0]),
-                 acceptance_radius: float = 0.0872665):
+                 acceptance_radius: float = 0.0872665, align_with_ball: bool = False):
+
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
