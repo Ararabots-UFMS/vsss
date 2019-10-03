@@ -80,7 +80,7 @@ class Control:
         else:
             return -speed + correction, -speed - correction
 
-    def set_head(self, angle: float) -> np.array:      
+    def set_head(self, angle: float) -> np.array:
         abs_diff = abs(mth.min_angle(self._ma_orientation, angle))
         if abs_diff > self._upper_angle_tol:
             self._head = BACKWARDS
@@ -133,14 +133,13 @@ class Control:
 
         s = scale / (1 + math.exp(0.5 * (-distance + self._alpha)))
         return s + self._max_fine_movement_speed
-    
 
     def update_orientation(self, orientation: float) -> None:
         vec = np.array([math.cos(orientation), math.sin(orientation)])
         v = self._beta * self._ma_orientation_vec + \
-                               (1 - self._beta) * vec
-        v /= (1 - self._beta**self._t)
-        
+            (1 - self._beta) * vec
+        v /= (1 - self._beta ** self._t)
+
         self._ma_orientation_vec = v
         self._ma_orientation = math.atan2(v[1], v[0])
         self._t += 1
