@@ -1,5 +1,5 @@
 from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall, \
-    IsBallInCriticalPosition
+    IsBallInCriticalPosition, CanDefenderUseMove2PointToRecoverBall
 from strategy.actions.movement_behaviours import MarkBallOnAxis, GoToBallUsingUnivector, SpinTask, \
     GoToBallUsingMove2Point, ChargeWithBall, GoBack, RecoverBallUsingUnivector
 from strategy.actions.state_behaviours import InState
@@ -35,8 +35,15 @@ class Defender(BaseTree):
 
         recover = Sequence("Recover")
         recover.add_child(IsBallInCriticalPosition())
-        recover.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
-        #recover.add_child(RecoverBallUsingUnivector())
+        method = Selector("SelectMove2PointOrUnivector")
+        recover.add_child(method)
+
+        ball_near_goal_check = Sequence("CanDefenderUseMove2PointToRecoverBall?")
+        ball_near_goal_check.add_child(CanDefenderUseMove2PointToRecoverBall())
+        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
+
+        method.add_child(ball_near_goal_check)
+        method.add_child(RecoverBallUsingUnivector())
         recover.add_child(SpinTask("Spin"))
         defend.add_child(recover)
 

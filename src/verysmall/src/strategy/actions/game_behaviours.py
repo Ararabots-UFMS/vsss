@@ -4,7 +4,7 @@ from typing import Callable, List
 import rospy
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section, LEFT
+from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, OpCodes, TaskStatus
@@ -14,10 +14,9 @@ from strategy.strategy_utils import near_ball, ball_on_border, ball_on_critical_
 from utils.math_utils import angle_between
 
 
-# TODO: extend tree node
-class IsBehindBall:
+class IsBehindBall(TreeNode):
     def __init__(self, name: str, distance: int):
-        self.name = name
+        super().__init__(name)
         self.distance = distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -26,14 +25,14 @@ class IsBehindBall:
                           blackboard.home_goal.side,
                           self.distance,
                           max_angle=32):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
         else:
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.FAILURE, NO_ACTION
 
 
-class IsTheWayFree:
+class IsTheWayFree(TreeNode):
     def __init__(self, name: str, free_way_distance: int):
-        self.name = name
+        super().__init__(name)
         self.free_way_distance = free_way_distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
@@ -41,7 +40,7 @@ class IsTheWayFree:
         ball_pos = blackboard.ball.position
         v_ball_enemy_goal = enemy_goal_pos - ball_pos
 
-        task_result = TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        task_result = TaskStatus.SUCCESS, NO_ACTION
 
         for enemy_position in blackboard.enemy_team.positions:
             enemy_goal = blackboard.enemy_goal.side
@@ -64,9 +63,24 @@ class IsTheWayFree:
 
                 if abs(enemy_to_path_distance) <= self.free_way_distance and \
                         is_enemy_in_way:
-                    task_result = TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+                    task_result = TaskStatus.FAILURE, NO_ACTION
                     break  # Interrompe o loop para o primeiro robô no caminho.
         return task_result
+
+
+class CanDefenderUseMove2PointToRecoverBall(TreeNode):
+    def __init__(self, name="CanDefenderUseMove2PointToRecoverBall?"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if blackboard.ball.position[1] > HALF_ARENA_WIDTH: # Ball is on upper side
+            if blackboard.ball.position[1] > blackboard.robot.position[1]:
+                return TaskStatus.SUCCESS, NO_ACTION
+        else:
+            if blackboard.ball.position[1] < blackboard.robot.position[1]:
+                return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsBallInsideCentralArea(TreeNode):
@@ -115,8 +129,8 @@ class AmIAttacking(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsBallInRangeOfDefense(TreeNode):
@@ -126,8 +140,8 @@ class IsBallInRangeOfDefense(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and \
                 ball_in_defender_range(blackboard.ball.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsBallInCriticalPosition(TreeNode):
@@ -136,8 +150,8 @@ class IsBallInCriticalPosition(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if ball_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsBallInsideAreas(TreeNode):
@@ -146,10 +160,9 @@ class IsBallInsideAreas(TreeNode):
         self._areas = areas
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-
         if section(blackboard.ball.position) in self._areas:
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsBallInBorder(TreeNode):
@@ -158,8 +171,8 @@ class IsBallInBorder(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class AmIInDefenseField(TreeNode):
@@ -168,9 +181,9 @@ class AmIInDefenseField(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
 
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsNearBall(TreeNode):
@@ -180,9 +193,9 @@ class IsNearBall(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if near_ball(blackboard.ball.position, blackboard.robot.position, self._acceptance_radius):
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
         else:
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsInsideMetaRange(TreeNode):
@@ -193,9 +206,9 @@ class IsInsideMetaRange(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if distance_point(blackboard.robot.position,
                           blackboard.home_goal.position) < self.distance:
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
         else:
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsInsideGoal(TreeNode):
@@ -219,9 +232,9 @@ class IsInsideGoal(TreeNode):
         aliado
         """
         if section - team_goal_side == 2:
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.SUCCESS, NO_ACTION
         else:
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return TaskStatus.FAILURE, NO_ACTION
 
 
 class IsRobotInsideEnemyGoalLine(TreeNode):
@@ -240,12 +253,12 @@ class IsRobotInsideEnemyGoalLine(TreeNode):
                     enemy_goal_line_x = arena_utils.LEFT_GOAL_LINE
 
                     if robot_position[0] <= enemy_goal_line_x and ball_position[0] <= enemy_goal_line_x:
-                        return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+                        return TaskStatus.SUCCESS, NO_ACTION
 
                 elif blackboard.enemy_goal.side == RIGHT:
                     enemy_goal_line_x = arena_utils.RIGHT_GOAL_LINE
 
                     if robot_position[0] >= enemy_goal_line_x and ball_position[0] >= enemy_goal_line_x:
-                        return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+                        return TaskStatus.SUCCESS, NO_ACTION
 
-        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, NO_ACTION
