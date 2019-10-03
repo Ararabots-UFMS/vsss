@@ -3,9 +3,13 @@ import cv2
 from sklearn.cluster import KMeans
 import rospy
 import time
+
+from vision_module.seekers.seeker import Seeker
+
+
 # @author Wellington Castro <wvmcastro>
 
-class GeneralMultObjSeeker:
+class GeneralMultObjSeeker(Seeker):
 
     def __init__(self, num_objects):
         self.num_objects = num_objects
@@ -52,10 +56,8 @@ class GeneralMultObjSeeker:
                 else:
                     self.objects = newObjects
 
-
         return self.objects
 
     def reset(self):
         self.kmeans.init = 'k-means++'
-
         self.objects = None

@@ -4,10 +4,12 @@ import numpy as np
 import math
 import rospy
 
+from vision_module.seekers.seeker import Seeker
+
 IMAGE = np.ndarray
 ROBOT_STATE = Tuple[int, np.array, float]
 
-class CircularColorTagSeeker:
+class CircularColorTagSeeker(Seeker):
     def __init__(self, color_thresholds: List[Tuple[np.ndarray, np.ndarray]]):
         self._colors = color_thresholds
         

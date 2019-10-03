@@ -2,9 +2,11 @@ import numpy as np
 import cv2
 import time
 
+from vision_module.seekers.seeker import Seeker
+
 # @author Wellington Castro <wvmcastro>
 
-class GeneralObjSeeker:
+class BallSeeker(Seeker):
     """ This class takes a binary image with one object and finds its position.
         It also uses the temporal information to predict a search window in the
         picture."""

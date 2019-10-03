@@ -115,16 +115,20 @@ class Vision:
 
         # The hawk eye object will be responsible to locate and identify all
         # objects at the field
-        hawk_eye_extra_params = []
-
+        hawk_eye_extra_params = {}
+        thrs = self._colors_thresholds
+        hawk_eye_extra_params["ball"] = (thrs["orange"]["min"], thrs["orange"]["max"])
         if "aruco" in self.seekers.values():
-            hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
+            hawk_eye_extra_params["aruco"] = [camera.camera_matrix, camera.dist_vector]
         elif "color" in self.seekers.values():
             primary_colors = {"blue", "yellow", "orange"}
             secondary_colors = set(self._colors_thresholds.keys()) - primary_colors
-            thrs = self._colors_thresholds
+            
+            colors = []
             for color in secondary_colors:
-                hawk_eye_extra_params.append((thrs[color]["min"], thrs[color]["max"]))
+                colors.append((thrs[color]["min"], thrs[color]["max"]))
+            hawk_eye_extra_params["color"] = colors
+
 
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor_x, self.conversion_factor_y,
                                 self.seekers, self.num_yellow_robots, self.num_blue_robots,
@@ -279,30 +283,19 @@ class Vision:
             self.last_time = time.time()
             while self.game_on and not self.in_calibration_mode:
                 self.raw_image = self.camera.read()
-                """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
-
                 self.set_dark_border()
-
                 self.pipeline()
-                if self.seekers["yellow"] == "aruco":
-                    yellow_seg = 255 - self.yellow_seg
-                else:
-                    yellow_seg = self.yellow_seg
 
-                # if self.seekers["blue"] == "aruco":
-                    # blue_seg = 255 - self.blue_seg
-                # else:
-                    # blue_seg = self.blue_seg
-
-                self.hawk_eye.seek_yellow_team(yellow_seg, self.yellow_team, self.hawk_eye.yellow_team_seeker)
-
-                # self.hawk_eye.seek_blue_team(blue_seg, self.blue_team, self.hawk_eye.blue_team_seeker)
+                self.hawk_eye.seek_yellow_team(self.yellow_seg, 
+                                               self.yellow_team, 
+                                               self.hawk_eye.yellow_team_seeker,
+                                               opt=self.arena_image)
                 
-                self.hawk_eye.color_seeker_seek(self.blue_seg,
-                                                self.blue_team,
-                                                self._color_seeker,
-                                                opt=self.arena_image)
+                self.hawk_eye.seek_blue_team(self.blue_seg,
+                                             self.blue_team,
+                                             self._color_seeker,
+                                             opt=self.arena_image)
 
                 self.hawk_eye.seek_ball(self.ball_seg, self.ball)
 

@@ -4,9 +4,11 @@ import rospy
 import cv2.aruco as aruco
 import math
 
+from vision_module.seekers.seeker import Seeker
+
 # @author Wellington Castro <wvmcastro>
 
-class ArucoSeeker:
+class ArucoSeeker(Seeker):
 
     def __init__(self, cam_mtx, dist_vec, num_tags, num_bits=3, num_markers=5):
         """ Initializes the objects necessary to perform the detection
