@@ -1,15 +1,15 @@
 from typing import Iterable
 
 from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged
-from strategy.actions.game_behaviours import IsInAttackSide
+from strategy.actions.game_behaviours import IsInAttackSide, IsBallInsideAreas, IsBehindBall
 from strategy.actions.game_behaviours import IsInsideGoal
 from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal
-from strategy.actions.movement_behaviours import MarkBallOnYAxis
+from strategy.actions.movement_behaviours import MarkBallOnYAxis, ChargeWithBall, GoToBallUsingUnivector
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
-
+from strategy.arena_utils import goal_position
 
 class GoalKeeper(BaseTree):
     def __init__(self, name: str = "behave"):
@@ -34,6 +34,7 @@ class GoalKeeper(BaseTree):
         normal_actions.add_child(self._ball_on_attack_side_tree())
         self.mark_ball_on_y = None
         normal_actions.add_child(self._ball_on_defense_side_tree())
+        normal_actions.add_child(self.get_ball_out_of_def_area())
 
     def reset_counter(self):
         self.do_once.n = 1
@@ -73,6 +74,16 @@ class GoalKeeper(BaseTree):
 
         x = blackboard.home_goal.position[0] + s * 4
         return [x, 40], [x, 90]
+    
+    def get_ball_out_of_def_area(self, blackboard: BlackBoard) -> TreeNode:
+        tree = Sequence("GetBallOutOfDefenseArea")
+        
+        defense_area = goal_position(blackboard.team_side)
+        tree.add_child(IsBallInsideAreas("IsBallInsideDefArea", defense_area))
+        tree.add_child(GoToBallUsingUnivector())
+        tree.add_child(IsBehindBall("IsBehindBall", 5))
+        tree.add_child(ChargeWithBall())
+        return tree
 
 
 class OutOfGoalAction(Sequence):
