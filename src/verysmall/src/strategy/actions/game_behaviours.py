@@ -239,3 +239,15 @@ class IsRobotInsideEnemyGoalLine(TreeNode):
                         return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
 
         return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
+class IsBallInsideDefenseArea(TreeNode):
+    def __init__(self, name: str = "Is Ball Inside Defense Area"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard):
+        defense_area = arena_utils.goal_position(blackboard.team_side)
+        
+        if IsBallInsideAreas(areas = defense_area):
+            return TaskStatus.SUCCESS, (OpCodes.INVALID, 0, 0, 0)
+        return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        
