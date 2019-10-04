@@ -18,7 +18,8 @@ make install
 # Link local libs for Debian
 so=$(lsb_release -i -s)
 # 
-if [ $so = "Debian" ]; then
+if test -z "$LD_LIBRARY_PATH" 
+then
 echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/usr/local/lib" >> ~/.bashrc
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 fi
