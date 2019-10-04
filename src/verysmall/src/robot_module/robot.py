@@ -114,7 +114,7 @@ class Robot:
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
 
-        if action[0] & OpCodes.ORIENTATION_AVERAGE.value:
+        if action[0] & OpCodes.ORIENTATION_AVERAGE:
             self._controller.update_orientation(self.orientation)
 
         left, right = self._controller.get_wheels_speeds(*action)
