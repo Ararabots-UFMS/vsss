@@ -19,7 +19,7 @@ class CalibrationTree(Selector):
         self.children.append(stop_sequence)
 
         patrol = Sequence('Patrol')
-        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), max_speed=200)
+        self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), max_speed=150)
 
         ignore_smoothing = IgnoreSmoothing(name="Ignore smoothing pid")
         ignore_smoothing.add_child(self.straight_line_movement)

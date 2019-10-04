@@ -3,9 +3,8 @@ import time
 from abc import ABC, abstractmethod
 from typing import Iterable
 from typing import Tuple
-
-import numpy as np
 import rospy
+import numpy as np
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
@@ -50,17 +49,8 @@ class UnivectorTask(ABC):
         self.speed_prediction = speed_prediction
         self.acceptance_radius = acceptance_radius
 
-        univector_list = JsonHandler().read("parameters/univector_constants.json")
-
-        # univector
-        RADIUS = univector_list['RADIUS']
-        KR = univector_list['KR']
-        K0 = univector_list['K0']
-        DMIN = univector_list['DMIN']
-        LDELTA = univector_list['LDELTA']
-
         self.univector_field = UnivectorField()
-        self.univector_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univector_field.update_constants()
 
     @abstractmethod
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:

@@ -2,8 +2,8 @@ import numpy as np
 import math
 from math import pi
 from math import cos, sin, atan2, exp
-
-from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
+from utils.json_handler import JsonHandler
+from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets, HALF_ARENA_HEIGHT, MAX_H_SIZE
 
 LEFT = 0
 RIGHT = 1
@@ -211,11 +211,14 @@ class UnivectorField:
         self.DMIN = None
         self.LDELTA = None
 
+        self.univector_list = JsonHandler().read("parameters/univector_constants.json")
+
         # Subfields
         self.avdObsField = AvoidObstacle([None, None], [None, None],
                                          [None, None], [None, None], self.K0)
 
         self.mv2Goal = Move2Goal(self.KR, self.RADIUS)
+        self.update_constants()
 
     @staticmethod
     def get_attack_goal_axis(attack_goal: bool) -> np.ndarray:
@@ -242,12 +245,12 @@ class UnivectorField:
         self.vRobot = np.array(_vRobot)
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
 
-    def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> np.ndarray:
-        self.RADIUS = _RADIUS
-        self.KR = _KR
-        self.K0 = _K0
-        self.DMIN = _DMIN
-        self.LDELTA = _LDELTA
+    def update_constants(self, key: str = "center") -> np.ndarray:
+        self.RADIUS = self.univector_list[key]['RADIUS']
+        self.KR = self.univector_list[key]['KR']
+        self.K0 = self.univector_list[key]['K0']
+        self.DMIN = self.univector_list[key]['DMIN']
+        self.LDELTA = self.univector_list[key]['LDELTA']
 
         self.avdObsField.update_param(self.K0)
         self.mv2Goal.update_params(self.KR, self.RADIUS)
@@ -311,10 +314,30 @@ class UnivectorField:
                             _attack_goal: bool = RIGHT) -> float:
 
         section_num = univector_pos_section(_ball)
+        border_shift = 0
+        dmin = 10
 
         if section_num == ArenaSections.CENTER:
-            correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
+            self.update_constants()
+            rotated_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
+            unrotated_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
+
+            if _ball[1] > HALF_ARENA_HEIGHT:
+                border_y = MAX_H_SIZE
+            else:
+                border_y = 0
+
+            border = np.array([_ball[0], abs(border_y - border_shift)])
+            direction = border - _ball
+            distance = np.linalg.norm(direction)
+
+            alpha = gaussian(distance - dmin, 20)
+            import rospy
+            rospy.logfatal(alpha)
+            correct_axis = alpha * unrotated_axis + (1 - alpha) * rotated_axis
+
         else:
+            self.update_constants(key="border")
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
                     correct_axis = np.array([1.0, 0.0])
@@ -327,7 +350,7 @@ class UnivectorField:
                     correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                 
                 
 
-        offset = self.get_correct_offset(_ball, section_num)
+        # offset = self.get_correct_offset(_ball, section_num)
 
         return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
 

@@ -44,7 +44,7 @@ class Movement():
         else:
             self.univet_field = UnivectorField(attack_goal=attack_goal, _rotation=True)
 
-        self.univet_field.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
+        self.univet_field.update_constants()
         self.pid_type = _pid_type
         self.debug_topic = _debug_topic
 

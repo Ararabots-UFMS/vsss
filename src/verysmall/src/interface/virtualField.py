@@ -78,13 +78,7 @@ class virtualField():
         self.robot_tags = [0] * 5
         self.tag_debug_vector = [0] * 20
 
-        # univector
-        self.RADIUS = univector_list['RADIUS']
-        self.KR = univector_list['KR']
-        self.K0 = univector_list['K0']
-        self.DMIN = univector_list['DMIN']
-        self.LDELTA = univector_list['LDELTA']
-        self.univetField.update_constants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
+        self.univetField.update_constants()
         self.attack_goal = None
 
         if is_rgb:

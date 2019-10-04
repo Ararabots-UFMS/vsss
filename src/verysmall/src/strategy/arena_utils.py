@@ -180,9 +180,9 @@ def section(pos):
     elif inside_rectangle((135, 100), (150, 130 - HALF_SQUARE_SIDE), pos):
         return ArenaSections.RIGHT_UP_BOTTOM_LINE
     # Border
-    elif inside_range(130 - 12, 130, pos[Y]):
+    elif inside_range(130 - 20, 130, pos[Y]):
         return ArenaSections.UP_BORDER
-    elif inside_range(0, 12, pos[Y]):
+    elif inside_range(0, 20, pos[Y]):
         return ArenaSections.DOWN_BORDER
     else:
         return ArenaSections.CENTER

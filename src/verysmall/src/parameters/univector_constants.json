@@ -1,7 +1,16 @@
 {
+  "center": {
     "DMIN": 9.24,
     "K0": 0.0,
     "KR": 25.38,
     "LDELTA": 0.32,
     "RADIUS": 10.78
+  },
+    "border": {
+      "DMIN": 10,
+      "K0": 0.0,
+      "KR": 40,
+      "LDELTA": 0.32,
+      "RADIUS": 20
+    }
 }

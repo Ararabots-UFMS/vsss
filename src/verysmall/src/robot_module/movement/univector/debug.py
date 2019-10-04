@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
         # Creates the univector field
         univetField = UnivectorField()
-        univetField.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
+        univetField.update_constants()
         univetField.update_ball(ball)
         univetField.update_obstacles(obstacle, vObstacle)
 
