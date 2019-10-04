@@ -28,6 +28,7 @@ def send_packet(packet: str, sock: socket.socket) -> None:
 
 if __name__ == "__main__":
     helper()
+    stop = '0 0 0'
     bluetooths = OrderedDict(JsonHandler.read("parameters/bluetooth.json"))
     show_addresses(bluetooths)
     arg = input("mac address: ")
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     while True:
         packet = input("Bytes (q to exit): ")
         if packet[0] == 'q':
+            send_packet(stop, sock)
             break
         else:
             send_packet(packet, sock)
