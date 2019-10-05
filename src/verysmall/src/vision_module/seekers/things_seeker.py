@@ -1,12 +1,14 @@
+from typing import List
 import numpy as np
 import cv2
 import time
 import math
 import rospy
 
-from .aruco_seeker import ArucoSeeker
-from .general_object_seeker import GeneralObjSeeker
-from .general_mult_obj_seeker import GeneralMultObjSeeker
+from vision_module.seekers.aruco_seeker import ArucoSeeker
+from vision_module.seekers.ball_seeker import BallSeeker
+from vision_module.seekers.general_mult_obj_seeker import GeneralMultObjSeeker
+from vision_module.seekers.circular_color_tag_seeker import CircularColorTagSeeker
 
 # @author Wellington Castro <wvmcastro>
 
@@ -148,6 +150,8 @@ class HawkEye:
     def __init__(self, field_origin, conversion_factor_x, conversion_factor_y, seekers, num_robots_yellow_team,
                  num_robots_blue_team, img_shape, aux_params):
 
+        self.team_seekers = seekers
+
         self.field_origin = field_origin
         self.conversion_factor_x = conversion_factor_x
         self.conversion_factor_y = conversion_factor_y
@@ -155,32 +159,32 @@ class HawkEye:
         self.num_robots_yellow_team = num_robots_yellow_team
         self.num_robots_blue_team = num_robots_blue_team
 
-        if seekers["yellow"] == "aruco":
-            camera_matrix = aux_params[0]
-            distortion_vector = aux_params[1]
-            self.yellow_team_seeker = ArucoSeeker(camera_matrix,
-                                                  distortion_vector,
-                                                  self.num_robots_yellow_team)
+        self.yellow_team_seeker, self.seek_yellow_team = self.get_seeker(
+            self.team_seekers["yellow"], 
+            self.num_robots_yellow_team, 
+            aux_params)
 
-            self.seek_yellow_team = self.aruco_seek
-        else:
-            self.yellow_team_seeker = GeneralMultObjSeeker(num_robots_yellow_team)
-            self.seek_yellow_team = self.seek_multiple_object
+        self.blue_team_seeker, self.seek_blue_team = self.get_seeker(
+            self.team_seekers["blue"],
+            self.num_robots_blue_team,
+            aux_params)
 
-        if seekers["blue"] == "aruco":
-            camera_matrix = aux_params[0]
-            distortion_vector = aux_params[1]
-            self.blue_team_seeker = ArucoSeeker(camera_matrix,
-                                                distortion_vector,
-                                                self.num_robots_blue_team)
-            self.seek_blue_team = self.aruco_seek
-        else:
-            self.blue_team_seeker = GeneralMultObjSeeker(num_robots_blue_team)
-            self.seek_blue_team = self.seek_multiple_object
+        self.ball_seeker = BallSeeker(img_shape, aux_params["ball"])
+    
+    def get_seeker(self, seeker_name: str, num_robots: int = 0, aux_params: dict = None):
+        if seeker_name == "aruco":
+            camera_matrix = aux_params["aruco"][0]
+            distortion_vector = aux_params["aruco"][1]
+            seeker = ArucoSeeker(camera_matrix, 
+                                       distortion_vector,
+                                       num_robots)
+            return seeker, self.aruco_seek
+        elif seeker_name == "color":
+            return CircularColorTagSeeker(aux_params["color"]), self.color_seek
+        elif seeker_name == "kmeans":
+            seeker = GeneralMultObjSeeker(num_robots)
+            return seeker, self.kmeans_seek
 
-        # self.blue_team_seeker = GeneralMultObjSeeker(num_robots_blue_team)
-
-        self.ball_seeker = GeneralObjSeeker(img_shape)
 
     def pixel_to_real_world(self, pos):
         # This function expects that pos is a 1D numpy array
@@ -189,10 +193,10 @@ class HawkEye:
         pos[1] *= -self.conversion_factor_y
         return pos
 
-    def aruco_seek(self, img, robots_list, seeker):
+    def aruco_seek(self, img, robots_list, seeker, opt=None):
         """ This function expects a binary image with the team robots and a list
                     of Things objects to store the info """
-
+        img = 255 - img
         robots = seeker.seek(img, degree=False)
         # TODO: ISSO AQUI UM DIA VAI DAR MERDA
         # EXPLODIU, O DIA CHEGOU 14/08/2019, a casa caiu
@@ -214,29 +218,44 @@ class HawkEye:
             # if tags[i] in tags_in_game:
             robots_list[i].update(i, pos, orientation=_orientation)
 
-    def seek_ball(self, img, ball):
-        """ Expects a binary image with just the ball and a Thing object to
-            store the info """
-
+    def seek_ball(self, img, ball, opt=None):
         pos = self.ball_seeker.seek(img)
         if np.all(pos is not None):
             pos = self.pixel_to_real_world(pos)
 
         ball.update(0, pos)
 
-    def seek_multiple_object(self, img, robots_list, seeker):
+    def kmeans_seek(self, img, robots_list, seeker, opt=None):
         adv_centers = seeker.seek(img)
 
         if not (adv_centers is None) and adv_centers.size:
             for i in range(len(robots_list)):
-                pos = self.pixel_to_real_world(adv_centers[i, :])
+                pos = self.pixel_to_real_world(adv_centers[i, ...])
                 robots_list[i].update(i, pos)
+    
+    def color_seek(self, binary_img: np.ndarray, 
+                         robots_list: List, 
+                         seeker: CircularColorTagSeeker,
+                         opt = None) -> None:
+        color_img = opt
+        robots = seeker.seek(binary_img, color_img)
 
-    def reset(self):
-        self.yellow_team_seeker.reset()
-        self.blue_team_seeker.reset()
-        self.ball_seeker.reset()
+        for robot in robots:
+            k = robot[0]
+            pos = self.pixel_to_real_world(robot[1])
+            robots_list[k].update(k, pos, orientation=robot[2])
 
 
-if __name__ == '__main__':
-    pass
+    def reset(self, aux_params=None) -> None:
+        try:
+            yellow_seeker = self.team_seekers["yellow"]
+            self.yellow_team_seeker.reset(aux_params[yellow_seeker])
+        except:
+            self.yellow_team_seeker.reset()
+        try:
+            blue_seeker = self.team_seekers["blue"]
+            self.blue_team_seeker.reset(aux_params[blue_seeker])
+        except:
+            self.blue_team_seeker.reset()
+        
+        self.ball_seeker.reset(aux_params["ball"])
