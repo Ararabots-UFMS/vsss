@@ -1,12 +1,13 @@
-import cv2 as cv
-import math
-import numpy as np
-import rospy
-import time
-from .auxiliary import *
 import copy
-from utils.json_handler import JsonHandler
+import time
+from functools import partial
+
+import cv2
+import cv2 as cv
+
 from robot_module.movement.univector.un_field import UnivectorField
+from utils.json_handler import JsonHandler
+from .auxiliary import *
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
 
@@ -78,6 +79,8 @@ class virtualField():
         self.robot_tags = [0] * 5
         self.tag_debug_vector = [0] * 20
 
+        # univector
+        self.show_univector_tweaker = False
         self.univetField.update_constants()
         self.attack_goal = None
 
@@ -109,6 +112,32 @@ class virtualField():
                            }
 
     '''  delay no plot, ajuste/teste de fps'''
+
+    def update_univector_callback(self, key, scale, value):
+        self.univetField.__setattr__(key, value / scale)
+        self.univetField.update_fields()
+
+    def destroy_univector_trackbars(self):
+        self.show_univector_tweaker = False
+        cv2.destroyWindow("Univector Tweaker")
+
+    def create_univector_trackbars(self):
+        range = 10000
+        scale = 100
+        self.empty_image = np.zeros((1,500,3), np.uint8)
+        cv2.namedWindow("Univector Tweaker", 1)
+        cv2.imshow("Univector Tweaker", self.empty_image)
+        cv2.createTrackbar("RADIUS", "Univector Tweaker", int(self.univetField.RADIUS * scale), range,
+                           partial(self.update_univector_callback, "RADIUS", scale))
+        cv2.createTrackbar("KR", "Univector Tweaker", int(self.univetField.KR * scale), range,
+                           partial(self.update_univector_callback, "KR", scale))
+        cv2.createTrackbar("K0", "Univector Tweaker", int(self.univetField.K0 * scale), range,
+                           partial(self.update_univector_callback, "K0", scale))
+        cv2.createTrackbar("DMIN", "Univector Tweaker", int(self.univetField.DMIN * scale), range,
+                           partial(self.update_univector_callback, "DMIN", scale))
+        cv2.createTrackbar("LDELTA", "Univector Tweaker", int(self.univetField.LDELTA * scale), range,
+                           partial(self.update_univector_callback, "LDELTA", scale))
+        self.show_univector_tweaker = True
 
     def pause(self, n):
         """system pause for n FPS"""
@@ -394,6 +423,9 @@ class virtualField():
 
         cv.putText(self.field, str(fps_vision), (self.proportion_width(0.2), self.proportion_height(16.0)),
                    self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
+        if self.show_univector_tweaker:
+            cv2.imshow("Univector Tweaker", self.empty_image)
+            cv2.waitKey(1)
 
     def drawPath(self, start, end):
         currentPos = np.array(start)
@@ -407,17 +439,19 @@ class virtualField():
 
         distance = np.linalg.norm(currentPos - end)
         it = 0
-
+        points = []
         while (distance >= beta) and it < 120:
             v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0],
                                                    _ball=end, _attack_goal=self.attack_goal)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
-            cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
+            points.append(_newPos)
             currentPos = newPos
             _currentPos = _newPos
             it += 1
             distance = np.linalg.norm(currentPos - end)
+
+        cv2.polylines(self.field,[np.array(points)], 0, self.colors['red'], 2)
 
     def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_' + str(x) for x in range(1, 6)]

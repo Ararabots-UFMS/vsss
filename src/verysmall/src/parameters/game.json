@@ -1,9 +1,9 @@
 {
     "ROS_IP": [
-        "enp3s0",
-        "10.0.0.2"
+        "lo",
+        "127.0.0.1"
     ],
-    "ROS_MASTER_URI": "http://10.0.0.2:11311",
+    "ROS_MASTER_URI": "http://127.0.0.1:11311",
     "camera": {
         "file": "",
         "name": "USB 2.0 Camera: HD USB Camera",
@@ -14,7 +14,7 @@
     "meta_player": 0,
     "penalty_player": 0,
     "seekers": {
-        "blue": "aruco",
+        "blue": "color",
         "yellow": "aruco"
     },
     "side": 0,

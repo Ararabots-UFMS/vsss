@@ -178,7 +178,7 @@ class AvoidObstacle:
         return v_pos
 
     def fi_auf(self, _robotPos: np.ndarray, _vPos: np.ndarray = (None, None), _theta: bool = True) -> np.ndarray:
-        if np.all(_vPos == None):
+        if np.all(_vPos is None):
             v_pos = self.get_virtual_pos()
         else:
             v_pos = _vPos
@@ -245,13 +245,16 @@ class UnivectorField:
         self.vRobot = np.array(_vRobot)
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
 
-    def update_constants(self, key: str = "center") -> np.ndarray:
+    def update_constants(self, key: str = "center") -> None:
         self.RADIUS = self.univector_list[key]['RADIUS']
         self.KR = self.univector_list[key]['KR']
         self.K0 = self.univector_list[key]['K0']
         self.DMIN = self.univector_list[key]['DMIN']
         self.LDELTA = self.univector_list[key]['LDELTA']
 
+        self.update_fields()
+
+    def update_fields(self) -> None:
         self.avdObsField.update_param(self.K0)
         self.mv2Goal.update_params(self.KR, self.RADIUS)
 

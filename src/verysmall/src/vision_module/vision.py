@@ -3,6 +3,9 @@ import numpy as np
 import rospy
 import time
 import sys
+import pickle
+import os
+from time import sleep
 
 from vision_module.camera_module.camera import Camera
 from vision_module.vision_utils.params_setter import ParamsSetter
@@ -13,7 +16,9 @@ from vision_module import COLORS
 from verysmall.msg import game_topic
 from utils.json_handler import JsonHandler
 from ROS.ros_vision_publisher import RosVisionPublisher
-from time import sleep
+
+from vision_module.seekers.circular_color_tag_seeker import CircularColorTagSeeker
+
 
 # @author Wellington Castro <wvmcastro>
 
@@ -51,7 +56,6 @@ class Vision:
 
         self.game_state = None
 
-        self.json_handler = JsonHandler()
         self.camera = camera
         self.params_file_name = params_file_name
         self.num_yellow_robots = num_yellow_robots
@@ -64,9 +68,11 @@ class Vision:
         self.raw_image = None
         self.warp_matrix = None
         self.pipeline = None
-        self.fps = -1
+        self.fps = 0
         self.last_time = None
         self.new_time = None
+        self._colors_thresholds = {}
+        self.hawk_eye_extra_params = {}
 
         # Super necessary to compute the robots positions
         self.origin = None
@@ -84,6 +90,12 @@ class Vision:
         # Object to store ball info
         self.ball = Things()
 
+        # seekers description
+        self.seekers = {}
+
+        if self.params_file_name != "":
+            self.load_params()
+
         # Initialize the vitamins according to the chosen method
         if method == "color_segmentation":
             self.colors_params_file = colors_params
@@ -92,12 +104,6 @@ class Vision:
             self.color_calibrator = ColorSegmentation(camera, self.colors_params_file)
         else:
             print("Method not recognized!")
-
-        # seekers description
-        self.seekers = {}
-
-        if self.params_file_name != "":
-            self.load_params()
 
         self.params_setter = ParamsSetter(camera, params_file_name)
 
@@ -109,14 +115,10 @@ class Vision:
 
         # The hawk eye object will be responsible to locate and identify all
         # objects at the field
-        hawk_eye_extra_params = []
-
-        if "aruco" in self.seekers.values():
-            hawk_eye_extra_params = [camera.camera_matrix, camera.dist_vector]
-
+        self.load_colors_hawkeye()
         self.hawk_eye = HawkEye(self.origin, self.conversion_factor_x, self.conversion_factor_y,
                                 self.seekers, self.num_yellow_robots, self.num_blue_robots,
-                                self.arena_image.shape, hawk_eye_extra_params)
+                                self.arena_image.shape, self.hawk_eye_extra_params)
 
     def on_game_state_change(self, data):
         self.game_state = data.game_state
@@ -152,7 +154,7 @@ class Vision:
 
     def update_fps(self):
         self.new_time = time.time()
-        self.fps = 1 / (self.new_time - self.last_time)  ##self.computed_frames / (time.time() - self.t0)
+        self.fps = 0.9*self.fps + 0.1 / (self.new_time - self.last_time)
         self.last_time = self.new_time
 
     def set_origin_and_factor(self):
@@ -187,27 +189,51 @@ class Vision:
 
     def load_params(self):
         """ Loads the warp matrix and the arena vertices from the arena parameters file"""
-        params = self.json_handler.read(self.params_file_name)
-        self.seekers = self.json_handler.read("parameters/game.json")["seekers"]
-        rospy.logfatal(self.seekers)
+        params = JsonHandler.read(self.params_file_name)
+        self.seekers = JsonHandler.read("parameters/game.json")["seekers"]
         self.arena_vertices = np.array(params['arena_vertices'])
         self.warp_matrix = np.asarray(params['warp_matrix']).astype("float32")
         self.arena_size = (params['arena_size'][0], params['arena_size'][1])
 
         self.create_mask()
 
-    def load_colors_params(self, colors_params=None):
-        """ Loads the colors thresholds from the json file or from a given
-            params dictionary """
-        if colors_params is None:
-            colors_params = self.json_handler.read(self.colors_params_file)
+    def load_colors_params(self):
+        file1 = os.environ['ROS_ARARA_ROOT']+"src/" + self.colors_params_file
+        if os.path.exists(file1):
+            filename = file1
+        elif os.path.exists(self.colors_params_file):
+            filename = self.colors_params_file
+        else:
+            return
+        
+        try:
+            with open(filename, 'rb') as fp:
+                self._colors_thresholds = pickle.load(fp)
+                self.load_colors_hawkeye()
+                try:
+                    self.hawk_eye.reset(self.hawk_eye_extra_params)
+                except AttributeError:
+                    pass
+        except Exception as e:
+            rospy.logfatal("Color params file load failed")
+            rospy.logfatal(repr(e))
+        
+    def load_colors_hawkeye(self) -> None:
+        thrs = self._colors_thresholds
+        self.hawk_eye_extra_params["ball"] = (thrs["orange"]["min"], 
+                                              thrs["orange"]["max"])
 
-        self.yellow_min = np.asarray(colors_params['hsv_yellow_min']).astype("uint8")
-        self.yellow_max = np.asarray(colors_params['hsv_yellow_max']).astype("uint8")
-        self.blue_min = np.asarray(colors_params['hsv_blue_min']).astype("uint8")
-        self.blue_max = np.asarray(colors_params['hsv_blue_max']).astype("uint8")
-        self.ball_min = np.asarray(colors_params['hsv_ball_min']).astype("uint8")
-        self.ball_max = np.asarray(colors_params['hsv_ball_max']).astype("uint8")
+        if "aruco" in self.seekers.values():
+            self.hawk_eye_extra_params["aruco"] = (self.camera.camera_matrix, 
+                                                   self.camera.dist_vector)
+        if "color" in self.seekers.values():
+            primary_colors = {"blue", "yellow", "orange"}
+            secondary_colors = set(self._colors_thresholds.keys()) - primary_colors
+            secondary_colors = sorted(list(secondary_colors))
+            colors = []
+            for color in secondary_colors:
+                colors.append((thrs[color]["min"], thrs[color]["max"]))
+            self.hawk_eye_extra_params["color"] = colors
 
     def warp_perspective(self):
         """ Takes the real world arena returned by camera and transforms it
@@ -239,9 +265,15 @@ class Vision:
     def color_seg_pipeline(self):
         """ Wait until the color parameters are used """
         self.arena_image = cv2.cvtColor(self.arena_image, cv2.COLOR_BGR2HSV)
-        self.blue_seg = self.get_filter(self.arena_image, self.blue_min, self.blue_max)
-        self.yellow_seg = self.get_filter(self.arena_image, self.yellow_min, self.yellow_max)
-        self.ball_seg = self.get_filter(self.arena_image, self.ball_min, self.ball_max)
+
+        thr = self._colors_thresholds
+        self.blue_seg = self.get_filter(self.arena_image, 
+                                        thr["blue"]["min"], 
+                                        thr["blue"]["max"])
+
+        self.yellow_seg = self.get_filter(self.arena_image, 
+                                          thr["yellow"]["min"], 
+                                          thr["yellow"]["max"])
 
     def run(self):
         while not self.finish:
@@ -249,27 +281,21 @@ class Vision:
             self.last_time = time.time()
             while self.game_on and not self.in_calibration_mode:
                 self.raw_image = self.camera.read()
-                """ Takes the raw imagem from the camera and applies the warp perspective transform """
                 self.warp_perspective()
-
                 self.set_dark_border()
-
                 self.pipeline()
-                if self.seekers["yellow"] == "aruco":
-                    yellow_seg = 255 - self.yellow_seg
-                else:
-                    yellow_seg = self.yellow_seg
 
-                if self.seekers["blue"] == "aruco":
-                    blue_seg = 255 - self.blue_seg
-                else:
-                    blue_seg = self.blue_seg
+                self.hawk_eye.seek_yellow_team(self.yellow_seg, 
+                                               self.yellow_team, 
+                                               self.hawk_eye.yellow_team_seeker,
+                                               opt=self.arena_image)
+                
+                self.hawk_eye.seek_blue_team(self.blue_seg,
+                                             self.blue_team,
+                                             self.hawk_eye.blue_team_seeker,
+                                             opt=self.arena_image)
 
-                self.hawk_eye.seek_yellow_team(yellow_seg, self.yellow_team, self.hawk_eye.yellow_team_seeker)
-
-                self.hawk_eye.seek_blue_team(blue_seg, self.blue_team, self.hawk_eye.blue_team_seeker)
-
-                self.hawk_eye.seek_ball(self.ball_seg, self.ball)
+                self.hawk_eye.seek_ball(self.arena_image, self.ball)
 
                 self.send_message(ball=True, yellow_team=True, blue_team=True)
                 self.update_fps()
@@ -321,7 +347,7 @@ if __name__ == "__main__":
     home_tag = "aruco"
 
     arena_params = "../parameters/ARENA.json"
-    colors_params = "../parameters/COLORS.json"
+    colors_params = "../parameters/COLORS.bin"
     camera = Camera(sys.argv[1], "../parameters/CAMERA_ELP-USBFHD01M-SFV.json", threading=True)
 
     v = Vision(camera, num_blue_robots, num_yellow_robots, arena_params,
