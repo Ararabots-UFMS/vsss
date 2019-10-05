@@ -24,6 +24,11 @@ class Control:
         self._hysteresis_angle_window = 15 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
+        self._beta = 0.75
+        self._t = 1
+        self._current_orientation = 0
+        self._ma_orientation_vec = np.array([0, 0])
+        self._ma_orientation = 0
 
         self._pid_constants_set = sorted(constants)
         self._speed_keys = [s[0] for s in self._pid_constants_set]  # TODO: get a better name
@@ -36,13 +41,18 @@ class Control:
                           speed: int,
                           distance: float) -> Tuple[float, float]:
 
-        if opcode == OpCodes.SMOOTH:
+        if opcode & OpCodes.ORIENTATION_AVERAGE:
+            self._current_orientation = self._ma_orientation
+        else:
+            self._current_orientation = self._myrobot.orientation
+
+        if opcode & OpCodes.SMOOTH:
             return self._follow_vector(speed, angle, distance)
-        elif opcode == OpCodes.NORMAL:
+        elif opcode & OpCodes.NORMAL:
             return self._follow_vector(speed, angle, distance, optimal_speed=False)
-        elif opcode == OpCodes.SPIN_CCW:
+        elif opcode & OpCodes.SPIN_CCW:
             return -255, 255
-        elif opcode == OpCodes.SPIN_CW:
+        elif opcode & OpCodes.SPIN_CW:
             return 255, -255
         else:
             return 0, 0
@@ -77,7 +87,7 @@ class Control:
             return -speed + correction, -speed - correction
 
     def set_head(self, angle: float) -> np.array:
-        abs_diff = abs(mth.min_angle(self._myrobot.orientation, angle))
+        abs_diff = abs(mth.min_angle(self._current_orientation, angle))
         if abs_diff > self._upper_angle_tol:
             self._head = BACKWARDS
         elif abs_diff < self._lower_angle_tol:
@@ -85,9 +95,9 @@ class Control:
 
     def get_diff_angle(self, target_angle: float) -> float:
         if self._head == FORWARD:
-            orientation = self._myrobot.orientation
+            orientation = self._current_orientation
         else:
-            orientation = mth.wrap2pi(self._myrobot.orientation + math.pi)
+            orientation = mth.wrap2pi(self._current_orientation + math.pi)
 
         return mth.min_angle(orientation, target_angle)
 
@@ -129,3 +139,13 @@ class Control:
 
         s = scale / (1 + math.exp(0.5 * (-distance + self._alpha)))
         return s + self._max_fine_movement_speed
+
+    def update_orientation(self, orientation: float) -> None:
+        vec = np.array([math.cos(orientation), math.sin(orientation)])
+        v = self._beta * self._ma_orientation_vec + \
+            (1 - self._beta) * vec
+        v /= (1 - self._beta ** self._t)
+
+        self._ma_orientation_vec = v
+        self._ma_orientation = math.atan2(v[1], v[0])
+        self._t += 1
