@@ -178,7 +178,7 @@ class AvoidObstacle:
         return v_pos
 
     def fi_auf(self, _robotPos: np.ndarray, _vPos: np.ndarray = (None, None), _theta: bool = True) -> np.ndarray:
-        if np.all(_vPos == None):
+        if np.all(_vPos is None):
             v_pos = self.get_virtual_pos()
         else:
             v_pos = _vPos

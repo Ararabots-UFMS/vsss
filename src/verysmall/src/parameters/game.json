@@ -14,7 +14,7 @@
     "meta_player": 0,
     "penalty_player": 0,
     "seekers": {
-        "blue": "aruco",
+        "blue": "color",
         "yellow": "aruco"
     },
     "side": 0,

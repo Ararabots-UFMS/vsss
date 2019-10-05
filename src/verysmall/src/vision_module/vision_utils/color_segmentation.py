@@ -23,7 +23,8 @@ class ColorSegmentation:
         self.camera = cam
 
         self._shortcuts = {'o': "orange", 'y': "yellow", 
-                           'b': "blue", 'g': "green", 'p': "pink", 'i': "ice"}
+                           'b': "blue", 'g': "green", 'p': "pink", 
+                           'i': "ice", 'v': "violet"}
 
         self._colors = self._shortcuts.values()
         self._threshs = {c : {"min": np.uint8((255, 255, 255)), "max": np.uint8((0, 0, 0))} 

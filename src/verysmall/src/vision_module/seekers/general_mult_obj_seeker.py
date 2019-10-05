@@ -58,6 +58,6 @@ class GeneralMultObjSeeker(Seeker):
 
         return self.objects
 
-    def reset(self):
+    def reset(self, opt=None):
         self.kmeans.init = 'k-means++'
         self.objects = None

@@ -56,7 +56,7 @@ class ArucoSeeker(Seeker):
     def seek(self, img, degree=False):
 
         # Try to locate all markers in the img
-        corners, ids, rejectedImgPoints = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
+        corners, ids, _ = aruco.detectMarkers(img, self.aruco_dict, parameters=self.aruco_params)
 
         identified_markers = []
 
@@ -92,10 +92,8 @@ class ArucoSeeker(Seeker):
 
         return identified_markers
 
-    def reset(self):
+    def reset(self, opt=None):
         # In the case fo the aruco seeker this function is unecessary
         # But was left here to mantain the minimum structure of a seeker
         # all seekers must have a reset method
         pass
-if __name__ == "__main__":
-    pass

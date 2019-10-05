@@ -107,7 +107,7 @@ class MessageServer:
         response = ServerOpCode.OK
         s = self._sockets.pop(socket_id, None)
 
-        if s == None:
+        if s is None:
             response = ServerOpCode.ERROR
         else:
             self._num_active_sockets -= 1

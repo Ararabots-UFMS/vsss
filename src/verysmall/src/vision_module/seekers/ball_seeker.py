@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import cv2
 import time
@@ -11,10 +12,11 @@ class BallSeeker(Seeker):
         It also uses the temporal information to predict a search window in the
         picture."""
 
-    def __init__(self, img_shape):
+    def __init__(self, img_shape, color_thrs: Tuple[np.uint8, np.uint8]):
 
         # Stores the frame shape
         self.img_shape = img_shape
+        self._color_thrs = color_thrs
 
         # Stores the obj last pos. Will help to predict the search region
         self.last_pos = None
@@ -30,7 +32,7 @@ class BallSeeker(Seeker):
         self.lost = 0
 
     def update_time(self, t=None):
-        if t == None:
+        if t is None:
             self.last_time = time.time()
         else:
             self.last_time = t
@@ -101,7 +103,7 @@ class BallSeeker(Seeker):
 
                 # If it is the first time the obj is detected.
                 # Calculates its size
-                if  self.obj_size == None:
+                if  self.obj_size is None:
                     # Rect is a list that has the [(x,y)center, (width, height), angle of rotation]
                     rect = cv2.minAreaRect(cnt)
                     self.obj_size = max(rect[1][0], rect[1][1])
@@ -118,6 +120,7 @@ class BallSeeker(Seeker):
             region = img
             self.lost += 1
 
+        region = cv2.inRange(region, self._color_thrs[0], self._color_thrs[1])
         pos = self.get_obj_pos(region)
 
         if np.all(pos != None):
@@ -128,7 +131,9 @@ class BallSeeker(Seeker):
 
         return self.last_pos
 
-    def reset(self):
+    def reset(self, color_thrs=None) -> None:
+        if color_thrs is not None:
+            self._color_thrs = color_thrs
         self.last_pos = None
         self.last_time = None
         self.obj_size = None

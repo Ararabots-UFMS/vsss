@@ -5,9 +5,9 @@ import time
 import math
 import rospy
 
-from .aruco_seeker import ArucoSeeker
-from .general_object_seeker import BallSeeker
-from .general_mult_obj_seeker import GeneralMultObjSeeker
+from vision_module.seekers.aruco_seeker import ArucoSeeker
+from vision_module.seekers.ball_seeker import BallSeeker
+from vision_module.seekers.general_mult_obj_seeker import GeneralMultObjSeeker
 from vision_module.seekers.circular_color_tag_seeker import CircularColorTagSeeker
 
 # @author Wellington Castro <wvmcastro>
@@ -150,6 +150,8 @@ class HawkEye:
     def __init__(self, field_origin, conversion_factor_x, conversion_factor_y, seekers, num_robots_yellow_team,
                  num_robots_blue_team, img_shape, aux_params):
 
+        self.team_seekers = seekers
+
         self.field_origin = field_origin
         self.conversion_factor_x = conversion_factor_x
         self.conversion_factor_y = conversion_factor_y
@@ -158,30 +160,30 @@ class HawkEye:
         self.num_robots_blue_team = num_robots_blue_team
 
         self.yellow_team_seeker, self.seek_yellow_team = self.get_seeker(
-            seekers["yellow"], 
+            self.team_seekers["yellow"], 
             self.num_robots_yellow_team, 
             aux_params)
 
         self.blue_team_seeker, self.seek_blue_team = self.get_seeker(
-            seekers["blue"],
+            self.team_seekers["blue"],
             self.num_robots_blue_team,
             aux_params)
 
-        self.ball_seeker = BallSeeker(img_shape)
+        self.ball_seeker = BallSeeker(img_shape, aux_params["ball"])
     
-    def get_seeker(self, seeker_name: str, num_robots: int = 0, aux_params=None):
+    def get_seeker(self, seeker_name: str, num_robots: int = 0, aux_params: dict = None):
         if seeker_name == "aruco":
-            camera_matrix = aux_params[0]
-            distortion_vector = aux_params[1]
+            camera_matrix = aux_params["aruco"][0]
+            distortion_vector = aux_params["aruco"][1]
             seeker = ArucoSeeker(camera_matrix, 
                                        distortion_vector,
                                        num_robots)
             return seeker, self.aruco_seek
         elif seeker_name == "color":
-            return CircularColorTagSeeker(aux_params), self.color_seek
-        elif seeker_name == "multiple_object":
+            return CircularColorTagSeeker(aux_params["color"]), self.color_seek
+        elif seeker_name == "kmeans":
             seeker = GeneralMultObjSeeker(num_robots)
-            return seeker, self.seek_multiple_object
+            return seeker, self.kmeans_seek
 
 
     def pixel_to_real_world(self, pos):
@@ -223,7 +225,7 @@ class HawkEye:
 
         ball.update(0, pos)
 
-    def seek_multiple_object(self, img, robots_list, seeker, opt=None):
+    def kmeans_seek(self, img, robots_list, seeker, opt=None):
         adv_centers = seeker.seek(img)
 
         if not (adv_centers is None) and adv_centers.size:
@@ -244,11 +246,16 @@ class HawkEye:
             robots_list[k].update(k, pos, orientation=robot[2])
 
 
-    def reset(self):
-        self.yellow_team_seeker.reset()
-        self.blue_team_seeker.reset()
-        self.ball_seeker.reset()
-
-
-if __name__ == '__main__':
-    pass
+    def reset(self, aux_params=None) -> None:
+        try:
+            yellow_seeker = self.team_seekers["yellow"]
+            self.yellow_team_seeker.reset(aux_params[yellow_seeker])
+        except:
+            self.yellow_team_seeker.reset()
+        try:
+            blue_seeker = self.team_seekers["blue"]
+            self.blue_team_seeker.reset(aux_params[blue_seeker])
+        except:
+            self.blue_team_seeker.reset()
+        
+        self.ball_seeker.reset(aux_params["ball"])

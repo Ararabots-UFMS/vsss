@@ -30,8 +30,8 @@ class CircularColorTagSeeker(Seeker):
 
         patches = []
         top_lefts = []
-        for s in slices:
-            patches.append(color_img[s[0], s[1], ...])
+        for k, s in enumerate(slices):
+            patches.append((k, color_img[s[0], s[1], ...]))
             top_lefts.append(np.array([s[1].start, s[0].start]))
         
         ids, second_centroids = self.segment_and_get_second_centroids(patches, top_lefts)
@@ -52,13 +52,13 @@ class CircularColorTagSeeker(Seeker):
                 cy = m["m01"] / a
                 centroids.append((a, np.array([cx, cy])))
         
-        sorted(centroids, key = lambda x: x[0], reverse=True)
+        centroids.sort(key = lambda x: x[0], reverse=True)
 
         if len(centroids) < 2:
             n = len(centroids)
         else:
-            self.l_thresh = 0.9 * centroids[0][0]
-            self.r_thresh = 1.1 * centroids[0][0]
+            self.l_thresh = 0.7 * centroids[0][0]
+            self.r_thresh = 1.3 * centroids[0][0]
 
             n = 1
             for c in centroids[1:]:
@@ -67,8 +67,8 @@ class CircularColorTagSeeker(Seeker):
         
         if self._radius_thresh < 0 and n != 0:
             *_, radius = cv2.minEnclosingCircle(cnts[0])
-            self._radius_thresh = 2.5 * radius
-        
+            self._radius_thresh = 2 * radius
+
         return [centroids[i][1] for i in range (n)]
     
     def get_contours(self, img: IMAGE):
@@ -92,14 +92,14 @@ class CircularColorTagSeeker(Seeker):
         
         return slices
 
-    def segment_and_get_second_centroids(self, patches: List[IMAGE],
+    def segment_and_get_second_centroids(self, patches: List[Tuple[int, IMAGE]],
                                                top_lefts: List[np.ndarray]) -> \
                                     Tuple[List[int], List[np.ndarray]]:
-        
-        centroids = []
-        ids = []
+        n = len(patches)
+        centroids = [None] * n
+        ids = [None] * n
         for i, color in enumerate(self._colors):
-            for j, patch in enumerate(patches):
+            for j, (k, patch) in enumerate(patches):
                 thresholded = cv2.inRange(patch, color[0], color[1])
                 if np.any(thresholded):
                     cnts = self.get_contours(thresholded)
@@ -109,9 +109,11 @@ class CircularColorTagSeeker(Seeker):
                     if a != 0:
                         cx = m["m10"] / a
                         cy = m["m01"] / a
-                        centroids.append(top_lefts[j] + np.array([cx, cy]))
-                        ids.append(i)
-                break
+                        centroids[k] = top_lefts[j] + np.array([cx, cy])
+                        ids[k] = i
+                        del patches[j]
+                        del top_lefts[j]
+                        break
         
         return ids, centroids
     
@@ -122,14 +124,24 @@ class CircularColorTagSeeker(Seeker):
         robots = []
         i = 0
         for c1, c2 in zip(first_centroids, second_centroids):
-            c = (c1 + c2) / 2
-            vec = c2 - c1
-            angle = math.atan2(-vec[1], vec[0])  - self._theta
-            robots.append((ids[i], c, angle))
+            if c2 is not None:
+                c = (c1 + c2) / 2
+                vec = c2 - c1
+                angle = math.atan2(-vec[1], vec[0])  - self._theta
+                robots.append((ids[i], c, angle))
 
             i += 1
-        
         return robots
+    
+    def reset(self, opt = None) -> None:
+        if opt is not None:
+            self._colors = opt
+
+        self._radius_thresh = -1
+        self._l_thresh = 0
+        self._r_thresh = 0
+        self._h = 0
+        self._w = 0
 
 
             
