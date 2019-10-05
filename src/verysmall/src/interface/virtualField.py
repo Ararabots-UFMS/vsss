@@ -1,3 +1,6 @@
+from functools import partial
+
+import cv2
 import cv2 as cv
 import math
 import numpy as np
@@ -79,6 +82,7 @@ class virtualField():
         self.tag_debug_vector = [0] * 20
 
         # univector
+        self.show_univector_tweaker = False
         self.RADIUS = univector_list['RADIUS']
         self.KR = univector_list['KR']
         self.K0 = univector_list['K0']
@@ -115,6 +119,33 @@ class virtualField():
                            }
 
     '''  delay no plot, ajuste/teste de fps'''
+
+    def update_univector_callback(self, key, scale, value):
+        self.univetField.__setattr__(key, value / scale)
+        self.univetField.update_constants(self.univetField.RADIUS, self.univetField.KR, self.univetField.K0,
+                                          self.univetField.DMIN, self.univetField.LDELTA)
+
+    def destroy_univector_trackbars(self):
+        self.show_univector_tweaker = False
+        cv2.destroyWindow("Univector Tweaker")
+
+    def create_univector_trackbars(self):
+        range = 10000
+        scale = 100
+        self.empty_image = np.zeros((1,500,3), np.uint8)
+        cv2.namedWindow("Univector Tweaker", 1)
+        cv2.imshow("Univector Tweaker", self.empty_image)
+        cv2.createTrackbar("RADIUS", "Univector Tweaker", int(self.RADIUS * scale), range,
+                           partial(self.update_univector_callback, "RADIUS", scale))
+        cv2.createTrackbar("KR", "Univector Tweaker", int(self.KR * scale), range,
+                           partial(self.update_univector_callback, "KR", scale))
+        cv2.createTrackbar("K0", "Univector Tweaker", int(self.K0 * scale), range,
+                           partial(self.update_univector_callback, "K0", scale))
+        cv2.createTrackbar("DMIN", "Univector Tweaker", int(self.DMIN * scale), range,
+                           partial(self.update_univector_callback, "DMIN", scale))
+        cv2.createTrackbar("LDELTA", "Univector Tweaker", int(self.LDELTA * scale), range,
+                           partial(self.update_univector_callback, "LDELTA", scale))
+        self.show_univector_tweaker = True
 
     def pause(self, n):
         """system pause for n FPS"""
@@ -346,7 +377,7 @@ class virtualField():
                     center = position_from_origin(
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     contour = (
-                    center, (self.robot_side_size, self.robot_side_size), -angle * self.angle_conversion_factor)
+                        center, (self.robot_side_size, self.robot_side_size), -angle * self.angle_conversion_factor)
                     n_contour = cv.boxPoints(contour)
                     n_contour = np.int0(n_contour)
                     cv.drawContours(self.field, [n_contour], -1, color, -1)
@@ -400,6 +431,9 @@ class virtualField():
 
         cv.putText(self.field, str(fps_vision), (self.proportion_width(0.2), self.proportion_height(16.0)),
                    self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
+        if self.show_univector_tweaker:
+            cv2.imshow("Univector Tweaker", self.empty_image)
+            cv2.waitKey(1)
 
     def drawPath(self, start, end):
         currentPos = np.array(start)
@@ -407,23 +441,25 @@ class virtualField():
         end = np.array(end)
 
         newPos = None
-        alpha = 2.0 #3.5
+        alpha = 2.0  # 3.5
         beta = 3.5
         point_lines = []
 
         distance = np.linalg.norm(currentPos - end)
         it = 0
-
+        points = []
         while (distance >= beta) and it < 120:
             v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0],
                                                    _ball=end, _attack_goal=self.attack_goal)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
-            cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
+            points.append(_newPos)
             currentPos = newPos
             _currentPos = _newPos
             it += 1
             distance = np.linalg.norm(currentPos - end)
+
+        cv2.polylines(self.field,[np.array(points)], 0, self.colors['red'], 2)
 
     def set_visible_vectors(self, robot_list, robot_params):
         faster_hash = ['robot_' + str(x) for x in range(1, 6)]
