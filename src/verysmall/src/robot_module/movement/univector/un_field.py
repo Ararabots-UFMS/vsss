@@ -332,12 +332,10 @@ class UnivectorField:
             distance = np.linalg.norm(direction)
 
             alpha = gaussian(distance - dmin, 20)
-            import rospy
-            rospy.logfatal(alpha)
             correct_axis = alpha * unrotated_axis + (1 - alpha) * rotated_axis
 
         else:
-            self.update_constants(key="border")
+            #self.update_constants(key="border")
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
                     correct_axis = np.array([1.0, 0.0])
