@@ -1,12 +1,11 @@
-import rospy
-
-from strategy.behaviour import *
+from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall, \
+    IsBallInCriticalPosition, CanDefenderUseMove2PointToRecoverBall
 from strategy.actions.movement_behaviours import MarkBallOnAxis, GoToBallUsingUnivector, SpinTask, \
-    GoToBallUsingMove2Point, ChargeWithBall, GoBack
+    GoToBallUsingMove2Point, ChargeWithBall, GoBack, RecoverBallUsingUnivector
 from strategy.actions.state_behaviours import InState
-from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall
-from strategy.strategy_utils import GameStates
 from strategy.base_trees import BaseTree
+from strategy.behaviour import *
+from strategy.strategy_utils import GameStates
 
 
 class Defender(BaseTree):
@@ -23,7 +22,7 @@ class Defender(BaseTree):
         border.add_child(IsBallInRangeOfDefense("RangeOfDefense"))
         border.add_child(IsBallInBorder("BallInBorder"))
         border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
-        border.add_child(SpinTask("Spin", invert=True))
+        border.add_child(SpinTask("Spin"))
         defend.add_child(border)
 
         middle = Sequence("Middle")
@@ -34,12 +33,26 @@ class Defender(BaseTree):
 
         defend.add_child(middle)
 
+        recover = Sequence("Recover")
+        recover.add_child(IsBallInCriticalPosition())
+        method = Selector("SelectMove2PointOrUnivector")
+        recover.add_child(method)
+
+        ball_near_goal_check = Sequence("CanDefenderUseMove2PointToRecoverBall?")
+        ball_near_goal_check.add_child(CanDefenderUseMove2PointToRecoverBall())
+        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
+
+        method.add_child(ball_near_goal_check)
+        method.add_child(RecoverBallUsingUnivector())
+        recover.add_child(SpinTask("Spin"))
+        defend.add_child(recover)
+
         mark = Sequence("Mark")
 
         reposition = Selector("reposition")
         kick = Sequence("Kick")
         kick.add_child(IsNearBall("nearBall"))
-        kick.add_child(SpinTask("Spin", invert=True))
+        kick.add_child(SpinTask("Spin"))
 
         reposition.add_child(kick)
         reposition.add_child(AmIInDefenseField("AmIInAttackField"))
@@ -47,7 +60,7 @@ class Defender(BaseTree):
 
         mark.add_child(reposition)
         
-        mark.add_child(MarkBallOnAxis("MarkBallonAxis"))
+        mark.add_child(MarkBallOnAxis("MarkBallOnAxis", predict_ball=False))
 
         defend.add_child(mark)
         normal.add_child(defend)
