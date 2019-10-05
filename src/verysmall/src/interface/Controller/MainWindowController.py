@@ -182,7 +182,13 @@ class MainWindowController:
                 self.wait_window_close(self.bluetooth_controller)
 
         elif ptr.value() < 16:
-            if ptr.value() == 13:
+            if ptr.value() == 12:
+                if self.view.virtualField.show_univector_tweaker:
+                    self.view.virtualField.destroy_univector_trackbars()
+                else:
+                    self.view.virtualField.create_univector_trackbars()
+
+            elif ptr.value() == 13:
                 self.wait_window_close(self.debug_controller)
                 self.view.virtualField.set_draw_vectors(self.debug_params['movement_predict_simulation'])
                 self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
