@@ -55,7 +55,7 @@ class Coach:
         robot_id = int(robot_name.split('_')[1]) - 1
         robot_id = str(robot_id)
 
-        if robot_params["bluetooth_mac_address"] == "Nenhum":
+        if robot_params["bluetooth_mac_address"] == "nenhum":
             socket_id = str(-1)
         else:
             socket_id = robot_id
