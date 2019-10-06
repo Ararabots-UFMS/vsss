@@ -29,8 +29,8 @@
     },
     "robot_5": {
         "active": 0,
-        "bluetooth_mac_address": "et bilu",
-        "body_id": "et bilu",
+        "bluetooth_mac_address": "et_bilu",
+        "body_id": "et_bilu",
         "role": "Attacker",
         "tag_number": 3
     }
