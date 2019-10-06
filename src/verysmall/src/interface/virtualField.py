@@ -118,8 +118,9 @@ class virtualField():
         self.univetField.update_fields()
 
     def destroy_univector_trackbars(self):
-        self.show_univector_tweaker = False
-        cv2.destroyWindow("Univector Tweaker")
+        if self.show_univector_tweaker:
+          self.show_univector_tweaker = False
+          cv2.destroyWindow("Univector Tweaker")
 
     def create_univector_trackbars(self):
         range = 10000

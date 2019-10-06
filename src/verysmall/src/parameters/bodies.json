@@ -1,5 +1,5 @@
 {
-  "Nenhum" : {
+  "nenhum" : {
     "0" : {
       "KP" : 0.0,
       "KD" : 0.0,
@@ -7,7 +7,7 @@
     }
   },
 
-  "Tijolinho" : {
+  "tijolinho" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,
@@ -27,7 +27,7 @@
     }
   },
 
-  "Jeremias" : {
+  "jeremias" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,
@@ -47,7 +47,7 @@
     }
   },
 
-  "Et_Bilu" : {
+  "et_bilu" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,
@@ -68,7 +68,7 @@
 
   },
 
-  "LUIS_ESPALHA_LIXO" : {
+  "luis_espalha_lixo" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,

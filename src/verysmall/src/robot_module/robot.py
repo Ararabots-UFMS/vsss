@@ -73,11 +73,9 @@ class Robot:
 
         self.behaviour_trees = [
             Attacker(),
-            Attacker(),
+            Defender(),
             GoalKeeper(),
-            Attacker(),
-            CalibrationTree(),
-            Defender()
+            CalibrationTree()
         ]
 
         self.behaviour_tree = self.behaviour_trees[robot_role]

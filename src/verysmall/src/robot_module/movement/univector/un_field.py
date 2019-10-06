@@ -317,43 +317,26 @@ class UnivectorField:
                             _attack_goal: bool = RIGHT) -> float:
 
         section_num = univector_pos_section(_ball)
-        border_shift = 0
-        dmin = 10
 
-        if section_num == ArenaSections.CENTER:
-            self.update_constants()
-            rotated_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
-            unrotated_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
-
-            if _ball[1] > HALF_ARENA_HEIGHT:
-                border_y = MAX_H_SIZE
-            else:
-                border_y = 0
-
-            border = np.array([_ball[0], abs(border_y - border_shift)])
-            direction = border - _ball
-            distance = np.linalg.norm(direction)
-
-            alpha = gaussian(distance - dmin, 20)
-            correct_axis = alpha * unrotated_axis + (1 - alpha) * rotated_axis
-
+        if section_num != ArenaSections.UP_BORDER and section_num != ArenaSections.DOWN_BORDER:
+            correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
         else:
-            #self.update_constants(key="border")
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
                     correct_axis = np.array([1.0, 0.0])
                 else:
-                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                    
+                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
             else:
                 if section_num == ArenaSections.LEFT_DOWN_CORNER or section_num == ArenaSections.LEFT_UP_CORNER:
                     correct_axis = np.array([-1.0, 0.0])
                 else:
-                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                 
-                
+                    correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)
 
-        # offset = self.get_correct_offset(_ball, section_num)
+
+        offset = self.get_correct_offset(_ball, section_num)
 
         return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
+
 
     def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections,
                          attack_goal: bool = RIGHT) -> np.ndarray:

@@ -96,8 +96,8 @@ class RobotParamsController:
         :return: nothing
         """
         # Values for mapping int to bluetooth name
-        self.bluetooth_value = {"Nenhum": 0}
-        self.view.bluetooth_field.add("Nenhum")
+        self.bluetooth_value = {"nenhum": 0}
+        self.view.bluetooth_field.add("nenhum")
 
         value = 1  # Value for bluetooth choices
         for key in self.bluetooth_is_owned_by:
@@ -108,8 +108,8 @@ class RobotParamsController:
             value += 1
 
         # Values for mapping, in the same way, the body name
-        self.body_value = {"Nenhum": 0}
-        self.view.body_field.add("Nenhum")
+        self.body_value = {"nenhum": 0}
+        self.view.body_field.add("nenhum")
 
         value = 1  # Value for body choices
         for key in self.body_is_owned_by:

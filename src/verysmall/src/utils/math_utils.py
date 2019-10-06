@@ -179,3 +179,7 @@ def wrap2pi(theta):
         return 2*math.pi + theta
     else:
         return theta
+
+
+def range_convert(x, max_a, max_b):
+    return (x * max_b) / max_a

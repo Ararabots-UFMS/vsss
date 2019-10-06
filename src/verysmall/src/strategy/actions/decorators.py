@@ -3,7 +3,8 @@ from abc import abstractmethod
 from typing import Tuple
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
-import rospy
+from strategy.arena_utils import univector_pos_section, ArenaSections, HALF_ARENA_HEIGHT
+from utils.math_utils import range_convert
 
 
 class Decorator:
@@ -115,3 +116,23 @@ class StatusChanged(Decorator):
         self.last_status = status
 
         return status, action
+
+
+class SmoothBorderSpeed(Decorator):
+    def __init__(self, name: str = "Smooth Border Speed"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if self.child is None:
+            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+        else:
+            status, action = self.child.run(blackboard)
+            ball_pos = blackboard.ball.position
+            robot_pos = blackboard.robot.position
+            ball_sec = univector_pos_section(ball_pos)
+            robot_sec = univector_pos_section(robot_pos)
+
+            if ball_sec == ArenaSections.UP_BORDER or ball_sec == ArenaSections.DOWN_BORDER:
+                if robot_sec != ball_sec:
+                    action = (action[0], action[1], 75, action[3])
+            return status, action

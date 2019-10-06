@@ -5,7 +5,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
 from strategy.arena_utils import ArenaSections
-
+from strategy.actions.decorators import SmoothBorderSpeed
 
 class Attacker(BaseTree):
 
@@ -27,10 +27,12 @@ class Attacker(BaseTree):
         tree = Sequence("Go ball when ball in central area")
         # tree.add_child(IsBallInsideCentralArea("Check ball"))
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=150,
+                                            max_speed=250,
                                             acceptance_radius=7,
                                             speed_prediction=False)
-        tree.add_child(go_to_ball)
+        smooth_border_speed = SmoothBorderSpeed()
+        smooth_border_speed.add_child(go_to_ball)
+        tree.add_child(smooth_border_speed)
         tree.add_child(SpinTask('Spin'))  # Spin
 
         return tree
