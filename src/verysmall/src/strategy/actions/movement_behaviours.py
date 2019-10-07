@@ -154,7 +154,6 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("Charge!")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
@@ -165,7 +164,27 @@ class ChargeWithBall(TreeNode):
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.SMOOTH, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+
+
+class RemoveBallFromGoalArea(TreeNode):
+    def __init__(self, name='RemoveBallFromGoalArea', max_speed: int = 255):
+        super().__init__(name)
+        self.max_speed = max_speed
+        self.x_vector = np.array([1.0, 0.0])
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        goal_vector = blackboard.ball.position - blackboard.robot.position
+
+        angle = angle_between(
+            self.x_vector,
+            goal_vector,
+            abs=False
+        )
+
+        distance_to_goal = np.linalg.norm(goal_vector)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
 
 class MarkBallOnAxis(TreeNode):
@@ -284,7 +303,7 @@ class AlignWithAxis(TreeNode):
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
         else:
-            return TaskStatus.RUNNING, (OpCodes.SMOOTH, self.angle_to_correct, self.max_speed, .0)
+            return TaskStatus.RUNNING, (OpCodes.SMOOTH + OpCodes.ORIENTATION_AVERAGE, self.angle_to_correct, self.max_speed, .0)
 
 
 class GetOutOfGoal(TreeNode):

@@ -24,7 +24,7 @@ class Control:
         self._hysteresis_angle_window = 15 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
-        self._beta = 0.75
+        self._beta = 0.5
         self._t = 1
         self._current_orientation = 0
         self._ma_orientation_vec = np.array([0, 0])

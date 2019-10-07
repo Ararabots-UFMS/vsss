@@ -2,14 +2,14 @@ from typing import Iterable
 
 from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged
 from strategy.actions.game_behaviours import IsInAttackSide, IsBehindBall
-from strategy.actions.game_behaviours import IsInsideGoal, IsBallInsideDefenseArea, BlackBoard
-from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal
-from strategy.actions.movement_behaviours import MarkBallOnYAxis, ChargeWithBall, GoToBallUsingUnivector
+from strategy.actions.game_behaviours import IsInsideGoal, IsBallInsideAreas, BlackBoard
+from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal, GoToBallUsingMove2Point, \
+                                                 MarkBallOnYAxis, RemoveBallFromGoalArea, GoToBallUsingUnivector
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
-from strategy.arena_utils import goal_position
+from strategy.arena_utils import ArenaSections
 
 
 class GoalKeeper(BaseTree):
@@ -31,11 +31,10 @@ class GoalKeeper(BaseTree):
         normal_actions.add_child(status_changed)
 
         normal_actions.add_child(self.do_once)
-
         normal_actions.add_child(self._ball_on_attack_side_tree())
         self.mark_ball_on_y = None
-        normal_actions.add_child(self._ball_on_defense_side_tree())
         normal_actions.add_child(self.get_ball_out_of_def_area())
+        normal_actions.add_child(self._ball_on_defense_side_tree())
 
     def reset_counter(self):
         self.do_once.n = 1
@@ -56,10 +55,11 @@ class GoalKeeper(BaseTree):
         inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(
             b.ball.get_time_on_axis(axis=0, value=b.robot.position[0]))))
 
-        self.mark_ball_on_y = MarkBallOnYAxis([10, 30], [10, 90],
+        self.mark_ball_on_y = MarkBallOnYAxis([5, 40], [5, 80],
                                               max_speed=120,
-                                              acceptance_radius=2)
+                                              acceptance_radius=4)
         tree.add_child(self.mark_ball_on_y)
+        tree.add_child(AlignWithAxis())
 
         return tree
 
@@ -74,16 +74,18 @@ class GoalKeeper(BaseTree):
     def get_clamps(self, blackboard: BlackBoard) -> Tuple[Iterable, Iterable]:
         s = -1 if blackboard.home_goal.side else 1
 
-        x = blackboard.home_goal.position[0] + s * 4
-        return [x, 40], [x, 90]
+        x = blackboard.home_goal.position[0] + s * 2
+        return [x, 50], [x, 80]
 
     def get_ball_out_of_def_area(self) -> TreeNode:
         tree = Sequence("GetBallOutOfDefenseArea")
-
-        tree.add_child(IsBallInsideDefenseArea())
-        tree.add_child(GoToBallUsingUnivector())
+        is_ball_inside_defense_area = IsBallInsideAreas(name="IsBallInsideDefenseArea",
+                                                        areas=[ArenaSections.LEFT_GOAL_AREA,
+                                                               ArenaSections.RIGHT_GOAL_AREA])
+        tree.add_child(is_ball_inside_defense_area)
+        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=5))
         tree.add_child(IsBehindBall("IsBehindBall", 5))
-        tree.add_child(ChargeWithBall())
+        tree.add_child(RemoveBallFromGoalArea())
         return tree
 
 

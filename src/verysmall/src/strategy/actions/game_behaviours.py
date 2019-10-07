@@ -2,7 +2,7 @@ from math import sin
 from typing import Callable, List
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections
+from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, TaskStatus
@@ -259,14 +259,4 @@ class IsRobotInsideEnemyGoalLine(TreeNode):
                     if robot_position[0] >= enemy_goal_line_x and ball_position[0] >= enemy_goal_line_x:
                         return TaskStatus.SUCCESS, NO_ACTION
 
-        return TaskStatus.FAILURE, NO_ACTION
-
-
-class IsBallInsideDefenseArea(TreeNode):
-    def __init__(self, name: str = "Is Ball Inside Defense Area"):
-        super().__init__(name)
-
-    def run(self, blackboard: BlackBoard):
-        if IsBallInsideAreas(areas=[ArenaSections.LEFT_GOAL_AREA, ArenaSections.RIGHT_GOAL_AREA]):
-            return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
