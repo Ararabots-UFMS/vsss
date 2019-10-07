@@ -52,7 +52,7 @@
     }
   },
 
-  "et bilu" : {
+  "et_bilu" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,
@@ -73,7 +73,7 @@
 
   },
 
-  "luis espalha lixo" : {
+  "luis_espalha_lixo" : {
     "0" : {
       "KP" : 125.2,
       "KD" : 5.0,
