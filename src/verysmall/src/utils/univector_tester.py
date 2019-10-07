@@ -146,7 +146,7 @@ if __name__ == "__main__":
     if should_draw:
         range = 10000
         scale = 100
-        cv2.namedWindow("Path", 1)  
+        cv2.namedWindow("Path", 1)
         cv2.imshow("Path", imgField)
         cv2.createTrackbar("RADIUS", "Path", int(RADIUS*scale), range, partial(callback,"RADIUS", imgField, univetField, scale))
         cv2.createTrackbar("KR", "Path", int(KR*scale), range, partial(callback,"KR", imgField, univetField, scale))

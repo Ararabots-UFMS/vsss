@@ -68,15 +68,14 @@ class Robot:
             self._sender = Sender(self._socket_id, self.owner_name)
 
         # ROBOTO VISION
-        self.imgField = virtualField(4*150, 4*130)  # cv2.imread('src/robot_module/movement/univector/img/vss-field.jpg')
+        self.imgField = virtualField(4 * 150,
+                                     4 * 130)  # cv2.imread('src/robot_module/movement/univector/img/vss-field.jpg')
 
         self.behaviour_trees = [
             Attacker(),
-            Attacker(),
+            Defender(),
             GoalKeeper(),
-            Attacker(),
-            CalibrationTree(),
-            Defender()
+            CalibrationTree()
         ]
 
         self.behaviour_tree = self.behaviour_trees[robot_role]
@@ -112,6 +111,9 @@ class Robot:
         task_status, action = self.behaviour_tree.run(self.blackboard)
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
+
+        self._controller.update_orientation(self.orientation)
+
         left, right = self._controller.get_wheels_speeds(*action)
         msg = self._hardware.normalize_speeds(STDMsg(left, right))
         if self._sender is not None:
@@ -138,7 +140,7 @@ class Robot:
         ma_ball = position_from_origin(ma_ball, self.imgField.field_origin)
         rospy.logfatal(ma_ball)
         rospy.logfatal(self.blackboard.ball.position)
-        #rospy.logwarn(ma_ball)
+        # rospy.logwarn(ma_ball)
         cv2.circle(self.imgField.field, ma_ball, self.imgField.ball_radius,
                    self.imgField.colors["red"], -1)
         cv2.imshow('Robot\'o Vision', self.imgField.field)
