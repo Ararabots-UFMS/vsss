@@ -5,6 +5,7 @@ from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import univector_pos_section, ArenaSections, HALF_ARENA_HEIGHT
 from utils.math_utils import range_convert
+import rospy
 
 
 class Decorator:
@@ -137,19 +138,26 @@ class SmoothBorderSpeed(Decorator):
                     action = (action[0], action[1], action[2], action[3])
             return status, action
 
+
 class CurveSmoothing(Decorator):
-    def __init__(self, name: str = "Curve Smoothing"):
+    def __init__(self, name: str = "Curve Smoothing", n_prev_angles: int = 5):
         super().__init__(name)
+        self.n_prev_angles = n_prev_angles
+        self.prev_angles = []
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if self.child is None:
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
         else:
             status, action = self.child.run(blackboard)
-            ball_pos = blackboard.ball.position
-            robot_pos = blackboard.robot.position
-            ball_sec = univector_pos_section(ball_pos)
-            robot_sec = univector_pos_section(robot_pos)
-
+            angle = action[1]
+            if len(self.prev_angles) < self.n_prev_angles:
+                self.prev_angles.append(angle)
+            else:
+                rospy.logfatal(self.prev_angles)
+                if any(abs(abs(x) - abs(angle)) > .5 for x in self.prev_angles):
+                    action = (action[0], action[1], 50, action[3])
+                self.prev_angles.append(angle)
+                self.prev_angles.pop(0)
 
             return status, action

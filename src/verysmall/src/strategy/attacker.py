@@ -5,7 +5,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
 from strategy.arena_utils import ArenaSections
-from strategy.actions.decorators import SmoothBorderSpeed
+from strategy.actions.decorators import SmoothBorderSpeed, CurveSmoothing
 
 class Attacker(BaseTree):
 
@@ -30,9 +30,9 @@ class Attacker(BaseTree):
                                             max_speed=250,
                                             acceptance_radius=7,
                                             speed_prediction=False)
-        smooth_border_speed = SmoothBorderSpeed()
-        smooth_border_speed.add_child(go_to_ball)
-        tree.add_child(smooth_border_speed)
+        curve_smoothing = CurveSmoothing(n_prev_angles=50)
+        curve_smoothing.add_child(go_to_ball)
+        tree.add_child(curve_smoothing)
         tree.add_child(SpinTask('Spin'))  # Spin
 
         return tree
