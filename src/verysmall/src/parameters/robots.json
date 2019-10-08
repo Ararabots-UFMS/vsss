@@ -1,7 +1,7 @@
 {
     "robot_1": {
-        "active": 1,
-        "bluetooth_mac_address": "et_bilu",
+        "active": 0,
+        "bluetooth_mac_address": "nenhum",
         "body_id": "et_bilu",
         "role": "Attacker",
         "tag_number": 0

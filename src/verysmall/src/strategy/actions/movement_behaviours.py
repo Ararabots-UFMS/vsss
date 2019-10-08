@@ -125,6 +125,10 @@ class GoToBallUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        status, action = self.go_to_objective(blackboard, blackboard.ball.position)
+        rospy.logfatal(action[1])
+        rospy.logfatal(blackboard.robot.orientation)
+        rospy.logfatal("----------------------------------")
         return self.go_to_objective(blackboard, blackboard.ball.position)
 
 
