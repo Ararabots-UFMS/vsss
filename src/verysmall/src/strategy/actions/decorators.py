@@ -154,8 +154,7 @@ class CurveSmoothing(Decorator):
             if len(self.prev_angles) < self.n_prev_angles:
                 self.prev_angles.append(angle)
             else:
-                rospy.logfatal(self.prev_angles)
-                if any(abs(abs(x) - abs(angle)) > .5 for x in self.prev_angles):
+                if any(abs(abs(x) - abs(angle)) > .8 for x in self.prev_angles):
                     action = (action[0], action[1], 50, action[3])
                 self.prev_angles.append(angle)
                 self.prev_angles.pop(0)

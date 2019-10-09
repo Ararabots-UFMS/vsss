@@ -30,7 +30,7 @@ class Attacker(BaseTree):
                                             max_speed=250,
                                             acceptance_radius=7,
                                             speed_prediction=False)
-        curve_smoothing = CurveSmoothing(n_prev_angles=50)
+        curve_smoothing = CurveSmoothing(n_prev_angles=20)
         curve_smoothing.add_child(go_to_ball)
         tree.add_child(curve_smoothing)
         tree.add_child(SpinTask('Spin'))  # Spin
