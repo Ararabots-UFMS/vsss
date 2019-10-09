@@ -217,7 +217,11 @@ class MainWindowController:
 
     def get_mac_address(self, robot_id: int) -> Tuple[bool, bytes]:
         robot_name = self.robot_params[self.faster_hash[robot_id]]['bluetooth_mac_address']
-        mac_str = self.robot_bluetooth[robot_name]
+
+        try:
+            mac_str = self.robot_bluetooth[robot_name]
+        except KeyError:
+            mac_str = "-1"
 
         if mac_str == "-1":
             return False, bytes([])

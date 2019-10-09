@@ -100,6 +100,15 @@ class DoNTimes(Decorator):
             return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
 
 
+class KeepRunning(Decorator):
+    def __init__(self, name: str = "KeepRunningDecorator"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard):
+        _, action = self.child.run(blackboard)
+        return TaskStatus.RUNNING, action
+
+
 class StatusChanged(Decorator):
     def __init__(self, name: str = "StatusChanged", function=None):
         super().__init__(name)

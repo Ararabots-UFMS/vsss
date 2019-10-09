@@ -80,6 +80,9 @@ class RobotHardware:
                                           self._allowed_speed + self._speed_step)
                 self._last_step_time = t
 
+    def get_next_speed(self):
+        return (self._allowed_speed + self._speed_step) % 256
+
     def limit_output(self, left_speed: float, right_speed: float) -> Tuple[int, int]:
         if abs(left_speed) > self._allowed_speed or \
                 abs(right_speed) > self._allowed_speed:

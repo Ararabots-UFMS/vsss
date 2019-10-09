@@ -260,7 +260,7 @@ class MarkBallOnYAxis(TreeNode):
             ball_y = blackboard.ball.position[1]
         else:
             scalar = 1 - norm_distance
-            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
+            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.home_goal.position[0])
             ball_y = blackboard.ball.get_predicted_position_over_seconds(t)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
@@ -301,9 +301,10 @@ class AlignWithAxis(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
+            status = TaskStatus.SUCCESS
         else:
-            return TaskStatus.RUNNING, (OpCodes.SMOOTH + OpCodes.ORIENTATION_AVERAGE, self.angle_to_correct, self.max_speed, .0)
+            status = TaskStatus.RUNNING
+        return status, (OpCodes.SMOOTH + OpCodes.ORIENTATION_AVERAGE, self.angle_to_correct, self.max_speed, .0)
 
 
 class GetOutOfGoal(TreeNode):
