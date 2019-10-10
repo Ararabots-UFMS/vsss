@@ -86,6 +86,22 @@ def is_behind_ball(ball_position: np.ndarray,
         return robot.position[0] >= ball_position[0]
 
 
+def is_parallel_border(orientation, team_side, max_angle: DEGREE = 15):
+    robot_vector = np.array([math.cos(orientation), math.sin(orientation)])
+    max_angle = max_angle * math_utils.DEG2RAD
+    if team_side == LEFT:
+        border_vector = np.array([1.0, 0.0])
+    else:
+        border_vector = np.array([-1.0, 0.0])
+
+    angle1 = math_utils.angle_between(robot_vector, border_vector, abs=False)
+    angle2 = math_utils.angle_between(-robot_vector, border_vector, abs=False)
+
+    if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
+        return False
+    return True
+
+
 def spin_direction(ball_position, robot_position, team_side, invert=False):
     """
     Returns the direction of the spin

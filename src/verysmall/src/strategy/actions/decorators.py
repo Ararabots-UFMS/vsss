@@ -1,11 +1,12 @@
 import time
+import numpy as np
 from abc import abstractmethod
 from typing import Tuple
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import univector_pos_section, ArenaSections, HALF_ARENA_HEIGHT
-from utils.math_utils import range_convert
-import rospy
+from strategy.arena_utils import univector_pos_section, ArenaSections
+from strategy.strategy_utils import is_parallel_border
+
 
 
 class Decorator:
@@ -132,31 +133,17 @@ class SmoothBorderSpeed(Decorator):
             robot_pos = blackboard.robot.position
             ball_sec = univector_pos_section(ball_pos)
             robot_sec = univector_pos_section(robot_pos)
+            min_speed = 50
+            speed = action[2]
+
+            distance = abs(robot_pos[1] - ball_pos[1])
+            if distance < 60:
+                speed = min_speed
 
             if ball_sec == ArenaSections.UP_BORDER or ball_sec == ArenaSections.DOWN_BORDER:
-                if robot_sec != ball_sec:
-                    action = (action[0], action[1], action[2], action[3])
+                if robot_sec != ball_sec or not is_parallel_border(blackboard.robot.orientation,
+                                                                   blackboard.home_goal.side):
+                    action = (action[0], action[1], speed, action[3])
             return status, action
 
 
-class CurveSmoothing(Decorator):
-    def __init__(self, name: str = "Curve Smoothing", n_prev_angles: int = 5):
-        super().__init__(name)
-        self.n_prev_angles = n_prev_angles
-        self.prev_angles = []
-
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if self.child is None:
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
-        else:
-            status, action = self.child.run(blackboard)
-            angle = action[1]
-            if len(self.prev_angles) < self.n_prev_angles:
-                self.prev_angles.append(angle)
-            else:
-                if any(abs(abs(x) - abs(angle)) > .8 for x in self.prev_angles):
-                    action = (action[0], action[1], 50, action[3])
-                self.prev_angles.append(angle)
-                self.prev_angles.pop(0)
-
-            return status, action

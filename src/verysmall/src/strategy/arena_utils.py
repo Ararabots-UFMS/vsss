@@ -20,6 +20,8 @@ RIGHT_GOAL_LINE = 134
 LEFT_AREA_CENTER_X = 8
 RIGHT_AREA_CENTER_X = 142
 
+BORDER_THRESHOLD = 15
+
 
 class ArenaSections(Enum):
     LEFT_GOAL_AREA = 0
@@ -210,9 +212,9 @@ def univector_pos_section(pos):
             return ArenaSections.LEFT_UP_CORNER if side == LEFT else ArenaSections.RIGHT_UP_CORNER
 
     else:
-        if pos[1] > MAX_H_SIZE - 10:
+        if pos[1] > MAX_H_SIZE - BORDER_THRESHOLD:
             return ArenaSections.UP_BORDER
-        elif pos[1] < 10:
+        elif pos[1] < BORDER_THRESHOLD:
             return ArenaSections.DOWN_BORDER
         else:
             return ArenaSections.CENTER
