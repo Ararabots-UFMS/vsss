@@ -1,15 +1,15 @@
 from typing import Iterable
 
 from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged, KeepRunning
-from strategy.actions.game_behaviours import IsInAttackSide, IsBehindBall
-from strategy.actions.game_behaviours import IsInsideGoal, IsBallInsideAreas, BlackBoard
+from strategy.actions.game_behaviours import IsInAttackSide, IsBehindBall, IsInsideGoal, IsBallInsideAreas, \
+    IsEnemyInsideAreas
 from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal, GoToBallUsingMove2Point, \
-                                                 MarkBallOnYAxis, RemoveBallFromGoalArea, GoToBallUsingUnivector
+    MarkBallOnYAxis, RemoveBallFromGoalArea
 from strategy.actions.state_behaviours import InState
+from strategy.arena_utils import ArenaSections
 from strategy.base_trees import BaseTree
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
-from strategy.arena_utils import ArenaSections
 
 
 class GoalKeeper(BaseTree):
@@ -87,16 +87,20 @@ class GoalKeeper(BaseTree):
 
         inverter = InvertOutput()
         tree.add_child(inverter)
+        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.position))
 
-        inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(
-            b.ball.get_time_on_axis(axis=0, value=b.robot.position[0]))))
-
+        is_ball_or_enemy_in_critical_position = Selector("IsBallOrEnemyInCritalPosition")
         is_ball_inside_defense_area = IsBallInsideAreas(name="IsBallInsideDefenseArea",
                                                         areas=[ArenaSections.LEFT_GOAL_AREA,
                                                                ArenaSections.RIGHT_GOAL_AREA])
-        tree.add_child(is_ball_inside_defense_area)
-        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=5))
-        tree.add_child(IsBehindBall("IsBehindBall", 5))
+
+        is_ball_or_enemy_in_critical_position.add_child(is_ball_inside_defense_area)
+        is_ball_or_enemy_in_critical_position.add_child(IsEnemyInsideAreas(areas=[ArenaSections.LEFT_GOAL_AREA,
+                                                                                  ArenaSections.RIGHT_GOAL_AREA]))
+
+        tree.add_child(is_ball_or_enemy_in_critical_position)
+        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=7))
+        tree.add_child(IsBehindBall("IsBehindBall", 7))
         tree.add_child(RemoveBallFromGoalArea())
         return tree
 

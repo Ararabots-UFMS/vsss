@@ -7,7 +7,7 @@ from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, TaskStatus
 from strategy.strategy_utils import is_behind_ball, distance_point
-from strategy.strategy_utils import near_ball, ball_on_border, ball_on_critical_position, \
+from strategy.strategy_utils import near_ball, ball_on_border, object_on_critical_position, \
     ball_on_attack_side, ball_in_defender_range
 from utils.math_utils import angle_between
 
@@ -147,13 +147,26 @@ class IsBallInCriticalPosition(TreeNode):
         super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if ball_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
+        if object_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsEnemyInsideAreas(TreeNode):
+    def __init__(self, name: str = "IsEnemyInRangeOfDefense", areas: List = []):
+        super().__init__(name)
+        self._areas = areas
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy in blackboard.enemy_team:
+            if section(enemy.position) in self._areas:
+                return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
+
+
 class IsBallInsideAreas(TreeNode):
-    def __init__(self, name: str = "IsBallInsideAreas", areas: List = [], acceptance_radius=7):
+    def __init__(self, name: str = "IsBallInsideAreas", areas: List = []):
         super().__init__(name)
         self._areas = areas
 

@@ -178,7 +178,7 @@ def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
     return behind_ball(robot_position, ball_position, team_side)
 
 
-def ball_on_critical_position(ball_position, team_side) -> bool:
+def object_on_critical_position(ball_position, team_side) -> bool:
     critical_y = ball_position[1] < 30 or ball_position[1] > 100
     if team_side == LEFT:
         return ball_position[0] < 30 and critical_y
@@ -186,7 +186,7 @@ def ball_on_critical_position(ball_position, team_side) -> bool:
 
 
 def ball_on_border(ball_position, team_side) -> bool:
-    if not ball_on_attack_side(ball_position, team_side) and not ball_on_critical_position(ball_position, team_side):
+    if not ball_on_attack_side(ball_position, team_side) and not object_on_critical_position(ball_position, team_side):
         sec = section(ball_position)
 
     return sec.value in BORDER_NORMALS.keys()

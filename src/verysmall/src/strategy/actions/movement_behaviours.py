@@ -174,6 +174,8 @@ class RemoveBallFromGoalArea(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        # rospy.logfatal("VO EMPURRA CARALHO")
+        # return TaskStatus.RUNNING, NO_ACTION
         goal_vector = blackboard.ball.position - blackboard.robot.position
 
         angle = angle_between(
