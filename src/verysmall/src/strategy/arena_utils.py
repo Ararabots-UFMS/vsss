@@ -1,5 +1,6 @@
 from enum import Enum
 from numpy import array
+import rospy
 
 X = 0
 Y = 1
@@ -79,8 +80,8 @@ Offsets = [
     array([-1.0, -1.0]),  # RIGHT_UP_CORNERGoToPosition
     array([-1.0, 1.0]),  # RIGHT_DOWN_CORNER
 
-    array([0.0, -1.0]),  # UP_BORDER
-    array([0.0, 1.0]),  # DOWN_BORDER
+    array([0.0, -2.0]),  # UP_BORDER
+    array([0.0, 2.0]),  # DOWN_BORDER
     array([0.0, 0.0]),  # CENTER
 
     array([1.0, 0.0]),  # LEFT_DOWN_BOTTOM_LINE
@@ -182,9 +183,11 @@ def section(pos):
     elif inside_rectangle((135, 100), (150, 130 - HALF_SQUARE_SIDE), pos):
         return ArenaSections.RIGHT_UP_BOTTOM_LINE
     # Border
-    elif inside_range(130 - 20, 130, pos[Y]):
+    elif inside_rectangle((15, 130), (120, 115), pos):
+        rospy.logfatal("Up Border")
         return ArenaSections.UP_BORDER
-    elif inside_range(0, 20, pos[Y]):
+    elif inside_rectangle((15, 0), (120, 15), pos):
+        rospy.logfatal("Down Border")
         return ArenaSections.DOWN_BORDER
     else:
         return ArenaSections.CENTER

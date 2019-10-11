@@ -312,13 +312,13 @@ class UnivectorField:
         return np.asarray([np.cos(angle), np.sin(angle)])
 
     def get_angle_with_ball(self, _robotPos: np.ndarray = None,
-                            _vRobot: np.ndarray = None,
-                            _ball: np.ndarray = None,
-                            _attack_goal: bool = RIGHT) -> float:
+                                _vRobot: np.ndarray = None,
+                                _ball: np.ndarray = None,
+                                _attack_goal: bool = RIGHT) -> float:
 
         section_num = univector_pos_section(_ball)
 
-        if section_num != ArenaSections.UP_BORDER and section_num != ArenaSections.DOWN_BORDER:
+        if section_num == ArenaSections.CENTER:
             correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
         else:
             if _attack_goal == RIGHT:
@@ -334,7 +334,8 @@ class UnivectorField:
 
 
         offset = self.get_correct_offset(_ball, section_num)
-
+        if _ball[1] < 5 or _ball[1] > 125:
+            _ball += offset
         return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
 
 

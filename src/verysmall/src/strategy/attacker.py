@@ -1,5 +1,5 @@
 from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallInsideAreas, IsNearBall
-from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall
+from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall, GoToBallUsingMove2Point
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
@@ -27,12 +27,13 @@ class Attacker(BaseTree):
         tree = Sequence("Go ball when ball in central area")
         # tree.add_child(IsBallInsideCentralArea("Check ball"))
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=250,
-                                            acceptance_radius=7,
+                                            max_speed=200,
+                                            acceptance_radius=5,
                                             speed_prediction=False)
         border_smoothing = SmoothBorderSpeed()
         border_smoothing.add_child(go_to_ball)
         tree.add_child(border_smoothing)
+        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=5))
         tree.add_child(SpinTask('Spin'))  # Spin
 
         return tree

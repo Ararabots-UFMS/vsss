@@ -4,8 +4,9 @@ from abc import abstractmethod
 from typing import Tuple
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import univector_pos_section, ArenaSections
+from strategy.arena_utils import univector_pos_section, ArenaSections, section
 from strategy.strategy_utils import is_parallel_border
+import rospy
 
 
 
@@ -131,19 +132,17 @@ class SmoothBorderSpeed(Decorator):
             status, action = self.child.run(blackboard)
             ball_pos = blackboard.ball.position
             robot_pos = blackboard.robot.position
-            ball_sec = univector_pos_section(ball_pos)
-            robot_sec = univector_pos_section(robot_pos)
+            ball_sec = section(ball_pos)
+            robot_sec = section(robot_pos)
             min_speed = 50
             speed = action[2]
 
             distance = abs(robot_pos[1] - ball_pos[1])
-            if distance < 60:
-                speed = min_speed
 
             if ball_sec == ArenaSections.UP_BORDER or ball_sec == ArenaSections.DOWN_BORDER:
-                if robot_sec != ball_sec or not is_parallel_border(blackboard.robot.orientation,
-                                                                   blackboard.home_goal.side):
-                    action = (action[0], action[1], speed, action[3])
+                if robot_sec != ball_sec and not is_parallel_border(blackboard.robot.orientation, blackboard.home_goal.side):
+                    if distance < 20:
+                        speed = min_speed
+
+            action = (action[0], action[1], speed, action[3])
             return status, action
-
-
