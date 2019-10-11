@@ -6,17 +6,20 @@ import numpy as np
 from rospy import logfatal
 import utils.math_utils as mth
 from robot_module.PID import PIDController
+from robot_module.hardware import RobotHardware
 from robot_module.movement.definitions import OpCodes
+from strategy.behaviour import BlackBoard
 from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
 
 Constants = Tuple[int, float, float, float]
 
 
 class Control:
-    def __init__(self, myrobot,
+    def __init__(self, hardware: RobotHardware, blackboard: BlackBoard,
                  constants: List[Constants],
                  max_fine_movement_speed) -> None:
-        self._myrobot = myrobot
+        self._hardware = hardware
+        self._blackboard = blackboard
         self._max_fine_movement_speed = max_fine_movement_speed
         self._alpha = 10  # centimeters
 
@@ -24,7 +27,7 @@ class Control:
         self._hysteresis_angle_window = 15 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
-        self._beta = 0.75
+        self._beta = 0.5
         self._t = 1
         self._current_orientation = 0
         self._ma_orientation_vec = np.array([0, 0])
@@ -44,7 +47,7 @@ class Control:
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
         else:
-            self._current_orientation = self._myrobot.orientation
+            self._current_orientation = self._blackboard.robot.orientation
 
         if opcode & OpCodes.SMOOTH:
             return self._follow_vector(speed, angle, distance)
@@ -67,9 +70,9 @@ class Control:
 
         if optimal_speed:
             speed = self.get_optimal_speed(speed, diff_angle, distance)
-            speed = min(speed, self._myrobot.get_next_speed())
+            speed = min(speed, self._hardware.get_next_speed())
 
-        speed = min(speed, self._myrobot.get_next_speed())
+        speed = min(speed, self._hardware.get_next_speed())
 
         t = time()
         if t - self._pid_last_use > self._pid_reset_time:
