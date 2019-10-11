@@ -15,8 +15,8 @@ class RosRobotSubscriberAndPublisher:
         """
         :param _robot: robot object
         """
-        rospy.Subscriber('things_position', things_position, self.read_topic, queue_size=10)
-        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic, queue_size=10)
+        rospy.Subscriber('things_position', things_position, self.read_topic, queue_size=5)
+        rospy.Subscriber(_game_topic_name, game_topic, self.read_game_topic, queue_size=5)
 
         if _should_debug:
             rospy.logfatal(_game_topic_name)
