@@ -41,8 +41,7 @@ class Robot:
 
         constants = self.get_pid_constants_set()
         rospy.logwarn(constants)
-        self._max_fine_movment_speed = 80
-        self._controller = Control(self, constants, self._max_fine_movment_speed)
+        self._max_fine_movement_speed = 80
 
         self._hardware = RobotHardware()
 
@@ -52,8 +51,10 @@ class Robot:
         self.blackboard.enemy_goal.side = not team_side
         self.blackboard.robot.role = robot_role
 
-        self.velocity_buffer = []
-        self.position_buffer = []
+        self._controller = Control(self._hardware, self.blackboard, constants, self._max_fine_movement_speed)
+
+        # self.velocity_buffer = []
+        # self.position_buffer = []
 
         # Receive from game topic
         self.team_color = team_color
@@ -99,8 +100,17 @@ class Robot:
     def get_pid_constants_set(self) -> List[Tuple]:
         pid_set = []
         bodies = JsonHandler.read("parameters/bodies.json", escape=True)
+        try:
+            pid_dict = bodies[self.robot_body]
+        except KeyError:
+            pid_dict = {
+                "0": {
+                    "KP": 0.0,
+                    "KD": 0.0,
+                    "KI": 0.0
+                }
+            }
 
-        pid_dict = bodies[self.robot_body]
         for speed in pid_dict:
             ctes = pid_dict[speed]
             pid_set.append((int(speed), ctes["KP"], ctes["KI"], ctes["KD"]))
@@ -125,9 +135,6 @@ class Robot:
     def get_priority(self) -> int:
         distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
         return int(distance) & 0xFF
-
-    def get_next_speed(self):
-        return (self._hardware._allowed_speed + self._hardware._speed_step) % 256
 
     def roboto_vision(self):
         self.imgField.plot_ball(self.blackboard.ball.position)
