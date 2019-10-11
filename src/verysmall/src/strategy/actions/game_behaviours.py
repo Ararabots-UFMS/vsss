@@ -152,6 +152,17 @@ class IsBallInCriticalPosition(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsEnemyInCriticalPosition(TreeNode):
+    def __init__(self, name: str = "IsBallInRangeOfDefense"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if object_on_critical_position(enemy_position, blackboard.home_goal.side):
+                return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
+
+
 class IsEnemyInsideAreas(TreeNode):
     def __init__(self, name: str = "IsEnemyInRangeOfDefense", areas: List = []):
         super().__init__(name)
@@ -193,6 +204,19 @@ class AmIInDefenseField(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsEnemyNearBall(TreeNode):
+    def __init__(self, name: str = "IsEnemyNearBall", acceptance_radius=6.):
+        super().__init__(name)
+        self._acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if near_ball(blackboard.ball.position, enemy_position, self._acceptance_radius):
+                return TaskStatus.SUCCESS, NO_ACTION
 
         return TaskStatus.FAILURE, NO_ACTION
 

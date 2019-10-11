@@ -287,7 +287,7 @@ class MarkBallOnYAxis(TreeNode):
         final_direction = alpha * direction_on_target + (1 - alpha) * direction
         theta = math.atan2(final_direction[1], final_direction[0])
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self._max_speed, distance)
 
 
 class AlignWithAxis(TreeNode):
