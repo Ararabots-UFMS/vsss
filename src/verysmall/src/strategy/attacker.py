@@ -5,7 +5,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
 from strategy.arena_utils import ArenaSections
-from strategy.actions.decorators import SmoothBorderSpeed
+from strategy.actions.decorators import SmoothBorderSpeed, ToggleFrontOnBorder
 
 class Attacker(BaseTree):
 
@@ -31,9 +31,16 @@ class Attacker(BaseTree):
                                             acceptance_radius=5,
                                             speed_prediction=False)
         border_smoothing = SmoothBorderSpeed()
+        toggle_front = ToggleFrontOnBorder()
+
         border_smoothing.add_child(go_to_ball)
-        tree.add_child(border_smoothing)
-        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=5))
+        toggle_front.add_child(go_to_ball)
+
+        border_treatement = Selector("Border Treatement")
+        border_treatement.add_child(toggle_front)
+        border_treatement.add_child(border_smoothing)
+
+        tree.add_child(border_treatement)
         tree.add_child(SpinTask('Spin'))  # Spin
 
         return tree

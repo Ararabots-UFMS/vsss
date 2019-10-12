@@ -184,10 +184,8 @@ def section(pos):
         return ArenaSections.RIGHT_UP_BOTTOM_LINE
     # Border
     elif inside_rectangle((15, 130), (120, 115), pos):
-        rospy.logfatal("Up Border")
         return ArenaSections.UP_BORDER
     elif inside_rectangle((15, 0), (120, 15), pos):
-        rospy.logfatal("Down Border")
         return ArenaSections.DOWN_BORDER
     else:
         return ArenaSections.CENTER

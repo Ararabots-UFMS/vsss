@@ -1,4 +1,4 @@
-import math
+from math import cos, sin, pi
 from enum import Enum
 
 import numpy as np
@@ -70,7 +70,7 @@ def is_behind_ball(ball_position: np.ndarray,
         return False
 
     theta = robot.orientation
-    robot_vector = np.array([math.cos(theta), math.sin(theta)])
+    robot_vector = np.array([cos(theta), sin(theta)])
     rb_vector = ball_position - robot.position
     angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
     angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
@@ -86,8 +86,30 @@ def is_behind_ball(ball_position: np.ndarray,
         return robot.position[0] >= ball_position[0]
 
 
+def is_robot_parallel(orientation: float, vec: np.array, max_angle: DEGREE):
+    robot_vector = np.array([cos(orientation), sin(orientation)])
+    angle = math_utils.angle_between(robot_vector, vec, abs=False)
+    max_angle = max_angle * math_utils.DEG2RAD
+    if abs(angle) > max_angle:
+        return False
+    return True
+
+
+'''def is_parallel_border(orientation, team_side, max_angle):
+    max_angle = max_angle * math_utils.DEG2RAD
+
+    if team_side == LEFT:
+        border_vector = np.array([1.0, 0.0])
+    else:
+        border_vector = np.array([-1.0, 0.0])
+
+    if is_robot_parallel(orientation, border_vector, max_angle) \
+            and is_robot_parallel(orientation, -border_vector, max_angle):
+        return False
+    return True'''
+
 def is_parallel_border(orientation, team_side, max_angle: DEGREE = 15):
-    robot_vector = np.array([math.cos(orientation), math.sin(orientation)])
+    robot_vector = np.array([cos(orientation), sin(orientation)])
     max_angle = max_angle * math_utils.DEG2RAD
     if team_side == LEFT:
         border_vector = np.array([1.0, 0.0])
@@ -100,6 +122,7 @@ def is_parallel_border(orientation, team_side, max_angle: DEGREE = 15):
     if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
         return False
     return True
+
 
 
 def spin_direction(ball_position, robot_position, team_side, invert=False):
@@ -157,11 +180,11 @@ def border_stuck(position_buffer, orientation):
     if sec not in BORDER_NORMALS.keys():
         return False
 
-    orientation = np.array([math.cos(orientation), math.sin(orientation)])
+    orientation = np.array([cos(orientation), sin(orientation)])
     front_angle = math_utils.angle_between(orientation, BORDER_NORMALS[sec])
     back_angle = math_utils.angle_between(-orientation, BORDER_NORMALS[sec])
 
-    angle = min(front_angle, back_angle) * 180 / math.pi
+    angle = min(front_angle, back_angle) * 180 / pi
 
     # if angle < 15:
 

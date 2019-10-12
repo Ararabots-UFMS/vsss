@@ -9,6 +9,7 @@ class OpCodes(Enum):
     ORIENTATION_AVERAGE = 8
     SPIN_CW = 16
     SPIN_CCW = 32
+    TOGGLE_FRONT = 64
 
     def __eq__(self, other):
         return (other.value if isinstance(other, OpCodes) else other) == self.value

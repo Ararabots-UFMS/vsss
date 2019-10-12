@@ -49,10 +49,12 @@ class Control:
         else:
             self._current_orientation = self._blackboard.robot.orientation
 
-        if opcode & OpCodes.SMOOTH:
-            return self._follow_vector(speed, angle, distance)
-        elif opcode & OpCodes.NORMAL:
-            return self._follow_vector(speed, angle, distance, optimal_speed=False)
+        if opcode & (OpCodes.SMOOTH + OpCodes.NORMAL):
+            if opcode & OpCodes.TOGGLE_FRONT:
+                self._head = not self._head
+            else:
+                self.set_head(angle)
+            return self._follow_vector(speed, angle, distance, optimal_speed=opcode & OpCodes.SMOOTH)
         elif opcode & OpCodes.SPIN_CCW:
             return -255, 255
         elif opcode & OpCodes.SPIN_CW:
@@ -64,7 +66,6 @@ class Control:
                        angle: float,
                        distance: float,
                        optimal_speed: bool = True) -> Tuple[float, float]:
-        self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
 
