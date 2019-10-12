@@ -117,7 +117,6 @@ class IsInAttackSide(TreeNode):
             status = TaskStatus.SUCCESS
         else:
             status = TaskStatus.FAILURE
-        rospy.logfatal("ball in attack side status: " + repr(status))
         return status, NO_ACTION
 
 
@@ -149,6 +148,17 @@ class IsBallInCriticalPosition(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if object_on_critical_position(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsEnemyInCriticalPosition(TreeNode):
+    def __init__(self, name: str = "IsBallInRangeOfDefense"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if object_on_critical_position(enemy_position, blackboard.home_goal.side):
+                return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
 
@@ -193,6 +203,32 @@ class AmIInDefenseField(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not on_attack_side(blackboard.robot.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsEnemyNearRobot(TreeNode):
+    def __init__(self, name: str = "IsEnemyNearRobot", acceptance_radius=6.):
+        super().__init__(name)
+        self._acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if distance_point(blackboard.robot.position, enemy_position) <= self._acceptance_radius:
+                return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsEnemyNearBall(TreeNode):
+    def __init__(self, name: str = "IsEnemyNearBall", acceptance_radius=6.):
+        super().__init__(name)
+        self._acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if near_ball(blackboard.ball.position, enemy_position, self._acceptance_radius):
+                return TaskStatus.SUCCESS, NO_ACTION
 
         return TaskStatus.FAILURE, NO_ACTION
 
