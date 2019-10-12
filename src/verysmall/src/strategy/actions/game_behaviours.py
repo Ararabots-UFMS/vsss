@@ -208,6 +208,19 @@ class AmIInDefenseField(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsEnemyNearRobot(TreeNode):
+    def __init__(self, name: str = "IsEnemyNearRobot", acceptance_radius=6.):
+        super().__init__(name)
+        self._acceptance_radius = acceptance_radius
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        for enemy_position in blackboard.enemy_team.positions:
+            if distance_point(blackboard.robot.position, enemy_position) <= self._acceptance_radius:
+                return TaskStatus.SUCCESS, NO_ACTION
+
+        return TaskStatus.FAILURE, NO_ACTION
+
+
 class IsEnemyNearBall(TreeNode):
     def __init__(self, name: str = "IsEnemyNearBall", acceptance_radius=6.):
         super().__init__(name)

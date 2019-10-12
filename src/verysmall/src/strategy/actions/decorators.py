@@ -19,6 +19,20 @@ class Decorator:
         pass
 
 
+class InvertGoalSides(Decorator):
+    def __init__(self, name="InvertGoalSides"):
+        super().__init__(name)
+        self.new_home_side = -1
+
+    def run(self, blackboard: BlackBoard):
+        if blackboard.home_goal.side != self.new_home_side:
+            self.new_home_side = not blackboard.home_goal.side
+            blackboard.home_goal.side = self.new_home_side
+            blackboard.enemy_goal.side = not self.new_home_side
+
+        return self.child.run(blackboard)
+
+
 class IgnoreFailure(Decorator):
     def __init__(self, name: str = 'IgnoreFailure'):
         super().__init__(name)

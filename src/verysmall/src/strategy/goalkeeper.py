@@ -2,9 +2,9 @@ from typing import Iterable
 
 from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged, KeepRunning
 from strategy.actions.game_behaviours import IsInAttackSide, IsBehindBall, IsInsideGoal, IsBallInsideAreas, \
-    IsEnemyInsideAreas, IsEnemyNearBall, IsEnemyInCriticalPosition
+    IsEnemyInsideAreas, IsEnemyNearBall, IsEnemyInCriticalPosition, IsEnemyNearRobot
 from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, GetOutOfGoal, GoToBallUsingMove2Point, \
-    MarkBallOnYAxis, RemoveBallFromGoalArea, SpinTask
+    MarkBallOnYAxis, RemoveBallFromGoalArea, SpinTask, StopAction
 from strategy.actions.state_behaviours import InState
 from strategy.arena_utils import ArenaSections
 from strategy.base_trees import BaseTree
@@ -96,12 +96,13 @@ class GoalKeeper(BaseTree):
 
         enemy_near_ball_and_in_critical_position = Sequence('EnemyNearBallAndInCriticalPos')
         enemy_near_ball_and_in_critical_position.add_child(IsEnemyInCriticalPosition())
-        enemy_near_ball_and_in_critical_position.add_child(IsEnemyNearBall())
+        enemy_near_ball_and_in_critical_position.add_child(IsEnemyNearBall(acceptance_radius=7))
+        enemy_near_ball_and_in_critical_position.add_child(IsEnemyNearRobot(acceptance_radius=15))
 
         is_ball_or_enemy_in_critical_position.add_child(is_ball_inside_defense_area)
         is_ball_or_enemy_in_critical_position.add_child(enemy_near_ball_and_in_critical_position)
         tree.add_child(is_ball_or_enemy_in_critical_position)
-        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=5))
+        tree.add_child(GoToBallUsingMove2Point(acceptance_radius=7))
 
         push_or_spin = Selector("PushOrSpin")
         push_action = Sequence("PushAction")
