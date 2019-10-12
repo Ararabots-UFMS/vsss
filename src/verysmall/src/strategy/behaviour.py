@@ -78,8 +78,6 @@ class Sequence(TreeNode):
     def run(self, blackboard):
         for c in self.children:
             status, action = c.run(blackboard)
-            # if self.name  == "BallInBotttomLine" or self.name == "BallInDefenseSide":
-            #     rospy.logfatal(c.name + " " + repr(status))
             if status != TaskStatus.SUCCESS:
                 return status, action
 

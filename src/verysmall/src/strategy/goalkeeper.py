@@ -4,7 +4,8 @@ from strategy.actions.decorators import InvertOutput, DoNTimes, StatusChanged, K
 from strategy.actions.game_behaviours import IsInAttackSide, IsBehindBall, \
  IsInsideDefenseGoal, IsBallInsideAreas, IsEnemyInsideAreas, IsInDefenseBottomLine
 from strategy.actions.movement_behaviours import GoToGoalCenter, AlignWithAxis, \
-    GetOutOfGoal, GoToBallUsingMove2Point, MarkBallOnYAxis, RemoveBallFromGoalArea
+    GetOutOfGoal, GoToBallUsingMove2Point, MarkBallOnYAxis, RemoveBallFromGoalArea, \
+    StopAction
 from strategy.actions.state_behaviours import InState
 from strategy.arena_utils import ArenaSections
 from strategy.base_trees import BaseTree
@@ -58,13 +59,13 @@ class GoalKeeper(BaseTree):
 
         is_ball_in_attack_side = IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(
             b.ball.get_time_on_axis(axis=0, value=b.robot.position[0])))
-        tree.add_child(InvertOutput(is_ball_in_attack_side))
+        tree.add_child(InvertOutput(child=is_ball_in_attack_side))
         
         defence_actions = Selector("BallInDefenceActions")
         tree.add_child(defence_actions)
 
         check_ball_not_in_bottom = InvertOutput(child=IsInDefenseBottomLine("BallInBottomLine", 
-                                                lambda b : b.ball.position)) 
+                                                lambda b: b.ball.position))
         self.mark_ball_on_y = MarkBallOnYAxis([5, 40], [5, 80],
                                               max_speed=120,
                                               acceptance_radius=4)
@@ -73,8 +74,8 @@ class GoalKeeper(BaseTree):
         keep_align_action.add_child(AlignWithAxis())
 
         defence_actions.add_child(Sequence("BallNotInBottom", 
-                                [check_ball_not_in_bottom, self.mark_ball_on_y,
-                                 keep_align_action]))
+                                  [check_ball_not_in_bottom, self.mark_ball_on_y,
+                                   keep_align_action]))
         
         defence_actions.add_child(self._ball_on_bottom_tree())
         
@@ -122,15 +123,16 @@ class GoalKeeper(BaseTree):
         tree.add_child(IsInDefenseBottomLine("IsBallInBottomLine", 
                                              lambda b : b.ball.position))
 
-        self.mark_ball_on_bottom_line = MarkBallOnYAxis([10, 35], [10, 85],
-                                                        max_speed=120,
-                                                        acceptance_radius=2)
+        self.mark_ball_on_bottom_line = MarkBallOnYAxis([10, 35], [10, 95],
+                                                        max_speed=110,
+                                                        acceptance_radius=3)
         tree.add_child(self.mark_ball_on_bottom_line)
+        tree.add_child(StopAction())
         return tree
     
     def _set_bottom_line_axis(self, blackboard: BlackBoard) -> None:
         team_side = blackboard.home_goal.side
-        x = 4 if team_side == LEFT else 146
+        x = 3.5 if team_side == LEFT else 146.5
         self.mark_ball_on_bottom_line._clamp_min[0] = x
         self.mark_ball_on_bottom_line._clamp_max[0] = x
 

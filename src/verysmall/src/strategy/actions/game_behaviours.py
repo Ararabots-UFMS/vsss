@@ -117,7 +117,7 @@ class IsInAttackSide(TreeNode):
             status = TaskStatus.SUCCESS
         else:
             status = TaskStatus.FAILURE
-
+        rospy.logfatal("ball in attack side status: " + repr(status))
         return status, NO_ACTION
 
 
@@ -281,7 +281,7 @@ class IsInDefenseBottomLine(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         side = blackboard.home_goal.side
         x_obj, y_obj = self._get_pos(blackboard)
-        if (side == LEFT and x_obj > 15) or (side == RIGHT and x_obj < 135):
+        if (side == LEFT and x_obj > 20) or (side == RIGHT and x_obj < 130):
             return TaskStatus.FAILURE, NO_ACTION
         
         if y_obj < 30 or y_obj > 100:
