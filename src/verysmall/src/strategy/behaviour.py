@@ -1,8 +1,9 @@
+from typing import List
 import time
 from abc import abstractmethod, ABC
 from enum import Enum
 from typing import Tuple
-
+import rospy
 import numpy as np
 
 from robot_module.movement.definitions import OpCodes
@@ -48,9 +49,11 @@ class BlackBoard:
 
 
 class TreeNode:
-    def __init__(self, name):
+    def __init__(self, name, children = []):
         self.name = name
         self.children = []
+        for child in children:
+            self.add_child(child)
 
     def add_child(self, node) -> None:
         self.children.append(node)
@@ -69,12 +72,14 @@ class Sequence(TreeNode):
         or FAILURE is returned from the subtask.
     """
 
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, children: List[TreeNode] = []):
+        super().__init__(name, children)
 
     def run(self, blackboard):
         for c in self.children:
             status, action = c.run(blackboard)
+            # if self.name  == "BallInBotttomLine" or self.name == "BallInDefenseSide":
+            #     rospy.logfatal(c.name + " " + repr(status))
             if status != TaskStatus.SUCCESS:
                 return status, action
 
@@ -90,8 +95,8 @@ class Selector(TreeNode):
         or FAILURE is returned from the subtask.
     """
 
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, children: List[TreeNode] = []):
+        super().__init__(name, children)
 
     def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
