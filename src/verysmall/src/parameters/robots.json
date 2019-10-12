@@ -1,9 +1,9 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "et_bilu",
-        "body_id": "et_bilu",
-        "role": "Goalkeeper",
+        "bluetooth_mac_address": "noriko",
+        "body_id": "noriko",
+        "role": "PID Calibration",
         "tag_number": 0
     },
     "robot_2": {
