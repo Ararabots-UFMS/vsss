@@ -1,4 +1,5 @@
 from typing import List
+from collections import deque
 import time
 from abc import abstractmethod, ABC
 from enum import Enum
@@ -107,45 +108,41 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self, buffer_size=60):
+    def __init__(self, buffer_size=10):
         self.position = np.array([0, 0])
-        self._position_buffer_length = buffer_size / 60
-        self.position_buffer_x = [0 for _ in range(buffer_size)]
-        self.position_buffer_y = [0 for _ in range(buffer_size)]
 
-        self.speed_buffer_x = [0 for _ in range(buffer_size)]
-        self.speed_buffer_y = [0 for _ in range(buffer_size)]
+        zeros = (0 for _ in range(buffer_size))
+        self.position_buffer_x = deque(zeros, maxlen=buffer_size)
+        self.position_buffer_y = deque(zeros, maxlen=buffer_size)
 
-        self.time_buffer = [float(time.time()) for i in range(buffer_size)]
+        self.speed_buffer_x = deque(zeros, maxlen=buffer_size)
+        self.speed_buffer_y = deque(zeros, maxlen=buffer_size)
 
+        t0 = time.time()
+        self.time_buffer = deque((t0 for i in range(buffer_size)), maxlen=buffer_size)
 
-        # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
         self.speed = np.array([0, 0])
         self.orientation = .0
 
     def __setattr__(self, key, value):
         if key == "position" and (value[0] or value[1]):
-            self.position_buffer_x.pop(0)
             self.position_buffer_x.append(value[0])
-            self.position_buffer_y.pop(0)
             self.position_buffer_y.append(value[1])
-
-            self.time_buffer.pop(0)
             self.time_buffer.append(float(time.time()))
 
         elif key == "speed" and (value[0] or value[1]):
-            self.speed_buffer_x.pop(0)
             self.speed_buffer_x.append(value[0])
-            self.speed_buffer_y.pop(0)
             self.speed_buffer_y.append(value[1])
         super().__setattr__(key, value)
 
-    def get_predicted_position_over_seconds(self, t=0.5):
+    def position_prediction(self, seconds=0.5):
         fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
         fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
         px = np.poly1d(fitx)
         py = np.poly1d(fity)
-        p = px(time.time() + t), py(time.time() + t)
+
+        dt = time.time() + seconds
+        p = px(dt), py(dt)
         return np.array(p)
 
     def get_time_on_axis(self, axis, value):

@@ -53,18 +53,21 @@ class GoalKeeper(BaseTree):
     def _ball_on_defense_side_tree(self) -> TreeNode:
         tree = Sequence("BallInDefenseSide")
 
-        is_ball_in_attack_side = IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.get_predicted_position_over_seconds(
-            b.ball.get_time_on_axis(axis=0, value=b.robot.position[0])))
+        get_pos = lambda b: b.ball.position_prediction(
+            b.ball.get_time_on_axis(axis=0, value=b.robot.position[0]))
+        is_ball_in_attack_side = IsInAttackSide("VerifyBallInAttack", get_pos)
         tree.add_child(InvertOutput(child=is_ball_in_attack_side))
 
         defence_actions = Selector("BallInDefenceActions")
         tree.add_child(defence_actions)
 
-        check_ball_not_in_bottom = InvertOutput(child=IsInDefenseBottomLine("BallInBottomLine",
+        check_ball_not_in_bottom = InvertOutput(child=IsInDefenseBottomLine(
+                                                "BallInBottomLine",
                                                 lambda b: b.ball.position))
+                                                
         self.mark_ball_on_y = MarkBallOnYAxis([5, 40], [5, 80],
-                                              max_speed=120,
-                                              acceptance_radius=4)
+                                              max_speed=140,
+                                              acceptance_radius=3)
 
         keep_align_action = KeepRunning()
         keep_align_action.add_child(AlignWithAxis())
