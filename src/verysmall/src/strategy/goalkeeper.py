@@ -66,7 +66,7 @@ class GoalKeeper(BaseTree):
                                                 lambda b: b.ball.position))
                                                 
         self.mark_ball_on_y = MarkBallOnYAxis([5, 40], [5, 80],
-                                              max_speed=140,
+                                              max_speed=120,
                                               acceptance_radius=3)
 
         keep_align_action = KeepRunning()

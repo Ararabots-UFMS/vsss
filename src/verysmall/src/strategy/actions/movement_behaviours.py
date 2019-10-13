@@ -209,7 +209,7 @@ class MarkBallOnAxis(TreeNode):
 
         if self._predict_ball:
             t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
-            predicted_position = blackboard.ball.get_predicted_position_over_seconds(t)
+            predicted_position = blackboard.ball.position_prediction(t)
             if abs(predicted_position[1] - blackboard.robot.position[1]) > self._acceptance_radius:
                 target_position = predicted_position
             else:
@@ -260,7 +260,7 @@ class MarkBallOnYAxis(TreeNode):
             ball_y = blackboard.ball.position[1]
         else:
             t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.home_goal.position[0])
-            ball_y = blackboard.ball.get_predicted_position_over_seconds(t)[1]
+            ball_y = blackboard.ball.position_prediction(t)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
