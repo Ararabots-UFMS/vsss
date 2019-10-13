@@ -162,7 +162,9 @@ class MovingBody:
             ds = value - self.position[1]
             dt = ds / self._avg_speed[1]
         
-        if dt < 0 or abs(dt) > 2:
+        # if thw dt is negative or grather than 2 it is
+        # considered invalid
+        if dt < 0 or abs(dt) > 2: 
             dt = 0
 
         return dt
