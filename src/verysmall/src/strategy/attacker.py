@@ -37,8 +37,8 @@ class Attacker(BaseTree):
         toggle_front.add_child(go_to_ball)
 
         border_treatement = Selector("Border Treatement")
-        border_treatement.add_child(toggle_front)
         border_treatement.add_child(border_smoothing)
+        border_treatement.add_child(toggle_front)
 
         tree.add_child(border_treatement)
         tree.add_child(SpinTask('Spin'))  # Spin
@@ -69,3 +69,6 @@ class Attacker(BaseTree):
         dash_sequence.add_child(ChargeWithBall('Attack', 200))
 
         return tree
+
+    def reset_counter(self):
+        self.do_once.n = 1

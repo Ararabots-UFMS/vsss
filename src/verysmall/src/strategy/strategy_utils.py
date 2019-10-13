@@ -4,8 +4,7 @@ from enum import Enum
 import numpy as np
 
 from robot_module.movement.definitions import OpCodes
-from strategy.arena_utils import on_attack_side
-from strategy.arena_utils import section, LEFT, BORDER_NORMALS
+from strategy.arena_utils import on_attack_side, section, LEFT, BORDER_NORMALS, y_axis_section, MAX_H_SIZE
 from utils import math_utils
 from utils.profiling_tools import log_fatal
 
@@ -108,6 +107,7 @@ def is_robot_parallel(orientation: float, vec: np.array, max_angle: DEGREE):
         return False
     return True'''
 
+
 def is_parallel_border(orientation, team_side, max_angle: DEGREE = 15):
     robot_vector = np.array([cos(orientation), sin(orientation)])
     max_angle = max_angle * math_utils.DEG2RAD
@@ -122,6 +122,20 @@ def is_parallel_border(orientation, team_side, max_angle: DEGREE = 15):
     if not (abs(angle1) < max_angle or abs(angle2) < max_angle):
         return False
     return True
+
+
+def is_robot_stucked_on_border(robot_pos: np.ndarray, orientation: float) -> bool:
+    if y_axis_section(robot_pos):
+        border_y = MAX_H_SIZE
+        y_axis = np.array([0.0, 1.0])
+    else:
+        border_y = 0
+        y_axis = np.array([0.0, -1.0])
+
+    distance = abs(robot_pos[1] - border_y)
+    if is_robot_parallel(orientation, y_axis, max_angle=30) and distance < 5:
+        return True
+    return False
 
 
 

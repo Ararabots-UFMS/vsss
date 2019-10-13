@@ -1,7 +1,7 @@
 {
     "ROS_IP": [
-        "enp3s0",
-        "10.0.0.2"
+        "enp0s25",
+        "10.0.0.3"
     ],
     "ROS_MASTER_URI": "http://10.0.0.2:11311",
     "camera": {
@@ -17,6 +17,6 @@
         "blue": "color",
         "yellow": "aruco"
     },
-    "side": 1,
-    "time": 0
+    "side": 0,
+    "time": 1
 }

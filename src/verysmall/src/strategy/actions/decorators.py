@@ -5,9 +5,8 @@ from typing import Tuple
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import ArenaSections, section, y_axis_section, MAX_H_SIZE, ROBOT_SIZE
-from strategy.strategy_utils import is_parallel_border, is_robot_parallel
+from strategy.strategy_utils import is_parallel_border, is_robot_parallel, is_robot_stucked_on_border
 import rospy
-
 
 
 class Decorator:
@@ -142,16 +141,18 @@ class SmoothBorderSpeed(Decorator):
             ball_pos = blackboard.ball.position
             robot_pos = blackboard.robot.position
             ball_sec = section(ball_pos)
-            robot_sec = section(robot_pos)
+            orientation = blackboard.robot.orientation
             min_speed = 50
             speed = action[2]
-
             distance = abs(robot_pos[1] - ball_pos[1])
 
+            if is_robot_stucked_on_border(robot_pos, orientation):
+                return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+
             if ball_sec == ArenaSections.UP_BORDER or ball_sec == ArenaSections.DOWN_BORDER:
-                if robot_sec != ball_sec and not is_parallel_border(blackboard.robot.orientation,
-                                                                    blackboard.home_goal.side,
-                                                                    max_angle=15):
+                if not is_parallel_border(orientation,
+                                          blackboard.home_goal.side,
+                                          max_angle=15):
                     if distance < 20:
                         speed = min_speed
 
@@ -171,15 +172,6 @@ class ToggleFrontOnBorder(Decorator):
             robot_pos = blackboard.robot.position
             orientation = blackboard.robot.orientation
 
-            if y_axis_section(robot_pos):
-                border_y = MAX_H_SIZE
-                y_axis = np.array([0.0, 1.0])
-            else:
-                border_y = 0
-                y_axis = np.array([0.0, -1.0])
-
-            distance = abs(robot_pos[1] - border_y)
-            if is_robot_parallel(orientation, y_axis, max_angle=30) and distance < 5: #float(ROBOT_SIZE)/2 + threshold:
+            if is_robot_stucked_on_border(robot_pos, orientation):
                 action = (action[0] + OpCodes.TOGGLE_FRONT, action[1], action[2], action[3])
-                return status, action
-            return TaskStatus.FAILURE, (OpCodes.INVALID, 0, 0, 0)
+            return status, action
