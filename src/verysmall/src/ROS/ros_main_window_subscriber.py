@@ -17,16 +17,16 @@ class RosMainWindowSubscriber:
         #    rospy.init_node('virtual_field', anonymous=True)
 
         # Ros node for reading the buffer
-        rospy.Subscriber('things_position', things_position, self.read, queue_size=10)
+        rospy.Subscriber('things_position', things_position, self.read, queue_size=5)
 
         # Debug topic
-        rospy.Subscriber('debug_topic_'+game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 10)
+        rospy.Subscriber('debug_topic_'+game_topic_name.split('_')[2], debug_topic, self.read_debug_topic, queue_size= 5)
 
         # Queue of data from Topic Things position
         msg = things_position()
         debug_msg = debug_topic()
 
-        self.data = deque([msg], maxlen = 60)  # Shapes the size of the Queue
+        self.data = deque([msg], maxlen = 5)  # Shapes the size of the Queue
         self.debug_data = deque([debug_msg], maxlen = 10)
 
     def read_debug_topic(self, debug_data):

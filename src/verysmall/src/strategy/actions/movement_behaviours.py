@@ -154,7 +154,6 @@ class ChargeWithBall(TreeNode):
         self.x_vector = np.array([1.0, 0.0])
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        rospy.logfatal("Charge!")
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
 
         angle = angle_between(
@@ -165,7 +164,27 @@ class ChargeWithBall(TreeNode):
 
         distance_to_goal = np.linalg.norm(goal_vector)
 
-        return TaskStatus.RUNNING, (OpCodes.SMOOTH, angle, self.max_speed, distance_to_goal)
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
+
+
+class RemoveBallFromGoalArea(TreeNode):
+    def __init__(self, name='RemoveBallFromGoalArea', max_speed: int = 255):
+        super().__init__(name)
+        self.max_speed = max_speed
+        self.x_vector = np.array([1.0, 0.0])
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        goal_vector = blackboard.ball.position - blackboard.robot.position
+
+        angle = angle_between(
+            self.x_vector,
+            goal_vector,
+            abs=False
+        )
+
+        distance_to_goal = np.linalg.norm(goal_vector)
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
 
 class MarkBallOnAxis(TreeNode):
@@ -190,7 +209,7 @@ class MarkBallOnAxis(TreeNode):
 
         if self._predict_ball:
             t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
-            predicted_position = blackboard.ball.get_predicted_position_over_seconds(t)
+            predicted_position = blackboard.ball.position_prediction(t)
             if abs(predicted_position[1] - blackboard.robot.position[1]) > self._acceptance_radius:
                 target_position = predicted_position
             else:
@@ -240,9 +259,8 @@ class MarkBallOnYAxis(TreeNode):
         if norm_distance > 0.6:
             ball_y = blackboard.ball.position[1]
         else:
-            scalar = 1 - norm_distance
-            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.robot.position[0])
-            ball_y = blackboard.ball.get_predicted_position_over_seconds(t)[1]
+            t = blackboard.ball.get_time_on_axis(axis=0, value=blackboard.home_goal.position[0])
+            ball_y = blackboard.ball.position_prediction(t)[1]
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
@@ -266,7 +284,7 @@ class MarkBallOnYAxis(TreeNode):
         final_direction = alpha * direction_on_target + (1 - alpha) * direction
         theta = math.atan2(final_direction[1], final_direction[0])
 
-        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self._max_speed, distance)
+        return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self._max_speed, distance)
 
 
 class AlignWithAxis(TreeNode):
@@ -282,9 +300,10 @@ class AlignWithAxis(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
-            return TaskStatus.SUCCESS, (OpCodes.INVALID, .0, 0, .0)
+            status = TaskStatus.SUCCESS
         else:
-            return TaskStatus.RUNNING, (OpCodes.SMOOTH, self.angle_to_correct, self.max_speed, .0)
+            status = TaskStatus.RUNNING
+        return status, (OpCodes.SMOOTH + OpCodes.ORIENTATION_AVERAGE, self.angle_to_correct, self.max_speed, .0)
 
 
 class GetOutOfGoal(TreeNode):

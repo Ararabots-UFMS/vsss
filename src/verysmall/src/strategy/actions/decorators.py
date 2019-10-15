@@ -7,9 +7,9 @@ import rospy
 
 
 class Decorator:
-    def __init__(self, name: str):
+    def __init__(self, name: str, child=None):
         self.name = name
-        self.child = None
+        self.child = child
 
     def add_child(self, child):
         self.child = child
@@ -32,8 +32,8 @@ class IgnoreFailure(Decorator):
 
 
 class InvertOutput(Decorator):
-    def __init__(self, name: str = 'Not'):
-        super().__init__(name)
+    def __init__(self, name: str = 'Not', child = None):
+        super().__init__(name, child)
 
     def run(self, blackboard: BlackBoard):
         if self.child is None:

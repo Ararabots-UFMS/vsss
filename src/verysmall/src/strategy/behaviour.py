@@ -1,8 +1,10 @@
+from typing import List
+from collections import deque
 import time
 from abc import abstractmethod, ABC
 from enum import Enum
 from typing import Tuple
-
+import rospy
 import numpy as np
 
 from robot_module.movement.definitions import OpCodes
@@ -48,9 +50,11 @@ class BlackBoard:
 
 
 class TreeNode:
-    def __init__(self, name):
+    def __init__(self, name, children = []):
         self.name = name
         self.children = []
+        for child in children:
+            self.add_child(child)
 
     def add_child(self, node) -> None:
         self.children.append(node)
@@ -69,13 +73,12 @@ class Sequence(TreeNode):
         or FAILURE is returned from the subtask.
     """
 
-    def __init__(self, name):
-        super().__init__(name)
+    def __init__(self, name, children: List[TreeNode] = []):
+        super().__init__(name, children)
 
     def run(self, blackboard):
         for c in self.children:
             status, action = c.run(blackboard)
-            # log_warn(c.name)
             if status != TaskStatus.SUCCESS:
                 return status, action
 
@@ -91,13 +94,12 @@ class Selector(TreeNode):
         or FAILURE is returned from the subtask.
     """
 
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, children: List[TreeNode] = []):
+        super().__init__(name, children)
 
     def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
-            # log_warn(c.name)
             status, action = c.run(blackboard)
             if status != TaskStatus.FAILURE:
                 return status, action
@@ -106,57 +108,66 @@ class Selector(TreeNode):
 
 
 class MovingBody:
-    def __init__(self, buffer_size=60):
+    def __init__(self, buffer_size=15):
         self.position = np.array([0, 0])
-        self._position_buffer_length = buffer_size / 60
-        self.position_buffer_x = [0 for _ in range(buffer_size)]
-        self.position_buffer_y = [0 for _ in range(buffer_size)]
 
-        self.speed_buffer_x = [0 for _ in range(buffer_size)]
-        self.speed_buffer_y = [0 for _ in range(buffer_size)]
+        zeros = (0 for _ in range(buffer_size))
+        self.position_buffer_x = deque(zeros, maxlen=buffer_size)
+        self.position_buffer_y = deque(zeros, maxlen=buffer_size)
 
-        self.time_buffer = [float(time.time()) for i in range(buffer_size)]
+        self.speed_buffer_x = deque(zeros, maxlen=buffer_size)
+        self.speed_buffer_y = deque(zeros, maxlen=buffer_size)
 
+        t0 = time.time()
+        self.time_buffer = deque((t0 for i in range(buffer_size)), maxlen=buffer_size)
 
-        # self.position_buffer_time = [0 for _ in range(position_buffer_length)]
+        self._last_update = t0
+        self._avg_speed = np.array([.0, .0])
         self.speed = np.array([0, 0])
         self.orientation = .0
 
     def __setattr__(self, key, value):
         if key == "position" and (value[0] or value[1]):
-            self.position_buffer_x.pop(0)
+            last_pos = np.array([self.position_buffer_x[-1], 0])
+            t = time.time()
+            self._avg_speed = 0.1 * (value-last_pos) / (t - self._last_update) + \
+                              0.9 * self._avg_speed
+            
             self.position_buffer_x.append(value[0])
-            self.position_buffer_y.pop(0)
             self.position_buffer_y.append(value[1])
-
-            self.time_buffer.pop(0)
             self.time_buffer.append(float(time.time()))
+            self._last_update = t
 
         elif key == "speed" and (value[0] or value[1]):
-            self.speed_buffer_x.pop(0)
             self.speed_buffer_x.append(value[0])
-            self.speed_buffer_y.pop(0)
             self.speed_buffer_y.append(value[1])
+        
         super().__setattr__(key, value)
 
-    def get_predicted_position_over_seconds(self, t=0.5):
+    def position_prediction(self, seconds=0.5):
         fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
         fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
         px = np.poly1d(fitx)
         py = np.poly1d(fity)
-        p = px(time.time() + t), py(time.time() + t)
+
+        dt = time.time() + seconds
+        p = px(dt), py(dt)
         return np.array(p)
 
-    def get_time_on_axis(self, axis, value):
-        t = time.time()
-        fit_tx = np.polyfit(self.position_buffer_x, self.time_buffer, 0)
-        fit_ty = np.polyfit(self.position_buffer_y, self.time_buffer, 0)
-        ptx = np.poly1d(fit_tx)
-        pty = np.poly1d(fit_ty)
-
+    def get_time_on_axis(self, axis, value) -> float:
         if axis == 0:
-            return abs(t - ptx(value))
-        return abs(t - pty(value))
+            ds = value - self.position[0]
+            dt = ds / self._avg_speed[0]
+        else:
+            ds = value - self.position[1]
+            dt = ds / self._avg_speed[1]
+        
+        # if thw dt is negative or grather than 2 it is
+        # considered invalid
+        if dt < 0 or abs(dt) > 2: 
+            dt = 0
+
+        return dt
 
     def __repr__(self):
         return "--position: " + str(self.position) + \
