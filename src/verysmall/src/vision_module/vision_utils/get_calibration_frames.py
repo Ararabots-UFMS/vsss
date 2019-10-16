@@ -13,12 +13,11 @@ if __name__ == '__main__':
     CAMERA_ID = int(sys.argv[1])
     cap = Camera(CAMERA_ID, PARAMS_FILE, False)
     if FRAME_SIZE != ():
-        cap.set_frame_size(FRAME_SIZE[0], FRAME_SIZE[1])
+        cap.set_device(FRAME_SIZE[0], FRAME_SIZE[1])
 
     while(True):
-        frame = cap.read()
-
-        cv2.imshow("get frames window", frame)
+        _, frame = cap.read()
+        cv2.imshow("frame", frame)
         key = cv2.waitKey(1) & 0xFF
 
         if key == ord(' '):
