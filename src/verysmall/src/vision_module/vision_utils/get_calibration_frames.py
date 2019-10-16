@@ -5,7 +5,7 @@ import uuid
 import cv2
 import sys
 
-CAMERA_ID = 0
+CAMERA_ID = 2
 PARAMS_FILE = ""
 FRAME_SIZE = (1280, 720)
 

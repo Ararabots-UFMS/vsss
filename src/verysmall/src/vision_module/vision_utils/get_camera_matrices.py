@@ -5,17 +5,16 @@ import time
 import sys
 import json
 import os
-sys.path.append('../camera')
-from camera import Camera
+from vision_module.camera_module.camera import Camera
 
 # @author Wellington Castro <wvmcastro>
 
-CAMERA_ID = 1
+CAMERA_ID = 2
 CAMERA_NAME = ""
-FRAME_SIZE = () #(width, height)
-H_CENTERS = 23
-V_CENTERS = 14
-SCALE = 0.8
+FRAME_SIZE = (1280, 720) #(width, height)
+H_CENTERS = 9
+V_CENTERS = 9
+SCALE = 0.66
 
 
 def get_error(objp, imgpoints, rvecs, tvecs, mtx, dist):
@@ -70,19 +69,19 @@ if __name__ == '__main__':
     e = get_error(objp, imgpoints, rvecs, tvecs, mtx, dist)
     print("STD Error:", e)
 
-    save = raw_input("Save camera matrices? (y/n): ")
+    save = input("Save camera matrices? (y/n): ")
     print(save)
 
     if save == 'y':
         if CAMERA_NAME == "":
-            name = raw_input("Please insert camera name (default is ELP-USBFHD01M-SFV): ")
+            name = input("Please insert camera name (default is ELP-USBFHD01M-SFV): ")
             if name == "":
                 name = "ELP-USBFHD01M-SFV"
         else:
             name = CAMERA_NAME
         if FRAME_SIZE == ():
-            frame_width = raw_input("Please insert frame width: ")
-            frame_height = raw_input("Please insert frame height: ")
+            frame_width = int(input("Please insert frame width: "))
+            frame_height = int(input("Please insert frame height: "))
         else:
             frame_width = FRAME_SIZE[0]
             frame_height = FRAME_SIZE[1]
@@ -116,6 +115,6 @@ if __name__ == '__main__':
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    os.system("rm *.jpg")
+    # os.system("rm *.jpg")
     print("all .jpg files removed!")
     cv2.destroyAllWindows()
