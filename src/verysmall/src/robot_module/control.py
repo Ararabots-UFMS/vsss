@@ -17,7 +17,8 @@ Constants = Tuple[int, float, float, float]
 class Control:
     def __init__(self, hardware: RobotHardware, blackboard: BlackBoard,
                  constants: List[Constants],
-                 max_fine_movement_speed) -> None:
+                 max_fine_movement_speed,
+                 error_tolerance=3*DEG2RAD) -> None:
         self._hardware = hardware
         self._blackboard = blackboard
         self._max_fine_movement_speed = max_fine_movement_speed
@@ -35,7 +36,7 @@ class Control:
 
         self._pid_constants_set = sorted(constants)
         self._speed_keys = [s[0] for s in self._pid_constants_set]  # TODO: get a better name
-        self._pidController = PIDController()
+        self._pidController = PIDController(tolerance=error_tolerance)
         self._pid_last_use = time()
         self._pid_reset_time = 0.032  # 2 frames
 

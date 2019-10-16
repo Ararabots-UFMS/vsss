@@ -2,11 +2,19 @@ import time
 
 class PIDController:
 
-    def __init__(self, kp=1.0, ki=0.0, kd=0.0, max_integral=1000.0, max_derivative=1000.0, target=0.0):
+    def __init__(self, kp=1.0, 
+                       ki=0.0, 
+                       kd=0.0, 
+                       max_integral=1000.0, 
+                       max_derivative=1000.0, 
+                       target=0.0,
+                       tolerance=0.0):
         # Constants 
         self.kp = kp
         self.ki = ki
         self.kd = kd
+
+        self._tolerance = tolerance
 
         # Max integral and derivative value
         self.max_integral = max_integral 
@@ -71,7 +79,10 @@ class PIDController:
         self.error = error
         self.last_time = timer_aux
 
-        return output
+        if abs(self.error) < self._tolerance:
+            return 0
+        else:
+            return output
 
     def reset(self):
         """Reset pid values"""
