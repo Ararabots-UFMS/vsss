@@ -1,17 +1,17 @@
 {
     "robot_1": {
-        "active": 0,
-        "bluetooth_mac_address": "noriko",
-        "body_id": "noriko",
-        "role": "PID Calibration",
+        "active": 1,
+        "bluetooth_mac_address": "jeremias",
+        "body_id": "jeremias",
+        "role": "Defender",
         "tag_number": 0
     },
     "robot_2": {
         "active": 0,
         "bluetooth_mac_address": "tijolinho",
         "body_id": "tijolinho",
-        "role": "Attacker",
-        "tag_number": 0
+        "role": "Goalkeeper",
+        "tag_number": 2
     },
     "robot_3": {
         "active": 0,

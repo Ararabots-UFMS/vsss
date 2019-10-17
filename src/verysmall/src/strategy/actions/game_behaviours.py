@@ -4,11 +4,8 @@ from typing import Callable, List
 from strategy import arena_utils
 from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections
 from strategy.behaviour import *
-from strategy.behaviour import ACTION, NO_ACTION, TreeNode
-from strategy.behaviour import BlackBoard, TaskStatus
-from strategy.strategy_utils import is_behind_ball, distance_point
-from strategy.strategy_utils import near_ball, ball_on_border, object_on_critical_position, \
-    ball_on_attack_side, object_in_defender_range
+from strategy.strategy_utils import is_behind_ball, distance_point, near_ball, ball_on_border,\
+    object_on_critical_position, ball_on_attack_side, object_in_defender_range
 from utils.math_utils import angle_between
 
 
@@ -128,20 +125,6 @@ class AmIAttacking(TreeNode):
         if ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
-
-
-class GoToDefenseRange(TreeNode):
-    def __init__(self, name: str = "GoToDefenseRange", blackboard_key: str = 'ball'):
-        super().__init__(name)
-        self.key = blackboard_key
-        self.mark_points = (
-            np.array([35, 25]),
-            np.array([35, 65]),
-            np.array([35, 105])
-        )
-
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        blackboard.__getattribute__(self.key)
 
 
 class IsBallInRangeOfDefense(TreeNode):

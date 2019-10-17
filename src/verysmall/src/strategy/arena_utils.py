@@ -95,6 +95,15 @@ BALL_SIZE = 4
 ROBOT_SIZE = 7
 
 
+def get_defense_range_height(height: int = 0):
+    if height <= 30:
+        return 0
+    elif height < 100:
+        return 1
+    else:
+        return 2
+
+
 def on_attack_side(pos, team_side, bias=0):
     """
    Verify if the object is in attack side (True) or in defense side(False)
