@@ -1,24 +1,20 @@
 import math
-import time
 from abc import ABC, abstractmethod
 from typing import Iterable
 from typing import Tuple
 
 import numpy as np
-import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
-from strategy.arena_utils import LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X, ROBOT_SIZE, y_axis_section, RIGHT, \
-    HALF_ARENA_WIDTH
+from strategy.arena_utils import HALF_ARENA_HEIGHT, get_defense_range_height, LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X,\
+    ROBOT_SIZE, y_axis_section, RIGHT, HALF_ARENA_WIDTH, on_attack_side, univector_pos_section, ArenaSections
 from strategy.behaviour import ACTION, TreeNode
 from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
-from strategy.strategy_utils import spin_direction
+from strategy.strategy_utils import spin_direction, object_in_defender_range
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
-from strategy.arena_utils import univector_pos_section, ArenaSections, HALF_ARENA_HEIGHT
-
 
 class StopAction(TreeNode):
 
@@ -416,6 +412,49 @@ class GoToPosition(TreeNode):
         return TaskStatus.RUNNING, (OpCodes.SMOOTH, theta, self.max_speed, distance)
 
 
+class GoToDefenseRange(TreeNode):
+    def __init__(self, name: str = "GoToDefenseRange", speed: int = 100, blackboard_key: str = 'ball'):
+        super().__init__(name)
+        self.speed = speed
+        self.key = blackboard_key
+        self.mark_points = (
+            np.array([30, 25]),
+            np.array([30, 65]),
+            np.array([30, 105])
+        )
+        if blackboard_key == 'robot':
+            self.verify_function = self.check_robot_x
+        else:
+            self.verify_function = self.check_ball_x
+
+    def check_ball_x(self, blackboard: BlackBoard):
+        return True
+
+    def check_robot_x(self, blackboard: BlackBoard):
+        robot_in_range = object_in_defender_range(blackboard.robot.position, blackboard.home_goal.side)
+        if blackboard.home_goal.side == RIGHT:
+            robot_in_home_side = blackboard.robot.position[0] >= 65
+        else:
+            robot_in_home_side = blackboard.robot.position[0] <= 85
+
+        return robot_in_range and robot_in_home_side
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        objective_section = get_defense_range_height(blackboard.__getattribute__(self.key).position[1])
+        robot_section = get_defense_range_height(blackboard.robot.position[1])
+
+        if objective_section == robot_section and self.verify_function(blackboard):
+            return TaskStatus.SUCCESS, NO_ACTION
+
+        self.mark_points[objective_section][0] = 30 + blackboard.home_goal.side*90
+
+        direction = self.mark_points[objective_section] - blackboard.robot.position
+        distance = np.linalg.norm(direction)
+        theta = math.atan2(direction[1], direction[0])
+
+        return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
+
+
 class GoToBallUsingMove2Point(TreeNode):
     def __init__(self, name: str = "GoToBallUsingMove2Point", speed=100, acceptance_radius: float = 6):
         super().__init__(name)
@@ -423,7 +462,12 @@ class GoToBallUsingMove2Point(TreeNode):
         self.acceptance_radius = acceptance_radius
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_section = univector_pos_section(blackboard.ball.position)
+        ball_pos = blackboard.ball.position
+        ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
+
         direction = blackboard.ball.position - blackboard.robot.position
+
         distance = np.linalg.norm(direction)
         theta = math.atan2(direction[1], direction[0])
         if distance < self.acceptance_radius:
