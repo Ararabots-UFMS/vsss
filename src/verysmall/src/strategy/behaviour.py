@@ -30,6 +30,7 @@ class BlackBoard:
     def __init__(self):
         self.game = Game()
         self.my_id = None
+        self.current_orientation = None
         self.enemy_goal = Goal()
         self.home_goal = Goal()
 

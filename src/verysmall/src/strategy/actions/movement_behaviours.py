@@ -69,8 +69,10 @@ class UnivectorTask(ABC):
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
         self.univector_field.update_obstacles(blackboard.enemy_team.positions,
-                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
-        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
+                                           [[0, 0]] * 5)  # blackboard.enemies_speed)
+        theta = blackboard.robot.orientation
+        vec = np.array([math.cos(theta), math.sin(theta)])
+        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + 3.5*vec, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
         speed = self.speed
@@ -81,6 +83,7 @@ class UnivectorTask(ABC):
                                  self.univector_field.get_attack_goal_axis(blackboard.enemy_goal.side))
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
+            log_warn(speed)
 
         status = TaskStatus.RUNNING
 

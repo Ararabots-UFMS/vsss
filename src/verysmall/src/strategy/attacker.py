@@ -56,7 +56,7 @@ class Attacker(BaseTree):
         spin_or_dash.add_child(spin_sequence)
 
         dash_sequence = Sequence("DashSequence")
-        spin_or_dash.add_child(dash_sequence)
+        #spin_or_dash.add_child(dash_sequence)
 
         spin_sequence.add_child(
             IsBallInsideSections(sections=[ArenaSections.LEFT_DOWN_CORNER, 
@@ -89,21 +89,21 @@ class Attacker(BaseTree):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         status, action = super().run(blackboard)
         
-        y = blackboard.robot.position[1]
-        if y < 5 or y > 125:
-            if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
-                action = list(action)
-
-                p = blackboard.robot.position
-                o = blackboard.robot.orientation
-                safe_head = self.get_safe_head(p, o)
-
-                if safe_head == FORWARD:
-                    action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
-                else:
-                     action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
-                     
-                action = tuple(action)
+        # y = blackboard.robot.position[1]
+        # if y < 5 or y > 125:
+        #     if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
+        #         action = list(action)
+        #
+        #         p = blackboard.robot.position
+        #         o = blackboard.robot.orientation
+        #         safe_head = self.get_safe_head(p, o)
+        #
+        #         if safe_head == FORWARD:
+        #             action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
+        #         else:
+        #              action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
+        #
+        #         action = tuple(action)
 
         return status, action
 
@@ -119,4 +119,3 @@ class Attacker(BaseTree):
                 return FORWARD
             else:
                 return BACKWARDS
-

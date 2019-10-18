@@ -10,6 +10,7 @@ from robot_module.hardware import RobotHardware
 from robot_module.movement.definitions import OpCodes
 from strategy.behaviour import BlackBoard
 from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
+from strategy.arena_utils import ArenaSections, univector_pos_section
 
 Constants = Tuple[int, float, float, float]
 
@@ -40,6 +41,12 @@ class Control:
         self._pid_last_use = time()
         self._pid_reset_time = 0.032  # 2 frames
 
+    def __setattr__(self, key, value):
+        if key == '_head':
+            self._blackboard.current_orientation = value
+
+        super().__setattr__(key, value)
+
     def get_wheels_speeds(self, opcode: OpCodes,
                           angle: float,
                           speed: int,
@@ -50,7 +57,8 @@ class Control:
         elif opcode & OpCodes.USE_BACKWARD_HEAD:
             self._head = BACKWARDS
         else:
-            self.set_head(angle)
+            if univector_pos_section(self._blackboard.robot.position) != ArenaSections.CENTER:
+                self.set_head(angle)
         
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
