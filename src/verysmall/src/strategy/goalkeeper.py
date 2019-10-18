@@ -103,9 +103,9 @@ class GoalKeeper(BaseTree):
         inverter.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.position))
 
         is_ball_or_enemy_in_critical_position = Selector("IsBallOrEnemyInCritalPosition")
-        is_ball_inside_defense_area = IsBallInsideAreas(name="IsBallInsideDefenseArea",
-                                                        areas=[ArenaSections.LEFT_GOAL_AREA,
-                                                               ArenaSections.RIGHT_GOAL_AREA])
+        is_ball_inside_defense_area = IsBallInsideSections(name="IsBallInsideDefenseArea",
+                                                           sections=[ArenaSections.LEFT_GOAL_AREA,
+                                                                     ArenaSections.RIGHT_GOAL_AREA])
 
         enemy_near_ball_and_in_critical_position = Sequence('EnemyNearBallAndInCriticalPos')
         enemy_near_ball_and_in_critical_position.add_child(IsEnemyInCriticalPosition())

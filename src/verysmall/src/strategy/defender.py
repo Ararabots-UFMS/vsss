@@ -1,5 +1,5 @@
 from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall, \
-    IsBallInCriticalPosition, CanDefenderUseMove2PointToRecoverBall
+    IsBallInCriticalPosition, CanRobotUseMove2PointToRecoverBall
 from strategy.actions.movement_behaviours import MarkBallOnAxis, GoToBallUsingUnivector, SpinTask, \
     GoToBallUsingMove2Point, ChargeWithBall, GoBack, RecoverBallUsingUnivector
 from strategy.actions.state_behaviours import InState
@@ -39,7 +39,7 @@ class Defender(BaseTree):
         recover.add_child(method)
 
         ball_near_goal_check = Sequence("CanDefenderUseMove2PointToRecoverBall?")
-        ball_near_goal_check.add_child(CanDefenderUseMove2PointToRecoverBall())
+        ball_near_goal_check.add_child(CanRobotUseMove2PointToRecoverBall())
         ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
 
         method.add_child(ball_near_goal_check)

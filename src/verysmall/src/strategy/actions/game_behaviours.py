@@ -66,7 +66,7 @@ class IsTheWayFree(TreeNode):
         return task_result
 
 
-class CanDefenderUseMove2PointToRecoverBall(TreeNode):
+class CanRobotUseMove2PointToRecoverBall(TreeNode):
     def __init__(self, name="CanDefenderUseMove2PointToRecoverBall?"):
         super().__init__(name)
 
@@ -175,13 +175,13 @@ class IsEnemyInsideAreas(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
-class IsBallInsideAreas(TreeNode):
-    def __init__(self, name: str = "IsBallInsideAreas", areas: List = []):
+class IsBallInsideSections(TreeNode):
+    def __init__(self, name: str = "IsBallInsideSections", sections: List = []):
         super().__init__(name)
-        self._areas = areas
+        self._sections = sections
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if section(blackboard.ball.position) in self._areas:
+        if section(blackboard.ball.position) in self._sections:
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 

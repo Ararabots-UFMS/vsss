@@ -25,7 +25,7 @@ class Control:
         self._alpha = 10  # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 15 * DEG2RAD
+        self._hysteresis_angle_window = 20 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
         self._beta = 0.5
@@ -45,6 +45,13 @@ class Control:
                           speed: int,
                           distance: float) -> Tuple[float, float]:
 
+        if opcode & OpCodes.USE_FORWARD_HEAD:
+            self._head = FORWARD
+        elif opcode & OpCodes.USE_BACKWARD_HEAD:
+            self._head = BACKWARDS
+        else:
+            self.set_head(angle)
+        
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
         else:
@@ -65,7 +72,6 @@ class Control:
                        angle: float,
                        distance: float,
                        optimal_speed: bool = True) -> Tuple[float, float]:
-        self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
 
