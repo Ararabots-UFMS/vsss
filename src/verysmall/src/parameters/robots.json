@@ -8,15 +8,15 @@
     },
     "robot_2": {
         "active": 0,
-        "bluetooth_mac_address": "tijolinho",
-        "body_id": "tijolinho",
+        "bluetooth_mac_address": "walle",
+        "body_id": "walle",
         "role": "Attacker",
         "tag_number": 0
     },
     "robot_3": {
         "active": 0,
-        "bluetooth_mac_address": "jeremias",
-        "body_id": "jeremias",
+        "bluetooth_mac_address": "tucao",
+        "body_id": "tucao",
         "role": "Attacker",
         "tag_number": 3
     },
