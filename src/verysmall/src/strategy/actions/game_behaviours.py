@@ -4,11 +4,8 @@ from typing import Callable, List
 from strategy import arena_utils
 from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections
 from strategy.behaviour import *
-from strategy.behaviour import ACTION, NO_ACTION, TreeNode
-from strategy.behaviour import BlackBoard, TaskStatus
-from strategy.strategy_utils import is_behind_ball, distance_point
-from strategy.strategy_utils import near_ball, ball_on_border, object_on_critical_position, \
-    ball_on_attack_side, ball_in_defender_range
+from strategy.strategy_utils import is_behind_ball, distance_point, near_ball, ball_on_border,\
+    object_on_critical_position, ball_on_attack_side, object_in_defender_range
 from utils.math_utils import angle_between
 
 
@@ -136,7 +133,18 @@ class IsBallInRangeOfDefense(TreeNode):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if not ball_on_attack_side(blackboard.ball.position, blackboard.home_goal.side) and \
-                ball_in_defender_range(blackboard.ball.position, blackboard.home_goal.side):
+                object_in_defender_range(blackboard.ball.position, blackboard.home_goal.side):
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsRobotInRangeOfDefense(TreeNode):
+    def __init__(self, name: str = "IsBallInRangeOfDefense"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if not ball_on_attack_side(blackboard.robot.position, blackboard.home_goal.side) and \
+                object_in_defender_range(blackboard.robot.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
@@ -259,15 +267,15 @@ class IsInsideMetaRange(TreeNode):
 
 
 class IsInsideDefenseGoal(TreeNode):
-    def __init__(self, name: str, 
-                       get_pos: Callable[[BlackBoard], np.ndarray]):
+    def __init__(self, name: str,
+                 get_pos: Callable[[BlackBoard], np.ndarray]):
         super().__init__(name)
         self._get_pos = get_pos
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         pos = self._get_pos(blackboard)
         team_side = blackboard.home_goal.side
-        
+
         sign = 1 if team_side == RIGHT else -1
 
         shift = sign * 3
@@ -275,7 +283,7 @@ class IsInsideDefenseGoal(TreeNode):
         section = arena_utils.section(shifted_pos).value
 
         my_goal = ArenaSections.LEFT_GOAL if team_side == LEFT \
-                                          else ArenaSections.RIGHT_GOAL
+            else ArenaSections.RIGHT_GOAL
         if section == my_goal:
             return TaskStatus.SUCCESS, NO_ACTION
         else:
@@ -319,8 +327,8 @@ class IsInDefenseBottomLine(TreeNode):
         x_obj, y_obj = self._get_pos(blackboard)
         if (side == LEFT and x_obj > 20) or (side == RIGHT and x_obj < 130):
             return TaskStatus.FAILURE, NO_ACTION
-        
+
         if y_obj < 30 or y_obj > 100:
             return TaskStatus.SUCCESS, NO_ACTION
-        
+
         return TaskStatus.FAILURE, NO_ACTION
