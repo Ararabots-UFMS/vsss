@@ -42,7 +42,7 @@ class Defender(BaseTree):
 
         ball_near_goal_check = Sequence("CanDefenderUseMove2PointToRecoverBall?")
         ball_near_goal_check.add_child(CanDefenderUseMove2PointToRecoverBall())
-        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
+        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=4))
 
         method.add_child(ball_near_goal_check)
         method.add_child(RecoverBallUsingUnivector())

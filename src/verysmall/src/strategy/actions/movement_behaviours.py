@@ -464,7 +464,7 @@ class GoToBallUsingMove2Point(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_section = univector_pos_section(blackboard.ball.position)
         ball_pos = blackboard.ball.position
-        ball_pos[1] += -2 if ball_section == ArenaSections.UP_BORDER else 2
+        ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
 
         direction = blackboard.ball.position - blackboard.robot.position
 
