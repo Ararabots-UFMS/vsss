@@ -1,4 +1,4 @@
-from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInBorder, AmIInDefenseField, IsNearBall, \
+from strategy.actions.game_behaviours import IsBallInRangeOfDefense, IsBallInDefenseBorder, AmIInDefenseField, IsNearBall, \
     IsBallInCriticalPosition, CanDefenderUseMove2PointToRecoverBall
 from strategy.actions.movement_behaviours import MarkBallOnAxis, GoToBallUsingUnivector, SpinTask, \
     GoToBallUsingMove2Point, ChargeWithBall, GoBack, RecoverBallUsingUnivector
@@ -20,7 +20,7 @@ class Defender(BaseTree):
 
         border = Sequence("Border")
         border.add_child(IsBallInRangeOfDefense("RangeOfDefense"))
-        border.add_child(IsBallInBorder("BallInBorder"))
+        border.add_child(IsBallInDefenseBorder("BallInBorder"))
         border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
         border.add_child(SpinTask("Spin"))
         defend.add_child(border)

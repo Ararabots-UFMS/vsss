@@ -78,6 +78,7 @@ class Sequence(TreeNode):
 
     def run(self, blackboard):
         for c in self.children:
+            # rospy.logfatal(self.name)
             status, action = c.run(blackboard)
             if status != TaskStatus.SUCCESS:
                 return status, action
@@ -100,6 +101,7 @@ class Selector(TreeNode):
     def run(self, blackboard) -> Tuple[TaskStatus, ACTION]:
 
         for c in self.children:
+            # rospy.logfatal(self.name)
             status, action = c.run(blackboard)
             if status != TaskStatus.FAILURE:
                 return status, action

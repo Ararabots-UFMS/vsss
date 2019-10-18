@@ -6,9 +6,7 @@ from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, TaskStatus
-from strategy.strategy_utils import is_behind_ball, distance_point
-from strategy.strategy_utils import near_ball, ball_on_border, object_on_critical_position, \
-    ball_on_attack_side, ball_in_defender_range
+from strategy.strategy_utils import *
 from utils.math_utils import angle_between
 
 
@@ -186,12 +184,22 @@ class IsBallInsideAreas(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsBallInDefenseBorder(TreeNode):
+    def __init__(self, name: str = "IsBallInDefenseBorder"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if ball_on_defense_border(blackboard.ball.position, blackboard.home_goal.side):
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
+
+
 class IsBallInBorder(TreeNode):
     def __init__(self, name: str = "IsBallInBorder"):
         super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
+        if ball_on_border(blackboard.ball.position):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 

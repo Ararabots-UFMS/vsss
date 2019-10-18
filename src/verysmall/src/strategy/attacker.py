@@ -1,5 +1,7 @@
-from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallInsideAreas, IsNearBall
-from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall
+from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallInsideAreas, IsNearBall, \
+    IsBallInBorder
+from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall, \
+    GoToBallUsingMove2Point
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
@@ -20,18 +22,30 @@ class Attacker(BaseTree):
         normal.add_child(normal_actions)
 
         normal_actions.add_child(self.ball_and_robot_in_enemy_goalline())
-        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
         normal_actions.add_child(self.naive_go_to_ball())
+        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
 
     def naive_go_to_ball(self) -> TreeNode:
-        tree = Sequence("Go ball when ball in central area")
+        tree = Selector("Go ball when ball in central area")
         # tree.add_child(IsBallInsideCentralArea("Check ball"))
-        go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle",
+
+        border = Sequence("Ball on border")
+        move_to_point_movement = GoToBallUsingMove2Point("GotoBallMove2point", acceptance_radius=7)
+        border.add_child(IsBallInBorder())
+        border.add_child(move_to_point_movement)
+        border.add_child(SpinTask('Spin'))
+
+        middle = Sequence("Ball out of border")
+        univector_movement = GoToBallUsingUnivector("AttackBallInTheMiddle",
                                             max_speed=150,
                                             acceptance_radius=7,
                                             speed_prediction=False)
-        tree.add_child(go_to_ball)
-        tree.add_child(SpinTask('Spin'))  # Spin
+
+        middle.add_child(univector_movement)
+        middle.add_child(SpinTask('Spin'))  # Spin
+
+        tree.add_child(border)
+        tree.add_child(middle)
 
         return tree
 
