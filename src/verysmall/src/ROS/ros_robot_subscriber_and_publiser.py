@@ -53,36 +53,28 @@ class RosRobotSubscriberAndPublisher:
         :return: nothing
         """
         self.robot.blackboard.ball.position = np.array(data.ball_pos) / 100.0
-        self.robot.blackboard.ball.speed = np.array(data.ball_speed) / 100.0
 
         if self.robot.team_color == 1:  # yellow
             friends_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             friends_orientation = np.array(data.yellow_team_orientation) / 10000.0
-            friends_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
             enemies_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.blue_team_orientation) / 10000.0
-            enemies_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
         else:  # blue
             friends_position = np.array(data.blue_team_pos).reshape((-1, 2)) / 100.0
             friends_orientation = np.array(data.blue_team_orientation) / 10000.0
-            friends_speed = np.array(data.blue_team_speed).reshape((-1, 2)) / 100.0
 
             enemies_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0
             enemies_orientation = np.array(data.yellow_team_orientation) / 10000.0
-            enemies_speed = np.array(data.yellow_team_speed).reshape((-1, 2)) / 100.0
 
         self.robot.blackboard.set_robot_variables(friends_position[self.robot.tag],
-                                                  friends_speed[self.robot.tag],
                                                   friends_orientation[self.robot.tag])
 
         self.robot.blackboard.home_team.set_team_variables(friends_position,
-                                                           friends_orientation,
-                                                           friends_speed)
+                                                           friends_orientation)
 
         self.robot.blackboard.enemy_team.set_team_variables(enemies_position,
-                                                            enemies_orientation,
-                                                            enemies_speed)
+                                                            enemies_orientation)
         self.robot.run()
 
     def debug_publish(self, _vector):
