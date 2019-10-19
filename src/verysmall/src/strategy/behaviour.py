@@ -41,9 +41,8 @@ class BlackBoard:
         self.home_team = HomeTeam()
         self.enemy_team = EnemyTeam()
 
-    def set_robot_variables(self, robot_position, robot_speed, robot_orientation):
+    def set_robot_variables(self, robot_position, robot_orientation):
         self.robot.position = robot_position
-        self.robot.speed = robot_speed
         self.robot.orientation = robot_orientation
 
     def __repr__(self):
