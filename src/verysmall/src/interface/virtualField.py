@@ -410,18 +410,19 @@ class virtualField():
         ball_center = data.ball_pos  # ball position
         robotlistH = data.team_pos  # home team position
         robotvecH = data.team_orientation  # home team vectors
-        robot_speed_home = data.team_speed
         robotlistA = data.enemies_pos  # away team position
         robotvecA = data.enemies_orientation  # away team vectors
-        robot_speed_away = data.enemies_speed
 
         self.plot_ball(ball_center)
 
-        if self.draw_simulation_vectors:
-            self.univetField.update_obstacles(robotlistA, robot_speed_away)
+        fake_speedsA = [[0,0]] * len(robotlistA)
+        fake_speedsH = [[0,0]] * len(robotlistH)
 
-        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
-        self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=robot_speed_away)
+        if self.draw_simulation_vectors:
+            self.univetField.update_obstacles(robotlistA, fake_speedsA )
+
+        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed=fake_speedsH)
+        self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=fake_speedsA)
 
         ''' usar no maximo 1 casa decimal, substituir os parametros
             de entrada do metodo pelos lidos no topico e substituir os
