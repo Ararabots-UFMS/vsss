@@ -57,7 +57,7 @@ class Attacker(BaseTree):
         spin_or_dash.add_child(spin_sequence)
 
         dash_sequence = Sequence("DashSequence")
-        #spin_or_dash.add_child(dash_sequence)
+        spin_or_dash.add_child(dash_sequence)
 
         spin_sequence.add_child(
             IsBallInsideSections(sections=[ArenaSections.LEFT_DOWN_CORNER, 

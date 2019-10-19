@@ -71,7 +71,7 @@ class RosRobotSubscriberAndPublisher:
                                                   friends_orientation[self.robot.tag])
 
         self.robot.blackboard.home_team.set_team_variables(friends_position,
-                                                           friends_orientation)
+                                                           friends_orientation, self.robot.tag)
 
         self.robot.blackboard.enemy_team.set_team_variables(enemies_position,
                                                             enemies_orientation)
