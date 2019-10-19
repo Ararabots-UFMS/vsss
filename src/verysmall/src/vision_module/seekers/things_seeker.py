@@ -34,9 +34,6 @@ class Things:
         # The orientation is stored in radians in relation with the x axis
         self.orientation = None
 
-        # Stores the (dx/dt, dy/dt) components
-        self.speed = np.array([None, None])
-
         # Saves the time of the last update
         self.last_update = None
 
@@ -100,7 +97,6 @@ class Things:
 
                 self.angular_kalman.statePost = np.array([[0, 0., 0.]]).reshape(3, 1)
             self.lost_counter = 0
-            self.speed = np.array([0, 0])
         else:
             self.kalman.predict()
             self.angular_kalman.predict()
@@ -117,7 +113,6 @@ class Things:
             # uses the kalman info
             state = self.kalman.predict()
             pos = np.array([state[0, 0], state[1, 0]])
-            self.speed = np.array([state[2, 0], state[3, 0]]) * 60.0
 
             if orientation is not None and abs(abs(orientation) - math.pi) < 0.15:
                 # self.init_angular_kalman()
@@ -137,7 +132,6 @@ class Things:
     def reset(self):
         self.pos = np.array([None, None])
         self.last_update = None
-        self.speed = None
         self.orientation = None
 
 
@@ -193,7 +187,10 @@ class HawkEye:
         pos[1] *= -self.conversion_factor_y
         return pos
 
-    def aruco_seek(self, img, robots_list, seeker, opt=None):
+    def aruco_seek(self, img: np.ndarray, 
+                         robots_list: List[Things], 
+                         seeker: ArucoSeeker, 
+                         opt=None):
         """ This function expects a binary image with the team robots and a list
                     of Things objects to store the info """
         img = 255 - img
@@ -218,14 +215,19 @@ class HawkEye:
             # if tags[i] in tags_in_game:
             robots_list[i].update(i, pos, orientation=_orientation)
 
-    def seek_ball(self, img, ball, opt=None):
+    def seek_ball(self, img: np.ndarray, 
+                        ball: Things, 
+                        opt=None):
         pos = self.ball_seeker.seek(img)
         if np.all(pos is not None):
             pos = self.pixel_to_real_world(pos)
 
         ball.update(0, pos)
 
-    def kmeans_seek(self, img, robots_list, seeker, opt=None):
+    def kmeans_seek(self, img: np.ndarray, 
+                          robots_list: List[Things], 
+                          seeker: GeneralMultObjSeeker, 
+                          opt=None):
         adv_centers = seeker.seek(img)
 
         if not (adv_centers is None) and adv_centers.size:
@@ -234,16 +236,23 @@ class HawkEye:
                 robots_list[i].update(i, pos)
     
     def color_seek(self, binary_img: np.ndarray, 
-                         robots_list: List, 
+                         robots_list: List[Things], 
                          seeker: CircularColorTagSeeker,
                          opt = None) -> None:
         color_img = opt
         robots = seeker.seek(binary_img, color_img)
+        num_detected_robots = len(robots)
 
-        for robot in robots:
-            k = robot[0]
-            pos = self.pixel_to_real_world(robot[1])
-            robots_list[k].update(k, pos, orientation=robot[2])
+        k = 0
+        for i in range(len(robots_list)):
+            if k < num_detected_robots and robots[k][ID] == i:
+                pos = self.pixel_to_real_world(robots[k][POS])
+                orientation = robots[k][ANGLE]
+                k += 1
+            else:
+                pos, orientation = None, None
+            
+            robots_list[i].update(i, pos, orientation)
 
 
     def reset(self, aux_params=None) -> None:
