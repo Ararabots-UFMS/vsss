@@ -306,7 +306,7 @@ class Vision:
         self.camera.stop()
         self.camera.capture.release()
 
-    def unpack_things_to_lists(self, things, positions_list, orientations_list, speeds_list):
+    def unpack_things_to_lists(self, things, positions_list, orientations_list):
         """ Auxiliary  function created to not duplify code in the send_message
             function"""
         for thing in things:
@@ -315,7 +315,6 @@ class Vision:
             if id >= 0:
                 positions_list[id] = thing.pos
                 orientations_list[id] = thing.orientation
-                speeds_list[id] = thing.speed
 
     def send_message(self, ball: bool = False,
                      yellow_team: bool = False,
@@ -324,19 +323,19 @@ class Vision:
             published in the ROS vision bus """
 
         if ball:
-            self.unpack_things_to_lists([self.ball], self.ball_pos, [[]], self.ball_speed)
+            self.unpack_things_to_lists([self.ball], self.ball_pos, [[]])
 
         if yellow_team:
             self.unpack_things_to_lists(self.yellow_team, self.yellow_team_pos,
-                                        self.yellow_team_orientation, self.yellow_team_speed)
+                                        self.yellow_team_orientation)
 
         if blue_team:
             self.unpack_things_to_lists(self.blue_team, self.blue_team_pos,
-                                        self.blue_team_orientation, self.blue_team_speed)
+                                        self.blue_team_orientation)
 
-        self.mercury.publish(self.ball_pos[0], self.ball_speed[0], self.yellow_team_pos,
-                             self.yellow_team_orientation, self.yellow_team_speed, self.blue_team_pos,
-                             self.blue_team_orientation, self.blue_team_speed, self.fps)
+        self.mercury.publish(self.ball_pos[0], self.yellow_team_pos,
+                             self.yellow_team_orientation, self.blue_team_pos,
+                             self.blue_team_orientation, self.fps)
 
 
 if __name__ == "__main__":

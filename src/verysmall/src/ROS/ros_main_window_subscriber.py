@@ -84,32 +84,25 @@ class RosMainWindowSubscriber:
             if self._my_window.home_color == 1:
                 data_item.team_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
                 data_item.team_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
-                data_item.team_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
                 data_item.enemies_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
                 data_item.enemies_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
-                data_item.enemies_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
             else:
                 data_item.team_pos = np.array(topic_info.blue_team_pos).reshape((5, 2)) / 100.0
                 data_item.team_orientation = np.array(topic_info.blue_team_orientation) / 10000.0
-                data_item.team_speed = np.array(topic_info.blue_team_speed).reshape((5, 2)) / 100.0
                 data_item.enemies_pos = np.array(topic_info.yellow_team_pos).reshape((5, 2)) / 100.0
                 data_item.enemies_orientation = np.array(topic_info.yellow_team_orientation) / 10000.0
-                data_item.enemies_speed = np.array(topic_info.yellow_team_speed).reshape((5, 2)) / 100.0
 
 
             enemies_position = []
             enemies_orientation = []
-            enemies_speed = []
 
             for i in range(5):
                 if any(data_item.enemies_pos[i]):
                     enemies_position.append(data_item.enemies_pos[i])
                     enemies_orientation.append(data_item.enemies_orientation[i])
-                    enemies_speed.append(data_item.enemies_speed[i])
 
             data_item.enemies_pos = asarray(enemies_position)
             data_item.enemies_orientation = asarray(enemies_orientation)
-            data_item.enemies_speed = asarray(enemies_speed)
 
 
         except IndexError:

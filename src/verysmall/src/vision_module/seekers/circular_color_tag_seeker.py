@@ -36,7 +36,7 @@ class CircularColorTagSeeker(Seeker):
         
         ids, second_centroids = self.segment_and_get_second_centroids(patches, top_lefts)
         robots = self.compute_robot_states(ids, first_centroids, second_centroids)
-        
+        robots.sort(key = lambda r: r[0])
         return robots
     
     def get_main_color_centroids(self, img) -> List[np.ndarray]:

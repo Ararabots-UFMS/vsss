@@ -11,6 +11,7 @@ from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import RIGHT
 from strategy.strategy_utils import GameStates
 from utils.profiling_tools import log_warn
+from utils import physics
 
 angle = distance = float
 speed = int
@@ -30,19 +31,19 @@ class BlackBoard:
     def __init__(self):
         self.game = Game()
         self.my_id = None
+        self.current_orientation = None
         self.enemy_goal = Goal()
         self.home_goal = Goal()
 
-        self.ball = MovingBody()
+        self.ball = physics.MovingBody()
 
         self.robot = FriendlyRobot()
 
         self.home_team = HomeTeam()
         self.enemy_team = EnemyTeam()
 
-    def set_robot_variables(self, robot_position, robot_speed, robot_orientation):
+    def set_robot_variables(self, robot_position, robot_orientation):
         self.robot.position = robot_position
-        self.robot.speed = robot_speed
         self.robot.orientation = robot_orientation
 
     def __repr__(self):
@@ -107,75 +108,7 @@ class Selector(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
-class MovingBody:
-    def __init__(self, buffer_size=15):
-        self.position = np.array([0, 0])
-
-        zeros = (0 for _ in range(buffer_size))
-        self.position_buffer_x = deque(zeros, maxlen=buffer_size)
-        self.position_buffer_y = deque(zeros, maxlen=buffer_size)
-
-        self.speed_buffer_x = deque(zeros, maxlen=buffer_size)
-        self.speed_buffer_y = deque(zeros, maxlen=buffer_size)
-
-        t0 = time.time()
-        self.time_buffer = deque((t0 for i in range(buffer_size)), maxlen=buffer_size)
-
-        self._last_update = t0
-        self._avg_speed = np.array([.0, .0])
-        self.speed = np.array([0, 0])
-        self.orientation = .0
-
-    def __setattr__(self, key, value):
-        if key == "position" and (value[0] or value[1]):
-            last_pos = np.array([self.position_buffer_x[-1], 0])
-            t = time.time()
-            self._avg_speed = 0.1 * (value-last_pos) / (t - self._last_update) + \
-                              0.9 * self._avg_speed
-            
-            self.position_buffer_x.append(value[0])
-            self.position_buffer_y.append(value[1])
-            self.time_buffer.append(float(time.time()))
-            self._last_update = t
-
-        elif key == "speed" and (value[0] or value[1]):
-            self.speed_buffer_x.append(value[0])
-            self.speed_buffer_y.append(value[1])
-        
-        super().__setattr__(key, value)
-
-    def position_prediction(self, seconds=0.5):
-        fitx = np.polyfit(self.time_buffer, self.position_buffer_x, 1)
-        fity = np.polyfit(self.time_buffer, self.position_buffer_y, 1)
-        px = np.poly1d(fitx)
-        py = np.poly1d(fity)
-
-        dt = time.time() + seconds
-        p = px(dt), py(dt)
-        return np.array(p)
-
-    def get_time_on_axis(self, axis, value) -> float:
-        if axis == 0:
-            ds = value - self.position[0]
-            dt = ds / self._avg_speed[0]
-        else:
-            ds = value - self.position[1]
-            dt = ds / self._avg_speed[1]
-        
-        # if thw dt is negative or grather than 2 it is
-        # considered invalid
-        if dt < 0 or abs(dt) > 2: 
-            dt = 0
-
-        return dt
-
-    def __repr__(self):
-        return "--position: " + str(self.position) + \
-               "--speed: " + str(self.speed) + \
-               "--orientation: " + str(self.orientation)
-
-
-class FriendlyRobot(MovingBody):
+class FriendlyRobot(physics.MovingBody):
     def __init__(self):
         super().__init__()
         self.id = 0
@@ -236,19 +169,17 @@ class Team(ABC):
         self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
         self._orientations = np.append(self._orientations, [0], axis=0)
 
-    def set_team_variables(self, robot_positions, robot_orientations, robot_speeds):
+    def set_team_variables(self, robot_positions, robot_orientations):
 
         self.number_of_robots = 0
 
-        for robot_position, robot_orientation, robot_speed in zip(robot_positions, robot_orientations, robot_speeds):
+        for robot_position, robot_orientation in zip(robot_positions, robot_orientations):
             if np.any(robot_position):
                 self._positions[self.number_of_robots] = robot_position
                 self._orientations[self.number_of_robots] = robot_orientation
-                self._speeds[self.number_of_robots] = robot_speed
 
                 self.robots[self.number_of_robots].position = robot_position
                 self.robots[self.number_of_robots].orientation = robot_orientation
-                self.robots[self.number_of_robots].speed = robot_speed
 
                 self.number_of_robots += 1
 
@@ -281,10 +212,10 @@ class Team(ABC):
 class EnemyTeam(Team):
     def __init__(self):
         super().__init__()
-        self.robots = [MovingBody() for _ in range(5)]
+        self.robots = [physics.MovingBody() for _ in range(5)]
 
     def create_new_robot(self):
-        self.robots.append(MovingBody())
+        self.robots.append(physics.MovingBody())
         super().create_new_robot()
 
     def __repr__(self):
