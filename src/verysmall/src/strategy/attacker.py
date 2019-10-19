@@ -12,6 +12,7 @@ from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
 from strategy.arena_utils import ArenaSections, section, univector_pos_section
+from strategy.actions.decorators import SafeHeadOnBorder
 
 
 from utils.math_utils import FORWARD, BACKWARDS, DEG2RAD
@@ -22,7 +23,7 @@ class Attacker(BaseTree):
     def __init__(self, name='behave'):
         super().__init__(name)
 
-        normal = Sequence('Normal')
+        normal = SafeHeadOnBorder(child=Sequence('Normal'))
         self.add_child(normal)
 
         normal.add_child(InState('CheckNormalState', GameStates.NORMAL))
@@ -88,38 +89,9 @@ class Attacker(BaseTree):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         status, action = super().run(blackboard)
-        
-        y = blackboard.robot.position[1]
-        if y < 5 or y > 125:
-            if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
-                action = list(action)
 
-                p = blackboard.robot.position
-                o = blackboard.robot.orientation
-                safe_head = self.get_safe_head(p, o)
-
-                if safe_head == FORWARD:
-                    action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
-                else:
-                     action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
-
-                action = tuple(action)
-
-        elif univector_pos_section(blackboard.robot.position) == ArenaSections.CENTER:
+        if univector_pos_section(blackboard.robot.position) == ArenaSections.CENTER:
             action = list(action)
             action[0] += OpCodes.USE_FORWARD_HEAD if blackboard.current_orientation else OpCodes.USE_BACKWARD_HEAD
 
         return status, action
-
-    
-    def get_safe_head(self, position: np.ndarray, orientation):
-        if position[1] < 65: #down border
-            if abs(orientation - mth.pi) < abs(-orientation - mth.pi):
-                return FORWARD
-            else:
-                return BACKWARDS
-        else:
-            if abs(orientation + mth.pi) < abs(-orientation + mth.pi):
-                return FORWARD
-            else:
-                return BACKWARDS

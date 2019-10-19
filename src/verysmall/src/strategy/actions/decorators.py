@@ -1,9 +1,14 @@
 import time
 from abc import abstractmethod
 from typing import Tuple
+import rospy
+import numpy as np
+import math as mth
+
 from strategy.behaviour import TaskStatus, BlackBoard, ACTION
 from robot_module.movement.definitions import OpCodes
-import rospy
+from utils.math_utils import DEG2RAD, BACKWARDS, FORWARD
+from robot_module.movement.definitions import OpCodes
 
 
 class Decorator:
@@ -124,3 +129,42 @@ class StatusChanged(Decorator):
         self.last_status = status
 
         return status, action
+
+
+class SafeHeadOnBorder(Decorator):
+    def __init__(self, name: str = "SafeHeadOnBoarder", child = None):
+        super().__init__(name, child)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        status, action = super().run(blackboard)
+
+        y = blackboard.robot.position[1]
+        if y < 4 or y > 126:
+            if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
+                action = list(action)
+
+                p = blackboard.robot.position
+                o = blackboard.robot.orientation
+                safe_head = self.get_safe_head(p, o)
+
+                if safe_head == FORWARD:
+                    action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
+                else:
+                     action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
+
+                action = tuple(action)
+        
+        return status, action
+    
+    def get_safe_head(self, position: np.ndarray, orientation):
+        if position[1] < 65: #down border
+            if abs(orientation - mth.pi) < abs(-orientation - mth.pi):
+                return FORWARD
+            else:
+                return BACKWARDS
+        else:
+            if abs(orientation + mth.pi) < abs(-orientation + mth.pi):
+                return FORWARD
+            else:
+                return BACKWARDS
+    
