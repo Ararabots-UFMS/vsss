@@ -38,7 +38,7 @@ class Attacker(BaseTree):
         tree = Sequence("Go ball when ball in central area")
         # tree.add_child(IsBallInsideCentralArea("Check ball"))
         go_to_ball = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=150,
+                                            max_speed=120,
                                             acceptance_radius=7,
                                             speed_prediction=False)
         tree.add_child(go_to_ball)
@@ -89,21 +89,21 @@ class Attacker(BaseTree):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         status, action = super().run(blackboard)
         
-        # y = blackboard.robot.position[1]
-        # if y < 5 or y > 125:
-        #     if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
-        #         action = list(action)
-        #
-        #         p = blackboard.robot.position
-        #         o = blackboard.robot.orientation
-        #         safe_head = self.get_safe_head(p, o)
-        #
-        #         if safe_head == FORWARD:
-        #             action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
-        #         else:
-        #              action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
-        #
-        #         action = tuple(action)
+        y = blackboard.robot.position[1]
+        if y < 5 or y > 125:
+            if 70*DEG2RAD < abs(blackboard.robot.orientation) < 110*DEG2RAD:
+                action = list(action)
+
+                p = blackboard.robot.position
+                o = blackboard.robot.orientation
+                safe_head = self.get_safe_head(p, o)
+
+                if safe_head == FORWARD:
+                    action[0] = action[0] + OpCodes.USE_FORWARD_HEAD
+                else:
+                     action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
+
+                action = tuple(action)
 
         return status, action
 

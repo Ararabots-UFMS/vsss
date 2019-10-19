@@ -57,8 +57,8 @@ class Control:
         elif opcode & OpCodes.USE_BACKWARD_HEAD:
             self._head = BACKWARDS
         else:
-            if univector_pos_section(self._blackboard.robot.position) != ArenaSections.CENTER:
-                self.set_head(angle)
+            pass
+            # self.set_head(angle)
         
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
