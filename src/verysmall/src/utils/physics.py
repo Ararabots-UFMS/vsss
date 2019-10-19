@@ -51,7 +51,7 @@ class MovingBody:
         return self._position
     
     @position.setter
-    def position(self, position: np.ndarray) -> None:       
+    def position(self, position: np.ndarray) -> None:
         t = time.time()
         dt = t - self._last_update
         last_pos = self.position

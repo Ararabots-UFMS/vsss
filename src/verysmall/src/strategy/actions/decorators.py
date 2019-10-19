@@ -136,7 +136,7 @@ class SafeHeadOnBorder(Decorator):
         super().__init__(name, child)
     
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        status, action = super().run(blackboard)
+        status, action = self.child.run(blackboard)
 
         y = blackboard.robot.position[1]
         if y < 4 or y > 126:
