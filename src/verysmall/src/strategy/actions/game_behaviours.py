@@ -2,7 +2,7 @@ from math import sin
 from typing import Callable, List
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections
+from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections, y_axis_section
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, TaskStatus
@@ -332,3 +332,27 @@ class IsInDefenseBottomLine(TreeNode):
             return TaskStatus.SUCCESS, NO_ACTION
         
         return TaskStatus.FAILURE, NO_ACTION
+
+
+class CanAttackerUseMoveToPointToGuideBall(TreeNode):
+    def __init__(self, name="CanAttackerUseMoveToPointToGuideBall?"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_pos = blackboard.ball.position
+        if y_axis_section(ball_pos):
+            border_vec = np.array([1.0, 0.0])
+        else:
+            border_vec = np.array([-1.0, 0.0])
+        robot_pos = blackboard.robot.position
+        ball_pos = blackboard.ball.position
+        robot_ball_vec = robot_pos - ball_pos
+
+        theta = angle_between(robot_ball_vec,
+                              border_vec,
+                              abs=False)
+        import rospy
+        rospy.logfatal(theta)
+        if theta < math.pi/6:
+            return TaskStatus.FAILURE, NO_ACTION
+        return TaskStatus.SUCCESS, NO_ACTION

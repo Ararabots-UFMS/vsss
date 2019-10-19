@@ -1,5 +1,5 @@
 from strategy.actions.game_behaviours import IsBehindBall, IsRobotInsideEnemyGoalLine, IsBallInsideAreas, IsNearBall, \
-    IsBallInBorder
+    IsBallInBorder, CanAttackerUseMoveToPointToGuideBall
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector, SpinTask, ChargeWithBall, \
     GoToBallUsingMove2Point
 from strategy.actions.state_behaviours import InState
@@ -26,12 +26,13 @@ class Attacker(BaseTree):
         normal_actions.add_child(FreeWayAttack('FreewayAttack'))
 
     def naive_go_to_ball(self) -> TreeNode:
-        tree = Selector("Go ball when ball in central area")
+        tree = Selector("Go ball")
         # tree.add_child(IsBallInsideCentralArea("Check ball"))
 
         border = Sequence("Ball on border")
         move_to_point_movement = GoToBallUsingMove2Point("GotoBallMove2point", acceptance_radius=7)
         border.add_child(IsBallInBorder())
+        # border.add_child(CanAttackerUseMoveToPointToGuideBall())
         border.add_child(move_to_point_movement)
         border.add_child(SpinTask('Spin'))
 
