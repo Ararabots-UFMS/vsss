@@ -11,7 +11,7 @@ from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
-from strategy.arena_utils import ArenaSections, section
+from strategy.arena_utils import ArenaSections, section, univector_pos_section
 
 
 from utils.math_utils import FORWARD, BACKWARDS, DEG2RAD
@@ -104,6 +104,10 @@ class Attacker(BaseTree):
                      action[0] = action[0] + OpCodes.USE_BACKWARD_HEAD
 
                 action = tuple(action)
+
+        elif univector_pos_section(blackboard.robot.position) == ArenaSections.CENTER:
+            action = list(action)
+            action[0] += OpCodes.USE_FORWARD_HEAD if blackboard.current_orientation else OpCodes.USE_BACKWARD_HEAD
 
         return status, action
 
