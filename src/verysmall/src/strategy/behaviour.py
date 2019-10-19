@@ -112,12 +112,11 @@ class MovingBody:
     def __init__(self, buffer_size=15):
         self.position = np.array([0, 0])
 
-        zeros = (0 for _ in range(buffer_size))
-        self.position_buffer_x = deque(zeros, maxlen=buffer_size)
-        self.position_buffer_y = deque(zeros, maxlen=buffer_size)
+        self.position_buffer_x = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
+        self.position_buffer_y = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
 
-        self.speed_buffer_x = deque(zeros, maxlen=buffer_size)
-        self.speed_buffer_y = deque(zeros, maxlen=buffer_size)
+        self.speed_buffer_x = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
+        self.speed_buffer_y = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
 
         t0 = time.time()
         self.time_buffer = deque((t0 for i in range(buffer_size)), maxlen=buffer_size)
@@ -129,11 +128,11 @@ class MovingBody:
 
     def __setattr__(self, key, value):
         if key == "position" and (value[0] or value[1]):
-            last_pos = np.array([self.position_buffer_x[-1], 0])
+            last_pos = np.array([self.position_buffer_x[-1], self.position_buffer_y[-1]])
             t = time.time()
             self._avg_speed = 0.1 * (value-last_pos) / (t - self._last_update) + \
                               0.9 * self._avg_speed
-            
+
             self.position_buffer_x.append(value[0])
             self.position_buffer_y.append(value[1])
             self.time_buffer.append(float(time.time()))
