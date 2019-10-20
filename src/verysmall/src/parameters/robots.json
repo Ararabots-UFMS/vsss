@@ -1,8 +1,8 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "ceci",
-        "body_id": "ceci",
+        "bluetooth_mac_address": "tucao",
+        "body_id": "tucao",
         "role": "PID Calibration",
         "tag_number": 3
     },
