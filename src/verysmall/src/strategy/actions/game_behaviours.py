@@ -150,6 +150,23 @@ class IsRobotInRangeOfDefense(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsBallInCriticalArea(TreeNode):
+    def __init__(self, name: str = "BallInFirstQuarter"):
+        super().__init__(name)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        team_side = blackboard.home_goal.side
+        ball_x = blackboard.ball.position[0]
+
+        if team_side == LEFT and ball_x < 35:
+            return TaskStatus.SUCCESS, NO_ACTION
+        elif team_side == RIGHT and ball_x > 115:
+            return TaskStatus.SUCCESS, NO_ACTION
+            
+        return TaskStatus.FAILURE, NO_ACTION
+
+        
+
 class IsBallInCriticalPosition(TreeNode):
     def __init__(self, name: str = "IsBallInRangeOfDefense"):
         super().__init__(name)

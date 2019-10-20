@@ -74,7 +74,7 @@ class UnivectorTask(ABC):
         self.univector_field.update_obstacles(blackboard.enemy_team.positions,
                                            [[0, 0]] * 5)  # blackboard.enemies_speed)
         theta = blackboard.robot.orientation
-        vec = 5*np.array([math.cos(theta), math.sin(theta)])*(-1 + 2*blackboard.current_orientation)
+        vec = 4*np.array([math.cos(theta), math.sin(theta)])*(-1 + 2*blackboard.current_orientation)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + vec, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)

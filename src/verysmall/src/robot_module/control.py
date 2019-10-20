@@ -26,7 +26,7 @@ class Control:
         self._alpha = 10  # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 20 * DEG2RAD
+        self._hysteresis_angle_window = 30 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
         self._beta = 0.5
@@ -41,6 +41,8 @@ class Control:
         self._pid_last_use = time()
         self._pid_reset_time = 0.032  # 2 frames
 
+        self._last_angle = 0
+
     def __setattr__(self, key, value):
         if key == '_head':
             self._blackboard.current_orientation = value
@@ -51,14 +53,12 @@ class Control:
                           angle: float,
                           speed: int,
                           distance: float) -> Tuple[float, float]:
-
         if opcode & OpCodes.USE_FORWARD_HEAD:
             self._head = FORWARD
         elif opcode & OpCodes.USE_BACKWARD_HEAD:
             self._head = BACKWARDS
         else:
-            pass
-            # self.set_head(angle)
+            self.set_head(angle)
         
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation

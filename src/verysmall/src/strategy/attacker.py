@@ -3,10 +3,11 @@ import rospy
 
 from strategy.actions.game_behaviours import IsBehindBall,\
  IsRobotInsideEnemyGoalLine, IsBallInsideSections, IsNearBall,\
- CanAttackerUseMoveToPointToGuideBall, IsBallInBorder
+ CanAttackerUseMoveToPointToGuideBall, IsBallInBorder, IsBallInCriticalArea
 
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector,\
-     SpinTask, ChargeWithBall, GoToBallUsingMove2Point, CanUseMoveToPointSafely
+     SpinTask, ChargeWithBall, GoToBallUsingMove2Point, CanUseMoveToPointSafely,\
+     GoToPositionUsingUnivector
 
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
@@ -23,6 +24,7 @@ class Attacker(BaseTree):
 
     def __init__(self, name='behave'):
         super().__init__(name)
+        self._critical_position_task = None
 
         normal = SafeHeadOnBorder(child=Sequence('Normal'))
         self.add_child(normal)
@@ -31,35 +33,25 @@ class Attacker(BaseTree):
         normal_actions = Selector('Normal Actions')
         normal.add_child(normal_actions)
 
-        # normal_actions.add_child(self.ball_on_border_tree())
+        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
+        normal_actions.add_child(self._ball_on_border_tree())
+        normal_actions.add_child(self._ball_on_critical_area_tree())
         normal_actions.add_child(self.ball_and_robot_in_enemy_goalline())
         normal_actions.add_child(self.naive_go_to_ball())
-        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
+        
 
     def naive_go_to_ball(self) -> TreeNode:
         tree = Selector("Go ball")
-        # tree.add_child(IsBallInsideCentralArea("Check ball"))
-
-        border = Sequence("Ball on border")
-        
-        border.add_child(IsBallInBorder())
-        border.add_child(CanUseMoveToPointSafely())
-        # border.add_child(CanAttackerUseMoveToPointToGuideBall())
-        
-        move_to_point_movement = GoToBallUsingMove2Point("GotoBallMove2point", acceptance_radius=7)
-        border.add_child(move_to_point_movement)
-        border.add_child(SpinTask('Spin'))
 
         middle = Sequence("Ball out of border")
         univector_movement = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=150,
+                                            max_speed=120,
                                             acceptance_radius=7,
                                             speed_prediction=False)
 
         middle.add_child(univector_movement)
         middle.add_child(SpinTask('Spin'))  # Spin
 
-        tree.add_child(border)
         tree.add_child(middle)
 
         return tree
@@ -74,7 +66,7 @@ class Attacker(BaseTree):
         spin_or_dash.add_child(spin_sequence)
 
         dash_sequence = Sequence("DashSequence")
-        #spin_or_dash.add_child(dash_sequence)
+        spin_or_dash.add_child(dash_sequence)
 
         spin_sequence.add_child(
             IsBallInsideSections(sections=[ArenaSections.LEFT_DOWN_CORNER, 
@@ -89,26 +81,28 @@ class Attacker(BaseTree):
 
         return tree
     
-    # def ball_on_border_tree(self) -> TreeNode:
-    #     tree = Sequence("BallOnBorder")
+    def _ball_on_border_tree(self) -> TreeNode:
+        tree = Sequence("Ball on border")
+        tree.add_child(IsBallInBorder())
+        tree.add_child(CanUseMoveToPointSafely())        
+        tree.add_child(GoToBallUsingMove2Point("GotoBallMove2point", acceptance_radius=7))
+        tree.add_child(SpinTask('Spin'))
 
-    #     s = [ArenaSections.UP_BORDER, ArenaSections.DOWN_BORDER]
-    #     tree.add_child(IsBallInsideSections(sections=s))
+        return tree
+    
+    def _ball_on_critical_area_tree(self) -> TreeNode:
+        tree = Sequence("Ball on critial area")
+        tree.add_child(IsBallInCriticalArea())
+        self._critical_position_task = GoToPositionUsingUnivector(max_speed=80,
+                                        acceptance_radius=5)
+        tree.add_child(self._critical_position_task)
+        return tree
 
-    #     on_boarder_behaviours = Selector("BallOnBorderBehaviours")
-    #     tree.add_child(on_boarder_behaviours)
-
-    #     on_boarder_behaviours.add_child(Sequence("GetBallUsingMove2Point",
-    #         [CanRobotUseMove2PointToRecoverBall(), 
-    #          GoToBallUsingMove2Point(speed=150, acceptance_radius=4)]))
-
-    #     return tree
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        team_side = blackboard.home_goal.side
+        shift = (-1 + 2*team_side) * 30
+        self._critical_position_task.set_position(np.array([75+shift, 65]))
+        rospy.logfatal(75+shift)
         status, action = super().run(blackboard)
-
-        if univector_pos_section(blackboard.robot.position) == ArenaSections.CENTER:
-            action = list(action)
-            action[0] += OpCodes.USE_FORWARD_HEAD if blackboard.current_orientation else OpCodes.USE_BACKWARD_HEAD
-
         return status, action
