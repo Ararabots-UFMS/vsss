@@ -1,9 +1,9 @@
 {
     "robot_1": {
-        "active": 0,
-        "bluetooth_mac_address": "ceci",
-        "body_id": "ceci",
-        "role": "PID Calibration",
+        "active": 1,
+        "bluetooth_mac_address": "walle",
+        "body_id": "walle",
+        "role": "Attacker",
         "tag_number": 3
     },
     "robot_2": {

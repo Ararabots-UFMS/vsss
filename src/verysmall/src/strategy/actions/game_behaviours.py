@@ -64,7 +64,7 @@ class IsTheWayFree(TreeNode):
         return task_result
 
 
-class CanRobotUseMove2PointToRecoverBall(TreeNode):
+class CanDefenderUseMove2PointToRecoverBall(TreeNode):
     def __init__(self, name="CanDefenderUseMove2PointToRecoverBall?"):
         super().__init__(name)
 

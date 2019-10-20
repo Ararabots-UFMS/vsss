@@ -7,14 +7,17 @@ import numpy as np
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
+
 from strategy.arena_utils import HALF_ARENA_HEIGHT, get_defense_range_height, LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X,\
     ROBOT_SIZE, y_axis_section, RIGHT, HALF_ARENA_WIDTH, on_attack_side, univector_pos_section, ArenaSections
 from strategy.behaviour import ACTION, TreeNode
 from strategy.behaviour import TaskStatus, BlackBoard, NO_ACTION
 from strategy.strategy_utils import spin_direction, object_in_defender_range
 from utils.json_handler import JsonHandler
-from utils.math_utils import predict_speed, angle_between, clamp, LEFT, RIGHT
+from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
+
+LEFT, RIGHT = 0, 1
 
 class StopAction(TreeNode):
 
@@ -501,7 +504,7 @@ class CanUseMoveToPointSafely(TreeNode):
     def __init__(self, name: str = "CanRobotUseMoveToPointSafely"):
         super().__init__(name)
     
-    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, NO_ACTION]:
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         team_side = blackboard.home_goal.side
         robot_x = blackboard.robot.position[0]
         ball_x = blackboard.ball.position[0]

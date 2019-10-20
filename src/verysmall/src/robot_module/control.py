@@ -57,7 +57,8 @@ class Control:
         elif opcode & OpCodes.USE_BACKWARD_HEAD:
             self._head = BACKWARDS
         else:
-            self.set_head(angle)
+            pass
+            # self.set_head(angle)
         
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
