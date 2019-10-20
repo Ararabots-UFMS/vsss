@@ -34,7 +34,7 @@ class Attacker(BaseTree):
         normal.add_child(normal_actions)
 
         normal_actions.add_child(FreeWayAttack('FreewayAttack'))
-        normal_actions.add_child(self._ball_on_border_tree())
+        # normal_actions.add_child(self._ball_on_border_tree())
         normal_actions.add_child(self._ball_on_critical_area_tree())
         normal_actions.add_child(self.ball_and_robot_in_enemy_goalline())
         normal_actions.add_child(self.naive_go_to_ball())
@@ -46,7 +46,7 @@ class Attacker(BaseTree):
         middle = Sequence("Ball out of border")
         univector_movement = GoToBallUsingUnivector("AttackBallInTheMiddle",
                                             max_speed=120,
-                                            acceptance_radius=7,
+                                            acceptance_radius=4,
                                             speed_prediction=False)
 
         middle.add_child(univector_movement)

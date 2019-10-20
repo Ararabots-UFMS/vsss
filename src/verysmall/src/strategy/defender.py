@@ -21,7 +21,7 @@ class Defender(BaseTree):
         border = Sequence("Border")
         border.add_child(IsBallInRangeOfDefense("RangeOfDefense"))
         border.add_child(IsBallInDefenseBorder("BallInBorder"))
-        border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=7))
+        border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=4))
         border.add_child(SpinTask("Spin"))
         defend.add_child(border)
 

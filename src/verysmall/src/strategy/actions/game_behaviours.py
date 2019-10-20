@@ -287,8 +287,7 @@ class IsInsideMetaRange(TreeNode):
         self.distance = distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if distance_point(blackboard.robot.position,
-                          blackboard.home_goal.position) < self.distance:
+        if abs(blackboard.robot.position[0] - blackboard.home_goal.position[0]) < self.distance:
             return TaskStatus.SUCCESS, NO_ACTION
         else:
             return TaskStatus.FAILURE, NO_ACTION
