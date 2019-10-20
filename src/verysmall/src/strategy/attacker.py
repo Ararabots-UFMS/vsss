@@ -85,7 +85,7 @@ class Attacker(BaseTree):
         tree = Sequence("Ball on border")
         tree.add_child(IsBallInBorder())
         tree.add_child(CanUseMoveToPointSafely())        
-        tree.add_child(GoToBallUsingMove2Point("GotoBallMove2point", acceptance_radius=7))
+        tree.add_child(GoToBallUsingMove2Point("GotoBallMove2point", speed=175,acceptance_radius=4))
         tree.add_child(SpinTask('Spin'))
 
         return tree
@@ -103,6 +103,5 @@ class Attacker(BaseTree):
         team_side = blackboard.home_goal.side
         shift = (-1 + 2*team_side) * 30
         self._critical_position_task.set_position(np.array([75+shift, 65]))
-        rospy.logfatal(75+shift)
         status, action = super().run(blackboard)
         return status, action

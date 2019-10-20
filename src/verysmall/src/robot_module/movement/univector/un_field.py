@@ -4,7 +4,7 @@ from math import pi
 from math import cos, sin, atan2, exp
 
 from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
-
+from utils.profiling_tools import log_warn
 LEFT = 0
 RIGHT = 1
 
