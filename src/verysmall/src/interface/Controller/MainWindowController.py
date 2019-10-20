@@ -154,17 +154,20 @@ class MainWindowController:
         :param ptr: Widget pointer
         :return: nothing
         """
-        old = self.robot_params[self.faster_hash[ptr.id]].copy()
+        old_parameters = self.robot_params[self.faster_hash[ptr.id]].copy()
 
         self.robot_params_controller.show(ptr.id)
         while self.robot_params_controller.view.root.visible():
             fl.Fl.wait()
 
-        the_same = self.robot_params[self.faster_hash[ptr.id]] == old
+        new_parameters = self.robot_params[self.faster_hash[ptr.id]]
+
+        the_same = new_parameters == old_parameters
 
         if not the_same:
             self.coach.set_robot_parameters(ptr.id)
             self.view.virtualField.set_visible_vectors(self.debug_params['things'], self.robot_params)
+            self.coach.change_robot_tag(ptr.id, new_parameters['tag_number'])
 
     def top_menu_choice(self, ptr):
         """

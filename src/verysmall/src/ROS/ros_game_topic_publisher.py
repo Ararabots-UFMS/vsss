@@ -30,7 +30,7 @@ class GameTopicPublisher:
         self.pub = rospy.Publisher(self.name, game_topic, queue_size=1)
         self.msg = game_topic()
         self.msg.robot_roles = [0, 0, 0, 0, 0]
-
+        self.msg.robot_tags = [0, 0, 0, 0, 0]
         self.game_opt = _game_opt
         self.robot_params = _robot_params
         self.robot_name_roles = _robot_name_roles
@@ -41,6 +41,7 @@ class GameTopicPublisher:
         for robot_id in range(5):
             role_name = self.robot_params[self.faster_hash[robot_id]]['role']
             self.set_robot_role(robot_id, self.robot_name_roles[role_name])
+            self.set_robot_tag(robot_id, self.robot_params[self.faster_hash[robot_id]]['tag_number'])
 
         self.set_freeball_robot(self.game_opt['freeball_player'])
         self.set_penalty_robot(self.game_opt['penalty_player'])
@@ -84,6 +85,15 @@ class GameTopicPublisher:
         """
         self.msg.robot_roles[robot_id] = role
 
+    def set_robot_tag(self, robot_id, tag):
+        """
+        Given a robot id, set its tag in the game
+        :param robot_id: int
+        :param tag: int
+        :return: nothing
+        """
+        self.msg.robot_tags[robot_id] = tag
+
     def assigned_action_to_robot(self, action_id, robot_id):
         """
         Assigned a robot_id to action(meta, free or penalty)
@@ -121,7 +131,7 @@ class GameTopicPublisher:
         """
         self.msg.meta_robot = _meta_robot
 
-    def set_message(self, game_state, team_side, team_color, robot_roles, penalty_robot, freeball_robot, meta_robot):
+    def set_message(self, game_state, team_side, team_color, robot_roles, robot_tags, penalty_robot, freeball_robot, meta_robot):
         """
         This function sets the publisher message
         :param game_state: uint8
@@ -138,6 +148,7 @@ class GameTopicPublisher:
             team_side,
             team_color,
             tuple(robot_roles),
+            tuple(robot_tags),
             penalty_robot,
             freeball_robot,
             meta_robot
