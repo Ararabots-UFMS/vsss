@@ -10,17 +10,26 @@ from ROS.ros_utils import RosUtils
 from ROS.ros_game_topic_publisher import GameTopicPublisher
 from coach.Coach import Coach
 import rospy
+from argparse import ArgumentParser
+from time import sleep
 import roslaunch
 from utils.camera_loader import CameraLoader
 from random import randint
+from sys import argv
+
 """
 Instantiates all the windows, robots, topics and services
 """
 
 if __name__ == '__main__':
-    
+
+    try:
+        owner_id = argv[1]
+    except ValueError:
+        owner_id = 'Player_' + str(randint(0, 99999))
+
     ProcessKiller(["robot"])
-    
+
     rospy.init_node('virtual_field', anonymous=True)
     # Load the database
     model = Model()
@@ -30,7 +39,9 @@ if __name__ == '__main__':
     launch.start()
 
     lc = LoadingController()
-    lc.start("Carregando Assets")
+    lc.start()
+
+    vision_owner = True
 
     if RosUtils.topic_exists("/things_position"):
         return_type, device_index = -1, -1
@@ -41,29 +52,30 @@ if __name__ == '__main__':
         # be a file or another camera
         lc.stop()
         return_type, device_index = CameraLoader(model.game_opt['camera']).get_index()
-        
-    lc.start("Carregando nó da visão")
-    # Launch Vision with another Topic
-    arguments = str(device_index) + " " + str(model.game_opt['time'])
 
-    vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
-                                        name='vision', args=arguments)
+        lc.start("Carregando nó da visão")
+        # Launch Vision with another Topic
+        arguments = str(device_index) + " " + owner_id
 
-    # launches the node and stores it in the given memory space
-    vision_process = launch.launch(vision_node)
-    vision_owner = True
+        vision_node = roslaunch.core.Node('verysmall', 'vision_node.py',
+                                          name='vision', args=arguments)
 
-    game_topic_id = randint(0,99999)
-    game_topic_publisher = GameTopicPublisher(False,model.game_opt,model.robot_params, model.robot_roles, game_topic_id)
-    
+        # launches the node and stores it in the given memory space
+        vision_process = launch.launch(vision_node)
+
+    game_topic_publisher = GameTopicPublisher(False, model.game_opt, model.robot_params, model.robot_roles,
+                                              owner_id)
+
     coach = Coach(model, game_topic_publisher, launch)
-    lc.stop()
 
+    lc.stop()
     controller = MainWindowController(model, coach, game_topic_publisher)
+
+    lc = LoadingController()
     lc.start("Salvando banco de dados")
 
     if vision_owner:
         vision_process.stop()
-    
+
     model.save_params()
     lc.stop()

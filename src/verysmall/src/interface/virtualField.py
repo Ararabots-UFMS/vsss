@@ -1,3 +1,6 @@
+from functools import partial
+
+import cv2
 import cv2 as cv
 import math
 import numpy as np
@@ -6,15 +9,14 @@ import time
 from .auxiliary import *
 import copy
 from utils.json_handler import JsonHandler
-from robot_module.movement.univector.un_field import univectorField
+from robot_module.movement.univector.un_field import UnivectorField
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
 
-
-
 # Lambda functions
 
-vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5)/10.0
+vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5) / 10.0
+
 
 # ================
 
@@ -62,8 +64,9 @@ class virtualField():
         self.height_conv = 0.998 * self.height / 130
         self.angle_conversion_factor = 180 / math.pi
 
-        self.univetField = univectorField(attack_goal=np.array([0.0, 65.0]), _rotation = True)
+        self.univetField = UnivectorField()
         self.draw_vectors = False
+        self.draw_simulation_vectors = False
 
         self.field_origin = (self.proportion_width(5.882), self.proportion_height(99.9))
         self.ball_radius = self.proportion_average(1.5)
@@ -74,17 +77,19 @@ class virtualField():
         self.text_font = cv.FONT_HERSHEY_SIMPLEX
 
         # saved tags
-        self.robot_draw_list = [0]*5
+        self.robot_draw_list = [0] * 5
         self.robot_tags = [0] * 5
-        self.tag_debug_vector= [0] * 20
+        self.tag_debug_vector = [0] * 20
 
         # univector
+        self.show_univector_tweaker = False
         self.RADIUS = univector_list['RADIUS']
         self.KR = univector_list['KR']
         self.K0 = univector_list['K0']
         self.DMIN = univector_list['DMIN']
         self.LDELTA = univector_list['LDELTA']
-        self.univetField.updateConstants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
+        self.univetField.update_constants(self.RADIUS, self.KR, self.K0, self.DMIN, self.LDELTA)
+        self.attack_goal = None
 
         if is_rgb:
             self.colors = {"blue": [0, 0, 255],
@@ -113,14 +118,39 @@ class virtualField():
                            "magenta": [123, 31, 202]
                            }
 
-
     '''  delay no plot, ajuste/teste de fps'''
+
+    def update_univector_callback(self, key, scale, value):
+        self.univetField.__setattr__(key, value / scale)
+        self.univetField.update_constants(self.univetField.RADIUS, self.univetField.KR, self.univetField.K0,
+                                          self.univetField.DMIN, self.univetField.LDELTA)
+
+    def destroy_univector_trackbars(self):
+        if self.show_univector_tweaker:
+          self.show_univector_tweaker = False
+          cv2.destroyWindow("Univector Tweaker")
+
+    def create_univector_trackbars(self):
+        range = 10000
+        scale = 100
+        self.empty_image = np.zeros((1,500,3), np.uint8)
+        cv2.namedWindow("Univector Tweaker", 1)
+        cv2.imshow("Univector Tweaker", self.empty_image)
+        cv2.createTrackbar("RADIUS", "Univector Tweaker", int(self.RADIUS * scale), range,
+                           partial(self.update_univector_callback, "RADIUS", scale))
+        cv2.createTrackbar("KR", "Univector Tweaker", int(self.KR * scale), range,
+                           partial(self.update_univector_callback, "KR", scale))
+        cv2.createTrackbar("K0", "Univector Tweaker", int(self.K0 * scale), range,
+                           partial(self.update_univector_callback, "K0", scale))
+        cv2.createTrackbar("DMIN", "Univector Tweaker", int(self.DMIN * scale), range,
+                           partial(self.update_univector_callback, "DMIN", scale))
+        cv2.createTrackbar("LDELTA", "Univector Tweaker", int(self.LDELTA * scale), range,
+                           partial(self.update_univector_callback, "LDELTA", scale))
+        self.show_univector_tweaker = True
+
     def pause(self, n):
         """system pause for n FPS"""
         time.sleep(1.0 / n)
-
-
-
 
     ''' recebe uma imagem preta e faz nela, o plot de todas as linhas do campo, markers e etc.
 
@@ -164,7 +194,8 @@ class virtualField():
 
         # left and right ellipses
         cv.ellipse(field, (self.proportion_width(14.705), self.proportion_height(50.0)),
-                   (self.proportion_width(2.941), self.proportion_height(7.692)), 180, 90.0, 270.0, self.colors["white"])
+                   (self.proportion_width(2.941), self.proportion_height(7.692)), 180, 90.0, 270.0,
+                   self.colors["white"])
         cv.ellipse(field, (self.proportion_width(85.295), self.proportion_height(50.0)),
                    (self.proportion_width(2.941), self.proportion_height(7.692)), 0, 90.0, 270.0, self.colors["white"])
 
@@ -275,19 +306,17 @@ class virtualField():
         ball_center = unit_convert(ball_center, self.width_conv, self.height_conv)
         ball_center = position_from_origin(ball_center, self.field_origin)
 
-
-
-        #validacao gol esquerdo
+        # validacao gol esquerdo
         if (validate[0] < 0.1 and 45.0 < validate[1] < 85.0):
             cv.rectangle(self.field, (self.proportion_width(0.1), self.proportion_height(34.615)),
                          (self.proportion_width(5.882), self.proportion_height(65.385)), self.colors["green"], -1)
 
-        #validacao gol direito
+        # validacao gol direito
         elif (validate[0] > 150.0 and 45.0 < validate[1] < 85.0):
             cv.rectangle(self.field, (self.proportion_width(94.018), self.proportion_height(34.615)),
                          (self.proportion_width(99.9), self.proportion_height(65.385)), self.colors["green"], -1)
 
-        #validacao area esquerda
+        # validacao area esquerda
         elif (15.0 >= validate[0] > 0.0 and 30.0 < validate[1] < 100.0 or (
                 ((validate[0] - 15) ** 2 / (10) ** 2) + ((validate[1] - 65) ** 2 / (5) ** 2) < 1)):
 
@@ -298,7 +327,7 @@ class virtualField():
                        (self.proportion_width(2.941), self.proportion_height(7.692)), 180, 90.0, 270.0,
                        self.colors["dgreen"], -1)
 
-        #validacao area direita
+        # validacao area direita
         elif (150.0 > validate[0] >= 135.0 and 30.0 < validate[1] < 100.0 or (
                 ((validate[0] - 135) ** 2 / (10) ** 2) + ((validate[1] - 65) ** 2 / (5) ** 2) < 1)):
             cv.rectangle(self.field, (self.proportion_width(85.295), self.proportion_height(23.076)),
@@ -310,13 +339,9 @@ class virtualField():
         else:
             pass
 
-
-        #validacao posicao da bola dentro dos limites do campo
-        if validate[0] != 0 or validate[1] !=0:
+        # validacao posicao da bola dentro dos limites do campo
+        if validate[0] != 0 or validate[1] != 0:
             cv.circle(self.field, ball_center, self.ball_radius, self.colors["orange"], -1)
-
-
-
 
     '''  plot_robots - plota os robos de um time em uma determinada cor
           parametros
@@ -344,13 +369,16 @@ class virtualField():
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
                     cv.circle(self.field, center, self.away_team_radius, color, -1)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["white"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])),
+                               (center[0] + self.text_offset[0], center[1] + self.text_offset[1]), self.text_font, 0.3,
+                               self.colors["yellow"], 1, cv.LINE_AA)
 
                 else:
                     angle = robot_vector[index]
                     center = position_from_origin(
                         unit_convert(robot_list[index], self.width_conv, self.height_conv), self.field_origin)
-                    contour = (center, (self.robot_side_size, self.robot_side_size), -angle * self.angle_conversion_factor)
+                    contour = (
+                        center, (self.robot_side_size, self.robot_side_size), -angle * self.angle_conversion_factor)
                     n_contour = cv.boxPoints(contour)
                     n_contour = np.int0(n_contour)
                     cv.drawContours(self.field, [n_contour], -1, color, -1)
@@ -358,9 +386,11 @@ class virtualField():
                                                         int(center[1] + math.sin(-angle) * self.robot_side_size)),
                                    self.colors["red"], 2)
                     cv.putText(self.field, str(index), center, self.text_font, 0.5, self.colors["black"], 1, cv.LINE_AA)
-                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])), (center[0]+self.text_offset[0], center[1]+self.text_offset[1]), self.text_font, 0.3, self.colors["yellow"], 1, cv.LINE_AA)
+                    cv.putText(self.field, str(vector_to_human_readable(robot_speed[index])),
+                               (center[0] + self.text_offset[0], center[1] + self.text_offset[1]), self.text_font, 0.3,
+                               self.colors["yellow"], 1, cv.LINE_AA)
 
-                    if self.draw_vectors and self.tag_debug_vector[index]:
+                    if self.draw_simulation_vectors and self.tag_debug_vector[index]:
                         self.drawPath(robot_list[index], ball_center)
 
             index = index + 1
@@ -380,29 +410,32 @@ class virtualField():
         ball_center = data.ball_pos  # ball position
         robotlistH = data.team_pos  # home team position
         robotvecH = data.team_orientation  # home team vectors
-        robot_speed_home = data.team_speed
         robotlistA = data.enemies_pos  # away team position
         robotvecA = data.enemies_orientation  # away team vectors
-        robot_speed_away = data.enemies_speed
-
 
         self.plot_ball(ball_center)
 
-        if self.draw_vectors:
-            self.univetField.updateBall(ball_center)
-            self.univetField.updateObstacles(robotlistA,robot_speed_away)
+        fake_speedsA = [[0,0]] * len(robotlistA)
+        fake_speedsH = [[0,0]] * len(robotlistH)
 
-        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed_home)
-        self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=robot_speed_away)
+        if self.draw_simulation_vectors:
+            self.univetField.update_obstacles(robotlistA, fake_speedsA )
 
+        self.plot_robots(robotlistH, robotvecH, colorH, False, ball_center, robot_speed=fake_speedsH)
+        self.plot_robots(robotlistA, robotvecA, colorA, is_away=is_away, robot_speed=fake_speedsA)
 
         ''' usar no maximo 1 casa decimal, substituir os parametros
             de entrada do metodo pelos lidos no topico e substituir os
             valores de exemplo no plot abaixo '''
 
-        cv.putText(self.field, str(fps_topic), (self.proportion_width(0.2), self.proportion_height(7.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
+        cv.putText(self.field, str(fps_topic), (self.proportion_width(0.2), self.proportion_height(7.0)),
+                   self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
 
-        cv.putText(self.field, str(fps_vision), (self.proportion_width(0.2), self.proportion_height(16.0)), self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
+        cv.putText(self.field, str(fps_vision), (self.proportion_width(0.2), self.proportion_height(16.0)),
+                   self.text_font, 0.55, self.colors["green"], 1, cv.LINE_AA)
+        if self.show_univector_tweaker:
+            cv2.imshow("Univector Tweaker", self.empty_image)
+            cv2.waitKey(1)
 
     def drawPath(self, start, end):
         currentPos = np.array(start)
@@ -410,43 +443,45 @@ class virtualField():
         end = np.array(end)
 
         newPos = None
-        alpha = 3.5
+        alpha = 2.0  # 3.5
         beta = 3.5
         point_lines = []
 
         distance = np.linalg.norm(currentPos - end)
         it = 0
-        while (distance >= beta) and it < 45:
-
-            v = self.univetField.getVecWithBall(_robotPos=currentPos, _vRobot=[0, 0], _ball = end)
+        points = []
+        while (distance >= beta) and it < 120:
+            v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0],
+                                                   _ball=end, _attack_goal=self.attack_goal)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
-            cv.line(self.field, (_currentPos[0], _currentPos[1]), (_newPos[0], _newPos[1]), self.colors['red'], 2)
+            points.append(_newPos)
             currentPos = newPos
             _currentPos = _newPos
-            it+=1
+            it += 1
             distance = np.linalg.norm(currentPos - end)
 
+        cv2.polylines(self.field,[np.array(points)], 0, self.colors['red'], 2)
+
     def set_visible_vectors(self, robot_list, robot_params):
-        faster_hash = ['robot_'+str(x) for x in range(1, 6)]
-        self.robot_draw_list = [0]*5
-        self.robot_tags = [0]*5
-        self.tag_debug_vector = [0]*20
+        faster_hash = ['robot_' + str(x) for x in range(1, 6)]
+        self.robot_draw_list = [0] * 5
+        self.robot_tags = [0] * 5
+        self.tag_debug_vector = [0] * 20
 
         for id in range(5):
-          tag_id = robot_params[faster_hash[id]]['tag_number']
-          self.robot_tags[id] = int(tag_id)
-          self.robot_draw_list[id]|= int(robot_list[faster_hash[id]])
-          self.tag_debug_vector[int(tag_id)]+= int(robot_list[faster_hash[id]])
+            tag_id = robot_params[faster_hash[id]]['tag_number']
+            self.robot_tags[id] = int(tag_id)
+            self.robot_draw_list[id] |= int(robot_list[faster_hash[id]])
+            self.tag_debug_vector[int(tag_id)] += int(robot_list[faster_hash[id]])
 
-
-    def set_univector_debug_params(self, attack_side = 0, plot_vector = 0, robot_list = [0, 0, 0, 0, 0], robot_params = None):
-        self.univetField.update_attack_side(attack_side)
-        self.draw_vectors = plot_vector
+    def set_univector_debug_params(self, attack_side=0, plot_vector=0, robot_list=[0, 0, 0, 0, 0], robot_params=None):
+        self.attack_goal = attack_side
+        self.draw_simulation_vectors = plot_vector
         self.set_visible_vectors(robot_list, robot_params)
 
-    def set_draw_vectors(self, plot_vector = 0):
-        self.draw_vectors = plot_vector
+    def set_draw_vectors(self, plot_vector=0):
+        self.draw_simulation_vectors = plot_vector
 
     def proportion_height(self, proportion):
         """Returns the Y value for the designed vertical screen proportion"""
@@ -463,7 +498,9 @@ class virtualField():
         for index in range(5):
             if self.robot_draw_list[index]:
                 currentPos = robot_positions[self.robot_tags[index]]
-                _currentPos = position_from_origin(unit_convert( currentPos, self.width_conv, self.height_conv), self.field_origin)
-                newPos =  currentPos + 7 * debug_vectors[index]
-                _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
+                _currentPos = position_from_origin(unit_convert(currentPos, self.width_conv, self.height_conv),
+                                                   self.field_origin)
+                newPos = currentPos + 7 * debug_vectors[index]
+                _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv),
+                                               self.field_origin)
                 cv.arrowedLine(self.field, _currentPos, _newPos, self.colors["blue"], 2)

@@ -1,94 +1,99 @@
-from argparse import ArgumentParser
-from utils.json_handler import JsonHandler
-from vision_module.camera_module.camera import Camera
+#!/usr/bin/python3
 import cv2
 import numpy as np
 import copy
-from vision_module import COLORS
+import rospy
 import os
+import pickle
+import os
+
+from argparse import ArgumentParser
+from utils.json_handler import JsonHandler
+from vision_module.camera_module.camera import Camera
+from vision_module import COLORS
+
 
 # @author Wellington Castro <wvmcastro>
 
 class ColorSegmentation:
 
     def __init__(self, cam, color_params_file=""):
-
         self.json_handler = JsonHandler()
         self.params_file = color_params_file
         self.camera = cam
+
+        self._shortcuts = {'o': "orange", 'y': "yellow", 
+                           'b': "blue", 'g': "green", 'p': "pink", 
+                           'i': "ice", 'v': "violet"}
+
+        self._colors = self._shortcuts.values()
+        self._threshs = {c : {"min": np.uint8((255, 255, 255)), "max": np.uint8((0, 0, 0))} 
+                            for c in self._colors}
+        
         self.last_key = None
         self.reset_all()
         self.load_params()
 
+        self.temp_min = np.uint8([])
+        self.temp_max = np.uint8([])
+
     def reset_all(self):
-        components = ["blue", "yellow", "ball", "temp"]
-        for c in components:
+        for c in self._colors:
             self.reset(c)
+        
+        self.reset("temp")
 
     def reset(self, component):
-        if component == "blue":
-            self.blue_min = np.uint8([255, 255, 255])
-            self.blue_max = np.uint8([0, 0, 0])
-        elif component == "yellow":
-            self.yellow_min = np.uint8([255, 255, 255])
-            self.yellow_max = np.uint8([0, 0, 0])
-        elif component == "ball":
-            self.ball_min = np.uint8([255, 255, 255])
-            self.ball_max = np.uint8([0, 0, 0])
-        elif component == "temp":
+        if component != "temp":
+            self._threshs[component]["min"] = np.uint8([255, 255, 255])
+            self._threshs[component]["max"] = np.uint8([0, 0, 0])
+        else:
             self.temp_min = np.uint8([])
             self.temp_max = np.uint8([])
 
     def load_params(self):
-        if os.path.isfile(self.params_file):
-            params = self.json_handler.read(self.params_file)
-            if "hsv_ball_min" in params and "hsv_ball_max" in params:
-                self.ball_min = np.asarray(params['hsv_ball_min']).astype("uint8")
-                self.ball_max = np.asarray(params['hsv_ball_max']).astype("uint8")
-            if "hsv_blue_min" in params and "hsv_blue_max" in params:
-                self.blue_min = np.asarray(params['hsv_blue_min']).astype("uint8")
-                self.blue_max = np.asarray(params['hsv_blue_max']).astype("uint8")
-            if "hsv_yellow_min" in params and "hsv_yellow_max" in params:
-                self.yellow_min = np.asarray(params['hsv_yellow_min']).astype("uint8")
-                self.yellow_max = np.asarray(params['hsv_yellow_max']).astype("uint8")
+        file1 = os.environ['ROS_ARARA_ROOT']+"src/" + self.params_file
+        if os.path.exists(file1):
+            filename = file1
+        elif os.path.exists(self.params_file):
+            filename = self.params_file
         else:
-            print("The is no previous params to load")
+            return
+        
+        try:
+            print(filename)
+            with open(filename, 'rb') as fp:
+                self._threshs = pickle.load(fp)
+        except:
+            print("File load failed")
 
     def write_params(self):
-        params = dict()
-        params["hsv_ball_min"] = self.ball_min.tolist()
-        params["hsv_ball_max"] = self.ball_max.tolist()
-        params["hsv_blue_min"] = self.blue_min.tolist()
-        params["hsv_blue_max"] = self.blue_max.tolist()
-        params["hsv_yellow_min"] = self.yellow_min.tolist()
-        params["hsv_yellow_max"] = self.yellow_max.tolist()
+        if self.params_file[0] != '/':
+            filename = os.environ['ROS_ARARA_ROOT'] + "src/" + self.params_file
+        else:
+            filename = self.params_file
 
-        self.json_handler.write(params, self.params_file)
+        with open(filename, "wb+") as fp:
+            pickle.dump(self._threshs, fp)
 
     def onMouse_get_color(self, event, x, y, flags, arg):
 
         if self.temp_min.size > 0 and self.temp_max.size > 0:
 
             if event == cv2.EVENT_LBUTTONUP and (flags & cv2.EVENT_FLAG_SHIFTKEY):
-                self.temp_min = np.minimum(self.temp_min, self.hsv_frame[y,x,:])
-                self.temp_max = np.maximum(self.temp_max, self.hsv_frame[y,x,:])
-                self.visited.append([y,x])
+                self.temp_min = np.minimum(self.temp_min, self.hsv_frame[y, x, :])
+                self.temp_max = np.maximum(self.temp_max, self.hsv_frame[y, x, :])
+                self.visited.append([y, x])
             elif event == cv2.EVENT_LBUTTONUP:
-                for i in range(y-1, y+2):
-                    for j in range(x-1, x+2):
-                        self.temp_min = np.minimum(self.temp_min, self.hsv_frame[i,j,:])
-                        self.temp_max = np.maximum(self.temp_max, self.hsv_frame[i,j,:])
-                        self.visited.append([i,j])
+                for i in range(y - 1, y + 2):
+                    for j in range(x - 1, x + 2):
+                        self.temp_min = np.minimum(self.temp_min, self.hsv_frame[i, j, :])
+                        self.temp_max = np.maximum(self.temp_max, self.hsv_frame[i, j, :])
+                        self.visited.append([i, j])
 
-            if self.last_key == 'b':
-                self.ball_min = self.temp_min
-                self.ball_max = self.temp_max
-            elif self.last_key == 'a':
-                self.blue_min = self.temp_min
-                self.blue_max = self.temp_max
-            elif self.last_key == 'y':
-                self.yellow_min = self.temp_min
-                self.yellow_max = self.temp_max
+            c = self._shortcuts[self.last_key]
+            self._threshs[c]["min"] = self.temp_min
+            self._threshs[c]["max"] = self.temp_max
 
     def onMouse_no_mode(self, event, x, y, flags, arg):
         pass
@@ -102,33 +107,28 @@ class ColorSegmentation:
         return mask
 
     def erase_previous(self):
-        if self.last_key == 'a':
-            self.reset("blue")
-        elif self.last_key == 'y':
-            self.reset("yellow")
-        else:
-            self.reset("ball")
-
+        color = self._shortcuts[self.last_key]
+        self.reset(color)
         self.reset("temp")
 
     def run(self):
         window_name = "color segmentation"
         cv2.namedWindow(window_name)
 
-        exit = False
+        should_exit = False
         self.visited = []
         frame = self.camera.read()
         aux_mask = np.empty(frame.shape).astype("uint8")
 
-        while(not exit):
+        while (not should_exit):
             self.frame = self.camera.read()
             self.hsv_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
 
-            key  = cv2.waitKey(1) & 0xFF
+            key = cv2.waitKey(1) & 0xFF
 
             if self.temp_min.size > 0 and self.temp_max.size > 0:
                 self.mask = self.draw_mask()
-                aux_mask[:,:,0],aux_mask[:,:,1], aux_mask[:,:,2] = self.mask, self.mask, self.mask
+                aux_mask[:, :, 0], aux_mask[:, :, 1], aux_mask[:, :, 2] = self.mask, self.mask, self.mask
                 self.draw_selected(self.mask)
                 cv2.imshow("Segment", aux_mask)
             else:
@@ -136,24 +136,20 @@ class ColorSegmentation:
 
             cv2.imshow(window_name, self.frame)
 
-            if key in set([ord('b'), ord('a'), ord('y')]):
+            if key == ord('q'):
+                should_exit = True
+            elif chr(key) in self._shortcuts:  # orange
+                c = self._shortcuts[chr(key)]
+                
+                if c not in self._threshs.keys():
+                    self._threshs[c] = {"min": np.uint8((255,255,255)),
+                                        "max": np.uint8((0,0,0))}
+
+                self.temp_min = self._threshs[c]["min"]
+                self.temp_max = self._threshs[c]["max"]
+                self.last_key = chr(key)
                 self.visited = []
                 cv2.setMouseCallback(window_name, self.onMouse_get_color)
-
-            if key == ord('q'):
-                exit = True
-            elif key == ord('b'): #ball
-                self.temp_max = self.ball_max
-                self.temp_min = self.ball_min
-                self.last_key = 'b'
-            elif key == ord('a'): # blue
-                self.temp_max = self.blue_max
-                self.temp_min = self.blue_min
-                self.last_key = 'a'
-            elif key == ord('y'): # yellow
-                self.temp_max = self.yellow_max
-                self.temp_min = self.yellow_min
-                self.last_key = 'y'
             elif key == ord(' '):
                 print("LAST KEY", self.last_key)
                 self.erase_previous()
@@ -161,7 +157,7 @@ class ColorSegmentation:
             elif key == ord('s'):
                 self.write_params()
                 print("saving")
-            elif key == 27: # no mode
+            elif key == 27:  # no mode
                 self.reset("temp")
                 cv2.setMouseCallback(window_name, self.onMouse_no_mode)
                 self.visited = []
@@ -169,18 +165,20 @@ class ColorSegmentation:
 
         cv2.destroyAllWindows()
 
+
 def makeArgParser() -> ArgumentParser:
     parser = ArgumentParser()
     parser.add_argument("device", type=str, default="0", help="camera device")
-    parser.add_argument("--camera_params_file", 
-                         type=str, 
-                         default="../../parameters/CAMERA_ELP-USBFHD01M-SFV.json",
-                         help="camera params file for lens correction")
+    parser.add_argument("--camera_params_file",
+                        type=str,
+                        default="../../parameters/CAMERA_ELP-USBFHD01M-SFV.json",
+                        help="camera params file for lens correction")
     parser.add_argument("--color_params_file",
                         type=str,
-                        default="../../parameters/COLORS.json",
+                        default="../../parameters/COLORS.bin",
                         help="color params file to store the color thresholds")
     return parser
+
 
 if __name__ == "__main__":
     parser = makeArgParser()
@@ -188,6 +186,5 @@ if __name__ == "__main__":
     
     cam_id = int(args.device) if len(args.device) == 0 else args.device
     camera = Camera(cam_id, args.camera_params_file)
-
     c = ColorSegmentation(camera, args.color_params_file)
     c.run()

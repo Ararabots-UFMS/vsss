@@ -1,37 +1,37 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "LUIS_ESPALHA_LIXO",
-        "body_id": "LUIS_ESPALHA_LIXO",
-        "role": "Atacker With Univector",
+        "bluetooth_mac_address": "ceci",
+        "body_id": "ceci",
+        "role": "Goalkeeper",
         "tag_number": 0
     },
     "robot_2": {
         "active": 0,
-        "bluetooth_mac_address": "Et_Bilu",
-        "body_id": "Et_Bilu",
-        "role": "Atacker With Univector",
-        "tag_number": 0
+        "bluetooth_mac_address": "ceci",
+        "body_id": "ceci",
+        "role": "Attacker",
+        "tag_number": 3
     },
     "robot_3": {
         "active": 0,
-        "bluetooth_mac_address": "Jeremias",
-        "body_id": "Jeremias",
-        "role": "Atacker With Univector",
-        "tag_number": 3
+        "bluetooth_mac_address": "ceci",
+        "body_id": "ceci",
+        "role": "Goalkeeper",
+        "tag_number": 0
     },
     "robot_4": {
         "active": 0,
-        "bluetooth_mac_address": "Nenhum",
-        "body_id": "Nenhum",
-        "role": "Atacante",
+        "bluetooth_mac_address": "nenhum",
+        "body_id": "nenhum",
+        "role": "Attacker",
         "tag_number": 3
     },
     "robot_5": {
         "active": 0,
-        "bluetooth_mac_address": "Et_Bilu",
-        "body_id": "Et_Bilu",
-        "role": "Atacker With Univector",
+        "bluetooth_mac_address": "noriko",
+        "body_id": "noriko",
+        "role": "Attacker",
         "tag_number": 3
     }
 }

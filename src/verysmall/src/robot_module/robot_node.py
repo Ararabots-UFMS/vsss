@@ -13,7 +13,7 @@ def makeArgParser() -> ArgumentParser:
     parser.add_argument("team_side", type=int, help="robot team side: 0->---, 1->---")
     parser.add_argument("team_color", type=int, help="robot team color: 0->blue, 1->yellow")
     parser.add_argument("robot_role", type=int, help="robot state machine id")
-    parser.add_argument("game_topic", type=str, help="game topic name")
+    parser.add_argument("owner_name", type=str, help="owner of this game topic and robots")
     parser.add_argument("socket_id", type=int, help="robot socket id")
     parser.add_argument("should_debug", type=int, default=0, help="robot debug flag")
     parser.add_argument("ros_args", nargs='*', help="additional ros parameters")
@@ -29,6 +29,6 @@ if __name__ == '__main__':
     rospy.logfatal(robot_name + " TAG: " + str(args.tag) + " Online")
 
     robot = Robot(args.id, args.tag, args.body, args.team_side, args.team_color,
-                  args.robot_role, args.game_topic, args.socket_id, args.should_debug)
+                  args.robot_role, args.owner_name, args.socket_id, args.should_debug)
 
     rospy.spin()

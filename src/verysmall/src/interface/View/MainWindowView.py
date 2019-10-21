@@ -115,7 +115,6 @@ class MainWindowView:
             self.arena.image = self.virtualField.field
 
             if self.virtualField.draw_vectors:
-
                 self.debug_counter = 0
                 self.last_index, self.debug_vector = self.reader.pop_item_debug()
 
@@ -160,7 +159,7 @@ class MainWindowView:
 
         self.top_menu.add("Configurações", 0, None, 0, fl.FL_MENU_DIVIDER + fl.FL_SUBMENU)
         self.top_menu.add("Configurações/Interface")
-        self.top_menu.add("Configurações/Campo Virtual")
+        self.top_menu.add("Configurações/Univector Tweaker")
         self.top_menu.add("Configurações/Console")
         self.top_menu.add("Configurações/Conexão")
 
@@ -377,6 +376,7 @@ class MainWindowView:
         fl.Fl.add_timeout(self.RATE, self.redraw_field)
 
         fl.Fl.run()
+        self.virtualField.destroy_univector_trackbars()
 
 if __name__ == '__main__':
     mainwindow = MainWindowView()

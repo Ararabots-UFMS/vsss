@@ -1,11 +1,13 @@
+from collections import deque
 from typing import Union
 import cv2
 import numpy as np
-from collections import deque
 from threading import Thread, Semaphore
-from utils.json_handler import JsonHandler
 import rospy
+import pickle
+import os
 
+from utils.json_handler import JsonHandler
 
 # @author Wellington Castro <wvmcastro>
 
@@ -94,21 +96,28 @@ class Camera:
         return frame
 
     def _load_params(self) -> None:
-        """ Loads the parameters of the camera from a json """
-        params = self.json_handler.read(self.params_file_name)
+        file1 = os.environ['ROS_ARARA_ROOT']+"src/" \
+                + self.params_file_name
+        if os.path.exists(file1):
+            self.params_file_name = file1
+        elif not os.path.exists(self.params_file_name):
+            return
+
+        with open(self.params_file_name, "rb") as fp:
+            params = pickle.load(fp)
 
         """ mapx and mapy are the matrix with the lens correction map """
-        mapx = np.asarray(params['matrix_x']).astype("float32")
-        mapy = np.asarray(params['matrix_y']).astype("float32")
-        self.mapx, self.mapy = cv2.convertMaps(mapx, mapy, cv2.CV_16SC2)
+        self.mapx = params['matrix_x']
+        self.mapy = params['matrix_y']
+        # self.mapx, self.mapy = cv2.convertMaps(mapx, mapy, cv2.CV_16SC2)
 
         """ The frame width and height """
-        self.frame_width = int(params['default_frame_width'])
-        self.frame_height = int(params['default_frame_height'])
+        self.frame_width = params['default_frame_width']
+        self.frame_height = params['default_frame_height']
 
         """ The matrix of the intrinsic parameters and the vector of distortion coefficients """
-        self.camera_matrix = np.asarray(params['cam_matrix'])
-        self.dist_vector = np.asarray(params['dist_vector'])
+        self.camera_matrix = params['cam_matrix']
+        self.dist_vector = params['dist_vector']
 
     def set_device(self, width: int, height: int) -> None:
         self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))

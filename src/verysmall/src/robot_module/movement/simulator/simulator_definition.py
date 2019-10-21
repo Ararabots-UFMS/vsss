@@ -51,9 +51,9 @@ vObstacle = np.array([0, 0])
 
 # creates the univector field
 univetField = univectorField(attack_goal=RIGHT)
-univetField.updateConstants(RADIUS, KR, K0, DMIN, LDELTA)
-univetField.updateBall(np.array(sim.ball))
-univetField.updateObstacles(obstacle, vObstacle)
+univetField.update_constants(RADIUS, KR, K0, DMIN, LDELTA)
+univetField.update_ball(np.array(sim.ball))
+univetField.update_obstacles(obstacle, vObstacle)
 
 leftSpeed = 0
 rightSpeed = 0

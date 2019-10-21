@@ -3,9 +3,13 @@ import cv2
 from sklearn.cluster import KMeans
 import rospy
 import time
+
+from vision_module.seekers.seeker import Seeker
+
+
 # @author Wellington Castro <wvmcastro>
 
-class GeneralMultObjSeeker:
+class GeneralMultObjSeeker(Seeker):
 
     def __init__(self, num_objects):
         self.num_objects = num_objects
@@ -22,7 +26,7 @@ class GeneralMultObjSeeker:
            :return: objecs: np.array([float, float]).shape([k, 2])
            object has the position of the center of each object in img
         """
-        if cv2.__version__ == '4.1.1-pre':
+        if cv2.__version__[0] == '4':
             cnts, _ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
         else:
             _, cnts, *_ = cv2.findContours(img, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -52,10 +56,8 @@ class GeneralMultObjSeeker:
                 else:
                     self.objects = newObjects
 
-
         return self.objects
 
-    def reset(self):
+    def reset(self, opt=None):
         self.kmeans.init = 'k-means++'
-
         self.objects = None
