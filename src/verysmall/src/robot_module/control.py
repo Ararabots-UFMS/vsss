@@ -10,6 +10,7 @@ from robot_module.hardware import RobotHardware
 from robot_module.movement.definitions import OpCodes
 from strategy.behaviour import BlackBoard
 from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
+from strategy.arena_utils import ArenaSections, univector_pos_section
 
 Constants = Tuple[int, float, float, float]
 
@@ -25,7 +26,7 @@ class Control:
         self._alpha = 10  # centimeters
 
         self._head = FORWARD
-        self._hysteresis_angle_window = 15 * DEG2RAD
+        self._hysteresis_angle_window = 30 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
         self._beta = 0.5
@@ -40,10 +41,24 @@ class Control:
         self._pid_last_use = time()
         self._pid_reset_time = 0.032  # 2 frames
 
+        self._last_angle = 0
+
+    def __setattr__(self, key, value):
+        if key == '_head':
+            self._blackboard.current_orientation = value
+
+        super().__setattr__(key, value)
+
     def get_wheels_speeds(self, opcode: OpCodes,
                           angle: float,
                           speed: int,
                           distance: float) -> Tuple[float, float]:
+        if opcode & OpCodes.USE_FORWARD_HEAD:
+            self._head = FORWARD
+        elif opcode & OpCodes.USE_BACKWARD_HEAD:
+            self._head = BACKWARDS
+        else:
+            self.set_head(angle)
 
         if opcode & OpCodes.ORIENTATION_AVERAGE:
             self._current_orientation = self._ma_orientation
@@ -65,7 +80,6 @@ class Control:
                        angle: float,
                        distance: float,
                        optimal_speed: bool = True) -> Tuple[float, float]:
-        self.set_head(angle)
 
         diff_angle = self.get_diff_angle(angle)
 

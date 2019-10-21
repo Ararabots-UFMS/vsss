@@ -2,10 +2,11 @@ from math import sin
 from typing import Callable, List
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections
+from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections, y_axis_section
 from strategy.behaviour import *
-from strategy.strategy_utils import is_behind_ball, distance_point, near_ball, ball_on_border,\
-    object_on_critical_position, ball_on_attack_side, object_in_defender_range
+from strategy.behaviour import ACTION, NO_ACTION, TreeNode
+from strategy.behaviour import BlackBoard, TaskStatus
+from strategy.strategy_utils import *
 from utils.math_utils import angle_between
 
 
@@ -149,6 +150,23 @@ class IsRobotInRangeOfDefense(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
+class IsBallInCriticalArea(TreeNode):
+    def __init__(self, name: str = "BallInFirstQuarter"):
+        super().__init__(name)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        team_side = blackboard.home_goal.side
+        ball_x = blackboard.ball.position[0]
+
+        if team_side == LEFT and ball_x < 35:
+            return TaskStatus.SUCCESS, NO_ACTION
+        elif team_side == RIGHT and ball_x > 115:
+            return TaskStatus.SUCCESS, NO_ACTION
+            
+        return TaskStatus.FAILURE, NO_ACTION
+
+        
+
 class IsBallInCriticalPosition(TreeNode):
     def __init__(self, name: str = "IsBallInRangeOfDefense"):
         super().__init__(name)
@@ -183,13 +201,23 @@ class IsEnemyInsideAreas(TreeNode):
         return TaskStatus.FAILURE, NO_ACTION
 
 
-class IsBallInsideAreas(TreeNode):
-    def __init__(self, name: str = "IsBallInsideAreas", areas: List = []):
+class IsBallInsideSections(TreeNode):
+    def __init__(self, name: str = "IsBallInsideSections", sections: List = []):
         super().__init__(name)
-        self._areas = areas
+        self._sections = sections
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if section(blackboard.ball.position) in self._areas:
+        if section(blackboard.ball.position) in self._sections:
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
+
+
+class IsBallInDefenseBorder(TreeNode):
+    def __init__(self, name: str = "IsBallInDefenseBorder"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if ball_on_defense_border(blackboard.ball.position, blackboard.home_goal.side):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
@@ -199,7 +227,7 @@ class IsBallInBorder(TreeNode):
         super().__init__(name)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if ball_on_border(blackboard.ball.position, blackboard.home_goal.side):
+        if ball_on_border(blackboard.ball.position):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
@@ -259,8 +287,7 @@ class IsInsideMetaRange(TreeNode):
         self.distance = distance
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        if distance_point(blackboard.robot.position,
-                          blackboard.home_goal.position) < self.distance:
+        if abs(blackboard.robot.position[0] - blackboard.home_goal.position[0]) < self.distance:
             return TaskStatus.SUCCESS, NO_ACTION
         else:
             return TaskStatus.FAILURE, NO_ACTION
@@ -332,3 +359,26 @@ class IsInDefenseBottomLine(TreeNode):
             return TaskStatus.SUCCESS, NO_ACTION
 
         return TaskStatus.FAILURE, NO_ACTION
+
+
+class CanAttackerUseMoveToPointToGuideBall(TreeNode):
+    def __init__(self, name="CanAttackerUseMoveToPointToGuideBall?"):
+        super().__init__(name)
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        ball_pos = blackboard.ball.position
+        if y_axis_section(ball_pos):
+            border_vec = np.array([1.0, 0.0])
+        else:
+            border_vec = np.array([-1.0, 0.0])
+        robot_pos = blackboard.robot.position
+        ball_pos = blackboard.ball.position
+        robot_ball_vec = robot_pos - ball_pos
+
+        theta = angle_between(robot_ball_vec,
+                              border_vec,
+                              abs=False)
+        import rospy
+        if theta < math.pi/6:
+            return TaskStatus.FAILURE, NO_ACTION
+        return TaskStatus.SUCCESS, NO_ACTION
