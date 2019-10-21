@@ -27,9 +27,9 @@ class Control:
         
         self._toggle_head_counter = 0
         self._last_head = FORWARD
-        self._TOGGLE_HEAD_THRESHOLD = 10
+        self._TOGGLE_HEAD_THRESHOLD = 5
         self._head = FORWARD
-        self._hysteresis_angle_window = 30 * DEG2RAD
+        self._hysteresis_angle_window = 20 * DEG2RAD
         self._upper_angle_tol = math.pi / 2.0 + self._hysteresis_angle_window
         self._lower_angle_tol = math.pi / 2.0 - self._hysteresis_angle_window
         self._beta = 0.5
@@ -113,7 +113,9 @@ class Control:
             new_head = BACKWARDS
         elif abs_diff < self._lower_angle_tol:
             new_head = FORWARD
-        
+        else:
+            new_head = self._last_head
+
         if new_head != self._last_head:
             if self._toggle_head_counter < self._TOGGLE_HEAD_THRESHOLD:
                 self._toggle_head_counter += 1

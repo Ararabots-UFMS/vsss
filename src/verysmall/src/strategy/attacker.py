@@ -101,7 +101,7 @@ class Attacker(BaseTree):
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         team_side = blackboard.home_goal.side
-        shift = (-1 + 2*team_side) * 30
+        shift = (-1 + 2*team_side) * 25
         self._critical_position_task.set_position(np.array([75+shift, 65]))
         status, action = super().run(blackboard)
         return status, action
