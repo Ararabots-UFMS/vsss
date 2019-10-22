@@ -47,7 +47,7 @@ class Attacker(BaseTree):
 
         middle = Sequence("Ball out of border")
         univector_movement = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=120,
+                                            max_speed=160,
                                             acceptance_radius=4,
                                             speed_prediction=False)
 
