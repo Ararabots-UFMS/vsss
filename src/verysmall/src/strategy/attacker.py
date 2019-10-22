@@ -7,13 +7,13 @@ from strategy.actions.game_behaviours import IsBehindBall,\
 
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector,\
      SpinTask, ChargeWithBall, GoToBallUsingMove2Point, CanUseMoveToPointSafely,\
-     GoToPositionUsingUnivector
+     GoToPositionUsingUnivector, GoToPosition
 
 from strategy.actions.state_behaviours import InState
 from strategy.base_trees import BaseTree, FreeWayAttack
 from strategy.behaviour import *
 from strategy.strategy_utils import GameStates
-from strategy.arena_utils import ArenaSections, section, univector_pos_section
+from strategy.arena_utils import ArenaSections, univector_pos_section
 from strategy.actions.decorators import SafeHeadOnBorder
 
 
@@ -25,6 +25,7 @@ class Attacker(BaseTree):
     def __init__(self, name='behave'):
         super().__init__(name)
         self._critical_position_task = None
+        self._move_to_point_task = None
 
         normal = SafeHeadOnBorder(child=Sequence('Normal'))
         self.add_child(normal)
@@ -33,6 +34,7 @@ class Attacker(BaseTree):
         normal_actions = Selector('Normal Actions')
         normal.add_child(normal_actions)
 
+        normal_actions.add_child(self._robot_inside_enemy_goal())
         normal_actions.add_child(FreeWayAttack('FreewayAttack'))
         # normal_actions.add_child(self._ball_on_border_tree())
         normal_actions.add_child(self._ball_on_critical_area_tree())
@@ -99,9 +101,24 @@ class Attacker(BaseTree):
         return tree
 
 
+    def _robot_inside_enemy_goal(self, blackboard: BlackBoard) -> TreeNode:
+        tree = Sequence("RobotInsideEnemyGoal")
+        tree.add_child(IsBallInsideSections(sections=[ArenaSections.LEFT_GOAL, 
+                                                      ArenaSections.RIGHT_GOAL]))
+        
+        self._move_to_point_task = GoToPosition()
+        tree.add_child(self._move_to_point_task)
+
+        return tree
+
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         team_side = blackboard.home_goal.side
+        
         shift = (-1 + 2*team_side) * 25
         self._critical_position_task.set_position(np.array([75+shift, 65]))
+        
+        x_pos = 15 if team_side == 0 else 135
+        self._move_to_point_task.target_pos = np.array([x_pos, 65])
+        
         status, action = super().run(blackboard)
         return status, action
