@@ -3,7 +3,7 @@ import rospy
 
 from strategy.actions.game_behaviours import IsBehindBall,\
  IsRobotInsideEnemyGoalLine, IsBallInsideSections, IsNearBall,\
- CanAttackerUseMoveToPointToGuideBall, IsBallInBorder, IsBallInCriticalArea
+ CanAttackerUseMoveToPointToGuideBall, IsBallInBorder, IsBallInCriticalArea, IsRobotInsideSections
 
 from strategy.actions.movement_behaviours import GoToBallUsingUnivector,\
      SpinTask, ChargeWithBall, GoToBallUsingMove2Point, CanUseMoveToPointSafely,\
@@ -47,7 +47,7 @@ class Attacker(BaseTree):
 
         middle = Sequence("Ball out of border")
         univector_movement = GoToBallUsingUnivector("AttackBallInTheMiddle",
-                                            max_speed=160,
+                                            max_speed=150,
                                             acceptance_radius=4,
                                             speed_prediction=False)
 
@@ -101,9 +101,9 @@ class Attacker(BaseTree):
         return tree
 
 
-    def _robot_inside_enemy_goal(self, blackboard: BlackBoard) -> TreeNode:
+    def _robot_inside_enemy_goal(self) -> TreeNode:
         tree = Sequence("RobotInsideEnemyGoal")
-        tree.add_child(IsBallInsideSections(sections=[ArenaSections.LEFT_GOAL, 
+        tree.add_child(IsRobotInsideSections(sections=[ArenaSections.LEFT_GOAL, 
                                                       ArenaSections.RIGHT_GOAL]))
         
         self._move_to_point_task = GoToPosition()
