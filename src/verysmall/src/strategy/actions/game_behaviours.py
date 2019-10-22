@@ -211,6 +211,15 @@ class IsBallInsideSections(TreeNode):
             return TaskStatus.SUCCESS, NO_ACTION
         return TaskStatus.FAILURE, NO_ACTION
 
+class IsRobotInsideSections(TreeNode):
+    def __init__(self, name: str = "IsBallInsideSections", sections: List = []):
+        super().__init__(name)
+        self._sections = sections
+
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        if section(blackboard.robot.position) in self._sections:
+            return TaskStatus.SUCCESS, NO_ACTION
+        return TaskStatus.FAILURE, NO_ACTION
 
 class IsBallInDefenseBorder(TreeNode):
     def __init__(self, name: str = "IsBallInDefenseBorder"):

@@ -164,9 +164,9 @@ def border_stuck(position_buffer, orientation):
 
 def object_in_defender_range(object_position: np.ndarray, team_side: bool) -> bool:
     if team_side == LEFT:
-        return 30 < object_position[0] < 75
+        return 25 < object_position[0] < 75
     else:
-        return 75 < object_position[0] < 120
+        return 75 < object_position[0] < 125
 
 
 def ball_on_attack_side(ball_position, team_side) -> bool:
@@ -180,8 +180,8 @@ def robot_behind_ball(robot_position, ball_position, team_side) -> bool:
 def object_on_critical_position(ball_position, team_side) -> bool:
     critical_y = ball_position[1] < 30 or ball_position[1] > 100
     if team_side == LEFT:
-        return ball_position[0] < 30 and critical_y
-    return ball_position[0] > 120 and critical_y
+        return ball_position[0] < 25 and critical_y
+    return ball_position[0] > 125 and critical_y
 
 
 def ball_on_defense_border(ball_position, team_side) -> bool:
