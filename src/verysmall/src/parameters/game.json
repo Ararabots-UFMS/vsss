@@ -14,9 +14,9 @@
     "meta_player": 2,
     "penalty_player": 2,
     "seekers": {
-        "blue": "color",
+        "blue": "kmeans",
         "yellow": "color"
     },
-    "side": 0,
-    "time": 0
+    "side": 1,
+    "time": 1
 }
