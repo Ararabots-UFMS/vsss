@@ -12,9 +12,12 @@ class GameTopicPublisher:
     :return: nothing
     """
 
-    def __init__(self, isnode=False, _game_opt=None, _robot_params=None, _robot_name_roles=None, owner_id='Player_One'):
+    def __init__(self, isnode: bool = False, 
+                       _game_opt: dict = None, 
+                       _robot_params: dict = None,
+                       _robot_name_roles: dict = None, 
+                       owner_id = 'Player_One'):
         """
-        :param isnode: Boolean
         :param _game_opt: Game json
         :param _robot_params: Robots Json
         :param _robot_name_roles: Robot roles Json
@@ -131,18 +134,15 @@ class GameTopicPublisher:
         """
         self.msg.meta_robot = _meta_robot
 
-    def set_message(self, game_state, team_side, team_color, robot_roles, robot_tags, penalty_robot, freeball_robot, meta_robot):
-        """
-        This function sets the publisher message
-        :param game_state: uint8
-        :param team_side: uint8
-        :param robot_roles: uint8[5]
-        :param penalty_robot: uint8
-        :param freeball_robot: uint8
-        :param meta_robot: uint8
-
-        :return: nothing
-        """
+    def set_message(self, game_state, 
+                          team_side, 
+                          team_color, 
+                          robot_roles, 
+                          robot_tags, 
+                          penalty_robot, 
+                          freeball_robot, 
+                          meta_robot):
+                          
         self.msg = game_topic(
             game_state,
             team_side,
