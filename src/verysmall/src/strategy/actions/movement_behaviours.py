@@ -336,6 +336,7 @@ class GetOutOfGoal(TreeNode):
                 self.target_pos = (RIGHT_AREA_CENTER_X, new_y_pos)
             else:
                 self.target_pos = (LEFT_AREA_CENTER_X, new_y_pos)
+        
         path = self.target_pos - robot_pos
 
         distance = np.linalg.norm(path)

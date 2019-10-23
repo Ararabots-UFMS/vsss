@@ -3,7 +3,7 @@ from strategy.actions.state_behaviours import InState, ChangeState
 from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, IsInsideMetaRange
 from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
-
+from strategy.actions.decorators import UseFrontHead
 
 class Penalty(Sequence):
     def __init__(self, name='Penalty'):
@@ -13,7 +13,7 @@ class Penalty(Sequence):
         self.add_child(check_state)
 
         check_if_behind_ball = Selector("CheckIfBehindBall")
-        is_behind = IsBehindBall("Check", 25)
+        is_behind = IsBehindBall("Check", 30)
         change_state = ChangeState("ReturnToNormal", GameStates.NORMAL)
 
         check_if_behind_ball.add_child(is_behind)
@@ -95,6 +95,6 @@ class BaseTree(Selector):
         super().__init__(name)
 
         self.add_child(Stopped("Stopped"))
-        self.add_child(Penalty("Penalty"))
-        self.add_child(FreeBall("FreeBall"))
-        self.add_child(Meta("Meta"))
+        self.add_child(UseFrontHead(child=Penalty("Penalty")))
+        self.add_child(UseFrontHead(child=FreeBall("FreeBall")))
+        self.add_child(UseFrontHead(child=Meta("Meta")))
