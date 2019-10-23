@@ -1,16 +1,20 @@
 from threading import Lock
 import numpy as np
+from random import randint
+import rospy
+from time import time
 
 from verysmall.msg import game_topic, things_position
 from ROS.ros_game_topic_publisher import GameTopicPublisher
 from strategy.behaviour import BlackBoard
 from utils.model import Model
-from random import randint
-import rospy
-from time import time
+from strategy.arena_utils import LEFT, RIGHT
+
 
 class Trainer:
-    PLAYERS = {"Attacker", "Defender", "Goalkeeper"}
+    BEHAVIOURS = {"Attacker": 0, "Defender": 1, "Goalkeeper": 2}
+    BEHAVIOURS_LUT = {0: "Attacker", 1: "Defender", "GoalKeeper": 2}
+
     NORMAL_STATE = 1
     REFRESH_TIME = 1
     def __init__(self, owner_id: str = 'Player_One' ):
@@ -36,7 +40,7 @@ class Trainer:
         rospy.Subscriber('game_topic_'+owner_id, game_topic, self._game_topic_callback, queue_size=1)
 
     def load_roles_ids(self, roles) -> None:
-        self._roles = {key: roles[key] for key in Trainer.PLAYERS}
+        self._roles = {key: roles[key] for key in Trainer.BEHAVIOURS.keys()}
     
     # subscriber
     def _game_topic_callback(self, topic: game_topic) -> None:
@@ -86,8 +90,6 @@ class Trainer:
             self._game_topic_locker.release()
             return
         
-        rospy.logfatal("oi")
-        
         self._blackboard_locker.acquire()
         
         self._run_strategy()
@@ -113,4 +115,50 @@ class Trainer:
 
 
     def _run_strategy(self) -> None:
-        self._roles = (randint(0, 5) for _ in range(5))
+        # ball in critical area check
+        team_side = self._blackboard.home_goal.side
+        ball = self._blackboard.ball.position[0]
+        if ball[0] < 30 and team_side == LEFT:
+            return
+        elif ball[0] > 120 and team_side == RIGHT:
+            return
+
+        team_pos = self._blackboard.home_goal.position
+        active_robots, *_ = np.where(np.any(team_pos, axis=1))
+
+        if active_robots != 3:
+            return
+
+        # will help further
+        lut = {i: active_robots[i] for i in range(len(active_robots))}
+
+        robots_positions = team_pos[active_robots, ...]
+
+        distances = np.linalg.norm(robots_positions - ball, axis=1)
+        ids = np.argsort(distances)
+
+        # attacker
+        attacker_id = lut[np.where(ids == 0)[0]]
+
+        # defender
+        defender_id = lut[np.where(ids == 1)[0]]
+
+        goalkeeper_id = lut[np.where(ids == 2)[0]]
+
+        self._roles[attacker_id] = Trainer.BEHAVIOURS["Attacker"]
+        self._roles[defender_id] = Trainer.BEHAVIOURS["Defender"]
+        self._roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
+
+
+
+
+
+
+
+
+
+
+        
+
+
+
