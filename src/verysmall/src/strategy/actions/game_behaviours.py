@@ -2,7 +2,7 @@ from math import sin
 from typing import Callable, List
 
 from strategy import arena_utils
-from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections, y_axis_section
+from strategy.arena_utils import on_attack_side, section, LEFT, HALF_ARENA_WIDTH, ArenaSections, y_axis_section, ROBOT_SIZE
 from strategy.behaviour import *
 from strategy.behaviour import ACTION, NO_ACTION, TreeNode
 from strategy.behaviour import BlackBoard, TaskStatus
@@ -314,9 +314,9 @@ class IsInsideDefenseGoal(TreeNode):
 
         sign = 1 if team_side == RIGHT else -1
 
-        shift = sign * 3
+        shift = sign * 3 # int(ROBOT_SIZE/2)
         shifted_pos = np.array([pos[0] + shift, pos[1]])
-        section = arena_utils.section(shifted_pos).value
+        section = arena_utils.section(shifted_pos)
 
         my_goal = ArenaSections.LEFT_GOAL if team_side == LEFT \
             else ArenaSections.RIGHT_GOAL

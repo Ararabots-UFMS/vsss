@@ -1,10 +1,10 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "walle",
-        "body_id": "walle",
+        "bluetooth_mac_address": "ceci",
+        "body_id": "ceci",
         "role": "Goalkeeper",
-        "tag_number": 0
+        "tag_number": 2
     },
     "robot_2": {
         "active": 0,
