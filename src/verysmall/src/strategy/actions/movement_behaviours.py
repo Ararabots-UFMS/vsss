@@ -7,6 +7,7 @@ import numpy as np
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
+
 from strategy.arena_utils import HALF_ARENA_HEIGHT, get_defense_range_height, LEFT_AREA_CENTER_X, RIGHT_AREA_CENTER_X,\
     ROBOT_SIZE, y_axis_section, RIGHT, HALF_ARENA_WIDTH, on_attack_side, univector_pos_section, ArenaSections
 from strategy.behaviour import ACTION, TreeNode
@@ -15,6 +16,8 @@ from strategy.strategy_utils import spin_direction, object_in_defender_range
 from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
+
+LEFT, RIGHT = 0, 1
 
 class StopAction(TreeNode):
 
@@ -68,9 +71,12 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.positions,
-                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
-        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position, np.array([0, 0]),
+        self.univector_field.update_obstacles(blackboard.enemy_team.positions.tolist() +
+                                              blackboard.home_team.positions.tolist(),
+                                           [[0, 0]] * 9)  # blackboard.enemies_speed)
+        theta = blackboard.robot.orientation
+        vec = 4*np.array([math.cos(theta), math.sin(theta)])*(-1 + 2*blackboard.current_orientation)
+        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + vec, np.array([0, 0]),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
         speed = self.speed
@@ -464,7 +470,8 @@ class GoToBallUsingMove2Point(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_section = univector_pos_section(blackboard.ball.position)
         ball_pos = blackboard.ball.position
-        ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
+        if ball_section in [ArenaSections.UP_BORDER, ArenaSections.DOWN_BORDER]:
+            ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
 
         direction = blackboard.ball.position - blackboard.robot.position
 
@@ -477,7 +484,7 @@ class GoToBallUsingMove2Point(TreeNode):
 
 
 class GoBack(TreeNode):
-    def __init__(self, name: str = 'GoBack',
+    def __init__(self, name: str = "GoBack",
                  max_speed: int = 80,
                  acceptance_radius: float = 10.0):
         super().__init__(name)
@@ -494,3 +501,23 @@ class GoBack(TreeNode):
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0, 0, .0)
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.max_speed, distance)
+
+class CanUseMoveToPointSafely(TreeNode):
+    def __init__(self, name: str = "CanRobotUseMoveToPointSafely"):
+        super().__init__(name)
+    
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        team_side = blackboard.home_goal.side
+        robot_x = blackboard.robot.position[0]
+        ball_x = blackboard.ball.position[0]
+        
+        if team_side == LEFT:
+            if robot_x < ball_x:
+                return TaskStatus.SUCCESS, NO_ACTION
+            else:
+                return TaskStatus.FAILURE, NO_ACTION
+        else:
+            if robot_x > ball_x:
+                return TaskStatus.SUCCESS, NO_ACTION
+            else:
+                return TaskStatus.FAILURE, NO_ACTION

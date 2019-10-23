@@ -6,7 +6,7 @@ from enum import Enum
 from typing import Tuple
 import rospy
 import numpy as np
-
+from itertools import count
 from robot_module.movement.definitions import OpCodes
 from strategy.arena_utils import RIGHT
 from strategy.strategy_utils import GameStates
@@ -31,6 +31,7 @@ class BlackBoard:
     def __init__(self):
         self.game = Game()
         self.my_id = None
+        self.current_orientation = None
         self.enemy_goal = Goal()
         self.home_goal = Goal()
 
@@ -50,7 +51,7 @@ class BlackBoard:
 
 
 class TreeNode:
-    def __init__(self, name, children = []):
+    def __init__(self, name, children=[]):
         self.name = name
         self.children = []
         for child in children:
@@ -168,12 +169,12 @@ class Team(ABC):
         self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
         self._orientations = np.append(self._orientations, [0], axis=0)
 
-    def set_team_variables(self, robot_positions, robot_orientations):
+    def set_team_variables(self, robot_positions, robot_orientations, robot_tag_index=-1):
 
         self.number_of_robots = 0
 
-        for robot_position, robot_orientation in zip(robot_positions, robot_orientations):
-            if np.any(robot_position):
+        for tag_index, robot_position, robot_orientation in zip(count(), robot_positions, robot_orientations):
+            if np.any(robot_position) and tag_index != robot_tag_index:
                 self._positions[self.number_of_robots] = robot_position
                 self._orientations[self.number_of_robots] = robot_orientation
 
