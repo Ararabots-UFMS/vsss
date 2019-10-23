@@ -10,13 +10,13 @@
         "product": "9230",
         "vendor": "05a3"
     },
-    "freeball_player": 2,
+    "freeball_player": 1,
     "meta_player": 2,
-    "penalty_player": 2,
+    "penalty_player": 1,
     "seekers": {
         "blue": "color",
-        "yellow": "color"
+        "yellow": "kmeans"
     },
-    "side": 1,
-    "time": 1
+    "side": 0,
+    "time": 0
 }
