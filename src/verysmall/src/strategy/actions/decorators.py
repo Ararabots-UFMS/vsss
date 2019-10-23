@@ -5,7 +5,7 @@ import rospy
 import numpy as np
 import math as mth
 
-from strategy.behaviour import TaskStatus, BlackBoard, ACTION
+from strategy.behaviour import TaskStatus, BlackBoard, ACTION, TreeNode
 from robot_module.movement.definitions import OpCodes
 from utils.math_utils import DEG2RAD, BACKWARDS, FORWARD
 from robot_module.movement.definitions import OpCodes
@@ -167,4 +167,13 @@ class SafeHeadOnBorder(Decorator):
                 return FORWARD
             else:
                 return BACKWARDS
+
+class UseFrontHead(Decorator):
+    def __init__(self, name: str = "UseFrontHead", child: TreeNode = None):
+        super().__init__(name, child)
     
+    def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
+        status, action = self.child.run(blackboard)
+        opcode = action[0] + OpCodes.USE_FORWARD_HEAD
+        
+        return status, (opcode,) + action[1:] 
