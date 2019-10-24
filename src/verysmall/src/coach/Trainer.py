@@ -17,13 +17,17 @@ class Trainer:
     BEHAVIOURS = {}
     BEHAVIOURS_LUT = {}
     MIN_DISTANCE = 10
+    DEFENSIVE = 0
+    OFFENSIVE = 1
 
     NORMAL_STATE = 1
     REFRESH_TIME = 1
     def __init__(self, owner_id: str = 'Player_One' ):
         self._roles = {}
         self._last_publish_time = time()
-    
+
+        self._current_strategy = Trainer.DEFENSIVE
+
         # Load the database
         model = Model()
     
@@ -149,8 +153,17 @@ class Trainer:
 
         distances = np.linalg.norm(robots_positions - ball, axis=1)
         ids = np.argsort(distances, kind="stable")
+        
+        if self._ball_in_attack_side(self._blackboard):
+            self._roles = self._offensive_strategy(ids, lut)
+        else:
+            self._roles = self._defensive_strategy(ids, lut, distances)
 
-        if not self._should_toggle(distances[ids[0]], distances[ids[1]]):
+    
+    def _defensive_strategy(self, ids, lut, distances) -> bytes:
+
+        if self._current_strategy == Trainer.DEFENSIVE and \
+           not self._should_toggle(distances[ids[0]], distances[ids[1]]):
             return
 
         # attacker
@@ -167,10 +180,41 @@ class Trainer:
         roles[defender_id] = Trainer.BEHAVIOURS["Defender"]
         roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
 
-        self._roles = bytes(roles)
+        self._current_strategy = Trainer.DEFENSIVE
+
+        return bytes(roles)
+    
+    def _offensive_strategy(self, ids, lut) -> bytes:
+        attacker1_id = lut[ids[0]]
+        attacker2_id = lut[ids[1]]
+        goalkeeper_id = lut[ids[2]]
+
+        roles = list(self._roles)
+
+        roles[attacker1_id] = Trainer.BEHAVIOURS["Attacker"]
+        roles[attacker2_id] = Trainer.BEHAVIOURS["Attacker"]
+        roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
+
+        self._current_strategy = Trainer.OFFENSIVE
+
+        return bytes(roles)
+        
     
     def _should_toggle(self, dst1: float, dst2: float) -> bool:
         if abs(dst1 - dst2) < Trainer.MIN_DISTANCE:
             return False
         else:
             return True
+    
+    def _ball_in_attack_side(self, blackboard: BlackBoard) -> bool:
+        team_side = blackboard.home_goal.side
+        ball = blackboard.ball.position[0]
+
+        if team_side == LEFT and ball[0] > 60:
+            return True
+        elif team_side == RIGHT and ball[0] < 90:
+            return True
+        
+        return False
+    
+    
