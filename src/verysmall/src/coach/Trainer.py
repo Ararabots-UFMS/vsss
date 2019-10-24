@@ -138,9 +138,10 @@ class Trainer:
         if len(active_tags) != 3:
             return
 
-        tags_robot_table = {self._game_topic.robot_tags[i]: i for i in len(self._game_topic.robot_tags)}
+        tags_robot_table = {self._game_topic.robot_tags[i]: i 
+                            for i in range(len(self._game_topic.robot_tags))}
         active_robots = [tags_robot_table[t] for t in active_tags]
-        rospy.logfatal(active_robots)
+
         # will help further
         lut = {i: active_robots[i] for i in range(len(active_robots))}
 
