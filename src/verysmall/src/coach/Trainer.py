@@ -44,7 +44,8 @@ class Trainer:
     def load_roles_ids(self, roles: dict) -> None:
         Trainer.BEHAVIOURS = {player: roles[player] 
                               for player in Trainer.PLAYERS}
-        Trainer.BEHAVIOURS_LUT = {v: k for k, v in Trainer.BEHAVIOURS}
+        Trainer.BEHAVIOURS_LUT = {v: k for k, v in Trainer.BEHAVIOURS.items()}
+        log_fatal(Trainer.BEHAVIOURS_LUT)
 
     
     # subscriber
