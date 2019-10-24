@@ -16,6 +16,7 @@ class Trainer:
     PLAYERS = {"Attacker", "Defender", "Goalkeeper"}
     BEHAVIOURS = {}
     BEHAVIOURS_LUT = {}
+    MIN_DISTANCE = 10
 
     NORMAL_STATE = 1
     REFRESH_TIME = 1
@@ -38,8 +39,8 @@ class Trainer:
         self._game_topic_locker = Lock()
         self._blackboard_locker = Lock()
 
-        rospy.Subscriber('things_position', things_position, self._things_position_topic_callback, queue_size=5)
-        rospy.Subscriber('game_topic_'+owner_id, game_topic, self._game_topic_callback, queue_size=1)
+        rospy.Subscriber('things_position', things_position, self.things_position_topic_callback, queue_size=5)
+        rospy.Subscriber('game_topic_'+owner_id, game_topic, self.game_topic_callback, queue_size=1)
 
     def load_roles_ids(self, roles: dict) -> None:
         Trainer.BEHAVIOURS = {player: roles[player] 
@@ -49,7 +50,7 @@ class Trainer:
 
     
     # subscriber
-    def _game_topic_callback(self, topic: game_topic) -> None:
+    def game_topic_callback(self, topic: game_topic) -> None:
         self._game_topic_locker.acquire()
         self._game_topic = topic
         self._game_topic_locker.release()
@@ -57,7 +58,7 @@ class Trainer:
         self._run_trainer()
     
     
-    def _things_position_topic_callback(self, topic: things_position) -> None:
+    def things_position_topic_callback(self, topic: things_position) -> None:
         self._blackboard_locker.acquire()
 
         self._blackboard.ball.position = np.array(topic.ball_pos) / 100.0
@@ -133,7 +134,6 @@ class Trainer:
         team_pos = self._blackboard.home_team.positions
 
         active_tags = np.argwhere(np.any(team_pos, axis=1))[..., 0]
-        rospy.logfatal(active_tags)
         
         if len(active_tags) != 3:
             return
@@ -141,6 +141,7 @@ class Trainer:
         tags_robot_table = {self._game_topic.robot_tags[i]: i 
                             for i in range(len(self._game_topic.robot_tags))}
         active_robots = [tags_robot_table[t] for t in active_tags]
+        
         # will help further
         lut = {i: active_robots[i] for i in range(len(active_robots))}
 
@@ -148,6 +149,9 @@ class Trainer:
 
         distances = np.linalg.norm(robots_positions - ball, axis=1)
         ids = np.argsort(distances, kind="stable")
+
+        if not self._should_toggle(distances[ids[0]], distances[ids[1]]):
+            return
 
         # attacker
         attacker_id = lut[ids[0]]
@@ -164,3 +168,9 @@ class Trainer:
         roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
 
         self._roles = bytes(roles)
+    
+    def _should_toggle(self, dst1: float, dst2: float) -> bool:
+        if abs(dst1 - dst2) < Trainer.MIN_DISTANCE:
+            return False
+        else:
+            return True
