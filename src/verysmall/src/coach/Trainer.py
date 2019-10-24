@@ -18,7 +18,7 @@ class Trainer:
     BEHAVIOURS_LUT = {}
 
     NORMAL_STATE = 1
-    REFRESH_TIME = 1
+    REFRESH_TIME = 2
     def __init__(self, owner_id: str = 'Player_One' ):
         self._roles = {}
         self._last_publish_time = time()
@@ -132,15 +132,19 @@ class Trainer:
 
         team_pos = self._blackboard.home_team.positions
 
-        active_robots, *_ = np.where(np.any(team_pos, axis=1))
-
-        if len(active_robots) != 3:
+        active_tags = np.argwhere(np.any(team_pos, axis=1))[..., 0]
+        rospy.logfatal(active_tags)
+        
+        if len(active_tags) != 3:
             return
 
+        tags_robot_table = {self._game_topic.robot_tags[i]: i for i in len(self._game_topic.robot_tags)}
+        active_robots = [tags_robot_table[t] for t in active_tags]
+        rospy.logfatal(active_robots)
         # will help further
         lut = {i: active_robots[i] for i in range(len(active_robots))}
 
-        robots_positions = team_pos[active_robots, ...]
+        robots_positions = team_pos[active_tags, ...]
 
         distances = np.linalg.norm(robots_positions - ball, axis=1)
         ids = np.argsort(distances, kind="stable")
@@ -160,17 +164,3 @@ class Trainer:
         roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
 
         self._roles = bytes(roles)
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
