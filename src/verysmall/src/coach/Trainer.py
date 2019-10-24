@@ -141,7 +141,6 @@ class Trainer:
         tags_robot_table = {self._game_topic.robot_tags[i]: i 
                             for i in range(len(self._game_topic.robot_tags))}
         active_robots = [tags_robot_table[t] for t in active_tags]
-        
         # will help further
         lut = {i: active_robots[i] for i in range(len(active_robots))}
 
