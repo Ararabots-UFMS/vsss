@@ -35,10 +35,9 @@ class Attacker(BaseTree):
         normal.add_child(normal_actions)
 
         normal_actions.add_child(self._robot_inside_enemy_goal())
-        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
-        # normal_actions.add_child(self._ball_on_border_tree())
-        normal_actions.add_child(self._ball_on_critical_area_tree())
         normal_actions.add_child(self.ball_and_robot_in_enemy_goalline())
+        normal_actions.add_child(FreeWayAttack('FreewayAttack'))
+        normal_actions.add_child(self._ball_on_critical_area_tree())
         normal_actions.add_child(self.naive_go_to_ball())
         
 
