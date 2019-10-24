@@ -13,8 +13,9 @@ from utils.profiling_tools import log_fatal
 
 
 class Trainer:
-    BEHAVIOURS = {"Attacker": 0, "Defender": 1, "Goalkeeper": 2}
-    BEHAVIOURS_LUT = {0: "Attacker", 1: "Defender", "GoalKeeper": 2}
+    PLAYERS = {"Attacker", "Defender", "Goalkeeper"}
+    BEHAVIOURS = {}
+    BEHAVIOURS_LUT = {}
 
     NORMAL_STATE = 1
     REFRESH_TIME = 1
@@ -40,8 +41,11 @@ class Trainer:
         rospy.Subscriber('things_position', things_position, self._things_position_topic_callback, queue_size=5)
         rospy.Subscriber('game_topic_'+owner_id, game_topic, self._game_topic_callback, queue_size=1)
 
-    def load_roles_ids(self, roles) -> None:
-        self._roles = {key: roles[key] for key in Trainer.BEHAVIOURS.keys()}
+    def load_roles_ids(self, roles: dict) -> None:
+        Trainer.BEHAVIOURS = {player: roles[player] 
+                              for player in Trainer.PLAYERS}
+        Trainer.BEHAVIOURS_LUT = {v: k for k, v in Trainer.BEHAVIOURS}
+
     
     # subscriber
     def _game_topic_callback(self, topic: game_topic) -> None:
@@ -108,7 +112,7 @@ class Trainer:
                                               self._game_topic.penalty_robot,
                                               self._game_topic.freeball_robot,
                                               self._game_topic.meta_robot)
-        rospy.logfatal(self._game_topic.robot_roles)
+                                              
         self._gametopic_publisher.publish()
         self._last_publish_time = time()
 
@@ -138,15 +142,15 @@ class Trainer:
         robots_positions = team_pos[active_robots, ...]
 
         distances = np.linalg.norm(robots_positions - ball, axis=1)
-        ids = np.argsort(distances)
+        ids = np.argsort(distances, kind="stable")
 
         # attacker
-        attacker_id = lut[np.where(ids == 0)[0][0]]
+        attacker_id = lut[ids[0]]
 
         # defender
-        defender_id = lut[np.where(ids == 1)[0][0]]
+        defender_id = lut[ids[1]]
 
-        goalkeeper_id = lut[np.where(ids == 2)[0][0]]
+        goalkeeper_id = lut[ids[2]]
 
         roles = list(self._roles)
 
