@@ -164,7 +164,7 @@ class Trainer:
 
         if self._current_strategy == Trainer.DEFENSIVE and \
            not self._should_toggle(distances[ids[0]], distances[ids[1]]):
-            return
+            return self._roles
 
         # attacker
         attacker_id = lut[ids[0]]

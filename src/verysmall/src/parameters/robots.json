@@ -1,21 +1,21 @@
 {
     "robot_1": {
-        "active": 1,
-        "bluetooth_mac_address": "tucao",
+        "active": 0,
+        "bluetooth_mac_address": "nenhum",
         "body_id": "tucao",
         "role": "Goalkeeper",
         "tag_number": 2
     },
     "robot_2": {
-        "active": 1,
-        "bluetooth_mac_address": "noriko",
-        "body_id": "noriko",
+        "active": 0,
+        "bluetooth_mac_address": "nenhum",
+        "body_id": "walle",
         "role": "Defender",
         "tag_number": 0
     },
     "robot_3": {
-        "active": 1,
-        "bluetooth_mac_address": "walle",
+        "active": 0,
+        "bluetooth_mac_address": "nenhum",
         "body_id": "walle",
         "role": "Attacker",
         "tag_number": 1
