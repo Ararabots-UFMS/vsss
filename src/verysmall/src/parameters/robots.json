@@ -1,17 +1,17 @@
 {
     "robot_1": {
         "active": 0,
-        "bluetooth_mac_address": "noriko",
-        "body_id": "noriko",
-        "role": "PID Calibration",
-        "tag_number": 0
+        "bluetooth_mac_address": "ceci",
+        "body_id": "ceci",
+        "role": "Attacker",
+        "tag_number": 1
     },
     "robot_2": {
         "active": 0,
         "bluetooth_mac_address": "walle",
         "body_id": "walle",
         "role": "Attacker",
-        "tag_number": 1
+        "tag_number": 2
     },
     "robot_3": {
         "active": 0,
