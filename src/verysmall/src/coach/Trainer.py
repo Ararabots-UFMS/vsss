@@ -9,6 +9,7 @@ from ROS.ros_game_topic_publisher import GameTopicPublisher
 from strategy.behaviour import BlackBoard
 from utils.model import Model
 from strategy.arena_utils import LEFT, RIGHT
+from utils.profiling_tools import log_fatal
 
 
 class Trainer:
@@ -28,7 +29,7 @@ class Trainer:
 
         self._game_topic = game_topic()
         self._blackboard = BlackBoard()
-        self._roles = ()
+        self._roles = self._game_topic.robot_roles
 
         self._gametopic_publisher = GameTopicPublisher(False, model.game_opt, model.robot_params, 
                                                         model.robot_roles, owner_id = owner_id)
@@ -107,6 +108,7 @@ class Trainer:
                                               self._game_topic.penalty_robot,
                                               self._game_topic.freeball_robot,
                                               self._game_topic.meta_robot)
+        rospy.logfatal(self._game_topic.robot_roles)
         self._gametopic_publisher.publish()
         self._last_publish_time = time()
 
@@ -117,16 +119,17 @@ class Trainer:
     def _run_strategy(self) -> None:
         # ball in critical area check
         team_side = self._blackboard.home_goal.side
-        ball = self._blackboard.ball.position[0]
+        ball = self._blackboard.ball.position
         if ball[0] < 30 and team_side == LEFT:
             return
         elif ball[0] > 120 and team_side == RIGHT:
             return
 
-        team_pos = self._blackboard.home_goal.position
+        team_pos = self._blackboard.home_team.positions
+
         active_robots, *_ = np.where(np.any(team_pos, axis=1))
 
-        if active_robots != 3:
+        if len(active_robots) != 3:
             return
 
         # will help further
@@ -138,16 +141,20 @@ class Trainer:
         ids = np.argsort(distances)
 
         # attacker
-        attacker_id = lut[np.where(ids == 0)[0]]
+        attacker_id = lut[np.where(ids == 0)[0][0]]
 
         # defender
-        defender_id = lut[np.where(ids == 1)[0]]
+        defender_id = lut[np.where(ids == 1)[0][0]]
 
-        goalkeeper_id = lut[np.where(ids == 2)[0]]
+        goalkeeper_id = lut[np.where(ids == 2)[0][0]]
 
-        self._roles[attacker_id] = Trainer.BEHAVIOURS["Attacker"]
-        self._roles[defender_id] = Trainer.BEHAVIOURS["Defender"]
-        self._roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
+        roles = list(self._roles)
+
+        roles[attacker_id] = Trainer.BEHAVIOURS["Attacker"]
+        roles[defender_id] = Trainer.BEHAVIOURS["Defender"]
+        roles[goalkeeper_id] = Trainer.BEHAVIOURS["Goalkeeper"]
+
+        self._roles = bytes(roles)
 
 
 
