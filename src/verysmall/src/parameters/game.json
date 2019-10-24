@@ -17,6 +17,6 @@
         "blue": "kmeans",
         "yellow": "color"
     },
-    "side": 0,
+    "side": 1,
     "time": 1
 }
