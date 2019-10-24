@@ -208,11 +208,11 @@ class Trainer:
     
     def _ball_in_attack_side(self, blackboard: BlackBoard) -> bool:
         team_side = blackboard.home_goal.side
-        ball = blackboard.ball.position[0]
+        ball = blackboard.ball.position
 
-        if team_side == LEFT and ball[0] > 60:
+        if team_side == LEFT and ball[0] > 75:
             return True
-        elif team_side == RIGHT and ball[0] < 90:
+        elif team_side == RIGHT and ball[0] < 75:
             return True
         
         return False
