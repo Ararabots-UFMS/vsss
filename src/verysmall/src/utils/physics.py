@@ -5,6 +5,7 @@ import time
 class MovingBody:
     def __init__(self, buffer_size=15):
         self._position = np.array([0, 0])
+        self._last_known_position = np.array([0., 0.])
 
         self.position_buffer_x = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
         self.position_buffer_y = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
@@ -63,6 +64,9 @@ class MovingBody:
         
         self._last_update = t
         self._position = position
+
+        if np.any(self._position):
+            self._last_known_position = self._position
 
     def __repr__(self):
         return "--position: " + str(self.position) + \

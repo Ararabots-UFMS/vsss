@@ -113,12 +113,6 @@ class FriendlyRobot(physics.MovingBody):
         super().__init__()
         self.id = 0
         self.role = 0
-        self.last_know_location = None
-
-    def __setattr__(self, key, value):
-        if key == 'position' and (value[0] or value[1]):
-            self.last_know_location = value
-        super().__setattr__(key, value)
 
 
 class Goal:
@@ -199,6 +193,10 @@ class Team(ABC):
     @property
     def positions(self):
         return self._positions[:self.number_of_robots]
+    
+    @property
+    def last_known_positions(self):
+        return np.array([robot.last_known_position for robot in self.robots])
 
     @property
     def orientations(self):

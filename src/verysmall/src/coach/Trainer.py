@@ -135,7 +135,7 @@ class Trainer:
         elif ball[0] > 120 and team_side == RIGHT:
             return
 
-        team_pos = self._blackboard.home_team.positions
+        team_pos = self._blackboard.home_team.last_knowm_positions
 
         active_tags = np.argwhere(np.any(team_pos, axis=1))[..., 0]
         
