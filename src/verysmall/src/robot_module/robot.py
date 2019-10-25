@@ -76,7 +76,7 @@ class Robot:
             Attacker(),
             Defender(),
             GoalKeeper(),
-            CalibrationTree()
+            CalibrationTree(self)
         ]
 
         self.behaviour_tree = self.behaviour_trees[robot_role]
@@ -116,6 +116,15 @@ class Robot:
             pid_set.append((int(speed), ctes["KP"], ctes["KI"], ctes["KD"]))
 
         return pid_set
+
+    def save_pid_constants_set(self):
+
+        bodies = JsonHandler.read("parameters/bodies.json", escape=True)
+        try:
+            bodies[self.robot_body] = self._controller.pid_constants_set
+            JsonHandler.write(bodies, "parameters/bodies.json")
+        except KeyError:
+            rospy.logfatal("Could not save PID constants")
 
     def run(self):
         task_status, action = self.behaviour_tree.run(self.blackboard)

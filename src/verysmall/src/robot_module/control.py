@@ -182,3 +182,7 @@ class Control:
         self._ma_orientation_vec = v
         self._ma_orientation = math.atan2(v[1], v[0])
         self._t += 1
+
+    @property
+    def pid_constants_set(self):
+        return self._pid_constants_set
