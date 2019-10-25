@@ -128,7 +128,7 @@ class Trainer:
 
     def _run_strategy(self) -> None:
         # ball in critical area check
-        team_side = self._blackboard.home_goal.side
+        team_side = self._game_topic.team_side
         ball = self._blackboard.ball.position
         if ball[0] < 30 and team_side == LEFT:
             return
@@ -164,7 +164,7 @@ class Trainer:
 
         if self._current_strategy == Trainer.DEFENSIVE and \
            not self._should_toggle(distances[ids[0]], distances[ids[1]]):
-            return self._roles
+            return self._game_topic.robot_roles
 
         # attacker
         attacker_id = lut[ids[0]]
@@ -207,9 +207,9 @@ class Trainer:
             return True
     
     def _ball_in_attack_side(self, blackboard: BlackBoard) -> bool:
-        team_side = blackboard.home_goal.side
+        team_side = self._game_topic.team_side
         ball = blackboard.ball.position
-
+        
         if team_side == LEFT and ball[0] > 75:
             return True
         elif team_side == RIGHT and ball[0] < 75:
