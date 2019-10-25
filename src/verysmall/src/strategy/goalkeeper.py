@@ -44,7 +44,7 @@ class GoalKeeper(BaseTree):
     def _ball_on_attack_side_tree(self) -> TreeNode:
         tree = Sequence("BallInAttackSide")
         tree.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.position))
-        tree.add_child(GoToGoalCenter(max_speed=40, acceptance_radius=3))
+        tree.add_child(GoToGoalCenter(max_speed=100, acceptance_radius=3))
         keep_align_action = KeepRunning()
         keep_align_action.add_child(AlignWithAxis())
         tree.add_child(keep_align_action)
