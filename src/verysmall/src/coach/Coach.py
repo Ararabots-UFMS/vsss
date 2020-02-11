@@ -85,6 +85,18 @@ class Coach:
         self.game_topic_pub.set_robot_role(robot_id, role)
         self.game_topic_pub.publish()
 
+    def change_robot_tag(self, robot_id, tag):
+        """
+        This function changes the robot tag sugestion and publishes through game_topic
+        :param robot_id: int
+        :param tag: int
+        :return: nothing
+        """
+        # TODO: alterar objeto Coach
+        # TODO: alterar funcao para receber string e transformar em int para publicar
+        self.game_topic_pub.set_robot_tag(robot_id, tag)
+        self.game_topic_pub.publish()
+
     def set_robot_parameters(self, robot_id):
         """
         With robot_id, sets all the argument for node

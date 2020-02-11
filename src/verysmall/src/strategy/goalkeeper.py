@@ -44,7 +44,7 @@ class GoalKeeper(BaseTree):
     def _ball_on_attack_side_tree(self) -> TreeNode:
         tree = Sequence("BallInAttackSide")
         tree.add_child(IsInAttackSide("VerifyBallInAttack", lambda b: b.ball.position))
-        tree.add_child(GoToGoalCenter(max_speed=40, acceptance_radius=3))
+        tree.add_child(GoToGoalCenter(max_speed=100, acceptance_radius=3))
         keep_align_action = KeepRunning()
         keep_align_action.add_child(AlignWithAxis())
         tree.add_child(keep_align_action)
@@ -67,7 +67,7 @@ class GoalKeeper(BaseTree):
                                                 
         self.mark_ball_on_y = MarkBallOnYAxis([5, 40], [5, 80],
                                               max_speed=120,
-                                              acceptance_radius=3)
+                                              acceptance_radius=4)
 
         keep_align_action = KeepRunning()
         keep_align_action.add_child(AlignWithAxis())
@@ -136,7 +136,7 @@ class GoalKeeper(BaseTree):
 
         self.mark_ball_on_bottom_line = MarkBallOnYAxis([10, 35], [10, 95],
                                                         max_speed=110,
-                                                        acceptance_radius=3)
+                                                        acceptance_radius=4)
         tree.add_child(self.mark_ball_on_bottom_line)
         tree.add_child(StopAction())
         return tree
@@ -152,8 +152,8 @@ class OutOfGoalAction(Sequence):
     def __init__(self, name: str = "Get Out Of Goal"):
         super().__init__(name)
         self.add_child(IsInsideDefenseGoal("IsGoalkeeperInsideGoal",
-                                           lambda b : b.ball.position))
-        self.add_child(GetOutOfGoal(max_speed=200, acceptance_radius=1.0))
+                                           lambda b : b.robot.position))
+        self.add_child(GetOutOfGoal(max_speed=100, acceptance_radius=4.0))
 
     def run(self, blackboard: BlackBoard):
         status, action = super().run(blackboard)

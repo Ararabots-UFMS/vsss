@@ -21,7 +21,7 @@ class Defender(BaseTree):
         border = Sequence("Border")
         border.add_child(IsBallInRangeOfDefense("RangeOfDefense"))
         border.add_child(IsBallInDefenseBorder("BallInBorder"))
-        border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=4))
+        border.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=5))
         border.add_child(SpinTask("Spin"))
         defend.add_child(border)
 
@@ -41,7 +41,7 @@ class Defender(BaseTree):
 
         ball_near_goal_check = Sequence("CanRobotUseMove2PointToRecoverBall?")
         ball_near_goal_check.add_child(CanDefenderUseMove2PointToRecoverBall())
-        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=4))
+        ball_near_goal_check.add_child(GoToBallUsingMove2Point("Move2Point", speed=120, acceptance_radius=5))
 
         method.add_child(ball_near_goal_check)
         method.add_child(RecoverBallUsingUnivector())

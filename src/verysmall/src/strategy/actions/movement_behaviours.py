@@ -336,6 +336,7 @@ class GetOutOfGoal(TreeNode):
                 self.target_pos = (RIGHT_AREA_CENTER_X, new_y_pos)
             else:
                 self.target_pos = (LEFT_AREA_CENTER_X, new_y_pos)
+        
         path = self.target_pos - robot_pos
 
         distance = np.linalg.norm(path)
@@ -470,7 +471,8 @@ class GoToBallUsingMove2Point(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_section = univector_pos_section(blackboard.ball.position)
         ball_pos = blackboard.ball.position
-        ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
+        if ball_section in [ArenaSections.UP_BORDER, ArenaSections.DOWN_BORDER]:
+            ball_pos[1] += -3 if ball_section == ArenaSections.UP_BORDER else 3
 
         direction = blackboard.ball.position - blackboard.robot.position
 
