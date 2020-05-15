@@ -7,7 +7,7 @@ import rospy
 
 from ROS.ros_robot_subscriber_and_publiser import RosRobotSubscriberAndPublisher
 from interface.virtualField import virtualField, unit_convert, position_from_origin
-from robot_module.comunication.sender import Sender, STDMsg
+from robot_module.comunication.sender import Sender, STDMsg, SelfControlMsg
 from robot_module.control import Control
 from robot_module.hardware import RobotHardware
 from strategy.attacker import Attacker
@@ -52,6 +52,7 @@ class Robot:
         self.blackboard.robot.role = robot_role
 
         self._controller = Control(self._hardware, self.blackboard, constants, self._max_fine_movement_speed)
+        self.pid_on_hardware = False
 
         # self.velocity_buffer = []
         # self.position_buffer = []
@@ -124,8 +125,15 @@ class Robot:
 
         self._controller.update_orientation(self.orientation)
 
-        left, right = self._controller.get_wheels_speeds(*action)
-        msg = self._hardware.normalize_speeds(STDMsg(left, right))
+        if self.pid_on_hardware:
+            msg = SelfControlMsg(action[1], action[2])
+        else:
+            left, right = self._controller.get_wheels_speeds(*action)
+            msg = STDMsg(left, right)
+
+        msg = self._hardware.normalize_speeds(msg)
+
+
         if self._sender is not None:
             priority = self.get_priority()
             self._sender.send(priority, self._hardware.encode(msg))

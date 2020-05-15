@@ -52,10 +52,10 @@ class Control:
 
         super().__setattr__(key, value)
 
-    def get_wheels_speeds(self, opcode: OpCodes,
-                          angle: float,
-                          speed: int,
-                          distance: float) -> Tuple[float, float]:
+
+    def set_head_and_orientation(self,
+                                 opcode: OpCodes,
+                                 angle: float) -> None:
         if opcode & OpCodes.USE_FORWARD_HEAD:
             self._head = FORWARD
         elif opcode & OpCodes.USE_BACKWARD_HEAD:
@@ -67,6 +67,31 @@ class Control:
             self._current_orientation = self._ma_orientation
         else:
             self._current_orientation = self._blackboard.robot.orientation
+
+    def get_correction_angle_and_speed(self,
+                                      opcode: OpCodes,
+                                      angle: float,
+                                      speed: int,
+                                      distance: float) -> Tuple[float, float]:
+
+        self.set_head_and_orientation(opcode, angle)
+        if opcode & OpCodes.SMOOTH or opcode & OpCodes.NORMAL:
+            return self.get_diff_angle(angle), speed
+        elif opcode & OpCodes.SPIN_CCW:
+            return -255, 255
+        elif opcode & OpCodes.SPIN_CW:
+            return 255, -255
+        else:
+            return 0, 0                                      
+
+    def get_wheels_speeds(self,
+                          opcode: OpCodes,
+                          angle: float,
+                          speed: int,
+                          distance: float) -> Tuple[float, float]:
+
+
+        self.set_head_and_orientation(opcode, angle)
 
         if opcode & OpCodes.SMOOTH:
             return self._follow_vector(speed, angle, distance)

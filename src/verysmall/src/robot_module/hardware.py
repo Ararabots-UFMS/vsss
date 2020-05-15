@@ -18,13 +18,15 @@ class RobotHardware:
         self.LEFTBACKWARD_RIGHTFORWARD = 0x02  # 0000 0010
         self.LEFTBACKWARD_RIGHTBACKWARD = 0x03  # 0000 0011
 
+        self.PID_ON_HARDWARE_OP_CODE = 0x10     # 0001 0000 
+
         self._current_motors_direction = self.LEFTFORWARD_RIGHTFORWARD
 
     def encode(self, msg: Union[STDMsg, SelfControlMsg]) -> List:
         if isinstance(msg, STDMsg):
             message = self.encode_std_msg(msg)
         elif isinstance(msg, SelfControlMsg):
-            message = None
+            message = self.encode_self_control(msg)
 
         return message
 
@@ -39,7 +41,17 @@ class RobotHardware:
         message.append(abs(right))
 
         return message
-    
+
+    def encode_self_control(self, msg: SelfControlMsg) -> List[int]:
+        message = []
+        # TODO: pensar em como implementar orientacao da roda
+        message.append(self.PID_ON_HARDWARE_OP_CODE)
+        message.append(msg.delta_theta)
+        message.append(msg.speed)
+        
+        return message
+        
+
     def set_current_direction(self, left_speed: float, right_speed: float) -> None:
         if left_speed >= 0 and right_speed >= 0:
             self._current_motors_direction = self.LEFTFORWARD_RIGHTFORWARD
