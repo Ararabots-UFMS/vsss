@@ -4,7 +4,7 @@ from ROS.sender_publisher import SenderPublisher
 from collections import namedtuple
 
 STDMsg = namedtuple("STDMsg", ["left_speed", "right_speed"])
-SelfControlMsg = namedtuple("SelfControlMsg", ["speed", "delta_theta"])
+SelfControlMsg = namedtuple("SelfControlMsg", ["direction", "speed", "delta_theta"])
 
 
 class Sender:

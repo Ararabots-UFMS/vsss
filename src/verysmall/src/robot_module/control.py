@@ -76,7 +76,8 @@ class Control:
 
         self.set_head_and_orientation(opcode, angle)
         if opcode & OpCodes.SMOOTH or opcode & OpCodes.NORMAL:
-            return self.get_diff_angle(angle), speed
+            angle = self.get_diff_angle(angle)
+            return angle > 0, abs(angle), speed if speed < 256 else 255
         elif opcode & OpCodes.SPIN_CCW:
             return -255, 255
         elif opcode & OpCodes.SPIN_CW:

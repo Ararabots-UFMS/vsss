@@ -126,12 +126,13 @@ class Robot:
         self._controller.update_orientation(self.orientation)
 
         if self.pid_on_hardware:
-            msg = SelfControlMsg(action[1], action[2])
+            direction, angle, speed = self._controller.get_correction_angle_and_speed(
+                *action)
+            msg = SelfControlMsg(direction, angle, speed)
         else:
             left, right = self._controller.get_wheels_speeds(*action)
             msg = STDMsg(left, right)
-
-        msg = self._hardware.normalize_speeds(msg)
+            msg = self._hardware.normalize_speeds(msg)
 
 
         if self._sender is not None:

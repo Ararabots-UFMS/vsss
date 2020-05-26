@@ -44,8 +44,7 @@ class RobotHardware:
 
     def encode_self_control(self, msg: SelfControlMsg) -> List[int]:
         message = []
-        # TODO: pensar em como implementar orientacao da roda
-        message.append(self.PID_ON_HARDWARE_OP_CODE)
+        message.append(self.PID_ON_HARDWARE_OP_CODE | msg.direction)
         message.append(msg.delta_theta)
         message.append(msg.speed)
         
