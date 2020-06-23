@@ -11,14 +11,25 @@ select os in kinetic melodic noetic
 do
 case $os in "kinetic"|"melodic"|"noetic")
 # install
-sudo apt-get update
-sudo apt-get install ros-$os-ros-base
+sudo apt-get update 
+sudo apt-get install ros-$os-ros-base -y
+
+if [ $os == "noetic" ]
+then
+    # ROS Noetic
+    sudo apt-get install python3-rosdep -y
+else
+    # ROS Melodic and earlier
+    sudo apt-get install python-rosdep -y
+fi
+
 sudo rosdep init
 rosdep update
 
 # environment setup
 echo "source /opt/ros/$os/setup.bash" >> ~/.bashrc
 source ~/.bashrc
+break
 ;;
 # Matching with invalid data
 *)
@@ -28,8 +39,8 @@ esac
 done
 
 # dependencies for building packages
-sudo apt install python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
+sudo apt install python3-rosinstall python3-rosinstall-generator python3-wstool build-essential -y
 
 # python
-sudo apt-get install python3-pip python3-yaml
-sudo pip3 install rospkg catkin_pkg
+sudo apt-get install python3-pip python3-yaml -y
+sudo pip3 install rospkg catkin_pkg -y
