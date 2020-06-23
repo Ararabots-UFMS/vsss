@@ -9,7 +9,7 @@ from robot_module.PID import PIDController
 from robot_module.hardware import RobotHardware
 from robot_module.movement.definitions import OpCodes
 from strategy.behaviour import BlackBoard
-from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS
+from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS, clamp
 from strategy.arena_utils import ArenaSections, univector_pos_section
 
 Constants = Tuple[int, float, float, float]
@@ -24,7 +24,7 @@ class Control:
         self._blackboard = blackboard
         self._max_fine_movement_speed = max_fine_movement_speed
         self._alpha = 10  # centimeters
-        
+
         self._toggle_head_counter = 0
         self._last_head = FORWARD
         self._TOGGLE_HEAD_THRESHOLD = 5
@@ -77,13 +77,16 @@ class Control:
         self.set_head_and_orientation(opcode, angle)
         if opcode & OpCodes.SMOOTH or opcode & OpCodes.NORMAL:
             angle = self.get_diff_angle(angle)
-            return angle > 0, abs(angle), speed if speed < 256 else 255
+            # We invert the _head to keep consistency with the firmware:
+            # - 0 is forward
+            # - 1 is Backwards
+            return not self._head, abs(angle), clamp(speed, -255, 255)
         elif opcode & OpCodes.SPIN_CCW:
             return -255, 255
         elif opcode & OpCodes.SPIN_CW:
             return 255, -255
         else:
-            return 0, 0                                      
+            return 0, 0
 
     def get_wheels_speeds(self,
                           opcode: OpCodes,
