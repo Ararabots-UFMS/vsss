@@ -18,7 +18,7 @@ class RobotHardware:
         self.LEFTBACKWARD_RIGHTFORWARD = 0x02  # 0000 0010
         self.LEFTBACKWARD_RIGHTBACKWARD = 0x03  # 0000 0011
 
-        self.PID_ON_HARDWARE_OP_CODE = 0x10     # 0001 0000 
+        self.PID_ON_HARDWARE_OP_CODE = 0x00     # 0001 0000 
 
         self._current_motors_direction = self.LEFTFORWARD_RIGHTFORWARD
 
