@@ -45,18 +45,34 @@ class CameraLoader:
         for device_dir in devices:
             if len(device_dir):
 
-                name = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/name",shell=True)
-                name = decode(name)[0]
                 try:
+                    name = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/name",shell=True)
+                    name = decode(name)[0]
+                except (FileNotFoundError,ValueError, sb.CalledProcessError) as e:
+                    name = "No_Name"
+                    print(e)
+
+                try:                
                     input_folder = sb.check_output("ls", cwd="/sys/class/video4linux/"+device_dir+"/device/input/")
                     input_folder = decode(input_folder)[0]
-                except ValueError:
-                    print(ValueError)
+                except (FileNotFoundError,ValueError, sb.CalledProcessError) as e:
+                    input_folder = "No_Folder"
+                    print(e)
 
-                product = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/product", shell=True)
-                product = decode(product)[0]
-                vendor = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/vendor", shell=True)
-                vendor = decode(vendor)[0]
+                try:
+                    product = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/product", shell=True)
+                    product = decode(product)[0]
+                except (FileNotFoundError,ValueError, sb.CalledProcessError) as e:
+                    product = "No_Procuct"
+                    print(e)
+
+                try:
+                    vendor = sb.check_output("cat /sys/class/video4linux/"+device_dir+"/device/input/"+input_folder+"/id/vendor", shell=True)
+                    vendor = decode(vendor)[0]
+                except (FileNotFoundError,ValueError, sb.CalledProcessError) as e:
+                    vendor = "No_Vendor"
+                    print(e)
+
                 device_number = device_dir.strip("video")
                 self.camera_list[device_number] = {"name": name, "product": product, "vendor" : vendor}
                 if product == self.camera_id["product"]:
