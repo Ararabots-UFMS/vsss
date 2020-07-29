@@ -44,8 +44,9 @@ if __name__=="__main__":
             sb.check_output("catkin_make install", shell=True)
             package_bash = "source "+path_to_file + "/devel/setup.bash"
 
-        except OSError:
+        except OSError as e:
             print("Something went wrong when building the package, please check.")
+            print(e)
             package_bash = ""
     else:
         package_bash = ""
