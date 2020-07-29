@@ -15,8 +15,8 @@
     "penalty_player": 0,
     "seekers": {
         "blue": "kmeans",
-        "yellow": "color"
+        "yellow": "kmeans"
     },
     "side": 0,
-    "time": 1
+    "time": 0
 }
