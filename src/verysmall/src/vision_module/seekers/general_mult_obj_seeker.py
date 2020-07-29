@@ -13,8 +13,7 @@ class GeneralMultObjSeeker(Seeker):
 
     def __init__(self, num_objects):
         self.num_objects = num_objects
-        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=30,
-        precompute_distances=True, n_jobs=1)
+        self.kmeans = KMeans(n_clusters=self.num_objects, n_init=1, max_iter=30)
         self.objects = None
 
     def seek(self, img):
