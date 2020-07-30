@@ -57,7 +57,7 @@ class MainWindowController:
         # Fast access array to use a dict as an simple array
         self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
         self.assigned_robot_text = ["Jogador " + str(x) for x in range(1, 6)]
-        self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
+        self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player', 'initial_position']
 
         self.view.team_color.value(self.game_opt["time"])
         self.pub.set_team_color(self.view.team_color.value())
@@ -70,7 +70,7 @@ class MainWindowController:
         self.set_robots_params()
 
         # A loop for the assigned robot actions
-        for num in range(3):
+        for num in range(4):
 
             # Same idea here with the value indexes
             current_item = 0
@@ -287,6 +287,9 @@ class MainWindowController:
             elif ptr.id == 2:
                 self.pub.set_game_state(4)
                 print("Meta")
+            elif ptr.id == 3:
+                self.pub.set_game_state(5)
+                print("Posição inicial")
             else:
                 print("que")
 

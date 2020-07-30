@@ -11,6 +11,7 @@
         "vendor": "05a3"
     },
     "freeball_player": 0,
+    "initial_position": 0,
     "meta_player": 2,
     "penalty_player": 0,
     "seekers": {
