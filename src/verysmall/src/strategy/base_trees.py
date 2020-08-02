@@ -89,12 +89,32 @@ class FreeWayAttack(Sequence):
         charge_with_ball = ChargeWithBall("ChargeWithFreeWay", 200)
         self.add_child(charge_with_ball)
 
+class AutomaticPosition(Sequence):
+    def __init__(self, name='AutomaticPosition'):
+        super().__init__(name)
+
+        check_state = InState('CheckAutomaticPositionState', GameStates.AUTOMATIC_POSITION)
+        self.add_child(check_state)
+        
+        move_to_position = GoToPositionUsingUnivector(position=None)
+        change_state = ChangeState("ReturnToStopped", GameStates.STOPPED)
+
+        self.add_child(move_to_position)
+        self.add_child(change_state)
+
+    def run(self, blackboard: BlackBoard):
+        position = list(blackboard.automatic_positions.values())[blackboard.current_automatic_position]['attacker']['pos1']
+        log_warn(position)
+        self.children[1].position = position
+        return super().run(blackboard)
+
 
 class BaseTree(Selector):
     def __init__(self, name: str = "BaseTree"):
         super().__init__(name)
 
         self.add_child(Stopped("Stopped"))
+        self.add_child(AutomaticPosition())
         self.add_child(UseFrontHead(child=Penalty("Penalty")))
         self.add_child(UseFrontHead(child=FreeBall("FreeBall")))
         self.add_child(UseFrontHead(child=Meta("Meta")))
