@@ -115,6 +115,9 @@ class GameTopicPublisher:
         else:
             self.set_freeball_robot(robot_id)
 
+    def assigned_automatic_position(self, automatic_position_id):
+        self.msg.automatic_position = automatic_position_id
+
     def set_penalty_robot(self, _penalty_robot):
         """
         Set the selected robot the action of taking penalty actions

@@ -1,0 +1,24 @@
+{
+    "Meio de campo - Defesa" : {
+        "attacker" : {
+            "pos1" : [32, 75]
+        },
+        "defender" : { 
+            "pos1" : [32, 75]
+        },
+        "goalkeeper" :{
+            "pos1" : [32, 75]
+        }
+    },
+    "Meio de campo - Ataque" : {
+        "attacker" : {
+            "pos1" : [32, 75]
+        },
+        "defender" : { 
+            "pos1" : [32, 75]
+        },
+        "goalkeeper" :{
+            "pos1" : [32, 75]
+        }
+    }
+ }

@@ -70,7 +70,7 @@ class MainWindowController:
         self.set_robots_params()
 
         # A loop for the assigned robot actions
-        for num in range(4):
+        for num in range(3):
 
             # Same idea here with the value indexes
             current_item = 0
@@ -88,6 +88,16 @@ class MainWindowController:
             # Set a callback for input and button
             self.view.option_robots[num].callback(self.action_input_choice)
             self.view.action_buttons[num].callback(self.action_button_clicked)
+
+        # Automatic Position Input
+        automatic_position_dropdown = self.view.option_robots[3]  
+        for position_name in model.automatic_positions.keys():
+            automatic_position_dropdown.add(position_name)
+        
+        automatic_position_dropdown.value(0)
+        automatic_position_dropdown.callback(self.automatic_position_input_choice)
+        self.view.action_buttons[3].callback(self.action_button_clicked)
+
         # Multiple callbacks, each for one type of input
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
@@ -218,6 +228,14 @@ class MainWindowController:
         self.pub.publish()
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
+    def automatic_position_input_choice(self, ptr):
+        """
+        Assign default position callback
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.pub.assigned_automatic_position(ptr.value())
+
     def get_mac_address(self, robot_id: int) -> Tuple[bool, bytes]:
         robot_name = self.robot_params[self.faster_hash[robot_id]]['bluetooth_mac_address']
 
@@ -274,6 +292,10 @@ class MainWindowController:
             ptr.color(fl.FL_DARK_GREEN)
             ptr.label("Jogar")
             self.view.play_button.playing = False
+        elif ptr.id == 3:
+            self.pub.set_game_state(5)
+            self.pub.publish()
+            print("Posição inicial")
         else:
             if ptr.id == 4:
                 self.pub.set_game_state(1)  # Sets the game state to normal play
@@ -287,9 +309,6 @@ class MainWindowController:
             elif ptr.id == 2:
                 self.pub.set_game_state(4)
                 print("Meta")
-            elif ptr.id == 3:
-                self.pub.set_game_state(5)
-                print("Posição inicial")
             else:
                 print("que")
 
