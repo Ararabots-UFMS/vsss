@@ -96,15 +96,16 @@ class AutomaticPosition(Sequence):
         check_state = InState('CheckAutomaticPositionState', GameStates.AUTOMATIC_POSITION)
         self.add_child(check_state)
         
-        move_to_position = GoToPositionUsingUnivector(position=None)
+        move_to_position = GoToPositionUsingUnivector(position=None, acceptance_radius=5)
         change_state = ChangeState("ReturnToStopped", GameStates.STOPPED)
 
         self.add_child(move_to_position)
         self.add_child(change_state)
 
     def run(self, blackboard: BlackBoard):
-        position = list(blackboard.automatic_positions.values())[blackboard.current_automatic_position]['attacker']['pos1']
-        log_warn(position)
+        log_warn(f'{blackboard.robot.role} --> {self.children[1].position}')
+        available_positions = list(blackboard.automatic_positions.values())
+        position = available_positions[blackboard.current_automatic_position][f'{blackboard.robot.role}']['pos1']
         self.children[1].position = position
         return super().run(blackboard)
 

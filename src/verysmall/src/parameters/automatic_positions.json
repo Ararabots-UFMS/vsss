@@ -1,24 +1,24 @@
 {
     "Meio de campo - Defesa" : {
-        "attacker" : {
-            "pos1" : [32, 75]
+        "0" : {
+            "pos1" : [32, 65]
         },
-        "defender" : { 
-            "pos1" : [32, 75]
+        "1" : { 
+            "pos1" : [32, 32]
         },
-        "goalkeeper" :{
-            "pos1" : [32, 75]
+        "2" :{
+            "pos1" : [32, 97]
         }
     },
     "Meio de campo - Ataque" : {
-        "attacker" : {
-            "pos1" : [32, 75]
+        "0" : {
+            "pos1" : [118, 65]
         },
-        "defender" : { 
-            "pos1" : [32, 75]
+        "1" : { 
+            "pos1" : [118, 32]
         },
-        "goalkeeper" :{
-            "pos1" : [32, 75]
+        "2" :{
+            "pos1" : [118, 97]
         }
     }
  }
