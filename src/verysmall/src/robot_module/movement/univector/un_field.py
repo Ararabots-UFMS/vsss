@@ -3,8 +3,8 @@ import math
 from math import pi
 from math import cos, sin, atan2, exp
 
-from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
-from utils.profiling_tools import log_warn
+from arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
+
 LEFT = 0
 RIGHT = 1
 
@@ -37,7 +37,7 @@ class HyperbolicSpiral:
         else:
             r = radius
 
-        p = np.array(_p)
+        p = _p
         theta = atan2(p[1], p[0])
         ro = np.linalg.norm(p)
 
@@ -54,7 +54,7 @@ class HyperbolicSpiral:
         return atan2(sin(_theta), cos(_theta))
 
     def n_h(self, _p: np.ndarray, _radius: float = None, cw: bool = True) -> np.ndarray:
-        p = np.array(_p)
+        p = _p
         if _radius is None:
             radius = self.radius
         else:
@@ -76,7 +76,7 @@ class Repulsive:
         if np.all(_origin != None):
             self.update_origin(_origin)
 
-        p = np.array(_p) - self.origin
+        p = _p - self.origin
 
         if _theta:
             return atan2(p[1], p[0])
@@ -104,7 +104,7 @@ class Move2Goal:
         self.hyperSpiral.update_params(self.Kr, self.radius)
 
     def update_axis(self, new_origin: np.ndarray, new_u_axis: np.ndarray) -> None:
-        self.origin = np.array(new_origin)
+        self.origin = new_origin
         self.u = new_u_axis
         self.build_axis()
 
@@ -118,8 +118,7 @@ class Move2Goal:
 
     def fi_tuf(self, _p: np.ndarray) -> float:
         n_h = self.hyperSpiral.n_h
-
-        p = np.array(_p) - self.origin
+        p = _p - self.origin
         r = self.radius
 
         p = np.dot(self.toUnivectorMatrix, p).reshape(2, )
@@ -189,12 +188,12 @@ class AvoidObstacle:
         self.K0 = _K0
 
     def update_obstacle(self, _pObs: np.ndarray, _vObs: np.ndarray) -> None:
-        self.pObs = np.array(_pObs)
-        self.vObs = np.array(_vObs)
+        self.pObs = _pObs
+        self.vObs = _vObs
 
     def update_robot(self, _pRobot: np.ndarray, _vRobot: np.ndarray) -> None:
-        self.pRobot = np.array(_pRobot)
-        self.vRobot = np.array(_vRobot)
+        self.pRobot = _pRobot
+        self.vRobot = _vRobot
 
 
 class UnivectorField:
@@ -234,12 +233,12 @@ class UnivectorField:
         return np.array([attack_goal * 150, 65])
 
     def update_obstacles(self, _obstacles: np.ndarray, _obsSpeeds: np.ndarray) -> None:
-        self.obstacles = np.array(_obstacles)
-        self.obstaclesSpeed = np.array(_obsSpeeds)
+        self.obstacles = _obstacles
+        self.obstaclesSpeed = _obsSpeeds
 
     def update_robot(self, _robotPos: np.ndarray, _vRobot: np.ndarray) -> None:
-        self.robotPos = np.array(_robotPos)
-        self.vRobot = np.array(_vRobot)
+        self.robotPos = _robotPos
+        self.vRobot = _vRobot
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
 
     def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> np.ndarray:
@@ -257,13 +256,13 @@ class UnivectorField:
 
         if _robotPos is not None and _vRobot is not None:
             # Just in case the user send lists
-            robot_pos = np.array(_robotPos)
-            v_robot = np.array(_vRobot)
+            robot_pos = _robotPos
+            v_robot = _vRobot
             self.update_robot(robot_pos, v_robot)
 
         if _goal_pos is not None and _goal_axis is not None:
-            goal_position = np.array(_goal_pos)
-            goal_axis = np.array(_goal_axis)
+            goal_position = _goal_pos
+            goal_axis = _goal_axis
             self.mv2Goal.update_axis(goal_position, goal_axis)
 
         closest_center = np.array([None, None])  # array to store the closest center
@@ -313,7 +312,7 @@ class UnivectorField:
         section_num = univector_pos_section(_ball)
 
         if section_num == ArenaSections.CENTER:
-            correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
+            correct_axis = self.get_attack_goal_position(_attack_goal) - _ball
         else:
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
