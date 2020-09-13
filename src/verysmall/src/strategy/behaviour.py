@@ -12,6 +12,7 @@ from strategy.arena_utils import RIGHT
 from strategy.strategy_utils import GameStates
 from utils.profiling_tools import log_warn
 from utils import physics
+from utils.json_handler import JsonHandler
 
 angle = distance = float
 speed = int
@@ -41,6 +42,9 @@ class BlackBoard:
 
         self.home_team = HomeTeam()
         self.enemy_team = EnemyTeam()
+
+        self.current_automatic_position : int = 0
+        self.automatic_positions = JsonHandler.read("parameters/automatic_positions.json", escape=True)
 
     def set_robot_variables(self, robot_position, robot_orientation):
         self.robot.position = robot_position

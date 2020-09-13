@@ -27,7 +27,7 @@ class RosRobotSubscriberAndPublisher:
         self.debug_msg = debug_topic()
         self.debug_msg.id = self.robot.id
 
-    def read_game_topic(self, data):
+    def read_game_topic(self, data : game_topic):
         """
         Read from game topic callback and open the message into robot variables
         :param data: ROS game topic message
@@ -45,8 +45,9 @@ class RosRobotSubscriberAndPublisher:
 
         self.robot.behaviour_tree = self.robot.behaviour_trees[self.robot.blackboard.robot.role]
         self.robot.team_color = data.team_color
+        self.robot.blackboard.current_automatic_position = data.automatic_position
 
-    def read_topic(self, data) -> None:
+    def read_topic(self, data : things_position) -> None:
         """
         This class formats the things position into np arrays and replaces any nan to None
         :param data: ROS Things position message

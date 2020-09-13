@@ -6,3 +6,4 @@ uint8[5]     robot_tags
 uint8        penalty_robot
 uint8        freeball_robot
 uint8        meta_robot
+uint8        automatic_position
