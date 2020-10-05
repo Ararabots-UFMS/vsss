@@ -19,6 +19,7 @@ class GameStates(Enum):
     FREE_BALL = 2
     PENALTY = 3
     META = 4
+    AUTOMATIC_POSITION = 5
 
 
 ######################

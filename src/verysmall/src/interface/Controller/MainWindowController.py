@@ -57,7 +57,7 @@ class MainWindowController:
         # Fast access array to use a dict as an simple array
         self.faster_hash = ['robot_' + str(x) for x in range(1, 6)]
         self.assigned_robot_text = ["Jogador " + str(x) for x in range(1, 6)]
-        self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player']
+        self.assigned_robot_indexes = ['penalty_player', 'freeball_player', 'meta_player', 'initial_position']
 
         self.view.team_color.value(self.game_opt["time"])
         self.pub.set_team_color(self.view.team_color.value())
@@ -88,6 +88,16 @@ class MainWindowController:
             # Set a callback for input and button
             self.view.option_robots[num].callback(self.action_input_choice)
             self.view.action_buttons[num].callback(self.action_button_clicked)
+
+        # Automatic Position Input
+        automatic_position_dropdown = self.view.option_robots[3]  
+        for position_name in model.automatic_positions.keys():
+            automatic_position_dropdown.add(position_name)
+        
+        automatic_position_dropdown.value(0)
+        automatic_position_dropdown.callback(self.automatic_position_input_choice)
+        self.view.action_buttons[3].callback(self.action_button_clicked)
+
         # Multiple callbacks, each for one type of input
         # but since whe have ids for each robot input
         # we can parse through each using its on dictionary
@@ -218,6 +228,14 @@ class MainWindowController:
         self.pub.publish()
         self.game_opt[self.assigned_robot_indexes[ptr.id]] = ptr.value()
 
+    def automatic_position_input_choice(self, ptr):
+        """
+        Assign default position callback
+        :param ptr: Widget pointer
+        :return: nothing
+        """
+        self.pub.assigned_automatic_position(ptr.value())
+
     def get_mac_address(self, robot_id: int) -> Tuple[bool, bytes]:
         robot_name = self.robot_params[self.faster_hash[robot_id]]['bluetooth_mac_address']
 
@@ -274,6 +292,10 @@ class MainWindowController:
             ptr.color(fl.FL_DARK_GREEN)
             ptr.label("Jogar")
             self.view.play_button.playing = False
+        elif ptr.id == 3:
+            self.pub.set_game_state(5)
+            self.pub.publish()
+            print("Posição inicial")
         else:
             if ptr.id == 4:
                 self.pub.set_game_state(1)  # Sets the game state to normal play

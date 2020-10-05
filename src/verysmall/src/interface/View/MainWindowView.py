@@ -275,13 +275,13 @@ class MainWindowView:
 
         self.padding_y += self.proportion_height(2)
 
-        temp_names = ["Freeball: ", "Penalti: ", "Tiro de meta: "]
-        for num in range(3):
+        temp_names = ["Freeball: ", "Penalti: ", "Tiro de meta: ", "Posicao inicial: "]
+        for num, choice_text in enumerate(temp_names):
             self.option_robots[num] = fl.Fl_Choice(self.proportion_width(10),
                                                    self.padding_y,
                                                    self.proportion_width(10),
                                                    self.proportion_height(4),
-                                                   temp_names[num])
+                                                   choice_text)
 
             self.option_robots[num].id = num
             self.option_robots[num].down_box(fl.FL_FLAT_BOX)

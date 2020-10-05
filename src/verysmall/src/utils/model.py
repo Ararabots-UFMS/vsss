@@ -10,6 +10,7 @@ class Model():
         self.robot_roles = self.json_handler.read("parameters/roles.json", escape=True)
         self.game_opt = self.json_handler.read("parameters/game.json", escape=True)
         self.debug_params = self.json_handler.read("parameters/debug.json",escape=True)
+        self.automatic_positions = self.json_handler.read("parameters/automatic_positions.json",escape=True)
 
     def save_params(self):
         self.json_handler.write(self.robot_params, "parameters/robots.json")

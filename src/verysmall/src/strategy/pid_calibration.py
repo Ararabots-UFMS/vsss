@@ -21,12 +21,11 @@ class CalibrationTree(Selector):
         patrol = Sequence('Patrol')
         self.straight_line_movement = GoToPosition(target_pos=next(self.waypoints_list), 
                                                    max_speed=150, 
-                                                   acceptance_radius=15.0)
+                                                   acceptance_radius=10.0)
 
-        #ignore_smoothing = IgnoreSmoothing(name="Ignore smoothing pid")
-        #ignore_smoothing.add_child(self.straight_line_movement)
-        #patrol.children.append(ignore_smoothing)
-	patrol.children.append(self.straight_line_movement)	
+        ignore_smoothing = IgnoreSmoothing(name="Ignore smoothing pid")
+        ignore_smoothing.add_child(self.straight_line_movement)
+        patrol.children.append(ignore_smoothing)
         spin_task = Timer(exec_time=3)
         spin_task.add_child(SpinTask())
         #patrol.children.append(spin_task)
