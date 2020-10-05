@@ -71,9 +71,8 @@ class UnivectorTask(ABC):
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.positions.tolist() +
-                                              blackboard.home_team.positions.tolist(),
-                                           [[0, 0]] * 9)  # blackboard.enemies_speed)
+        self.univector_field.update_obstacles(np.append(blackboard.enemy_team.positions, blackboard.home_team.positions, axis=0),
+                                           np.zeros((9, 2)))  # blackboard.enemies_speed)
         theta = blackboard.robot.orientation
         vec = 4*np.array([math.cos(theta), math.sin(theta)])*(-1 + 2*blackboard.current_orientation)
         angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + vec, np.array([0, 0]),

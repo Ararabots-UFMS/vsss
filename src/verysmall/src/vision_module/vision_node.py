@@ -32,7 +32,7 @@ class VisionNode:
         :param color: int
         """
         self.team_colors = ['blue', 'yellow']
-        self.yellow_robots = 4
+        self.yellow_robots = 3
         self.blue_robots = 3
         self.show = False
         self.state_changed = 0

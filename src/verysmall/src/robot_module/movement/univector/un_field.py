@@ -3,7 +3,7 @@ import math
 from math import pi
 from math import cos, sin, atan2, exp
 
-from arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
+from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
 
 LEFT = 0
 RIGHT = 1
@@ -233,7 +233,7 @@ class UnivectorField:
         return np.array([attack_goal * 150, 65])
 
     def update_obstacles(self, _obstacles: np.ndarray, _obsSpeeds: np.ndarray) -> None:
-        self.obstacles = _obstacles
+        self.obstacles = _obstacles # TODO: Gambito, encontrar no código o que atualiza
         self.obstaclesSpeed = _obsSpeeds
 
     def update_robot(self, _robotPos: np.ndarray, _vRobot: np.ndarray) -> None:
@@ -312,7 +312,7 @@ class UnivectorField:
         section_num = univector_pos_section(_ball)
 
         if section_num == ArenaSections.CENTER:
-            correct_axis = self.get_attack_goal_position(_attack_goal) - _ball
+            correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
         else:
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
