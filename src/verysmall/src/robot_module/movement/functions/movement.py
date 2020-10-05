@@ -83,16 +83,17 @@ class Movement():
 
         :return: returns nothing
         """
+        # TODO: Método nunca chamado...
         #TODO: Testar a predicao dos vetores
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
         vec_result = np.array([0.0, 0.0])
         robot_position_aux = robot_position
         for i in range(number_of_predictions):
-            vec = self.univet_field.get_vec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
-            vec_result += np.array(vec)
+            vec = self.univet_field.get_vec(robot_position_aux, robot_speed, ball_position)
+            vec_result += vec
             robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
 
-        return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
+        return self.follow_vector(speed, robot_vector, np.array(unitVector(vec_result)))
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False, speed_prediction=False):
         """Receive players positions and speed and return the speed to follow univector
@@ -108,8 +109,8 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
+        vec = self.univet_field.get_vec_with_ball(robot_position, robot_speed, ball_position)
 
         if speed_prediction:
             # central area speed
@@ -119,7 +120,7 @@ class Movement():
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
+        return self.follow_vector(speed, robot_vector, vec, only_forward)
 
     def do_univector_ball(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
@@ -133,9 +134,9 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
+        vec = self.univet_field.get_vec_with_ball(robot_position, robot_speed, ball_position)
+        return self.follow_vector(speed, robot_vector, vec)
 
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result

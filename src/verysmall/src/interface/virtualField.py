@@ -415,8 +415,8 @@ class virtualField():
 
         self.plot_ball(ball_center)
 
-        fake_speedsA = [[0,0]] * len(robotlistA)
-        fake_speedsH = [[0,0]] * len(robotlistH)
+        fake_speedsA = np.zeros((len(robotlistA), 2))
+        fake_speedsH = np.zeros((len(robotlistH), 2))
 
         if self.draw_simulation_vectors:
             self.univetField.update_obstacles(robotlistA, fake_speedsA )

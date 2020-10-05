@@ -328,7 +328,7 @@ class UnivectorField:
 
         offset = self.get_correct_offset(_ball, section_num)
 
-        return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis)
+        return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis - offset)
 
     def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections,
                          attack_goal: bool = RIGHT) -> np.ndarray:
