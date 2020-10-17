@@ -5,6 +5,7 @@ from typing import Iterable
 from typing import Tuple
 
 import numpy as np
+import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
@@ -18,13 +19,9 @@ from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
 
-from utils.debug_profile import DebugProfile
-
-profile = DebugProfile()
-
+from utils.debug_profile import debug_profiler
 
 LEFT, RIGHT = 0, 1
-
 
 
 class StopAction(TreeNode):
@@ -74,6 +71,7 @@ class UnivectorTask(ABC):
         raise Exception("subclass must override run method")
 
     def go_to_objective(self, blackboard: BlackBoard, objective_position):
+
         distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
 
         if distance_to_ball < self.acceptance_radius:
@@ -111,10 +109,8 @@ class GoToPositionUsingUnivector(UnivectorTask):
         self.position = new_pos
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        profile.enable()
+
         aux = self.go_to_objective(blackboard, self.position)
-        profile.disable()
-        profile.log()
 
         return aux
 
@@ -149,7 +145,10 @@ class GoToBallUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return self.go_to_objective(blackboard, blackboard.ball.position)
+        debug_profiler.enable()
+        aux = self.go_to_objective(blackboard, blackboard.ball.position)
+        debug_profiler.disable()
+        return aux
 
 
 class GoToAttackGoalUsingUnivector(UnivectorTask):
