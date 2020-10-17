@@ -1,5 +1,6 @@
 import math
 from abc import ABC, abstractmethod
+import profile
 from typing import Iterable
 from typing import Tuple
 
@@ -17,7 +18,14 @@ from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
 
+from utils.debug_profile import DebugProfile
+
+profile = DebugProfile()
+
+
 LEFT, RIGHT = 0, 1
+
+
 
 class StopAction(TreeNode):
 
@@ -103,7 +111,12 @@ class GoToPositionUsingUnivector(UnivectorTask):
         self.position = new_pos
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return self.go_to_objective(blackboard, self.position)
+        profile.enable()
+        aux = self.go_to_objective(blackboard, self.position)
+        profile.disable()
+        profile.log()
+
+        return aux
 
 
 class RecoverBallUsingUnivector(UnivectorTask):

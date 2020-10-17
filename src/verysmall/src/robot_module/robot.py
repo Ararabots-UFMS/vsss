@@ -86,6 +86,7 @@ class Robot:
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_' + str(self.owner_name),
                                                           self._should_debug)
 
+
     @property
     def position(self):
         return self.blackboard.robot.position
@@ -120,6 +121,7 @@ class Robot:
 
     def run(self):
         task_status, action = self.behaviour_tree.run(self.blackboard)
+
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
 
