@@ -11,6 +11,7 @@ from robot_module.movement.definitions import OpCodes
 from strategy.behaviour import BlackBoard
 from utils.math_utils import RAD2DEG, DEG2RAD, FORWARD, BACKWARDS, clamp
 from strategy.arena_utils import ArenaSections, univector_pos_section
+from utils.linalg import *
 
 Constants = Tuple[int, float, float, float]
 
@@ -35,7 +36,7 @@ class Control:
         self._beta = 0.5
         self._t = 1
         self._current_orientation = 0
-        self._ma_orientation_vec = np.array([0, 0])
+        self._ma_orientation_vec = Vec2D.origin()
         self._ma_orientation = 0
 
         self._pid_constants_set = sorted(constants)
@@ -203,10 +204,10 @@ class Control:
         return s + self._max_fine_movement_speed
 
     def update_orientation(self, orientation: float) -> None:
-        vec = np.array([math.cos(orientation), math.sin(orientation)])
+        vec = Vec2D(math.cos(orientation), math.sin(orientation))
         v = self._beta * self._ma_orientation_vec + \
             (1 - self._beta) * vec
-        v /= (1 - self._beta ** self._t)
+        v *= 1 / (1 - self._beta ** self._t)
 
         self._ma_orientation_vec = v
         self._ma_orientation = math.atan2(v[1], v[0])

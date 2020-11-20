@@ -2,6 +2,7 @@ import numpy as np
 import math
 from math import pi
 from math import cos, sin, atan2, exp, sqrt
+from utils.linalg import *
 
 from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
 
@@ -34,7 +35,7 @@ class HyperbolicSpiral:
         self.Kr = _KR
         self.radius = _RADIUS
 
-    def fi_h(self, _p: np.ndarray, radius: float = None, cw: bool = True) -> float:
+    def fi_h(self, _p: Vec2D, radius: float = None, cw: bool = True) -> float:
 
         if radius is None:
             r = self.radius
@@ -43,7 +44,7 @@ class HyperbolicSpiral:
 
         p = _p
         theta = atan2(p[1], p[0])
-        ro = norm(p)
+        ro = p.norm()
 
         if ro > r:
             a = (pi / 2.0) * (2.0 - (r + self.Kr) / (ro + self.Kr))
@@ -57,7 +58,7 @@ class HyperbolicSpiral:
 
         return atan2(sin(_theta), cos(_theta))
 
-    def n_h(self, _p: np.ndarray, _radius: float = None, cw: bool = True) -> np.ndarray:
+    def n_h(self, _p: Vec2D, _radius: float = None, cw: bool = True) -> Vec2D:
         p = _p
         if _radius is None:
             radius = self.radius
@@ -65,19 +66,19 @@ class HyperbolicSpiral:
             radius = _radius
 
         fi = self.fi_h(p, radius, cw)
-        return np.array([cos(fi), sin(fi)])
+        return Vec2D(cos(fi), sin(fi))
 
 
 class Repulsive:
 
     def __init__(self):
-        self.origin = np.array([None, None])
+        self.origin = Vec2D.origin()
 
-    def update_origin(self, newOrigin: np.ndarray) -> None:
-        self.origin = np.copy(newOrigin)
+    def update_origin(self, newOrigin: Vec2D) -> None:
+        self.origin = newOrigin.copy()
 
-    def fi_r(self, _p, _origin: np.ndarray = None, _theta: bool = True):
-        if np.all(_origin != None):
+    def fi_r(self, _p, _origin: Vec2D = None, _theta: bool = True):
+        if _origin is not None:
             self.update_origin(_origin)
 
         p = _p - self.origin
@@ -94,10 +95,10 @@ class Move2Goal:
         self.Kr = _Kr
         self.radius = _radius
         self.hyperSpiral = HyperbolicSpiral(self.Kr, self.radius)
-        self.origin = np.array([None, None])
+        self.origin = Vec2D.origin()
 
-        self.u = np.array([None, None])
-        self.v = np.array([None, None])
+        self.u = Vec2D.origin()
+        self.v = Vec2D.origin()
 
         self.toUnivectorMatrix = None
         self.toCanonicalMatrix = None
@@ -107,25 +108,30 @@ class Move2Goal:
         self.radius = _RADIUS
         self.hyperSpiral.update_params(self.Kr, self.radius)
 
-    def update_axis(self, new_origin: np.ndarray, new_u_axis: np.ndarray) -> None:
+    def update_axis(self, new_origin: Vec2D, new_u_axis: Vec2D) -> None:
         self.origin = new_origin
         self.u = new_u_axis
         self.build_axis()
 
     def build_axis(self) -> None:
-        self.u /= -norm(self.u)
+        self.u /= -self.u.norm()
         theta = math.atan2(self.u[1], self.u[0])
-        self.v = np.array([-sin(theta), cos(theta)])
+        self.v = Vec2D(-sin(theta), cos(theta))
 
-        self.toCanonicalMatrix = np.array([self.u, self.v]).T
-        self.toUnivectorMatrix = np.linalg.inv(self.toCanonicalMatrix)
+        # TODO: MATRIZEEEES
+        # self.toCanonicalMatrix = np.array([self.u, self.v]).T
+        # self.toUnivectorMatrix = np.linalg.inv(self.toCanonicalMatrix)
 
-    def fi_tuf(self, _p: np.ndarray) -> float:
+        self.toCanonicalMatrix = Mat2D(self.u, self.v)
+        self.toUnivectorMatrix = self.toCanonicalMatrix.invert()
+
+    def fi_tuf(self, _p: Vec2D) -> float:
         n_h = self.hyperSpiral.n_h
         p = _p - self.origin
         r = self.radius
 
-        p = np.dot(self.toUnivectorMatrix, p).reshape(2, )
+        # TODO: MATRIZESSSSS
+        p = self.toUnivectorMatrix.transform(p)
 
         x, y = p
         yl = y + r
@@ -134,8 +140,8 @@ class Move2Goal:
         # Parece que houve algum erro de digitacao no artigo
         # Pois quando pl e pr sao definidos dessa maneira o campo gerado
         # se parece mais com o resultado obtido no artigo
-        pl = np.array([x, yr])
-        pr = np.array([x, yl])
+        pl = Vec2D(x, yr)
+        pr = Vec2D(x, yl)
 
         # Este caso eh para quando o robo esta dentro do "circulo" da bola
         if -r <= y < r:
@@ -145,43 +151,45 @@ class Move2Goal:
             # Apesar de no artigo nao ser utilizado o modulo, quando utilizado
             # na implementacao o resultado foi mais condizente com o artigo
             vec = (abs(yl) * nh_pl + abs(yr) * nh_pr) / (2.0 * r)
-            vec = np.dot(self.toCanonicalMatrix, vec).reshape(2, )
+            # TODO: MATRIZEESSSS
+            vec = self.toCanonicalMatrix.transform(vec)
         else:
             if y < -r:
                 theta = self.hyperSpiral.fi_h(pl, cw=True)
             else:  # y >= r
                 theta = self.hyperSpiral.fi_h(pr, cw=False)
 
-            vec = np.array([cos(theta), sin(theta)])
-            vec = np.dot(self.toCanonicalMatrix, vec).reshape(2, )
+            vec = Vec2D(cos(theta), sin(theta))
+            # TODO: MATRIZES
+            vec = self.toCanonicalMatrix.transform(vec)
 
         return atan2(vec[1], vec[0])
 
 
 class AvoidObstacle:
-    def __init__(self, _pObs: np.ndarray, _vObs: np.ndarray, _pRobot: np.ndarray, _vRobot: np.ndarray, _K0: float):
-        self.pObs = np.array(_pObs)
-        self.vObs = np.array(_vObs)
-        self.pRobot = np.array(_pRobot)
-        self.vRobot = np.array(_vRobot)
+    def __init__(self, _pObs: Vec2D, _vObs: Vec2D, _pRobot: Vec2D, _vRobot: Vec2D, _K0: float):
+        self.pObs =_pObs.copy()
+        self.vObs = _vObs.copy()
+        self.pRobot = _pRobot.copy()
+        self.vRobot = _vRobot.copy()
         self.K0 = _K0
         self.repField = Repulsive()
 
-    def get_s(self) -> np.ndarray:
+    def get_s(self) -> Vec2D:
         return self.K0 * (self.vObs - self.vRobot)
 
-    def get_virtual_pos(self) -> np.ndarray:
+    def get_virtual_pos(self) -> Vec2D:
         s = self.get_s()
-        s_norm = norm(s)
-        d = norm(self.pObs - self.pRobot)
+        s_norm = s.norm()
+        d = (self.pObs - self.pRobot).norm()
         if d >= s_norm:
             v_pos = self.pObs + s
         else:
             v_pos = self.pObs + (d / s_norm) * s
         return v_pos
 
-    def fi_auf(self, _robotPos: np.ndarray, _vPos: np.ndarray = (None, None), _theta: bool = True) -> np.ndarray:
-        if np.all(_vPos is None):
+    def fi_auf(self, _robotPos: Vec2D, _vPos: Vec2D = None, _theta: bool = True) -> Vec2D:
+        if _vPos is None:
             v_pos = self.get_virtual_pos()
         else:
             v_pos = _vPos
@@ -191,22 +199,22 @@ class AvoidObstacle:
     def update_param(self, _K0: float) -> None:
         self.K0 = _K0
 
-    def update_obstacle(self, _pObs: np.ndarray, _vObs: np.ndarray) -> None:
+    def update_obstacle(self, _pObs: Vec2D, _vObs: Vec2D) -> None:
         self.pObs = _pObs
         self.vObs = _vObs
 
-    def update_robot(self, _pRobot: np.ndarray, _vRobot: np.ndarray) -> None:
+    def update_robot(self, _pRobot: Vec2D, _vRobot: Vec2D) -> None:
         self.pRobot = _pRobot
         self.vRobot = _vRobot
 
 
 class UnivectorField:
     def __init__(self):
-        self.obstacles = np.array([[None, None]])
-        self.obstaclesSpeed = np.array([[None, None]])
-        self.ballPos = np.array([None, None])
-        self.robotPos = np.array([None, None])
-        self.vRobot = np.array([None, None])
+        self.obstacles = [Vec2D.origin()]
+        self.obstaclesSpeed = [Vec2D.origin()]
+        self.ballPos = Vec2D.origin()
+        self.robotPos = Vec2D.origin()
+        self.vRobot = Vec2D.origin()
         # Field constants
         self.RADIUS = None
         self.KR = None
@@ -215,37 +223,37 @@ class UnivectorField:
         self.LDELTA = None
 
         # Subfields
-        self.avdObsField = AvoidObstacle([None, None], [None, None],
-                                         [None, None], [None, None], self.K0)
+        self.avdObsField = AvoidObstacle(Vec2D.origin(), Vec2D.origin(),
+                                         Vec2D.origin(), Vec2D.origin(), self.K0)
 
         self.mv2Goal = Move2Goal(self.KR, self.RADIUS)
 
     @staticmethod
-    def get_attack_goal_axis(attack_goal: bool) -> np.ndarray:
+    def get_attack_goal_axis(attack_goal: bool) -> Vec2D:
         if attack_goal == LEFT:
-            return np.array([-1.0, 0.0])
+            return Vec2D.left()
         else:
-            return np.array([1.0, 0.0])
+            return Vec2D.right()
 
     @staticmethod
-    def get_attack_goal_position(attack_goal: bool) -> np.ndarray:
+    def get_attack_goal_position(attack_goal: bool) -> Vec2D:
         """
         Return the position of the goal, given attacking side  and section of the object
         :param team_side: int
         :return: np.array([x,y])
         """
-        return np.array([attack_goal * 150, 65])
+        return Vec2D(attack_goal * 150, 65)
 
-    def update_obstacles(self, _obstacles: np.ndarray, _obsSpeeds: np.ndarray) -> None:
+    def update_obstacles(self, _obstacles: Vec2D, _obsSpeeds: Vec2D) -> None:
         self.obstacles = _obstacles # TODO: Gambito, encontrar no código o que atualiza
         self.obstaclesSpeed = _obsSpeeds
 
-    def update_robot(self, _robotPos: np.ndarray, _vRobot: np.ndarray) -> None:
+    def update_robot(self, _robotPos: Vec2D, _vRobot: Vec2D) -> None:
         self.robotPos = _robotPos
         self.vRobot = _vRobot
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
 
-    def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> np.ndarray:
+    def update_constants(self, _RADIUS: float, _KR: float, _K0: float, _DMIN: float, _LDELTA: float) -> Vec2D:
         self.RADIUS = _RADIUS
         self.KR = _KR
         self.K0 = _K0
@@ -255,8 +263,8 @@ class UnivectorField:
         self.avdObsField.update_param(self.K0)
         self.mv2Goal.update_params(self.KR, self.RADIUS)
 
-    def get_angle_vec(self, _robotPos: np.ndarray = None, _vRobot: np.ndarray = None,
-                      _goal_pos: np.ndarray = None, _goal_axis=None) -> float:
+    def get_angle_vec(self, _robotPos: Vec2D = None, _vRobot: Vec2D = None,
+                      _goal_pos: Vec2D = None, _goal_axis=None) -> float:
 
         if _robotPos is not None and _vRobot is not None:
             # Just in case the user send lists
@@ -273,16 +281,16 @@ class UnivectorField:
         centers = []
         min_distance = self.DMIN + 1
 
-        if self.obstacles.size:
+        if len(self.obstacles) > 0:
             # get the Repulsive field centers
-            for i in range(self.obstacles.shape[0]):
+            for i in range(len(self.obstacles)):
                 self.avdObsField.update_obstacle(self.obstacles[i], self.obstaclesSpeed[i])
                 center = self.avdObsField.get_virtual_pos()
                 centers.append(center)
 
             # centers = centers
             # dist_vec = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
-            dist_vec = [norm(center - self.robotPos) for center in centers]
+            dist_vec = [(center - self.robotPos).norm() for center in centers]
             index = np.argmin(dist_vec)  # index of closest center
             closest_center = centers[index]
             min_distance = dist_vec[index]
@@ -295,38 +303,38 @@ class UnivectorField:
         else:
             fi_tuf = self.mv2Goal.fi_tuf(self.robotPos)
             # Checks if at least one obstacle exist
-            if self.obstacles.size:
+            if len(self.obstacles) > 0:
                 g = gaussian(min_distance - self.DMIN, self.LDELTA)
                 diff = wrap2pi(fi_auf - fi_tuf)
                 return wrap2pi(g * diff + fi_tuf)
             else:  # if there is no obstacles
                 return fi_tuf
 
-    def get_vec_with_ball(self, _robotPos: np.ndarray = None,
-                          _vRobot: np.ndarray = None,
-                          _ball: np.ndarray = None,
-                          _attack_goal: bool = RIGHT) -> np.ndarray:
+    def get_vec_with_ball(self, _robotPos: Vec2D = None,
+                          _vRobot: Vec2D = None,
+                          _ball: Vec2D = None,
+                          _attack_goal: bool = RIGHT) -> Vec2D:
         angle = self.get_angle_with_ball(_robotPos, _vRobot, _ball, _attack_goal)
-        return np.asarray([cos(angle), sin(angle)])
+        return Vec2D(cos(angle), sin(angle))
 
-    def get_angle_with_ball(self, _robotPos: np.ndarray = None,
-                            _vRobot: np.ndarray = None,
-                            _ball: np.ndarray = None,
+    def get_angle_with_ball(self, _robotPos: Vec2D = None,
+                            _vRobot: Vec2D = None,
+                            _ball: Vec2D = None,
                             _attack_goal: bool = RIGHT) -> float:
 
         section_num = univector_pos_section(_ball)
 
         if section_num == ArenaSections.CENTER:
-            correct_axis = np.array(self.get_attack_goal_position(_attack_goal) - _ball, dtype=np.float32)
+            correct_axis = self.get_attack_goal_position(_attack_goal) - _ball
         else:
             if _attack_goal == RIGHT:
                 if section_num == ArenaSections.RIGHT_DOWN_CORNER or section_num == ArenaSections.RIGHT_UP_CORNER:
-                    correct_axis = np.array([1.0, 0.0])
+                    correct_axis = Vec2D.right()
                 else:
                     correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                    
             else:
                 if section_num == ArenaSections.LEFT_DOWN_CORNER or section_num == ArenaSections.LEFT_UP_CORNER:
-                    correct_axis = np.array([-1.0, 0.0])
+                    correct_axis = Vec2D.left()
                 else:
                     correct_axis = self.get_correct_axis(_ball, section_num, _attack_goal)                 
                 
@@ -335,8 +343,8 @@ class UnivectorField:
 
         return self.get_angle_vec(_robotPos, _vRobot, _ball, correct_axis - offset)
 
-    def get_correct_axis(self, position: np.ndarray, section_num: ArenaSections,
-                         attack_goal: bool = RIGHT) -> np.ndarray:
+    def get_correct_axis(self, position: Vec2D, section_num: ArenaSections,
+                         attack_goal: bool = RIGHT) -> Vec2D:
 
         axis = Axis[section_num.value]
 
@@ -345,5 +353,5 @@ class UnivectorField:
 
         return axis
 
-    def get_correct_offset(self, position: np.ndarray, section_num: ArenaSections) -> np.ndarray:
+    def get_correct_offset(self, position: Vec2D, section_num: ArenaSections) -> Vec2D:
         return Offsets[section_num.value]

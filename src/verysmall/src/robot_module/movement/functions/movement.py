@@ -9,6 +9,7 @@ from utils.json_handler import JsonHandler
 from ..control.PID import PID
 from ..univector.un_field import UnivectorField
 from rospy import logfatal
+from utils.linalg import *
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
 
@@ -33,7 +34,7 @@ class Movement():
 
     def __init__(self, PID_list, error=10, attack_goal=RIGHT, _pid_type=SOFTWARE, _debug_topic = None):
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
-        self.last_pos = np.array([0, 0])
+        self.last_pos = Vec2D.origin()
         self.error_margin = error
         self.orientation = FORWARD
         self.attack_goal = attack_goal
@@ -86,14 +87,14 @@ class Movement():
         # TODO: Método nunca chamado...
         #TODO: Testar a predicao dos vetores
         self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
-        vec_result = np.array([0.0, 0.0])
+        vec_result = Vec2D.origin()
         robot_position_aux = robot_position
         for i in range(number_of_predictions):
             vec = self.univet_field.get_vec(robot_position_aux, robot_speed, ball_position)
             vec_result += vec
-            robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
+            robot_position_aux += Vec2D(int(robot_speed[0]*0.016), int(robot_speed[1]*0.016))
 
-        return self.follow_vector(speed, robot_vector, np.array(unitVector(vec_result)))
+        return self.follow_vector(speed, robot_vector, vec_result.versor())
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False, speed_prediction=False):
         """Receive players positions and speed and return the speed to follow univector

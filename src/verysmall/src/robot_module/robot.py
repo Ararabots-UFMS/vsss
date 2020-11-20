@@ -16,6 +16,7 @@ from strategy.defender import Defender
 from strategy.goalkeeper import GoalKeeper
 from strategy.pid_calibration import CalibrationTree
 from utils.json_handler import JsonHandler
+from utils.linalg import *
 
 
 class Robot:
@@ -144,7 +145,7 @@ class Robot:
         # self.roboto_vision()
 
     def get_priority(self) -> int:
-        distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
+        distance = (self.blackboard.robot.position - self.blackboard.ball.position).norm()
         return int(distance) & 0xFF
 
     def roboto_vision(self):

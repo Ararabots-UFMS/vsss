@@ -13,6 +13,7 @@ from strategy.strategy_utils import GameStates
 from utils.profiling_tools import log_warn
 from utils import physics
 from utils.json_handler import JsonHandler
+from utils.linalg import *
 
 angle = distance = float
 speed = int
@@ -128,12 +129,12 @@ class FriendlyRobot(physics.MovingBody):
 class Goal:
     def __init__(self):
         self.side = RIGHT
-        self.position = np.array([0, 0])
+        self.position = Vec2D.origin()
 
     def __setattr__(self, key, value):
         if key == 'side':
             super().__setattr__(key, value)
-            super().__setattr__('position', np.array([value * 150, 65]))
+            super().__setattr__('position', Vec2D(value * 150, 65))
 
 
 class Game:
@@ -153,8 +154,8 @@ class Game:
 
 class Team(ABC):
     def __init__(self):
-        self._positions = np.array([[0, 0] for _ in range(5)])
-        self._speeds = np.array([[0, 0] for _ in range(5)])
+        self._positions = [[Vec2D.origin() for _ in range(5)]]
+        self._speeds = [Vec2D.origin() for _ in range(5)]
         self._orientations = np.array([0 for _ in range(5)])
         self.robots = []
         self.number_of_robots = 0
@@ -169,6 +170,8 @@ class Team(ABC):
                "\n--robots: " + str(self.robots)
 
     def create_new_robot(self):
+
+        # TODO: Recomeçar daqui
         self._positions = np.append(self._positions, [[0, 0]], axis=0)
         self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
         self._orientations = np.append(self._orientations, [0], axis=0)
