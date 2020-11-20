@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from math import pi
-from math import cos, sin, atan2, exp
+from math import cos, sin, atan2, exp, sqrt
 
 from strategy.arena_utils import ArenaSections, univector_pos_section, Axis, Offsets
 
@@ -18,6 +18,10 @@ def wrap2pi(theta: float) -> float:
         return 2 * pi + theta
     else:
         return theta
+
+def norm(vec):
+
+    return sqrt(vec[0]**2 + vec[1]**2)
 
 
 class HyperbolicSpiral:
@@ -39,7 +43,7 @@ class HyperbolicSpiral:
 
         p = _p
         theta = atan2(p[1], p[0])
-        ro = np.linalg.norm(p)
+        ro = norm(p)
 
         if ro > r:
             a = (pi / 2.0) * (2.0 - (r + self.Kr) / (ro + self.Kr))
@@ -109,7 +113,7 @@ class Move2Goal:
         self.build_axis()
 
     def build_axis(self) -> None:
-        self.u /= -np.linalg.norm(self.u)
+        self.u /= -norm(self.u)
         theta = math.atan2(self.u[1], self.u[0])
         self.v = np.array([-sin(theta), cos(theta)])
 
@@ -168,8 +172,8 @@ class AvoidObstacle:
 
     def get_virtual_pos(self) -> np.ndarray:
         s = self.get_s()
-        s_norm = np.linalg.norm(s)
-        d = np.linalg.norm(self.pObs - self.pRobot)
+        s_norm = norm(s)
+        d = norm(self.pObs - self.pRobot)
         if d >= s_norm:
             v_pos = self.pObs + s
         else:
@@ -265,7 +269,7 @@ class UnivectorField:
             goal_axis = _goal_axis
             self.mv2Goal.update_axis(goal_position, goal_axis)
 
-        closest_center = np.array([None, None])  # array to store the closest center
+        closest_center = None  # array to store the closest center
         centers = []
         min_distance = self.DMIN + 1
 
@@ -276,8 +280,9 @@ class UnivectorField:
                 center = self.avdObsField.get_virtual_pos()
                 centers.append(center)
 
-            centers = np.asarray(centers)
-            dist_vec = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
+            # centers = centers
+            # dist_vec = np.linalg.norm(np.subtract(centers, self.robotPos), axis=1)
+            dist_vec = [norm(center - self.robotPos) for center in centers]
             index = np.argmin(dist_vec)  # index of closest center
             closest_center = centers[index]
             min_distance = dist_vec[index]
@@ -302,7 +307,7 @@ class UnivectorField:
                           _ball: np.ndarray = None,
                           _attack_goal: bool = RIGHT) -> np.ndarray:
         angle = self.get_angle_with_ball(_robotPos, _vRobot, _ball, _attack_goal)
-        return np.asarray([np.cos(angle), np.sin(angle)])
+        return np.asarray([cos(angle), sin(angle)])
 
     def get_angle_with_ball(self, _robotPos: np.ndarray = None,
                             _vRobot: np.ndarray = None,
