@@ -48,7 +48,7 @@ class BlackBoard:
         self.automatic_positions = JsonHandler.read("parameters/automatic_positions.json", escape=True)
 
     def set_robot_variables(self, robot_position, robot_orientation):
-        self.robot.position = robot_position
+        self.robot.position = Vec2D.from_array(robot_position)
         self.robot.orientation = robot_orientation
 
     def __repr__(self):
@@ -154,9 +154,9 @@ class Game:
 
 class Team(ABC):
     def __init__(self):
-        self._positions = [[Vec2D.origin() for _ in range(5)]]
+        self._positions = [Vec2D.origin() for _ in range(5)]
         self._speeds = [Vec2D.origin() for _ in range(5)]
-        self._orientations = np.array([0 for _ in range(5)])
+        self._orientations = [0 for _ in range(5)]
         self.robots = []
         self.number_of_robots = 0
         self.maximum_number_of_robots = 5
@@ -172,9 +172,13 @@ class Team(ABC):
     def create_new_robot(self):
 
         # TODO: Recomeçar daqui
-        self._positions = np.append(self._positions, [[0, 0]], axis=0)
-        self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
-        self._orientations = np.append(self._orientations, [0], axis=0)
+        # self._positions = np.append(self._positions, [[0, 0]], axis=0)
+        # self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
+        # self._orientations.append(0)
+
+        self._positions.append(Vec2D.origin())
+        self._speeds.append(Vec2D.origin())
+        self._orientations.append(0)
 
     def set_team_variables(self, robot_positions, robot_orientations, robot_tag_index=-1):
 
@@ -182,13 +186,14 @@ class Team(ABC):
 
         for tag_index, robot_position, robot_orientation in zip(count(), robot_positions, robot_orientations):
             if np.any(robot_position) and tag_index != robot_tag_index:
-                self._positions[self.number_of_robots] = robot_position
+                self._positions[self.number_of_robots] = Vec2D.from_array(robot_position)
                 self._orientations[self.number_of_robots] = robot_orientation
 
-                self.robots[self.number_of_robots].position = robot_position
+                self.robots[self.number_of_robots].position = Vec2D.from_array(robot_position)
                 self.robots[self.number_of_robots].orientation = robot_orientation
 
                 self.number_of_robots += 1
+
 
                 if self.maximum_number_of_robots <= self.number_of_robots:
                     self.maximum_number_of_robots = self.number_of_robots

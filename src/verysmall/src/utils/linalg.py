@@ -1,3 +1,6 @@
+from typing import Iterable
+import math
+
 class Vec2D:
     pass
 
@@ -29,6 +32,10 @@ class Vec2D:
 
     def __rmul__(self, alpha):
         return self.__mul__(alpha)
+
+    def __truediv__(self, alpha):
+        """ alpha is a scalar number """
+        return Vec2D(self.x/alpha, self.y/alpha)
 
     def __repr__(self):
         return "Vec2(%r, %r)" % (self.x, self.y)
@@ -95,6 +102,10 @@ class Vec2D:
     @classmethod
     def origin(cls):
         return cls(0, 0)
+
+    @classmethod
+    def from_array(cls, array: Iterable[float]):
+        return cls(array[0], array[1])
 
 class Mat2D:
 

@@ -1,5 +1,5 @@
 from enum import Enum
-from numpy import array
+from utils.linalg import Vec2D
 
 X = 0
 Y = 1
@@ -46,45 +46,45 @@ class ArenaSections(Enum):
 
 
 Axis = [
-    array([1.0, 0.0]),  # LEFT_GOAL_AREA
-    array([1.0, 0.0]),  # RIGHT_GOAL_AREA
+    Vec2D(1.0, 0.0),  # LEFT_GOAL_AREA
+    Vec2D(1.0, 0.0),  # RIGHT_GOAL_AREA
 
-    array([1.0, 0.0]),  # LEFT_GOAL
-    array([1.0, 0.0]),  # RIGHT_GOAL
-    array([0.0, 1.0]),  # LEFT_UP_CORNER
-    array([0.0, -1.0]),  # LEFT_DOWN_CORNER
-    array([0.0, -1.0]),  # RIGHT_UP_CORNER
-    array([0.0, 1.0]),  # RIGHT_DOWN_CORNER
+    Vec2D(1.0, 0.0),  # LEFT_GOAL
+    Vec2D(1.0, 0.0),  # RIGHT_GOAL
+    Vec2D(0.0, 1.0),  # LEFT_UP_CORNER
+    Vec2D(0.0, -1.0),  # LEFT_DOWN_CORNER
+    Vec2D(0.0, -1.0),  # RIGHT_UP_CORNER
+    Vec2D(0.0, 1.0),  # RIGHT_DOWN_CORNER
 
-    array([1.0, 0.0]),  # UP_BORDER
-    array([1.0, 0.0]),  # DOWN_BORDER
-    array([1.0, 0.0]),  # CENTER
+    Vec2D(1.0, 0.0),  # UP_BORDER
+    Vec2D(1.0, 0.0),  # DOWN_BORDER
+    Vec2D(1.0, 0.0),  # CENTER
 
-    array([0.0, -1.0]),  # LEFT_DOWN_BOTTOM_LINE
-    array([0.0, 1.0]),  # LEFT_UP_BOTTOM_LINE
-    array([0.0, 1.0]),  # RIGHT_DOWN_BOTTOM_LINE
-    array([0.0, -1.0])  # RIGHT_UP_BOTTOM_LINE
+    Vec2D(0.0, -1.0),  # LEFT_DOWN_BOTTOM_LINE
+    Vec2D(0.0, 1.0),  # LEFT_UP_BOTTOM_LINE
+    Vec2D(0.0, 1.0),  # RIGHT_DOWN_BOTTOM_LINE
+    Vec2D(0.0, -1.0)  # RIGHT_UP_BOTTOM_LINE
 ]
 
 Offsets = [
-    array([0.0, 0.0]),  # LEFT_GOAL_AREA
-    array([0.0, 0.0]),  # RIGHT_GOAL_AREA
+    Vec2D(0.0, 0.0),  # LEFT_GOAL_AREA
+    Vec2D(0.0, 0.0),  # RIGHT_GOAL_AREA
 
-    array([0.0, 0.0]),  # LEFT_GOAL
-    array([0.0, 0.0]),  # RIGHT_GOALGoToPosition
-    array([1.0, -1.0]),  # LEFT_UP_CORNERGoToPosition
-    array([1.0, 1.0]),  # LEFT_DOWN_CORNERGoToPosition
-    array([-1.0, -1.0]),  # RIGHT_UP_CORNERGoToPosition
-    array([-1.0, 1.0]),  # RIGHT_DOWN_CORNER
+    Vec2D(0.0, 0.0),  # LEFT_GOAL
+    Vec2D(0.0, 0.0),  # RIGHT_GOALGoToPosition
+    Vec2D(1.0, -1.0),  # LEFT_UP_CORNERGoToPosition
+    Vec2D(1.0, 1.0),  # LEFT_DOWN_CORNERGoToPosition
+    Vec2D(-1.0, -1.0),  # RIGHT_UP_CORNERGoToPosition
+    Vec2D(-1.0, 1.0),  # RIGHT_DOWN_CORNER
 
-    array([0.0, -1.0]),  # UP_BORDER
-    array([0.0, 1.0]),  # DOWN_BORDER
-    array([0.0, 0.0]),  # CENTER
+    Vec2D(0.0, -1.0),  # UP_BORDER
+    Vec2D(0.0, 1.0),  # DOWN_BORDER
+    Vec2D(0.0, 0.0),  # CENTER
 
-    array([1.0, 0.0]),  # LEFT_DOWN_BOTTOM_LINE
-    array([1.0, 0.0]),  # LEFT_UP_BOTTOM_LINE
-    array([-1.0, 0.0]),  # RIGHT_DOWN_BOTTOM_LINE
-    array([-1.0, 0.0])  # RIGHT_UP_BOTTOM_LINE
+    Vec2D(1.0, 0.0),  # LEFT_DOWN_BOTTOM_LINE
+    Vec2D(1.0, 0.0),  # LEFT_UP_BOTTOM_LINE
+    Vec2D(-1.0, 0.0),  # RIGHT_DOWN_BOTTOM_LINE
+    Vec2D(-1.0, 0.0)  # RIGHT_UP_BOTTOM_LINE
 ]
 
 BORDER_NORMALS = {4: [1.0, -1.0], 5: [1.0, 1.0], 6: [-1.0, -1.0], 7: [-1.0, 1.0], 8: [0.0, 1.0], 9: [0.0, -1.0],
@@ -109,7 +109,7 @@ def on_attack_side(pos, team_side, bias=0):
    Verify if the object is in attack side (True) or in defense side(False)
 
     :param bias:
-   :param pos: np.array([x, y])
+   :param pos: np.Vec2D([x, y])
    :param team_side: int 0 ou 1
    :return: bool
    """
@@ -124,7 +124,7 @@ def on_extended_attack_side(pos, team_side):
     """
     Verify if the object is in attack side plus a quarter of field (True) or in defense side(False)
 
-    :param pos: np.array([x, y])
+    :param pos: np.Vec2D([x, y])
     :param team_side: int 0 ou 1
     :return: bool
     """
@@ -158,7 +158,7 @@ def inside_rectangle(a, b, point):
 def section(pos):
     """
     Returns the section of the given object
-    :param pos: np.array([x, y])
+    :param pos: np.Vec2D([x, y])
     :return: int
     """
     # Goal area
@@ -200,7 +200,7 @@ def section(pos):
 def univector_pos_section(pos):
     """
     Returns the section of the given object
-    :param pos: np.array([x, y])
+    :param pos: np.Vec2D([x, y])
     :return: int
     """
 
@@ -231,7 +231,7 @@ def side_section(pos, team_side):
     """
     Return Attack_side and section of the object
     :param team_side: bool
-    :param pos: np.array([x, y])
+    :param pos: np.Vec2D([x, y])
     :return: (boolen, int)
     """
 
@@ -242,9 +242,9 @@ def goal_position(team_side):
     """
     Return the position of the goal, given attacking side  and section of the object
     :param team_side: int
-    :return: np.array([x,y])
+    :return: np.Vec2D([x,y])
     """
 
     if team_side == LEFT:
-        return array([150, 65])
-    return array([0, 65])
+        return Vec2D([150, 65])
+    return Vec2D([0, 65])

@@ -27,7 +27,7 @@ class GameStates(Enum):
 ######################
 
 def distance_point(position_one, position_two):
-    return np.linalg.norm(position_one - position_two)
+    return (position_one - position_two).norm()
 
 
 def near_ball(ball_position, robot_position, _distance=9.5):
@@ -64,14 +64,15 @@ def is_behind_ball(ball_position: np.ndarray,
                    team_side: int,
                    max_distance: float = 10.0,
                    max_angle: DEGREE = 15) -> bool:
-    distance = np.linalg.norm(ball_position - robot.position)
+    distance = (ball_position - robot.position).norm()
 
     if distance > max_distance:
         return False
 
     theta = robot.orientation
     robot_vector = np.array([math.cos(theta), math.sin(theta)])
-    rb_vector = ball_position - robot.position
+    rb_vector = np.array((ball_position - robot.position).to_list())
+    
     angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
     angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
 

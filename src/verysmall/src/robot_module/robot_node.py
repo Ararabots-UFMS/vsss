@@ -36,4 +36,4 @@ if __name__ == '__main__':
 
     rospy.spin()
     
-    debug_profiler.dump_stats(os.environ["ROS_ARARA_ROOT"] + "debug_logs.bin")
+    # debug_profiler.dump_stats(os.environ["ROS_ARARA_ROOT"] + "debug_logs.bin") # TODO: pensar em uma forma boa de habilitar isso
