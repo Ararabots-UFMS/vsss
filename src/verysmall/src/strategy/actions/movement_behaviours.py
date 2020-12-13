@@ -279,9 +279,9 @@ class MarkBallOnYAxis(TreeNode):
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
-        target_pos = np.array([self._clamp_min[0], y])
+        target_pos = Vec2D(self._clamp_min[0], y)
         direction = target_pos - blackboard.robot.position
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
 
         if distance < self._acceptance_radius:
             return TaskStatus.SUCCESS, NO_ACTION
@@ -294,7 +294,7 @@ class MarkBallOnYAxis(TreeNode):
         alpha = gaussian(distance - self._acceptance_radius, 4.5)
 
         y_sign = -1 if direction[1] < 0 else 1
-        direction_on_target = np.array([0, y_sign])
+        direction_on_target = Vec2D(0, y_sign)
 
         final_direction = alpha * direction_on_target + (1 - alpha) * direction
         theta = math.atan2(final_direction[1], final_direction[0])
@@ -346,13 +346,13 @@ class GetOutOfGoal(TreeNode):
 
             new_y_pos = robot_pos[1] + shift
             if team_goal_side:
-                self.target_pos = (RIGHT_AREA_CENTER_X, new_y_pos)
+                self.target_pos = Vec2D(RIGHT_AREA_CENTER_X, new_y_pos)
             else:
-                self.target_pos = (LEFT_AREA_CENTER_X, new_y_pos)
+                self.target_pos = Vec2D(LEFT_AREA_CENTER_X, new_y_pos)
         
         path = self.target_pos - robot_pos
 
-        distance = np.linalg.norm(path)
+        distance = path.norm()
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
@@ -398,7 +398,7 @@ class GoToGoalCenter(TreeNode):
 
         direction = home_goal_pos - blackboard.robot.position
 
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
 
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, distance)
