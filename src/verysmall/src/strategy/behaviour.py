@@ -171,11 +171,6 @@ class Team(ABC):
 
     def create_new_robot(self):
 
-        # TODO: Recomeçar daqui
-        # self._positions = np.append(self._positions, [[0, 0]], axis=0)
-        # self._speeds = np.append(self._speeds, [[0, 0]], axis=0)
-        # self._orientations.append(0)
-
         self._positions.append(Vec2D.origin())
         self._speeds.append(Vec2D.origin())
         self._orientations.append(0)

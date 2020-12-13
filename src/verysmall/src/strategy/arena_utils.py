@@ -246,5 +246,5 @@ def goal_position(team_side):
     """
 
     if team_side == LEFT:
-        return Vec2D([150, 65])
-    return Vec2D([0, 65])
+        return Vec2D(150, 65)
+    return Vec2D(0, 65)

@@ -33,6 +33,9 @@ class Vec2D:
     def __rmul__(self, alpha):
         return self.__mul__(alpha)
 
+    def __neg__(self):
+        return Vec2D(-self.x, -self.y)
+
     def __truediv__(self, alpha):
         """ alpha is a scalar number """
         return Vec2D(self.x/alpha, self.y/alpha)

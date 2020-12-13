@@ -19,6 +19,7 @@ POS = 1
 ANGLE = 2
 SPEED_QUEUE_SIZE = 60.0
 
+# TODO: Incluir o Vec2D aqui
 
 class Things:
     # This is an auxiliary class to hold the variables from the things identified

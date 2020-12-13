@@ -42,7 +42,7 @@ class IsTheWayFree(TreeNode):
             enemy_goal = blackboard.enemy_goal.side
             v_ball_enemy = enemy_position - blackboard.ball.position
             theta = angle_between(v_ball_enemy_goal, v_ball_enemy, abs=False)
-            enemy_to_path_distance = np.linalg.norm(v_ball_enemy) * sin(theta)
+            enemy_to_path_distance = v_ball_enemy.norm() * sin(theta)
 
             if arena_utils.section(enemy_position).value != enemy_goal:
                 # É utilizado o x da bola, pois caso o adversário esteja entre
@@ -84,12 +84,12 @@ class IsBallInsideCentralArea(TreeNode):
         super().__init__(name)
         self._width = width
         self._height = height
-        self._center = np.array([150, 130]) / 2
+        self._center = Vec2D(150, 130) / 2
         self._tl = self._br = None
         self.update_corners()
 
     def update_corners(self) -> None:
-        vec = np.array([self._width, -self._height]) / 2
+        vec = Vec2D(self._width, -self._height) / 2
         self._tl = self._center - vec
         self._br = self._center + vec
 
@@ -103,7 +103,7 @@ class IsBallInsideCentralArea(TreeNode):
 
 
 class IsInAttackSide(TreeNode):
-    def __init__(self, name: str, get_pos: Callable[[BlackBoard], np.ndarray]):
+    def __init__(self, name: str, get_pos: Callable[[BlackBoard], Vec2D]):
         super().__init__(name)
         self._get_pos = get_pos
 
@@ -304,7 +304,7 @@ class IsInsideMetaRange(TreeNode):
 
 class IsInsideDefenseGoal(TreeNode):
     def __init__(self, name: str,
-                 get_pos: Callable[[BlackBoard], np.ndarray]):
+                 get_pos: Callable[[BlackBoard], Vec2D]):
         super().__init__(name)
         self._get_pos = get_pos
 
@@ -315,7 +315,7 @@ class IsInsideDefenseGoal(TreeNode):
         sign = 1 if team_side == RIGHT else -1
 
         shift = sign * 3 # int(ROBOT_SIZE/2)
-        shifted_pos = np.array([pos[0] + shift, pos[1]])
+        shifted_pos = Vec2D(pos[0] + shift, pos[1])
         section = arena_utils.section(shifted_pos)
 
         my_goal = ArenaSections.LEFT_GOAL if team_side == LEFT \
@@ -354,7 +354,7 @@ class IsRobotInsideEnemyGoalLine(TreeNode):
 
 
 class IsInDefenseBottomLine(TreeNode):
-    def __init__(self, name: str, get_pos: Callable[[BlackBoard], np.ndarray]):
+    def __init__(self, name: str, get_pos: Callable[[BlackBoard], Vec2D]):
         super().__init__(name)
         self._get_pos = get_pos
 
@@ -377,9 +377,9 @@ class CanAttackerUseMoveToPointToGuideBall(TreeNode):
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         ball_pos = blackboard.ball.position
         if y_axis_section(ball_pos):
-            border_vec = np.array([1.0, 0.0])
+            border_vec = Vec2D(1.0, 0.0)
         else:
-            border_vec = np.array([-1.0, 0.0])
+            border_vec = Vec2D(-1.0, 0.0)
         robot_pos = blackboard.robot.position
         ball_pos = blackboard.ball.position
         robot_ball_vec = robot_pos - ball_pos
@@ -387,7 +387,7 @@ class CanAttackerUseMoveToPointToGuideBall(TreeNode):
         theta = angle_between(robot_ball_vec,
                               border_vec,
                               abs=False)
-        import rospy
+                              
         if theta < math.pi/6:
             return TaskStatus.FAILURE, NO_ACTION
         return TaskStatus.SUCCESS, NO_ACTION

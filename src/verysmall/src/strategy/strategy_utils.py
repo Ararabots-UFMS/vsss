@@ -1,5 +1,6 @@
 import math
 from enum import Enum
+from utils.linalg import Vec2D
 
 import numpy as np
 
@@ -33,8 +34,8 @@ def distance_point(position_one, position_two):
 def near_ball(ball_position, robot_position, _distance=9.5):
     """
     Returns if the robot is near to the ball
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
+    :params ball_position: Vec2D([x,y])
+    :params robot_position: Vec2D([x,y])
     :return: boolean
     """
     distance = distance_point(ball_position, robot_position)
@@ -44,8 +45,8 @@ def near_ball(ball_position, robot_position, _distance=9.5):
 def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     """
     Returns if the robot is behind to the ball
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
+    :params ball_position: Vec2D([x,y])
+    :params robot_position: Vec2D([x,y])
     :params team_side: int
     :return: boolean
     """
@@ -59,7 +60,7 @@ def behind_ball(ball_position, robot_position, team_side, _distance=9.5):
     return False
 
 
-def is_behind_ball(ball_position: np.ndarray,
+def is_behind_ball(ball_position: Vec2D,
                    robot,
                    team_side: int,
                    max_distance: float = 10.0,
@@ -70,8 +71,8 @@ def is_behind_ball(ball_position: np.ndarray,
         return False
 
     theta = robot.orientation
-    robot_vector = np.array([math.cos(theta), math.sin(theta)])
-    rb_vector = np.array((ball_position - robot.position).to_list())
+    robot_vector = Vec2D(math.cos(theta), math.sin(theta))
+    rb_vector = ball_position - robot.position
     
     angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
     angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
@@ -90,8 +91,8 @@ def is_behind_ball(ball_position: np.ndarray,
 def spin_direction(ball_position, robot_position, team_side, invert=False):
     """
     Returns the direction of the spin
-    :params ball_position: np.array([x,y])
-    :params robot_position: np.array([x,y])
+    :params ball_position: Vec2D([x,y])
+    :params robot_position: Vec2D([x,y])
     :params team_side: int
 
     :return: int
@@ -142,7 +143,7 @@ def border_stuck(position_buffer, orientation):
     if sec not in BORDER_NORMALS.keys():
         return False
 
-    orientation = np.array([math.cos(orientation), math.sin(orientation)])
+    orientation = Vec2D(math.cos(orientation), math.sin(orientation))
     front_angle = math_utils.angle_between(orientation, BORDER_NORMALS[sec])
     back_angle = math_utils.angle_between(-orientation, BORDER_NORMALS[sec])
 
@@ -164,7 +165,7 @@ def border_stuck(position_buffer, orientation):
     #    return False
 
 
-def object_in_defender_range(object_position: np.ndarray, team_side: bool) -> bool:
+def object_in_defender_range(object_position: Vec2D, team_side: bool) -> bool:
     if team_side == LEFT:
         return 25 < object_position[0] < 75
     else:
@@ -193,7 +194,7 @@ def ball_on_defense_border(ball_position, team_side) -> bool:
     return sec.value in BORDER_NORMALS.keys()
 
 
-def ball_on_border(ball_position: np.ndarray) -> bool:
+def ball_on_border(ball_position: Vec2D) -> bool:
     if section(ball_position) in [ArenaSections.DOWN_BORDER, ArenaSections.UP_BORDER]:
         return True
     return False

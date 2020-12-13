@@ -1,4 +1,5 @@
 from typing import Union
+from utils.linalg import Vec2D
 import numpy as np
 import numpy.linalg as la
 import math
@@ -21,6 +22,12 @@ def unitVector(vector):
 
 def angle_between(v1, v2, abs:bool= True) -> float:
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
+
+    # TODO: Refatorar esta função para usar o Vec2D... o que abs significa?
+    # Gambito por enquanto
+    if isinstance(v1, Vec2D): v1 = np.array(v1.to_list())
+    if isinstance(v2, Vec2D): v2 = np.array(v2.to_list())
+
     cosang = np.dot(v1, v2)
     sinang = np.cross(v1, v2)
     if abs:

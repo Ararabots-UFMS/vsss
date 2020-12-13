@@ -29,7 +29,7 @@ class MovingBody:
 
         dt = time.time() + seconds
         p = px(dt), py(dt)
-        return np.array(p)
+        return Vec2D.from_array(p)
 
     def get_time_on_axis(self, axis, value) -> float:
         if axis == 0:

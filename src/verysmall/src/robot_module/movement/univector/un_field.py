@@ -1,3 +1,4 @@
+from typing import List
 import numpy as np
 import math
 from math import pi
@@ -130,7 +131,6 @@ class Move2Goal:
         p = _p - self.origin
         r = self.radius
 
-        # TODO: MATRIZESSSSS
         p = self.toUnivectorMatrix.transform(p)
 
         x, y = p
@@ -200,10 +200,12 @@ class AvoidObstacle:
         self.K0 = _K0
 
     def update_obstacle(self, _pObs: Vec2D, _vObs: Vec2D) -> None:
+
         self.pObs = _pObs
         self.vObs = _vObs
 
     def update_robot(self, _pRobot: Vec2D, _vRobot: Vec2D) -> None:
+
         self.pRobot = _pRobot
         self.vRobot = _vRobot
 
@@ -244,11 +246,12 @@ class UnivectorField:
         """
         return Vec2D(attack_goal * 150, 65)
 
-    def update_obstacles(self, _obstacles: Vec2D, _obsSpeeds: Vec2D) -> None:
-        self.obstacles = _obstacles # TODO: Gambito, encontrar no código o que atualiza
+    def update_obstacles(self, _obstacles: List[Vec2D], _obsSpeeds: List[Vec2D]) -> None:
+        self.obstacles = _obstacles
         self.obstaclesSpeed = _obsSpeeds
 
     def update_robot(self, _robotPos: Vec2D, _vRobot: Vec2D) -> None:
+
         self.robotPos = _robotPos
         self.vRobot = _vRobot
         self.avdObsField.update_robot(self.robotPos, self.vRobot)
