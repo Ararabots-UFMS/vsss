@@ -14,7 +14,7 @@ class Vec2D:
     def to_list(self) -> list:
         return [self.x, self.y]
 
-    def __add__(self, vec):
+    def __add__(self, vec) -> Vec2D:
         return Vec2D(self.x + vec.x, self.y + vec.y)
 
     def __sub__(self, vec):
@@ -74,6 +74,10 @@ class Vec2D:
         y = self.y * vec.y
 
         return x + y
+
+    def cross(self, vec) -> float:
+
+        return self.x * vec.y - self.y * vec.x
 
     def angle(self, degrees=False):
 

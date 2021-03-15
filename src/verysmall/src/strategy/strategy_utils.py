@@ -74,8 +74,8 @@ def is_behind_ball(ball_position: Vec2D,
     robot_vector = Vec2D(math.cos(theta), math.sin(theta))
     rb_vector = ball_position - robot.position
     
-    angle1 = math_utils.angle_between(robot_vector, rb_vector, abs=False)
-    angle2 = math_utils.angle_between(-robot_vector, rb_vector, abs=False)
+    angle1 = math_utils.angle_between(robot_vector, rb_vector, absol=False)
+    angle2 = math_utils.angle_between(-robot_vector, rb_vector, absol=False)
 
     max_angle = max_angle * math_utils.DEG2RAD
 

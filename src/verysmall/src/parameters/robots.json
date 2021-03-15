@@ -1,16 +1,16 @@
 {
     "robot_1": {
-        "active": 0,
+        "active": 1,
         "bluetooth_mac_address": "walle",
         "body_id": "walle",
-        "role": "Attacker",
-        "tag_number": 0
+        "role": "Goalkeeper",
+        "tag_number": 2
     },
     "robot_2": {
         "active": 0,
         "bluetooth_mac_address": "walle",
         "body_id": "walle",
-        "role": "Attacker",
+        "role": "PID Calibration",
         "tag_number": 0
     },
     "robot_3": {

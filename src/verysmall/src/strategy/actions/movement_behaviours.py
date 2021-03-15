@@ -181,7 +181,7 @@ class ChargeWithBall(TreeNode):
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            abs=False
+            absol=False
         )
 
         distance_to_goal = goal_vector.norm()
@@ -201,7 +201,7 @@ class RemoveBallFromGoalArea(TreeNode):
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            abs=False
+            absol=False
         )
 
         distance_to_goal = goal_vector.norm()
@@ -221,7 +221,7 @@ class MarkBallOnAxis(TreeNode):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
-        self._angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+        self._angle_to_correct = angle_between(Vec2D.left(), axis)
         self.turn_off_clamp = clamp_min is None and clamp_max is None
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
@@ -318,7 +318,7 @@ class AlignWithAxis(TreeNode):
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
-        self.angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+        self.angle_to_correct = angle_between(Vec2D.left(), axis)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:

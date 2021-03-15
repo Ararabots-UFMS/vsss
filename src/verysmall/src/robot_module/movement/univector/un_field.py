@@ -119,10 +119,6 @@ class Move2Goal:
         theta = math.atan2(self.u[1], self.u[0])
         self.v = Vec2D(-sin(theta), cos(theta))
 
-        # TODO: MATRIZEEEES
-        # self.toCanonicalMatrix = np.array([self.u, self.v]).T
-        # self.toUnivectorMatrix = np.linalg.inv(self.toCanonicalMatrix)
-
         self.toCanonicalMatrix = Mat2D(self.u, self.v)
         self.toUnivectorMatrix = self.toCanonicalMatrix.invert()
 
@@ -151,7 +147,6 @@ class Move2Goal:
             # Apesar de no artigo nao ser utilizado o modulo, quando utilizado
             # na implementacao o resultado foi mais condizente com o artigo
             vec = (abs(yl) * nh_pl + abs(yr) * nh_pr) / (2.0 * r)
-            # TODO: MATRIZEESSSS
             vec = self.toCanonicalMatrix.transform(vec)
         else:
             if y < -r:

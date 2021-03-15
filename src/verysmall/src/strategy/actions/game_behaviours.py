@@ -41,7 +41,7 @@ class IsTheWayFree(TreeNode):
         for enemy_position in blackboard.enemy_team.positions:
             enemy_goal = blackboard.enemy_goal.side
             v_ball_enemy = enemy_position - blackboard.ball.position
-            theta = angle_between(v_ball_enemy_goal, v_ball_enemy, abs=False)
+            theta = angle_between(v_ball_enemy_goal, v_ball_enemy, absol=False)
             enemy_to_path_distance = v_ball_enemy.norm() * sin(theta)
 
             if arena_utils.section(enemy_position).value != enemy_goal:
@@ -386,7 +386,7 @@ class CanAttackerUseMoveToPointToGuideBall(TreeNode):
 
         theta = angle_between(robot_ball_vec,
                               border_vec,
-                              abs=False)
+                              absol=False)
                               
         if theta < math.pi/6:
             return TaskStatus.FAILURE, NO_ACTION

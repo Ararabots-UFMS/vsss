@@ -157,7 +157,7 @@ class Movement():
 
          :return: returns : boolean
         """
-        if abs(angle_between(robot_vector, goal_vector, abs=False)) <= 0.087266463: #5 degrees error
+        if abs(angle_between(robot_vector, goal_vector, absol=False)) <= 0.087266463: #5 degrees error
             return True
         return False
 
@@ -234,7 +234,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        diff_angle = angle_between(robot_vector, goal_vector, abs=False)
+        diff_angle = angle_between(robot_vector, goal_vector, absol=False)
 
         if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True
