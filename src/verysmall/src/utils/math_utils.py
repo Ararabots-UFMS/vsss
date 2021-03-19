@@ -34,7 +34,7 @@ def unitVector(vector):
 #         sinang = la.norm(np.cross(v1, v2))
 #     return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
 
-def angle_between(v1, v2, absol:bool= True) -> float:
+def angle_between(v1, v2, absol: bool= True) -> float:
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
 
     cosang = v1.dot(v2)
