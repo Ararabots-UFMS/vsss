@@ -27,3 +27,5 @@ src/CMakeLists\.txt
 *.mypy_cache/
 
 src/verysmall/src/interface/Assets/Cache/*
+
+firasim_ws/
