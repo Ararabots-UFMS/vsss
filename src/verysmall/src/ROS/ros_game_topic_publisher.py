@@ -50,8 +50,6 @@ class GameTopicPublisher:
         self.set_penalty_robot(self.game_opt['penalty_player'])
         self.set_meta_robot(self.game_opt['meta_player'])
 
-        self.set_team_side(self.game_opt['side'])
-        self.set_team_color(self.game_opt['time'])
 
         # Variable for storing proxy
         self.vision_proxy = None
@@ -60,6 +58,10 @@ class GameTopicPublisher:
 
         self.register_vision_service()
         self._register_messageserver_service(self.owner_id)
+
+        # Set Colors
+        self.set_team_side(self.game_opt['side'])
+        self.set_team_color(self.game_opt['time'])
 
     def set_game_state(self, _game_state):
         """
@@ -168,6 +170,7 @@ class GameTopicPublisher:
     def set_team_color(self, color: int) -> None:
         """ Set side of the game, yellow(1) or blue(0)? """
         self.msg.team_color = color
+        self.change_team_color_on_messageserver(color)
 
     def publish(self):
         """
@@ -192,6 +195,15 @@ class GameTopicPublisher:
         wait_for_service(self.message_server_name)
         try:
             r = self._messageserver_proxy(opcode, socket_id, mac_addr)
+            return r
+        except ServiceException as e:
+            print("Message server service request error " + repr(e))
+            return ServerOpCode.ERROR.value
+
+    def change_team_color_on_messageserver(self, color: int) -> int:
+        wait_for_service(self.message_server_name)
+        try:
+            r = self._messageserver_proxy(ServerOpCode.CHANGE_COLORS.value, color, [0,0,0,0,0,0])
             return r
         except ServiceException as e:
             print("Message server service request error " + repr(e))

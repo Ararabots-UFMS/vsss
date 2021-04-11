@@ -1,6 +1,7 @@
 <launch>
+  <node name="$(anon sim_node)" pkg="verysmall" type="sim_node.py" cwd="node" required="true" />
   <arg name='id' value="$(anon user)"/>
   <node name="$(anon main)" pkg="verysmall" type="main.py" cwd="node" required="true" args="$(arg id)" />
-  <node name="$(anon message_server)" pkg="verysmall" type="message_server_node.py" cwd="node" required="true" args="$(arg id) 0"/>
+  <node name="$(anon message_server)" pkg="verysmall" type="message_server_node.py" cwd="node" required="true" args="$(arg id) 1"/>
   <!--<node name="$(anon trainer)" pkg="verysmall" type="trainer_node.py" cwd="node" required="true" args="$(arg id)" />-->
 </launch>

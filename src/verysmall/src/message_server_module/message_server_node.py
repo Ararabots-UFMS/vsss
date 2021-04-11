@@ -12,8 +12,8 @@ if __name__ == "__main__":
         owner_id = argv[1]
     except ValueError:
         owner_id = 'Player_' + str(randint(0, 99999))
-    
-    server = MessageServer(owner_id=owner_id)
+    # rospy.logfatal(f"AAAAAAAAAAAAAAa {argv[2]}")
+    server = MessageServer(owner_id=owner_id, simulator_mode = argv[2] == '1')
     
     server_thread = Thread(target=server.loop, args=())
     server_thread.daemon = True

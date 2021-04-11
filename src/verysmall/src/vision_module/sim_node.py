@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import vision_module.sim.packet_pb2 as packet_pb2
 import socket
 import rospy
@@ -73,8 +74,7 @@ class VisionNode:
 
         self.msg.ball_pos[0] = int(self.message.frame.ball.x/0.8285*85 + 75)*100
         self.msg.ball_pos[1] = int(self.message.frame.ball.y/0.6285 * 65 + 65)*100
-        print(self.message.frame.ball.x)
-        print(self.message.frame.ball.y)
+
 
         self.mercury.pub.publish(self.msg)
 
