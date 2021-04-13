@@ -1,3 +1,4 @@
+from utils.linalg import Vec2D
 import numpy as np
 import math  
 
@@ -34,3 +35,10 @@ def position_from_origin(position_tuple, origin):
     """ calculate the pixel of the center of a robot from origin as reference """
 
     return (origin[0]+position_tuple[0],(origin[1]-position_tuple[1]))
+
+
+def convert_positions_batch_to_Vec2D(positions_batch: np.ndarray):
+    # parece gambito :(
+    vecs = [Vec2D.from_array(positions_batch[i]) for i in range(len(positions_batch))]
+
+    return vecs

@@ -4,6 +4,7 @@ import cv2
 import cv2 as cv
 import math
 import numpy as np
+from utils.linalg import *
 import rospy
 import time
 from .auxiliary import *
@@ -15,7 +16,7 @@ univector_list = JsonHandler().read("parameters/univector_constants.json")
 
 # Lambda functions
 
-vector_to_human_readable = lambda x: int(np.linalg.norm(x) * 10.0 + 0.5) / 10.0
+vector_to_human_readable = lambda x: int(x.norm() * 10.0 + 0.5) / 10.0
 
 
 # ================
@@ -356,7 +357,7 @@ class virtualField():
           saida
             imagem do campo com os robos impressos na mesma '''
 
-    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[[0, 0]]):
+    def plot_robots(self, robot_list, robot_vector, color, is_away=False, ball_center=(0, 0), robot_speed=[Vec2D.origin()]):
         """plots all contours from all robots of a designed color given as parameter"""
         index = 0
         length = len(robot_list)
@@ -410,13 +411,13 @@ class virtualField():
         ball_center = data.ball_pos  # ball position
         robotlistH = data.team_pos  # home team position
         robotvecH = data.team_orientation  # home team vectors
-        robotlistA = data.enemies_pos  # away team position
+        robotlistA = convert_positions_batch_to_Vec2D(data.enemies_pos)  # away team position
         robotvecA = data.enemies_orientation  # away team vectors
 
         self.plot_ball(ball_center)
 
-        fake_speedsA = [[0,0]] * len(robotlistA)
-        fake_speedsH = [[0,0]] * len(robotlistH)
+        fake_speedsA = [Vec2D.origin() for _ in range(len(robotlistA))]
+        fake_speedsH = [Vec2D.origin() for _ in range(len(robotlistH))]
 
         if self.draw_simulation_vectors:
             self.univetField.update_obstacles(robotlistA, fake_speedsA )
@@ -438,20 +439,24 @@ class virtualField():
             cv2.waitKey(1)
 
     def drawPath(self, start, end):
-        currentPos = np.array(start)
+
+        if not isinstance(start, Vec2D): start = Vec2D.from_array(start)
+        if not isinstance(end, Vec2D): end = Vec2D.from_array(end)
+
+        currentPos = start
         _currentPos = position_from_origin(unit_convert(start, self.width_conv, self.height_conv), self.field_origin)
-        end = np.array(end)
+        # end = np.array(end)
 
         newPos = None
         alpha = 2.0  # 3.5
         beta = 3.5
         point_lines = []
 
-        distance = np.linalg.norm(currentPos - end)
+        distance = (currentPos - end).norm()
         it = 0
         points = []
         while (distance >= beta) and it < 120:
-            v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=[0, 0],
+            v = self.univetField.get_vec_with_ball(_robotPos=currentPos, _vRobot=Vec2D.origin(),
                                                    _ball=end, _attack_goal=self.attack_goal)
             newPos = currentPos + (alpha * v)
             _newPos = position_from_origin(unit_convert(newPos, self.width_conv, self.height_conv), self.field_origin)
@@ -459,7 +464,7 @@ class virtualField():
             currentPos = newPos
             _currentPos = _newPos
             it += 1
-            distance = np.linalg.norm(currentPos - end)
+            distance = (currentPos - end).norm()
 
         cv2.polylines(self.field,[np.array(points)], 0, self.colors['red'], 2)
 

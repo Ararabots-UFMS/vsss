@@ -1,10 +1,12 @@
 from collections import deque
+from utils.linalg import *
+import rospy
 import numpy as np
 import time
 
 class MovingBody:
     def __init__(self, buffer_size=15):
-        self._position = np.array([0, 0])
+        self._position = Vec2D.origin()
 
         self.position_buffer_x = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
         self.position_buffer_y = deque((0 for _ in range(buffer_size)), maxlen=buffer_size)
@@ -16,7 +18,7 @@ class MovingBody:
         self.time_buffer = deque((t0 for i in range(buffer_size)), maxlen=buffer_size)
 
         self._last_update = t0
-        self._speed = np.array([.0, .0])
+        self._speed = Vec2D.origin()
         self.orientation = .0
 
     def position_prediction(self, seconds=0.5):
@@ -27,7 +29,7 @@ class MovingBody:
 
         dt = time.time() + seconds
         p = px(dt), py(dt)
-        return np.array(p)
+        return Vec2D.from_array(p)
 
     def get_time_on_axis(self, axis, value) -> float:
         if axis == 0:
@@ -43,19 +45,21 @@ class MovingBody:
         return dt
     
     @property
-    def speed(self) -> np.ndarray:
+    def speed(self) -> Vec2D:
         return self._speed
     
     @property
-    def position(self) -> np.ndarray:
+    def position(self) -> Vec2D:
         return self._position
     
     @position.setter
-    def position(self, position: np.ndarray) -> None:
+    def position(self, position: Vec2D) -> None:
+        
         t = time.time()
         dt = t - self._last_update
         last_pos = self.position
-        self._speed = 0.1 * (position - last_pos) / dt + 0.9 * self._speed
+
+        self._speed = (0.1 / dt ) * (position - last_pos) + 0.9 * self._speed
 
         self.position_buffer_x.append(position[0])
         self.position_buffer_y.append(position[1])

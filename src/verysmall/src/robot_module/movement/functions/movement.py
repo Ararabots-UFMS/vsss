@@ -9,6 +9,7 @@ from utils.json_handler import JsonHandler
 from ..control.PID import PID
 from ..univector.un_field import UnivectorField
 from rospy import logfatal
+from utils.linalg import *
 
 univector_list = JsonHandler().read("parameters/univector_constants.json")
 
@@ -33,7 +34,7 @@ class Movement():
 
     def __init__(self, PID_list, error=10, attack_goal=RIGHT, _pid_type=SOFTWARE, _debug_topic = None):
         self.pid = PID(kp=PID_list[0], ki=PID_list[1], kd=PID_list[2])
-        self.last_pos = np.array([0, 0])
+        self.last_pos = Vec2D.origin()
         self.error_margin = error
         self.orientation = FORWARD
         self.attack_goal = attack_goal
@@ -83,16 +84,17 @@ class Movement():
 
         :return: returns nothing
         """
+        # TODO: Método nunca chamado...
         #TODO: Testar a predicao dos vetores
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec_result = np.array([0.0, 0.0])
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
+        vec_result = Vec2D.origin()
         robot_position_aux = robot_position
         for i in range(number_of_predictions):
-            vec = self.univet_field.get_vec(np.array(robot_position_aux), np.array(robot_speed), np.array(ball_position))
-            vec_result += np.array(vec)
-            robot_position_aux += np.array([int(robot_speed[0]*0.016), int(robot_speed[1]*0.016)])
+            vec = self.univet_field.get_vec(robot_position_aux, robot_speed, ball_position)
+            vec_result += vec
+            robot_position_aux += Vec2D(int(robot_speed[0]*0.016), int(robot_speed[1]*0.016))
 
-        return self.follow_vector(speed, np.array(robot_vector), np.array(unitVector(vec_result)))
+        return self.follow_vector(speed, robot_vector, vec_result.versor())
 
     def do_univector(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position, only_forward=False, speed_prediction=False):
         """Receive players positions and speed and return the speed to follow univector
@@ -108,8 +110,8 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
+        vec = self.univet_field.get_vec_with_ball(robot_position, robot_speed, ball_position)
 
         if speed_prediction:
             # central area speed
@@ -119,7 +121,7 @@ class Movement():
             cte = 90
             speed = (raio * cte) ** 0.5 + 10
 
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec), only_forward)
+        return self.follow_vector(speed, robot_vector, vec, only_forward)
 
     def do_univector_ball(self, speed, robot_position, robot_vector, robot_speed, obstacle_position, obstacle_speed, ball_position):
         """Recive players positions and speed and return the speed to follow univector
@@ -133,9 +135,9 @@ class Movement():
 
         :return: returns nothing
         """
-        self.univet_field.update_obstacles(np.array(obstacle_position), np.array(obstacle_speed))
-        vec = self.univet_field.get_vec_with_ball(np.array(robot_position), np.array(robot_speed), np.array(ball_position))
-        return self.follow_vector(speed, np.array(robot_vector), np.array(vec))
+        self.univet_field.update_obstacles(obstacle_position, obstacle_speed)
+        vec = self.univet_field.get_vec_with_ball(robot_position, robot_speed, ball_position)
+        return self.follow_vector(speed, robot_vector, vec)
 
     def in_goal_position(self, robot_position, goal_position):
         """Verify if the robot is in goal position and return a boolean of the result
@@ -155,7 +157,7 @@ class Movement():
 
          :return: returns : boolean
         """
-        if abs(angle_between(robot_vector, goal_vector, abs=False)) <= 0.087266463: #5 degrees error
+        if abs(angle_between(robot_vector, goal_vector, absol=False)) <= 0.087266463: #5 degrees error
             return True
         return False
 
@@ -232,7 +234,7 @@ class Movement():
 
         :return: returns int, int, boolean
         """
-        diff_angle = angle_between(robot_vector, goal_vector, abs=False)
+        diff_angle = angle_between(robot_vector, goal_vector, absol=False)
 
         if self.in_goal_vector(robot_vector, goal_vector):
             return 0, 0, True

@@ -114,10 +114,10 @@ class Attacker(BaseTree):
         team_side = blackboard.home_goal.side
         
         shift = (-1 + 2*team_side) * 25
-        self._critical_position_task.set_position(np.array([75+shift, 65]))
+        self._critical_position_task.set_position(Vec2D(75+shift, 65))
         
         x_pos = 15 if team_side == 0 else 135
-        self._move_to_point_task.target_pos = np.array([x_pos, 65])
+        self._move_to_point_task.target_pos = Vec2D(x_pos, 65)
         
         status, action = super().run(blackboard)
         return status, action

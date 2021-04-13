@@ -24,6 +24,7 @@ from vision_module.seekers.circular_color_tag_seeker import CircularColorTagSeek
 
 HEIGHT = 1
 
+# TODO: Incluir o Vec2D aqui
 
 class Vision:
 

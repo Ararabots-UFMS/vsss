@@ -11,6 +11,7 @@ from utils.model import Model
 from strategy.arena_utils import LEFT, RIGHT
 from utils.profiling_tools import log_fatal
 
+# TODO: Incluir Vec2D aqui
 
 class Trainer:
     PLAYERS = {"Attacker", "Defender", "Goalkeeper"}
