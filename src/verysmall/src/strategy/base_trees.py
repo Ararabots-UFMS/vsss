@@ -4,6 +4,7 @@ from strategy.actions.game_behaviours import IsBehindBall, IsTheWayFree, IsInsid
 from strategy.actions.movement_behaviours import *
 from strategy.strategy_utils import GameStates
 from strategy.actions.decorators import UseFrontHead
+from utils.linalg import Vec2D
 
 class Penalty(Sequence):
     def __init__(self, name='Penalty'):
@@ -106,7 +107,7 @@ class AutomaticPosition(Sequence):
         log_warn(f'{blackboard.robot.role} --> {self.children[1].position}')
         available_positions = list(blackboard.automatic_positions.values())
         position = available_positions[blackboard.current_automatic_position][f'{blackboard.robot.role}']['pos1']
-        self.children[1].position = position
+        self.children[1].position = Vec2D.from_array(position)
         return super().run(blackboard)
 
 

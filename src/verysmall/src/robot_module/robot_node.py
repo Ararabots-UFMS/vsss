@@ -1,8 +1,11 @@
 #!/usr/bin/python3
+from logging import debug
 import rospy
 import sys
 from argparse import ArgumentParser
 from robot_module.robot import Robot
+import os
+from utils.debug_profile import debug_profiler
 
 
 def makeArgParser() -> ArgumentParser:
@@ -32,3 +35,5 @@ if __name__ == '__main__':
                   args.robot_role, args.owner_name, args.socket_id, args.should_debug)
 
     rospy.spin()
+    
+    # debug_profiler.dump_stats(os.environ["ROS_ARARA_ROOT"] + "debug_logs.bin") # TODO: pensar em uma forma boa de habilitar isso

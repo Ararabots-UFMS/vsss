@@ -1,9 +1,13 @@
 import math
 from abc import ABC, abstractmethod
+import profile
 from typing import Iterable
 from typing import Tuple
+from utils.linalg import Vec2D
+from copy import deepcopy
 
 import numpy as np
+import rospy
 
 from robot_module.movement.definitions import OpCodes
 from robot_module.movement.univector.un_field import UnivectorField
@@ -17,7 +21,10 @@ from utils.json_handler import JsonHandler
 from utils.math_utils import predict_speed, angle_between, clamp
 from utils.profiling_tools import log_warn
 
+from utils.debug_profile import debug_profiler
+
 LEFT, RIGHT = 0, 1
+
 
 class StopAction(TreeNode):
 
@@ -66,17 +73,22 @@ class UnivectorTask(ABC):
         raise Exception("subclass must override run method")
 
     def go_to_objective(self, blackboard: BlackBoard, objective_position):
-        distance_to_ball = np.linalg.norm(blackboard.robot.position - objective_position)
+
+        distance_to_ball = (blackboard.robot.position - objective_position).norm()
 
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
-        self.univector_field.update_obstacles(blackboard.enemy_team.positions.tolist() +
-                                              blackboard.home_team.positions.tolist(),
-                                           [[0, 0]] * 9)  # blackboard.enemies_speed)
+        # Precisa ser deepcopy? Não sei
+
+        all_robots = deepcopy(blackboard.enemy_team.positions)
+        all_robots.extend(blackboard.home_team.positions)
+
+        self.univector_field.update_obstacles(all_robots,
+                                             [Vec2D.origin() for i in range(9)])  # blackboard.enemies_speed)
         theta = blackboard.robot.orientation
-        vec = 4*np.array([math.cos(theta), math.sin(theta)])*(-1 + 2*blackboard.current_orientation)
-        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + vec, np.array([0, 0]),
+        vec = 4*(-1 + 2*blackboard.current_orientation)*Vec2D(math.cos(theta), math.sin(theta))
+        angle = self.univector_field.get_angle_with_ball(blackboard.robot.position + vec, Vec2D.origin(),
                                                          # blackboard.speed,
                                                          objective_position, _attack_goal=blackboard.enemy_goal.side)
         speed = self.speed
@@ -98,13 +110,16 @@ class GoToPositionUsingUnivector(UnivectorTask):
     def __init__(self, name="Go to position", max_speed: int = 75, acceptance_radius: float = 10.0,
                  speed_prediction: bool = False, position=None):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
-        self.position = position
+        self.position = Vec2D.from_array(position) if position is not None else Vec2D.origin()
 
     def set_position(self, new_pos):
         self.position = new_pos
 
     def run(self, blackboard: BlackBoard) -> (TaskStatus, (OpCodes, float, int, float)):
-        return self.go_to_objective(blackboard, self.position)
+
+        aux = self.go_to_objective(blackboard, self.position)
+
+        return aux
 
 
 class RecoverBallUsingUnivector(UnivectorTask):
@@ -113,16 +128,17 @@ class RecoverBallUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        distance_to_ball = np.linalg.norm(blackboard.robot.position - blackboard.ball.position)
+        distance_to_ball = (blackboard.robot.position - blackboard.ball.position).norm()
 
         if distance_to_ball < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.STOP, 0, 0, 0)
 
         self.univector_field.update_obstacles(blackboard.enemy_team.positions,
-                                              [[0, 0]] * 5)  # blackboard.enemies_speed)
+                                              [Vec2D.origin() for i in range(5)])  # blackboard.enemies_speed)
 
-        axis = (0.0, 1.0) if blackboard.ball.position[1] > HALF_ARENA_HEIGHT else (0.0, -1.0)
-        angle = self.univector_field.get_angle_vec(blackboard.robot.position, blackboard.robot.orientation,
+        axis = Vec2D(0.0, 1.0) if blackboard.ball.position[1] > HALF_ARENA_HEIGHT else Vec2D(0.0, -1.0)
+
+        angle = self.univector_field.get_angle_vec(blackboard.robot.position, blackboard.robot.speed, # neste lugar estava robot.orientation
                                                    blackboard.ball.position, axis)
 
         status = TaskStatus.RUNNING
@@ -137,7 +153,11 @@ class GoToBallUsingUnivector(UnivectorTask):
         super().__init__(name, max_speed, acceptance_radius, speed_prediction)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        return self.go_to_objective(blackboard, blackboard.ball.position)
+        # TODO: Profile
+        debug_profiler.enable()
+        aux = self.go_to_objective(blackboard, blackboard.ball.position)
+        debug_profiler.disable()
+        return aux
 
 
 class GoToAttackGoalUsingUnivector(UnivectorTask):
@@ -153,7 +173,7 @@ class ChargeWithBall(TreeNode):
     def __init__(self, name='ChargeWithBall', max_speed: int = 255):
         super().__init__(name)
         self.max_speed = max_speed
-        self.x_vector = np.array([1.0, 0.0])
+        self.x_vector = Vec2D(1.0, 0.0)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         goal_vector = blackboard.enemy_goal.position - blackboard.robot.position
@@ -161,10 +181,10 @@ class ChargeWithBall(TreeNode):
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            abs=False
+            absol=False
         )
 
-        distance_to_goal = np.linalg.norm(goal_vector)
+        distance_to_goal = goal_vector.norm()
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
@@ -173,7 +193,7 @@ class RemoveBallFromGoalArea(TreeNode):
     def __init__(self, name='RemoveBallFromGoalArea', max_speed: int = 255):
         super().__init__(name)
         self.max_speed = max_speed
-        self.x_vector = np.array([1.0, 0.0])
+        self.x_vector = Vec2D(1.0, 0.0)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         goal_vector = blackboard.ball.position - blackboard.robot.position
@@ -181,10 +201,10 @@ class RemoveBallFromGoalArea(TreeNode):
         angle = angle_between(
             self.x_vector,
             goal_vector,
-            abs=False
+            absol=False
         )
 
-        distance_to_goal = np.linalg.norm(goal_vector)
+        distance_to_goal = goal_vector.norm()
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, angle, self.max_speed, distance_to_goal)
 
@@ -192,7 +212,7 @@ class RemoveBallFromGoalArea(TreeNode):
 class MarkBallOnAxis(TreeNode):
     def __init__(self, name: str = "MarkBallOnAxis",
                  max_speed: int = 255,
-                 axis: np.ndarray = np.array([.0, 1.0]),
+                 axis: np.ndarray = Vec2D(.0, 1.0),
                  acceptance_radius: float = 5,
                  clamp_min: float = None,
                  clamp_max: float = None,
@@ -201,7 +221,7 @@ class MarkBallOnAxis(TreeNode):
         super().__init__(name)
         self._acceptance_radius = acceptance_radius
         self._max_speed = max_speed
-        self._angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+        self._angle_to_correct = angle_between(Vec2D.left(), axis)
         self.turn_off_clamp = clamp_min is None and clamp_max is None
         self._clamp_min = clamp_min
         self._clamp_max = clamp_max
@@ -266,9 +286,9 @@ class MarkBallOnYAxis(TreeNode):
 
         y = clamp(ball_y, self._clamp_min[1], self._clamp_max[1])
 
-        target_pos = np.array([self._clamp_min[0], y])
+        target_pos = Vec2D(self._clamp_min[0], y)
         direction = target_pos - blackboard.robot.position
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
 
         if distance < self._acceptance_radius:
             return TaskStatus.SUCCESS, NO_ACTION
@@ -281,7 +301,7 @@ class MarkBallOnYAxis(TreeNode):
         alpha = gaussian(distance - self._acceptance_radius, 4.5)
 
         y_sign = -1 if direction[1] < 0 else 1
-        direction_on_target = np.array([0, y_sign])
+        direction_on_target = Vec2D(0, y_sign)
 
         final_direction = alpha * direction_on_target + (1 - alpha) * direction
         theta = math.atan2(final_direction[1], final_direction[0])
@@ -292,13 +312,13 @@ class MarkBallOnYAxis(TreeNode):
 class AlignWithAxis(TreeNode):
     def __init__(self, name: str = "AlignWithAxis",
                  max_speed: int = 0,
-                 axis: np.ndarray = np.array([.0, 1.0]),
+                 axis: Vec2D = Vec2D(.0, 1.0),
                  acceptance_radius: float = 0.0872665, align_with_ball: bool = False):
 
         super().__init__(name)
         self.max_speed = max_speed
         self.acceptance_radius = acceptance_radius
-        self.angle_to_correct = angle_between(np.array([1.0, 0.0]), axis)
+        self.angle_to_correct = angle_between(Vec2D.left(), axis)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         if abs(self.angle_to_correct - abs(blackboard.robot.orientation)) <= self.acceptance_radius:
@@ -333,13 +353,13 @@ class GetOutOfGoal(TreeNode):
 
             new_y_pos = robot_pos[1] + shift
             if team_goal_side:
-                self.target_pos = (RIGHT_AREA_CENTER_X, new_y_pos)
+                self.target_pos = Vec2D(RIGHT_AREA_CENTER_X, new_y_pos)
             else:
-                self.target_pos = (LEFT_AREA_CENTER_X, new_y_pos)
+                self.target_pos = Vec2D(LEFT_AREA_CENTER_X, new_y_pos)
         
         path = self.target_pos - robot_pos
 
-        distance = np.linalg.norm(path)
+        distance = path.norm()
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
@@ -385,7 +405,7 @@ class GoToGoalCenter(TreeNode):
 
         direction = home_goal_pos - blackboard.robot.position
 
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
 
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.SMOOTH, 0, 0, distance)
@@ -399,18 +419,18 @@ class GoToPosition(TreeNode):
     def __init__(self, name: str = "Straight Line Movement",
                  max_speed: int = 255,
                  acceptance_radius: float = 10.0,
-                 target_pos: list = None):
+                 target_pos: list = Vec2D.origin()):
         super().__init__(name)
         self.acceptance_radius = acceptance_radius
         self.max_speed = max_speed
-        self.target_pos = target_pos
+        self.target_pos = Vec2D.from_array(target_pos) 
 
     def set_new_target_pos(self, new_pos):
-        self.target_pos = new_pos
+        self.target_pos = Vec2D.from_array(new_pos)
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
         path = self.target_pos - blackboard.robot.position
-        distance = np.linalg.norm(path)
+        distance = path.norm()
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:
@@ -425,9 +445,9 @@ class GoToDefenseRange(TreeNode):
         self.speed = speed
         self.key = blackboard_key
         self.mark_points = (
-            np.array([30, 25]),
-            np.array([30, 65]),
-            np.array([30, 105])
+            Vec2D(30, 25),
+            Vec2D(30, 65),
+            Vec2D(30, 105)
         )
         if blackboard_key == 'robot':
             self.verify_function = self.check_robot_x
@@ -456,7 +476,7 @@ class GoToDefenseRange(TreeNode):
         self.mark_points[objective_section][0] = 30 + blackboard.home_goal.side*90
 
         direction = self.mark_points[objective_section] - blackboard.robot.position
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
         theta = math.atan2(direction[1], direction[0])
 
         return TaskStatus.RUNNING, (OpCodes.NORMAL, theta, self.speed, distance)
@@ -476,7 +496,7 @@ class GoToBallUsingMove2Point(TreeNode):
 
         direction = blackboard.ball.position - blackboard.robot.position
 
-        distance = np.linalg.norm(direction)
+        distance = direction.norm()
         theta = math.atan2(direction[1], direction[0])
         if distance < self.acceptance_radius:
             return TaskStatus.SUCCESS, (OpCodes.NORMAL, 0.0, 0, 0)
@@ -493,9 +513,9 @@ class GoBack(TreeNode):
         self.max_speed = max_speed
 
     def run(self, blackboard: BlackBoard) -> Tuple[TaskStatus, ACTION]:
-        target_position = [75., blackboard.robot.position[1]]
+        target_position = Vec2D(75., blackboard.robot.position[1])
         path = target_position - blackboard.robot.position
-        distance = np.linalg.norm(path)
+        distance = path.norm()
         theta = math.atan2(path[1], path[0])
 
         if distance <= self.acceptance_radius:

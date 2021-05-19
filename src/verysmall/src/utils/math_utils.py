@@ -1,4 +1,5 @@
 from typing import Union
+from utils.linalg import Vec2D
 import numpy as np
 import numpy.linalg as la
 import math
@@ -19,13 +20,29 @@ def unitVector(vector):
     return vector / np.linalg.norm(vector)
 
 
-def angle_between(v1, v2, abs:bool= True) -> float:
+# def angle_between(v1, v2, absol:bool= True) -> float:
+#     """ Returns the angle in radians between vectors 'v1' and 'v2' """
+
+#     # TODO: Refatorar esta função para usar o Vec2D... o que abs significa?
+#     # Gambito por enquanto
+#     if isinstance(v1, Vec2D): v1 = np.array(v1.to_list())
+#     if isinstance(v2, Vec2D): v2 = np.array(v2.to_list())
+
+#     cosang = np.dot(v1, v2)
+#     sinang = np.cross(v1, v2)
+#     if absol:
+#         sinang = la.norm(np.cross(v1, v2))
+#     return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
+
+def angle_between(v1, v2, absol: bool= True) -> float:
     """ Returns the angle in radians between vectors 'v1' and 'v2' """
-    cosang = np.dot(v1, v2)
-    sinang = np.cross(v1, v2)
-    if abs:
-        sinang = la.norm(np.cross(v1, v2))
-    return np.arctan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
+
+    cosang = v1.dot(v2)
+    sinang = v1.cross(v2)
+    if absol:
+        sinang = abs(sinang)
+    return math.atan2(sinang, cosang)  # atan2(y, x) or atan2(sin, cos)
+
 
 
 def rotateVector(x, angle):
@@ -108,7 +125,7 @@ def forward_min_diff(num, orientation, vec, goal, only_forward=False):
     """
     tmp, new_gamma_count = min_diff_vec_and_opposite(num, orientation, vec, goal)
     if tmp or only_forward:
-        return True, angle_between(vec, goal, abs=False), new_gamma_count
+        return True, angle_between(vec, goal, absol=False), new_gamma_count
     return False, angle_between(opposite_vector(vec), goal, abs=False), new_gamma_count
 
 def raio_vetores(p1, v1, p2, v2, speed_max=255, upper_bound=800, angle = 3,k = 0.01):

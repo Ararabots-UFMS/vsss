@@ -1,3 +1,4 @@
+from utils.linalg import Vec2D
 from verysmall.msg import things_position, game_topic, debug_topic
 import rospy
 import numpy as np
@@ -53,7 +54,7 @@ class RosRobotSubscriberAndPublisher:
         :param data: ROS Things position message
         :return: nothing
         """
-        self.robot.blackboard.ball.position = np.array(data.ball_pos) / 100.0
+        self.robot.blackboard.ball.position = Vec2D.from_array(np.array(data.ball_pos) / 100.0)
 
         if self.robot.team_color == 1:  # yellow
             friends_position = np.array(data.yellow_team_pos).reshape((-1, 2)) / 100.0

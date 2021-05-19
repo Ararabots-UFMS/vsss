@@ -16,6 +16,7 @@ from strategy.defender import Defender
 from strategy.goalkeeper import GoalKeeper
 from strategy.pid_calibration import CalibrationTree
 from utils.json_handler import JsonHandler
+from utils.linalg import *
 
 
 class Robot:
@@ -86,6 +87,7 @@ class Robot:
         self.subsAndPubs = RosRobotSubscriberAndPublisher(self, 'game_topic_' + str(self.owner_name),
                                                           self._should_debug)
 
+
     @property
     def position(self):
         return self.blackboard.robot.position
@@ -120,6 +122,7 @@ class Robot:
 
     def run(self):
         task_status, action = self.behaviour_tree.run(self.blackboard)
+
         if task_status == TaskStatus.FAILURE or task_status is None:
             action = (OpCodes.STOP, 0.0, 0, 0)
 
@@ -142,7 +145,7 @@ class Robot:
         # self.roboto_vision()
 
     def get_priority(self) -> int:
-        distance = np.linalg.norm(self.blackboard.robot.position - self.blackboard.ball.position)
+        distance = (self.blackboard.robot.position - self.blackboard.ball.position).norm()
         return int(distance) & 0xFF
 
     def roboto_vision(self):
